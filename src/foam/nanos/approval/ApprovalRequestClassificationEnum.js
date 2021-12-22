@@ -213,6 +213,11 @@
       name: 'UNKNOWN_BUSINESS_LEV',
       label: 'Unknown Business in SecureFact LEV',
       ordinal: 40
+    },
+    {
+      name: 'TRANSACTION_POTENTIAL_DUPLICATE',
+      label: 'Potential Duplicate Transaction',
+      ordinal: 41
     }
   ]
 });
