@@ -72,19 +72,30 @@ foam.CLASS({
              ! notif.getBroadcasted() &&
              notif.getUserId() > 0 ) {
           Logger logger = foam.nanos.logger.Loggers.logger(x, this);
-          Subject subject = (Subject) x.get("subject");
-          if ( subject != null ) {
-            User user = subject.getUser();
-            notif.setSpid(user.getSpid());
-            if ( ! foam.util.SafetyUtil.isEmpty(notif.getSpid()) ) {
-              try {
-                return getDelegate().put_(x, notif);
-              } catch ( Throwable t ) {
-                logger.error(t);
+          if ( notif.getShouldSendNotification() ) {
+            User user = (User) userDAO.find(notif.getUserId());
+            if ( user != null ) {
+              // Send notification just once
+              notif.setShouldSendNotification(false);
+              user.doNotify(x, notif);
+            } else {
+              logger.warning("No user with id " + notif.getUserId() + " was found. Notification " + notif.getNotificationType() + " will not be sent");
+            }
+          } else {
+            Subject subject = (Subject) x.get("subject");
+            if ( subject != null ) {
+              User user = subject.getUser();
+              notif.setSpid(user.getSpid());
+              if ( ! foam.util.SafetyUtil.isEmpty(notif.getSpid()) ) {
+                try {
+                  return getDelegate().put_(x, notif);
+                } catch ( Throwable t ) {
+                  logger.error(t);
+                }
               }
             }
+            logger.warning(notif.getNotificationType(), "Spid not found", "Notification not saved");
           }
-          logger.warning(notif.getNotificationType(), "Spid not found", "Notification not saved");
         }
 
         return obj;

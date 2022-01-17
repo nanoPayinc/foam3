@@ -239,6 +239,12 @@ foam.CLASS({
         }
         return spid_;
       `
+    },
+    {
+      class: 'Boolean',
+      name: 'shouldSendNotification',
+      documentation: 'Send notification to user with userId',
+      hidden: true
     }
   ],
 
