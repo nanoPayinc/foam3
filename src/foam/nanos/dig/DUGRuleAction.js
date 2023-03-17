@@ -4,7 +4,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
- foam.CLASS({
+foam.CLASS({
   package: 'foam.nanos.dig',
   name: 'DUGRuleAction',
 
@@ -72,7 +72,7 @@
         if ( dugDigestConfig != null && dugDigestConfig.getEnabled() ) {
             sink = new HTTPDigestSink(
               dugRule.getUrl(),
-              dugRule.evaluateBearerToken(),
+              dugRule.evaluateBearerToken(agencyX),
               dugDigestConfig,
               dugRule.getFormat(),
               new foam.lib.AndPropertyPredicate(
@@ -89,7 +89,7 @@
           } else {
             sink = new HTTPSink(
               dugRule.getUrl(),
-              dugRule.evaluateBearerToken(),
+              dugRule.evaluateBearerToken(agencyX),
               dugRule.getFormat(),
               new foam.lib.AndPropertyPredicate(
                 agencyX,
