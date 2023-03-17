@@ -72,7 +72,7 @@ foam.CLASS({
         if ( dugDigestConfig != null && dugDigestConfig.getEnabled() ) {
             sink = new HTTPDigestSink(
               dugRule.getUrl(),
-              dugRule.evaluateBearerToken(agencyX),
+              dugRule.evaluateBearerToken(),
               dugDigestConfig,
               dugRule.getFormat(),
               new foam.lib.AndPropertyPredicate(
@@ -89,7 +89,7 @@ foam.CLASS({
           } else {
             sink = new HTTPSink(
               dugRule.getUrl(),
-              dugRule.evaluateBearerToken(agencyX),
+              dugRule.evaluateBearerToken(),
               dugRule.getFormat(),
               new foam.lib.AndPropertyPredicate(
                 agencyX,
