@@ -200,7 +200,7 @@ foam.CLASS({
       border: 1px solid $grey400;
       color: $black;
       background-color: $white;
-      min-width: 94px;
+      min-width: 120px;
 
       width: 100%;
       border-radius: 4px;
@@ -628,13 +628,19 @@ foam.CLASS({
       if ( action && actionData ) {
         return this.E()
           .start(self.DefaultActionView, { action: action, data: actionData })
-            .addClass(self.myClass('action'))
+          .on('click', () => {
+            self.dropdown_.close();
+          })
+          .addClass(self.myClass('action'))
           .end();
       }
       if ( action ) {
         return this.E()
           .start(self.DefaultActionView, { action: action })
-            .addClass(self.myClass('action'))
+          .on('click', () => {
+                self.dropdown_.close();
+              })
+          .addClass(self.myClass('action'))
           .end();
       }
     },

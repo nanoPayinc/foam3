@@ -16,7 +16,6 @@ foam.CLASS({
   imports: [
     'auth',
     'ctrl',
-    'currentMenu',
     'emailVerificationService',
     'loginSuccess',
     'loginView?',
@@ -25,8 +24,6 @@ foam.CLASS({
     'pushMenu',
     'stack',
     'subject',
-    'translationService',
-    'userDAO',
     'window'
   ],
 
@@ -39,13 +36,13 @@ foam.CLASS({
   ],
 
   messages: [
-    { name: 'TITLE', message: 'Welcome!' },
-    { name: 'FOOTER_TXT', message: 'Not a user yet?' },
-    { name: 'ERROR_MSG', message: 'There was an issue logging in' },
+    { name: 'TITLE',      message: 'Welcome Back' },
+    { name: 'FOOTER_TXT', message: 'Not a User Yet?' },
+    { name: 'ERROR_MSG',  message: 'There was an issue logging in' },
     { name: 'ERROR_MSG2', message: 'Please enter email or username' },
     { name: 'ERROR_MSG3', message: 'Please enter password' }
   ],
-  
+
   sections: [
     {
       name: '_defaultSection',
@@ -154,17 +151,20 @@ foam.CLASS({
     {
       name: 'verifyEmail',
       code: async function(x, email, username) {
-        this.emailVerificationService.sub('emailVerified', this.emailVerifiedListener);
+      this.ctrl.groupLoadingHandled = true;
+        this.onDetach(this.emailVerificationService.sub('emailVerified', this.emailVerifiedListener));
         this.stack.push(this.StackBlock.create({
           view: {
-            class: 'foam.nanos.auth.email.VerificationCodeView',
-            data: {
-              class: 'foam.nanos.auth.email.EmailVerificationCode',
-              email: email,
-              userName: username,
-              showAction: true,
-              signinOnSubmit: true
-            }
+            class: 'foam.u2.borders.StatusPageBorder', showBack: false,
+            children: [{
+              class: 'foam.nanos.auth.email.VerificationCodeView',
+              data: {
+                class: 'foam.nanos.auth.email.EmailVerificationCode',
+                email: email,
+                userName: username,
+                showAction: true
+              }
+            }]
           }
         }, this));
       }
@@ -193,7 +193,8 @@ foam.CLASS({
   actions: [
     {
       name: 'login',
-      label: 'Sign in',
+      label: 'Sign In',
+      section: 'footerSection',
       buttonStyle: 'PRIMARY',
       // if you use isAvailable or isEnabled - with model error_, then note that auto validate will not
       // work correctly. Chorme for example will not read a field auto populated without a user action
@@ -229,6 +230,9 @@ foam.CLASS({
 
             this.loginSuccess = true;
             await this.ctrl.reloadClient();
+            // Temp fix to prevent breaking wizard sign in since that also calls this function
+            if ( ! this.pureLoginFunction )
+              await this.ctrl.onUserAgentAndGroupLoaded();
           } catch (err) {
             this.loginFailed = true;
             let e = err && err.data ? err.data.exception : err;
@@ -250,24 +254,24 @@ foam.CLASS({
             }
             if ( this.UnverifiedEmailException.isInstance(e) ) {
               // find user
-              var pred = this.usernameRequired ? 
-                this.AND(this.EQ(foam.nanos.auth.User.EMAIL, this.email), this.EQ(foam.nanos.auth.User.USER_NAME, this.username)) :
-                this.OR(this.EQ(foam.nanos.auth.User.EMAIL, this.identifier), this.EQ(foam.nanos.auth.User.USER_NAME, this.identifier));
-              var user = await this.userDAO.find(pred);
-              this.verifyEmail(x, user.email, user.username);
+              var email = this.usernameRequired ? this.email : this.identifier;
+              this.verifyEmail(x, email, this.userName);
+              // do not show error notification for unverified email
+              return;
             }
             this.notifyUser(err.data, this.ERROR_MSG, this.LogLevel.ERROR);
           }
         } else {
+          // TODO: Add functionality to push to sign up if the user identifier doesnt exist
           this.notifyUser(undefined, this.ERROR_MSG2, this.LogLevel.ERROR);
         }
       }
     },
     {
       name: 'footer',
-      label: 'Create an account',
+      label: 'Create an Account',
       section: 'footerSection',
-      buttonStyle: 'LINK',
+      buttonStyle: 'TEXT',
       isAvailable: function(showAction) { return showAction; },
       code: function(X) {
         X.window.history.replaceState(null, null, X.window.location.origin);
@@ -276,7 +280,7 @@ foam.CLASS({
     },
     {
       name: 'subFooter',
-      label: 'Forgot password?',
+      label: 'Forgot Password?',
       section: 'footerSection',
       buttonStyle: 'LINK',
       isAvailable: function(showAction) { return showAction; },

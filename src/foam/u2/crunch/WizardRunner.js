@@ -11,6 +11,9 @@ foam.CLASS({
   issues: [
     'when source is a capability it should create a WizardFlow'
   ],
+  documentation: `
+    Wizard Runner is a configuration that is used to run (and potentially modify) a wizard  
+  `,
   requires: [
     'foam.u2.wizard.WizardType',
     'foam.u2.wizard.wizardflow.WizardFlow'
@@ -26,30 +29,56 @@ foam.CLASS({
       documentation: `
         Either a capability, string, or WizardFlow
       `
-    }
+    },
+    {
+      name:'options',
+      class: 'Map',
+      documentation: `
+        These options are used when building the sequence or running the Wizard.
+        These should be set before calling launch, and before any access of the sequence property.
+      `
+    },
+    {
+      name:'sequence',
+      factory: function() {
+        const IN_PROGRESS = this.crunchController.WizardStatus.IN_PROGRESS;
+        const seq = this.getSequence_(this.__context__, this.isInline);
+        return seq
+      } 
+    },
+    {
+      name: 'parentWizard',
+      factory: function() {
+        return this.getParentWizard_();
+      }
+    },
+    {
+      name: 'isInline',
+      expression: function(parentWizard, options) {
+        return (options.inline ?? true) && !! parentWizard;
+      }
+    },
   ],
   methods: [
-    async function launch(x) {
-      x = x || this.__context__;
+    async function launch() {
+      x = this.__context__;
 
-      const IN_PROGRESS = this.crunchController.WizardStatus.IN_PROGRESS;
-
-      const parentWizard = this.getParentWizard_();
-      const isInline = !! parentWizard;
-
-      const seq = this.getSequence_(x, isInline);
+      const seq = this.sequence;
 
       let returnPromise = null;
+      let promise$ = foam.core.SimpleSlot.create({ value: false }, this);
 
-      if ( isInline ) {
-        returnPromise = new Promise(rslv => {
-          parentWizard.status$.sub(() => {
-            if ( parentWizard.status != IN_PROGRESS ) rslv();
-          })
-        })
+      if ( this.isInline ) {
+        if ( this.options.returnCompletionPromise ) {
+          returnPromise = new Promise(rslv => {
+            promise$.sub(v => {
+              if ( v ) rslv();
+            });
+          });
+        }
 
-        await this.crunchController.inlineWizardFromSequence(parentWizard, seq);
-        return returnPromise;
+        await this.crunchController.inlineWizardFromSequence(parentWizard, seq, ( returnPromise ? { onLastWizardletSaved: () => promise$.set(true) } : {}));
+        return returnPromise ? returnPromise : null;
       }
 
       await seq.execute();
@@ -66,8 +95,8 @@ foam.CLASS({
       return lastWizard;
     },
     function getSequence_ (x, isInline) {
-      if ( ! this.WizardFlow.isInstance(this.source, isInline) ) {
-        return this.getSequenceFromCapability_(x);
+      if ( ! this.WizardFlow.isInstance(this.source) ) {
+        return this.getSequenceFromCapability_(x, isInline);
       }
 
       if ( isInline ) {
