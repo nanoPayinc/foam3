@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'Address',
 
   documentation: 'The base model for the postal address.',
-  
+
   axioms: [ foam.pattern.Faceted.create({ ofProperty: 'countryId' }) ],
 
   implements: [
@@ -37,7 +37,7 @@ foam.CLASS({
     { name: 'INVALID_COUNTRY', message: 'Invalid country' },
     { name: 'REGION_REQUIRED', message: 'Region required' },
     { name: 'INVALID_REGION', message: 'Invalid region. Please provide valid ISO-3166-2 region.' },
-    { name: 'INVALID_ADDRESS_1', message: 'Invalid value for address line 1' },
+    { name: 'INVALID_ADDRESS_1', message: 'Address line 1 required' },
     { name: 'INVALID_POSTAL_CODE', message: 'Valid Postal Code or ZIP Code required' },
     { name: 'POSTAL_CODE_REQUIRE', message: 'Postal Code required' },
     { name: 'STREET_NAME_REQUIRED', message: 'Street Name required' },
