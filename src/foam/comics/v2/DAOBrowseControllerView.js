@@ -41,6 +41,17 @@ foam.CLASS({
     'foam.u2.view.OverlayActionListView'
   ],
 
+  cssTokens: [
+    {
+      name: 'borderSize',
+      value: '1px solid $grey300'
+    },
+    {
+      name: 'boxShadowSize',
+      value: '0px 1px 2px rgba(0, 0, 0, 0.06), 0px 1px 3px rgba(0, 0, 0, 0.1)'
+    }
+  ],
+
   css: `
     ^container {
       padding: 36px 16px 8px 16px;
@@ -54,9 +65,7 @@ foam.CLASS({
     }
 
     ^altview-container {
-      position: absolute;
-      right: 0;
-      padding: 12px 16px 0 0;
+      padding: 12px 16px;
     }
 
     ^buttons{
@@ -64,10 +73,10 @@ foam.CLASS({
     }
 
     ^ .foam-u2-borders-CardBorder {
-      border: 1px solid $grey300;
+      border: $borderSize;
       border-radius: 4px;
       box-sizing: border-box;
-      box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.06), 0px 1px 3px rgba(0, 0, 0, 0.1);
+      box-shadow: $boxShadowSize;
       height: 100%;
       padding: 0;
     }
@@ -81,7 +90,7 @@ foam.CLASS({
 
   messages: [
     { name: 'VIEW_ALL', message: 'View all ' },
-    { name: 'ACTIONS', message: 'Actions' }
+    { name: 'ACTIONS',  message: 'Actions' }
   ],
 
   properties: [
@@ -100,7 +109,7 @@ foam.CLASS({
       of: 'foam.comics.v2.DAOControllerConfig',
       name: 'config',
       factory: function() {
-        return foam.comics.v2.DAOControllerConfig.create({ dao: this.data });
+        return this.onDetach(foam.comics.v2.DAOControllerConfig.create({dao: this.data}));
       }
     },
     {
@@ -128,16 +137,19 @@ foam.CLASS({
     {
       name: 'click',
       expression: function(config$click) {
+        if (this.config.disableSelection) {
+          return () => {};
+        }
         if ( this.config.click && typeof this.config.click === 'function' )
           return this.config.click;
         // This function is exported and is not always called with the 'this' being the current view
         // which is why we need to fetch config from subContext
         return function(obj, id) {
-          if ( ! this.stack ) {
+          if ( ! this.stack && ! this.__subContext__.stack ) {
             console.warn('Missing stack, can not push view');
             return;
           }
-          this.stack.push(foam.u2.stack.StackBlock.create({
+          (this.stack || this.__subContext__.stack).push(foam.u2.stack.StackBlock.create({
           view: {
             class: 'foam.comics.v2.DAOSummaryView',
             data: obj,
@@ -171,19 +183,23 @@ foam.CLASS({
           return false;
         }
       },
-      code: function() {
+      code: function(x) {
         if ( ! this.stack ) return;
 
         if ( this.config.createController.class === 'foam.comics.v2.DAOCreateView' ) {
-          this.stack.push(this.StackBlock.create({
-            view: {
-              class: this.config.createController.class,
-              data: (this.config.factory || this.data.of).create({ mode: 'create'}, this),
-              config$: this.config$,
-              of: this.data.of
-            }, parent: this,
-            popup: this.config.createPopup
-          }));
+          if ( this.config.createPopup && this.config.redirectMenu ) {
+            x.pushMenu(this.config.redirectMenu);
+          } else {
+            this.stack.push(this.StackBlock.create({
+              view: {
+                class: this.config.createController.class,
+                data: (this.config.factory || this.data.of).create({ mode: 'create'}, this),
+                config$: this.config$,
+                of: this.data.of
+              }, parent: this,
+              popup: this.config.createPopup
+            }));
+          }
         } else if ( this.config.createControllerView ) {
           this.stack.push(this.StackBlock.create({ view: this.config.createControllerView, parent: this, popup: this.config.createPopup }));
         } else {
@@ -235,7 +251,7 @@ foam.CLASS({
       var nav = this.showNav ? self.BreadcrumbView : '';
       this.addClass()
 
-      .add(this.slot(function(data, config, config$of, config$browseBorder, config$browseViews, config$browseTitle, config$primaryAction, config$createTitle, config$createControllerView) {
+      .add(this.slot(function(data, config, config$browseBorder, config$browseViews, config$browseTitle, config$primaryAction, config$createTitle, config$createControllerView) {
         return self.E()
           .start(self.Rows)
             .addClass(self.myClass('container'))
@@ -244,12 +260,20 @@ foam.CLASS({
                 .tag(nav)
                 .start(self.Cols)
                   .start()
-                    .addClasses(['h100', self.myClass('browse-title')])
+                    .addClass('h100', self.myClass('browse-title'))
                     .translate(menuId + ".browseTitle", config$browseTitle)
                   .end()
                   .start(self.Cols)
                     .add(this.slot(function(config$browseContext) {
                       return this.E()
+                        .callIf(config$browseViews.length > 1 , function() {
+                          this.addClass(self.myClass('buttons')).start(self.IconChoiceView, {
+                              choices: config$browseViews.map(o => [o.view, o.icon, o.name]),
+                              data$: self.browseView$
+                            })
+                              .addClass(self.myClass('altview-container'))
+                            .end();
+                        })
                         .callIf( config.browseActions.length && config.browseContext, function() {
                           if ( config.browseActions.length > 2 ) {
                             this.start(self.OverlayActionListView, {
@@ -266,7 +290,7 @@ foam.CLASS({
                           }
                         });
                     }))
-                    .callIf( ! config.detailView, function() {
+                    .callIf( ! config.detailView && ! ( config.createControllerView || config$primaryAction ), function() {
                       this.startContext({ data: self })
                         .tag(self.CREATE, {
                             label: this.translationService.getTranslation(foam.locale, menuId + '.createTitle', config$createTitle),
@@ -280,7 +304,6 @@ foam.CLASS({
                         .tag(self.CREATE, {
                             label: this.translationService.getTranslation(foam.locale, menuId + '.handler.createControllerView.view.title', config$createControllerView.view.title),
                             buttonStyle: foam.u2.ButtonStyle.PRIMARY,
-                            size: 'LARGE'
                         })
                       .endContext();
                     })
@@ -293,15 +316,6 @@ foam.CLASS({
             .start(self.CardBorder)
               .style({ position: 'relative', 'min-height': config.minHeight + 'px' })
               .start(config$browseBorder)
-                .callIf(config$browseViews.length > 1 , function() {
-                  this
-                    .start(self.IconChoiceView, {
-                      choices:config$browseViews.map(o => [o.view, o.icon]),
-                      data$: self.browseView$
-                    })
-                      .addClass(self.myClass('altview-container'))
-                    .end();
-                })
                 .call(function() {
                   this.add(self.slot(function(browseView) {
                     return self.E().tag(browseView, { data: data, config: config } );

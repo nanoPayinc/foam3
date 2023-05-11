@@ -7,6 +7,12 @@
 foam.CLASS({
   package: 'foam.u2.crunch',
   name: 'EasyCrunchWizard',
+  implements: [
+    {
+      path: 'foam.core.ContextAgent',
+      flags: 'web'
+    }
+  ],
 
   documentation: `
     EasyCrunchWizard is a facade to configure context agents typically found
@@ -85,7 +91,13 @@ foam.CLASS({
     },
     {
       class: 'foam.u2.ViewSpec',
-      name: 'popup'
+      name: 'popup',
+      factory: function() {
+        return {
+          class: 'foam.u2.dialog.ApplicationPopup',
+          fullscreen: true
+        }
+      }
     },
     {
       class: 'FObjectArray',
@@ -96,7 +108,7 @@ foam.CLASS({
   ],
 
   methods: [
-    function applyTo(sequence) {
+    async function applyTo(sequence) {
       var config = this.StepWizardConfig.create({
         allowSkipping: this.allowSkipping,
         allowBacktracking: this.allowBacktracking,
@@ -107,14 +119,15 @@ foam.CLASS({
           wizardView: { class: 'foam.u2.wizard.IncrementalStepWizardView' }
         } : {})
       });
-
       if ( this.popup ) {
         sequence.reconfigure('ConfigureFlowAgent', { popupMode: true });
         config.popup = {
           class: 'foam.u2.dialog.Popup',
           ...this.popup,
         };
-      }
+      } else {
+        sequence.reconfigure('ConfigureFlowAgent', { popupMode: false });
+      };
 
       sequence.reconfigure('CreateControllerAgent', { config: config });
       if ( this.skipMode )
@@ -130,8 +143,10 @@ foam.CLASS({
         fluentSpec.apply(sequence);
       }
     },
-    async function execute () {
-      // Subclasses which fetch information asynchronously can override this
+    async function execute (x) {
+      x = x ?? this.__context__;
+      await this.applyTo(x.sequence);
+      return x;
     }
   ]
 });

@@ -307,7 +307,7 @@ foam.CLASS({
 
   methods: [
     function init() {
-      this.parent.sub(this.parentChange);
+      this.onDetach(this.parent.sub(this.parentChange));
       this.parentChange();
     },
 
@@ -334,7 +334,11 @@ foam.CLASS({
     },
 
     function sub(l) {
-      return this.SUPER('propertyChange', 'value', l);
+      if ( arguments.length == 1 )
+        return this.SUPER('propertyChange', 'value', l);
+
+      // Could happen if any arguments are passed to sub(), like would happen if onDetach() called.
+      return this.SUPER.apply(this, arguments);
     },
 
     function isDefined() {
@@ -363,7 +367,7 @@ foam.CLASS({
         return;
       }
 
-      this.prevSub = o && o.slot && o.slot(this.name).sub(this.valueChange);
+      this.prevSub = o && o.slot && this.onDetach(o.slot(this.name).sub(this.valueChange));
       this.valueChange();
     },
 
@@ -466,8 +470,12 @@ foam.CLASS({
   package: 'foam.core',
   name: 'ExpressionSlot',
   extends: 'foam.core.PromiseSlot',
+
   documentation: `
     Tracks dependencies for a dynamic function and invalidates if they change.
+    Note that ExpressionSlots are lazily evaluated, even if you sub(), so
+    updates will not be generated from calling .sub() unless you also call
+    .get().
 
     <pre>
       foam.CLASS({name: 'Person', properties: ['fname', 'lname']});
@@ -532,7 +540,7 @@ foam.CLASS({
       },
       factory: function() {
         return this.code.apply(this.obj || this, this.args.map(function(a) {
-          return a.get();
+          return a && a.get();
         }));
       }
     },
@@ -544,12 +552,12 @@ foam.CLASS({
     function set() { /* nop */ },
     function subToArgs_(args) {
       this.cleanup();
-      const subs = args.map(a => a.sub(this.invalidate));
+      const subs = args.map(a => a && a.sub(this.invalidate));
 
       this.cleanup_ = {
         detach: function() {
           for ( var i = 0 ; i < subs.length ; i++ ) {
-            subs[i].detach();
+            if ( subs[i] ) subs[i].detach();
           }
         }
       };
@@ -568,6 +576,72 @@ foam.CLASS({
       }
     },
     function invalidate() { this.clearProperty('value'); }
+  ]
+});
+
+
+foam.CLASS({
+  package: 'foam.core',
+  name: 'DynamicFunction',
+  extends: 'foam.core.ExpressionSlot',
+
+  documentation: 'self is this when code is called, but obj is source of expression arguments',
+
+  properties: [
+    {
+      name: 'self',
+      factory: function() { return this.obj; }
+    },
+    {
+      class: 'Int',
+      name: 'seqNo'
+    },
+    {
+      name: 'pre',
+      value: function() {}
+    },
+    {
+      name: 'post',
+      value: function() {}
+    },
+    {
+      name: 'value',
+      factory: function() {
+        var self = this.self || this.obj || this;
+        this.pre.call(self);
+        this.code.apply(self, this.args.map(a => a && a.get()));
+        this.post.call(self);
+        return this.seqNo++;
+      }
+    }
+  ],
+
+  methods: [
+    function init() {
+      this.SUPER();
+      window.requestAnimationFrame(() => this.value);
+    },
+    function subToArgs_(args) {
+      const subs = args.map(a => a && a.sub(this.invalidate));
+
+      if ( ! this.cleanup_ ) {
+        this.cleanup_ = {
+          detach: function() {
+            for ( var i = 0 ; i < subs.length ; i++ ) {
+              if ( subs[i] ) subs[i].detach();
+            }
+          }
+        };
+      }
+    }
+  ],
+
+  listeners: [
+    {
+      name: 'invalidate',
+      isFramed: true,
+      code: function invalidate() { this.clearProperty('value'); this.value; }
+    }
   ]
 });
 
@@ -634,7 +708,7 @@ foam.CLASS({
       if ( arguments.length != 1 ) return this.SUPER.apply(this, arguments);
       var subs = this.slots.map(s => s.sub(l));
       return {
-        detach: function() { subs.forEach(s => s.detach()); }
+        detach: function() { subs.forEach(s => s && s.detach()); }
       };
     }
   ]

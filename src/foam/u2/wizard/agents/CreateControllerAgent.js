@@ -15,17 +15,19 @@ foam.CLASS({
 
   requires: [
     'foam.u2.wizard.StepWizardConfig',
-    'foam.u2.wizard.StepWizardController'
+    'foam.u2.wizard.controllers.WizardController'
   ],
 
   imports: [
     'initialPosition?',
+    'wizardFlow',
     'wizardlets'
   ],
 
   exports: [
     'config',
     'submitted',
+    'wizardClosing',
     'wizardController'
   ],
 
@@ -42,18 +44,24 @@ foam.CLASS({
       name: 'submitted',
       class: 'Boolean'
     },
-    'wizardController'
+    'wizardController',
+    {
+      class: 'Boolean',
+      name: 'wizardClosing'
+    }
   ],
   methods: [
     async function execute() {
-      this.wizardController = this.StepWizardController.create({
-        wizardlets: this.wizardlets,
+      this.wizardController = this.config.controller$create({
         config: this.config,
+        wizardlets: this.wizardlets,
         submitted$: this.submitted$,
         ...(this.initialPosition ? {
           wizardPosition: this.initialPosition
         } : {})
-      })
+      }, this.__subContext__);
+
+      this.wizardFlow.wizardController = this.wizardController;
       this.wizardlets.forEach(v => { v.wizardController$ = this.wizardController$ })
     }
   ]

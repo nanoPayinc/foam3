@@ -14,6 +14,14 @@ foam.CLASS({
 
 foam.CLASS({
   package: 'foam.u2.view',
+  name: 'NavigationMenu',
+  extends: 'foam.u2.view.MenuView',
+  mixins: ['foam.u2.view.NavButtonMixin'],
+  documentation: 'MenuView style to be used by nav components, typically differs drastically from other menuViews so is subclassed',
+});
+
+foam.CLASS({
+  package: 'foam.u2.view',
   name: 'NavigationOverlayButton',
   extends: 'foam.u2.view.OverlayActionListView',
   mixins: ['foam.u2.view.NavButtonMixin'],
@@ -42,6 +50,10 @@ foam.CLASS({
       class: 'foam.u2.ColorToken',
       name: 'NavButtonSelectedLabelColor',
       value: '$primary600'
+    },
+    {
+      name: 'NavButtonSelectedBackgroundColor',
+      value: '$NavButtonBackgroundColor$hover'
     }
   ],
   css: `
@@ -53,7 +65,7 @@ foam.CLASS({
       fill: $NavButtonBackgroundColor$hover$foreground;
     }
     ^:active, ^.selected {
-      background-color: $NavButtonBackgroundColor$hover;
+      background-color: $NavButtonSelectedBackgroundColor;
       color:  $NavButtonSelectedLabelColor;
     }
     ^:active svg,^.selected svg {

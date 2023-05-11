@@ -8,16 +8,6 @@ p({
   `
 })
 
-p({
-  "class": "foam.nanos.boot.NSpec",
-  "name": "socketServer",
-  "lazy": false,
-  "service": {
-    "class": "foam.box.socket.SocketServer",
-    "threadPoolName": "medusaThreadPool"
-  }
-})
-
 // deprecated by HealthWebAgent under service/health
 p({
   "class": "foam.nanos.boot.NSpec",
@@ -179,26 +169,6 @@ p({
 
 p({
   "class": "foam.nanos.boot.NSpec",
-  "name": "medusaReplayIssueDAO",
-  "serve": true,
-  "serviceScript": """
-    return new foam.dao.EasyDAO.Builder(x)
-      .setOf(foam.nanos.medusa.MedusaReplayIssue.getOwnClassInfo())
-      .setFuid(true)
-      .setCluster(false)
-      .setRuler(false)
-      .setEnableInterfaceDecorators(false)
-      .build();
-  """,
-  "client":"""
-  {
-    "of":"foam.nanos.medusa.MedusaReplayIssue"
-  }
-  """
-})
-
-p({
-  "class": "foam.nanos.boot.NSpec",
   "name": "clusterTopologyDAO",
   "serve": true,
   "serviceScript": """
@@ -225,6 +195,7 @@ p({
   "class": "foam.nanos.boot.NSpec",
   "name": "daggerService",
   "serve": false,
+  "lazy": false,
   "service": {"class":"foam.nanos.medusa.DefaultDaggerService"}
 })
 
@@ -249,6 +220,23 @@ p({
   "client": "{\"of\":\"foam.nanos.medusa.DaggerBootstrap\"}"
 })
 
+
+p({
+  "class": "foam.nanos.boot.NSpec",
+  "name": "compactionDAO",
+  "serve": true,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.nanos.medusa.Compaction.getOwnClassInfo())
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("compactions")
+      .setRuler(false)
+      .build()
+      .orderBy(foam.mlang.MLang.DESC(foam.nanos.medusa.Compaction.ID));
+  """,
+  "client": "{\"of\":\"foam.nanos.medusa.Compaction\"}"
+})
+
 // See deployment/mm and mn for type specific setup
 
 // p({
@@ -260,16 +248,16 @@ p({
 //   """
 // })
 
-// mm specific
+// mm specific - started by MedusaConsensusDAO
 // p({
 //   "class":"foam.nanos.boot.NSpec",
 //   "name":"medusaConsensusMonitor",
-//   "lazy":false,
 //   "service": {
 //     class:"foam.nanos.medusa.MedusaConsensusMonitor"
 //   }
 // })
 
+// Only required in localhost 2+2 setup
 // p({
 //   "class":"foam.nanos.boot.NSpec",
 //   "name":"clusterConfigMonitor",

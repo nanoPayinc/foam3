@@ -83,7 +83,7 @@ foam.CLASS({
 
         User anonymousUser = (User) ((DAO) x.get("localUserDAO")).find(serviceProvider.getAnonymousUser());
         if ( anonymousUser == null ) {
-          throw new AuthorizationException("Unable to find anonymous user.");
+          throw new AuthorizationException("Unable to find anonymous user: '" + serviceProvider.getAnonymousUser() + "'");
         }
 
         if ( session.getUserId() == anonymousUser.getId() ) return ((Subject) x.get("subject"));
@@ -114,6 +114,7 @@ foam.CLASS({
         // get user from session id
         User user = (User) ((DAO) getLocalUserDAO()).find(session.getUserId());
         user.validateAuth(x);
+
         // check if group enabled
         Group group = getCurrentGroup(x);
         if ( group != null && ! group.getEnabled() ) {
@@ -147,11 +148,13 @@ foam.CLASS({
         if ( user == null ) {
           throw new UserNotFoundException();
         }
-        // check that the user is active
-        assertUserIsActive(user);
+        user.validateAuth(x);
         // check if user enabled
         if ( ! user.getEnabled() ) {
           throw new AccessDeniedException();
+        }
+        if ( ! user.getEmailVerified() ) {
+          throw new UnverifiedEmailException();
         }
         // check if user login enabled
         if ( ! user.getLoginEnabled() ) {
@@ -173,6 +176,10 @@ foam.CLASS({
         }
 
         Session session = x.get(Session.class);
+        // check for two-factor authentication
+        if ( user.getTwoFactorEnabled() && ! session.getTwoFactorSuccess() ) {
+          throw new AuthenticationException("User requires two-factor authentication");
+        }
         // Re use the session context if the current session context's user id matches the id of the user trying to log in
         if ( session.getUserId() == user.getId() ) {
           return user;
@@ -228,12 +235,13 @@ foam.CLASS({
         // check whether user has permission to check group permissions
         if ( ! check(x, CHECK_USER_PERMISSION) ) throw new AuthorizationException();
         try {
+          Permission p = new AuthPermission(permission);
           while ( ! SafetyUtil.isEmpty(groupId) ) {
             Group group = (Group) ((DAO) getLocalGroupDAO()).find(groupId);
             // if group is null break
             if ( group == null ) break;
             // check permission
-            if ( group.implies(x, new AuthPermission(permission)) ) return true;
+            if ( group.implies(x, p) ) return true;
             // check parent group
             groupId = group.getParent();
           }
@@ -409,20 +417,20 @@ foam.CLASS({
         // Second highest precedence: If one user is acting as another, return the
         // group on the junction between them.
         if ( user != null ) {
-          if ( agent != null && agent.getId() != user.getId() ) {
-            DAO agentJunctionDAO = (DAO) x.get("agentJunctionDAO");
-            UserUserJunction junction = (UserUserJunction) agentJunctionDAO.find(
-              AND(
-                EQ(UserUserJunction.SOURCE_ID, agent.getId()),
-                EQ(UserUserJunction.TARGET_ID, user.getId())
-              )
-            );
-            if ( junction == null ) {
-              ((foam.nanos.logger.Logger) x.get("logger")).warning("There was a user and an agent in the context, but a junction between them was not found.", "user", user.getId(), "agent", agent.getId());
-              throw new RuntimeException("There was a user and an agent in the context, but a junction between them was not found.");
-            }
-            return (Group) ((DAO) getLocalGroupDAO()).inX(x).find(junction.getGroup());
-          }
+          // if ( agent != null && agent.getId() != user.getId() ) {
+          //   DAO agentJunctionDAO = (DAO) x.get("agentJunctionDAO");
+          //   UserUserJunction junction = (UserUserJunction) agentJunctionDAO.find(
+          //     AND(
+          //       EQ(UserUserJunction.SOURCE_ID, agent.getId()),
+          //       EQ(UserUserJunction.TARGET_ID, user.getId())
+          //     )
+          //   );
+          //   if ( junction == null ) {
+          //     ((foam.nanos.logger.Logger) x.get("logger")).warning("There was a user and an agent in the context, but a junction between them was not found.", "user", user.getId(), "agent", agent.getId());
+          //     throw new RuntimeException("There was a user and an agent in the context, but a junction between them was not found.");
+          //   }
+          //   return (Group) ((DAO) getLocalGroupDAO()).inX(x).find(junction.getGroup());
+          // }
           // Third highest precedence: If a user is logged in but not acting as
           // another user, return their group.
           return (Group) ((DAO) getLocalGroupDAO()).inX(x).find(user.getGroup());
@@ -463,7 +471,7 @@ foam.CLASS({
         ServiceProvider serviceProvider = (ServiceProvider) dao.find((String) x.get("spid"));
 
         if ( serviceProvider == null ||
-             serviceProvider.getAnonymousUser() == 0 || 
+             serviceProvider.getAnonymousUser() == 0 ||
              session == null ||
              user.getId() != serviceProvider.getAnonymousUser() )
              return false;

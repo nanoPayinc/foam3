@@ -48,7 +48,7 @@ foam.CLASS({
       factory: function() {
         let language = this.supportedLanguages.find( e => e.toString() === foam.locale )
         language = language === undefined ? this.defaultLanguage : language
-        foam.localStorage.setItem('localeLanguage', language.toString());
+        localStorage.setItem('localeLanguage', language.toString());
         return language;
       }
     },
@@ -68,6 +68,8 @@ foam.CLASS({
           arg2: true
         })).select()).array;
 
+      if ( this.supportedLanguages.length <= 1 ) return;
+
       var actionArray = this.supportedLanguages.map( c => {
         var labelSlot = foam.core.PromiseSlot.create({ value: '', promise: self.formatLabel(c) });
         return self.Action.create({
@@ -78,7 +80,7 @@ foam.CLASS({
             user.language = c.id;
             await self.userDAO.put(user);
             location.reload();
-            foam.localStorage.setItem('localeLanguage', c.toString());
+            localStorage.setItem('localeLanguage', c.toString());
           }
         });
       });

@@ -137,9 +137,8 @@ foam.CLASS({
       writePermissionRequired: true
     },
     {
-      class: 'Array',
+      class: 'StringArray',
       name: 'domains',
-      of: 'String',
       factory: function() {
         return  ['localhost'];
       },
@@ -184,7 +183,6 @@ foam.CLASS({
       documentation: 'Menu user redirects to before login.',
       of: 'foam.nanos.menu.Menu',
       section: 'navigation',
-      value: 'sign-in',
       writePermissionRequired: true
     },
     {
@@ -241,6 +239,11 @@ foam.CLASS({
       },
       section: 'images',
       writePermissionRequired: true
+    },
+    {
+      class: 'Boolean',
+      name: 'shouldResizeLogo',
+      documentation: 'Enables switching between largeLogo and logo in ApplicationLogoView'
     },
     {
       class: 'Image',
@@ -752,6 +755,11 @@ foam.CLASS({
       class: 'Boolean',
       name: 'showNavSearch',
       value: true
+    },
+    {
+      class: 'String',
+      name: 'emailLinkRedirect',
+      javaValue: `"/"`
     }
   ],
 

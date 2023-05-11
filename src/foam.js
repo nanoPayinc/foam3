@@ -62,7 +62,7 @@
       }
       return false;
     },
-    require: function(fn, batch, isProject) {
+    require: function(fn /* filename */, batch, isProject) {
       if ( fn ) {
         fn = foam.cwd + fn;
         if ( ! isProject && foam.seen(fn) ) return;
@@ -85,6 +85,7 @@
     },
     flags:       {},
     loaded:      {},
+    excluded:    {},
     seen:        function(fn) {
       if ( foam.loaded[fn] ) {
         console.warn(`Duplicated load of '${fn}'`);
@@ -123,22 +124,6 @@
       }
     },
     language: typeof navigator === 'undefined' ? 'en' : navigator.language,
-    localStorage: (function() {
-      try {
-        var test = '_test';
-        globalThis.localStorage.setItem(test, test);
-        globalThis.localStorage.removeItem(test);
-        return globalThis.localStorage;
-      } catch (e) {
-        var Storage = {
-          getItem:    function(k)    { return this[k] },
-          setItem:    function(k, v) { this[k] = v; },
-          removeItem: function(k)    { delete this[k]; },
-          clear:      function()     { for ( const k in this ) delete this[k];  }
-        };
-        return Object.create(Storage);
-      }
-    })(),
     next$UID: (function() {
       /* Return a unique id. */
       var id = 1;
@@ -184,6 +169,12 @@
           foam.require(name, ! isProjects, isProjects);
         });
       }
+
+      pom.exclude && pom.exclude.forEach(f => {
+        var path = foam.cwd + '/' + f + ".js";
+        console.log('**************** EXCLUDING', path);
+        foam.excluded[path] = true;
+      });
 
       // TODO: requireModule vs requireFile -> require
       (foam.loadModules || loadFiles)(pom.projects, true);

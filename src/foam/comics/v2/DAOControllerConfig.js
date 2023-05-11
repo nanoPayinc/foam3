@@ -42,6 +42,10 @@ foam.CLASS({
       }
     },
     {
+      name: 'disableSelection',
+      class: 'Boolean'
+    },
+    {
       class: 'String',
       name: 'daoKey'
     },
@@ -110,6 +114,18 @@ foam.CLASS({
       value: null
     },
     {
+      class: 'Reference',
+      of: 'foam.nanos.menu.Menu',
+      name: 'primaryMenu',
+      documentation: `
+        When provided overrides primary action to launch provided menu.
+      `,
+      postSet: function(_, n) {
+        this.primaryMenu$find.then(v => this.primaryAction = v)
+      },
+      value: null
+    },
+    {
       class: 'foam.u2.ViewSpec',
       name: 'createView',
       factory: function() {
@@ -165,34 +181,7 @@ foam.CLASS({
       factory: null,
       expression: function(of, tableColumns) {
         var tableSearchColumns = of.getAxiomByName('searchColumns');
-
-        var filteredDefaultColumns = tableColumns.filter(c => {
-          //  to account for nested columns like approver.legalName
-          if ( c.split('.').length > 1 ) return false;
-
-          var a = of.getAxiomByName(c);
-
-          if ( ! a ) console.warn("Column does not exist for " + of.name + ": " + c);
-
-          return a
-            && ! a.storageTransient
-            && ! a.networkTransient
-            && a.searchView
-            && ! a.hidden
-        });
-
-        var allProps = of.getAxiomsByClass(foam.core.Property).filter(p => {
-          return ! p.storageTransient
-            && ! p.networkTransient
-            && p.searchView
-            && ! p.hidden
-        })
-
-        return tableSearchColumns
-          ? tableSearchColumns.columns
-          : filteredDefaultColumns
-            ? filteredDefaultColumns
-            : allProps
+        return tableSearchColumns ? tableSearchColumns.columns : [];
       }
     },
     {
@@ -403,7 +392,10 @@ foam.CLASS({
     {
       class: 'Int',
       name: 'preSelectedCannedQuery'
+    },
+    {
+      class: 'String',
+      name: 'redirectMenu'
     }
   ]
 });
-

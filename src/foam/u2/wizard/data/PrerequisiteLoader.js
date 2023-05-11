@@ -14,7 +14,8 @@ foam.CLASS({
   ],
 
   imports: [
-    'capabilityToPrerequisite',
+    'capabilityToPrerequisite?',
+    'wizardController',
     'wizardletId',
     'wizardletOf',
     'wizardlets'
@@ -61,7 +62,12 @@ foam.CLASS({
     async function load({ old }) {
       let initialData = this.delegate ? await this.delegate.load({ old }) : old;
 
-      const prereqWizardlet = this.wizardlets.filter( wizardlet => wizardlet.id === this.prerequisiteCapabilityId )[0];
+      const prereqWizardlet = (this.wizardController?.wizardlets || this.wizardlets).find( wizardlet => wizardlet.id === this.prerequisiteCapabilityId );
+
+      if ( ! prereqWizardlet ) {
+        console.error(`prerequisiteCapabilityId: ${this.prerequisiteCapabilityId} not found`);
+        return;
+      }
 
       if ( ! prereqWizardlet.isAvailable ){
         if ( this.loadIntoPath ) {
@@ -102,7 +108,7 @@ foam.CLASS({
             `prerequisiteCapabilityId: ${this.prerequisiteCapabilityId}'s data returns null for the path ${this.loadFromPath.toString()}`,
           );
           if ( this.of ) {
-            return this.of.create({}, this);
+            return initialData || this.of.create({}, this);
           }
         }
 

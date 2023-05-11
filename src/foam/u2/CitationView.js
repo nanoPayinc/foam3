@@ -10,7 +10,7 @@ foam.CLASS({
   extends: 'foam.u2.View',
 
   axioms: [
-    foam.pattern.Faceted.create()
+    foam.pattern.Faceted.create({inherit: true})
   ],
 
   css: `
@@ -21,7 +21,7 @@ foam.CLASS({
     ^rw {
       background: $white;
       padding: 8px 16px;
-      color: /*%BALCK%*/ #424242;
+      color: $black;
     }
 
     ^rw:hover {
@@ -41,15 +41,14 @@ foam.CLASS({
     }
   ],
 
-  reactions: [
-    ['', 'propertyChange.data', 'updateSummary'],
-    ['data', 'propertyChange', 'updateSummary']
-  ],
-
   listeners: [
     {
       name: 'updateSummary',
       isFramed: true,
+      on: [
+        'data.propertyChange',
+        'this.propertyChange.data'//TODO check if we can delete it.
+      ],
       code: async function() {
         let newSummary;
 

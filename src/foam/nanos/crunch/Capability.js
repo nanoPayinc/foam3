@@ -25,6 +25,8 @@ foam.CLASS({
     'foam.nanos.auth.LifecycleState',
     'foam.nanos.auth.Subject',
     'foam.nanos.auth.User',
+    'foam.nanos.crunch.edit.EditBehaviour',
+    'foam.nanos.crunch.edit.NullEditBehaviour',
     'foam.nanos.logger.Logger',
     'java.util.Date',
     'java.util.List',
@@ -250,6 +252,14 @@ foam.CLASS({
       view: { class: 'foam.u2.CheckBox', showLabel: false }
     },
     {
+      class: 'FObjectProperty',
+      javaType: 'foam.nanos.crunch.edit.EditBehaviour',
+      name: 'editBehaviour',
+      javaFactory: `
+        return new foam.nanos.crunch.edit.NullEditBehaviour();
+      `
+    },
+    {
       name: 'associatedEntity',
       class: 'Enum',
       of: 'foam.nanos.crunch.AssociatedEntity',
@@ -265,52 +275,6 @@ foam.CLASS({
       javaFactory: `
         return foam.nanos.crunch.AssociatedEntity.USER;
       `
-    },
-    {
-      class: 'Object',
-      name: 'wizardlet',
-      type: 'foam.lib.json.UnknownFObject',
-      javaJSONParser: 'new foam.lib.json.UnknownFObjectParser()',
-      documentation: `
-        Defines a wizardlet to display this capability in a wizard. This
-        wizardlet will display after this capability's prerequisites.
-      `,
-      hidden: true,
-      factory: function() {
-        return foam.nanos.crunch.ui.CapabilityWizardlet.create({}, this);
-      },
-      includeInDigest: false,
-    },
-    {
-      class: 'Object',
-      name: 'beforeWizardlet',
-      hidden: true,
-      documentation: `
-        A wizardlet to display before this capability's prerequisites, and only
-        if this capability is at the end of a prerequisite group returned by
-        CrunchService's getCapabilityPath method.
-      `
-    },
-    {
-      class: 'FObjectProperty',
-      of: 'foam.u2.crunch.EasyCrunchWizard',
-      name: 'wizardConfig',
-      type: 'foam.lib.json.UnknownFObject',
-      javaJSONParser: 'new foam.lib.json.UnknownFObjectParser()',
-      documentation: `
-        Configuration placed on top level capabilities defining various
-        configuration options supported by client capability wizards.
-      `,
-      includeInDigest: false,
-      factory: function() {
-        return this.EasyCrunchWizard.create({}, this);
-      },
-      adapt: function(_, n) {
-        if ( foam.lib.json.UnknownFObject.isInstance(n) && n.json ) {
-          n = foam.lookup(n.json.class).create(n.json);
-        }
-        return n
-      }
     },
     {
       name: 'requirementViewTitle',
@@ -383,7 +347,7 @@ foam.CLASS({
       name: 'toSummary',
       type: 'String',
       code: function() {
-        return this.name;
+        return this.name || this.id;
       },
       javaCode: `
         return getName();
@@ -392,9 +356,7 @@ foam.CLASS({
     {
       name: 'grantsPermission',
       type: 'Boolean',
-      args: [
-        { name: 'permission', type: 'String' }
-      ],
+      args: 'X x, String permission',
       documentation: `Checks if a permission or capability string is implied by the current capability`,
       javaCode: `
         if ( getLifecycleState() == LifecycleState.DELETED || getLifecycleState() == LifecycleState.REJECTED ) return false;
@@ -416,7 +378,7 @@ foam.CLASS({
       ],
       documentation: `Checks if a permission or capability string is implied by the current capability or its prereqs`,
       javaCode: `
-        if ( this.grantsPermission(permission) ) return true;
+        if ( this.grantsPermission(x, permission) ) return true;
         return this.prerequisiteImplies(x, permission);
       `
     },
@@ -531,7 +493,7 @@ foam.CLASS({
         boolean reviewRequired = getReviewRequired();
         CapabilityJunctionStatus prereqStatus = prereq.getStatus();
 
-        switch ( (CapabilityJunctionStatus) prereqStatus ) {
+        switch ( prereqStatus ) {
           case AVAILABLE :
             status = CapabilityJunctionStatus.ACTION_REQUIRED;
             break;
@@ -561,11 +523,15 @@ foam.CLASS({
             // in this status
             status = CapabilityJunctionStatus.ACTION_REQUIRED;
             break;
+          case REJECTED :
+            // can occur if approval request is rejected
+            status = CapabilityJunctionStatus.ACTION_REQUIRED;
+            break;
           default :
             status = CapabilityJunctionStatus.GRANTED;
         }
-        return status;
 
+        return status;
       `
     },
     {

@@ -27,6 +27,11 @@ foam.CLASS({
 
   properties: [
     {
+      class: 'FObjectArray',
+      of: 'foam.nanos.boot.NSpec',
+      name: 'extraServices'
+    },
+    {
       class: 'Boolean',
       name: 'authenticate',
       value: true
@@ -67,7 +72,7 @@ foam.CLASS({
             package:    'foam.nanos.client',
             name:       'Client',
             exports:    [],
-            constants: { eagerClients_: [] },
+            constants:  { eagerClients_: [] },
             properties: [
             ],
             methods: [
@@ -95,14 +100,14 @@ foam.CLASS({
             });
 
             var version = appConfig.version;
-            if ( 'CLIENT_VERSION' in foam.localStorage ) {
-              var oldVersion = foam.localStorage.CLIENT_VERSION;
+            if ( 'CLIENT_VERSION' in localStorage ) {
+              var oldVersion = localStorage.CLIENT_VERSION;
               if ( version != oldVersion ) {
-                foam.localStorage.CLIENT_VERSION = version;
+                localStorage.CLIENT_VERSION = version;
                 location.reload(true);
               }
             } else {
-              foam.localStorage.CLIENT_VERSION = version;
+              localStorage.CLIENT_VERSION = version;
             }
           });
 
@@ -115,9 +120,9 @@ foam.CLASS({
           let nspec = foam.nanos.boot.NSpec;
 
           self.nSpecDAO.where(query).select(
-            foam.mlang.Expressions.create().PROJECTION(nspec.NAME, nspec.CLIENT, nspec.LAZY_CLIENT))
+            self.PROJECTION(nspec.NAME, nspec.CLIENT, nspec.LAZY_CLIENT))
             .then(p => {
-              foam.dao.ArrayDAO.create({array: p.array})
+              foam.dao.ArrayDAO.create({array: p.array.concat(self.extraServices)})
               .select({
                 put: function(spec) {
                   if ( spec.client ) {
@@ -128,7 +133,7 @@ foam.CLASS({
                     try {
                       json = JSON.parse(spec.client);
                     } catch (err) {
-                      console.error('invalid nspec.client', spec.client, err);
+                      self.error('invalid nspec.client', spec.client, err);
                     }
 
                     if ( ! spec.lazyClient )
@@ -146,8 +151,7 @@ foam.CLASS({
                           return null;
                         }
                         var defaults = {
-                          serviceName: 'service/' + spec.name,
-                          retryBoxMaxAttempts: 0
+                          serviceName: 'service/' + spec.name
                         };
                         if ( cls == foam.dao.EasyDAO ) {
                           defaults.cache              = true;

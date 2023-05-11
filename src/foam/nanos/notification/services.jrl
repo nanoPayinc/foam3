@@ -1,27 +1,26 @@
+// not lazy as needed by notification system during startup.
 p({
   "class": "foam.nanos.boot.NSpec",
   "name": "localNotificationDAO",
   "lazy": false,
-  "serve": false,
   "serviceScript": """
     mdao = new foam.dao.MDAO(foam.nanos.notification.Notification.getOwnClassInfo());
     mdao.addIndex(new foam.core.PropertyInfo[] { foam.nanos.notification.Notification.GROUP_ID,foam.nanos.notification.Notification.READ });
     mdao.addIndex(new foam.core.PropertyInfo[] { foam.nanos.notification.Notification.BROADCASTED,foam.nanos.notification.Notification.READ });
     mdao.addIndex(new foam.core.PropertyInfo[] { foam.nanos.notification.Notification.USER_ID,foam.nanos.notification.Notification.READ });
     mdao.addIndex(new foam.core.PropertyInfo[] { foam.nanos.notification.Notification.EXPIRY_DATE });
+    mdao.addIndex(new foam.core.PropertyInfo[] { foam.nanos.notification.Notification.CREATED });
 
     return new foam.dao.EasyDAO.Builder(x)
       .setOf(foam.nanos.notification.Notification.getOwnClassInfo())
       .setMdao(mdao)
       .setAuthorize(false)
       .setPm(true)
-      .setSeqNo(true)
-      .setDecorator(
-        new foam.nanos.notification.NotificationTemplateDAO.Builder(x)
-          .setDelegate(new foam.nanos.notification.NotificationExpansionDAO.Builder(x).build())
-          .build())
+      .setFuid(true)
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("notifications")
+      .setSAF(true)
+      .setWaitReplay(false)
       .setFixedSize(new foam.dao.FixedSizeDAO.Builder(x)
         .setComparator(foam.mlang.MLang.COMPOUND(new foam.mlang.order.Comparator[] {
           foam.mlang.MLang.DESC(foam.nanos.notification.Notification.CREATED),
@@ -43,9 +42,18 @@ p({
       .setOf(foam.nanos.notification.Notification.getOwnClassInfo())
       .setAuthorize(true)
       .setInnerDAO((foam.dao.DAO) x.get("localNotificationDAO"))
+      .setDecorator(
+        new foam.nanos.notification.NotificationTemplateDAO.Builder(x)
+          .setDelegate(new foam.nanos.notification.NotificationExpansionDAO.Builder(x)
+            .setDelegate(new foam.dao.NullDAO(x, foam.nanos.notification.Notification.getOwnClassInfo()))
+            .build())
+          .build())
       .setEnableInterfaceDecorators(false)
+      .setOrder(new foam.mlang.order.Comparator[] {
+        new foam.mlang.order.Desc.Builder(x).setArg1(foam.nanos.notification.Notification.CREATED).build()
+      })
       .build();
-  """,
+""",
   "client": "{\"of\":\"foam.nanos.notification.Notification\"}"
 })
 
@@ -100,7 +108,8 @@ p({
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("notificationTemplates")
       .setOf(foam.nanos.notification.Notification.getOwnClassInfo())
-      .build();
+      .build()
+      .addPropertyIndex(new foam.core.PropertyInfo[] {foam.nanos.notification.Notification.TEMPLATE});
     """,
     "client":"{\"of\":\"foam.nanos.notification.Notification\"}"
 })
@@ -185,18 +194,24 @@ p({
 })
 
 p({
-  "class":"foam.nanos.boot.NSpec",
-  "name":"pop3",
-  "lazy":true,
-  "serve":true,
-  "boxClass":"foam.nanos.notification.email.POP3EmailSkeleton",
-  "serviceClass":"foam.nanos.notification.email.POP3EmailService",
-  "client":"{ \"class\":\"foam.nanos.notification.email.ClientPOP3EmailService\", \"delegate\": { \"class\":\"foam.box.HTTPBox\", \"url\":\"service/pop3\" } }"
-})
-
-p({
-  "class":"foam.nanos.boot.NSpec",
-  "name":"SMTPConfig",
-  "lazy": false,
-  "service":{"class":"foam.nanos.notification.email.SMTPConfig"}
+  "class": "foam.nanos.boot.NSpec",
+  "name": "resendNotificationService",
+  "serve": true,
+  "authenticate": true,
+  "boxClass":"foam.nanos.notification.ResendNotificationServiceInterfaceSkeleton",
+  "serviceClass": "foam.nanos.notification.ResendNotificationService",
+  "client":
+    """
+      {
+        "class":"foam.nanos.notification.ClientResendNotificationService",
+        "delegate": {
+          "class":"foam.box.SessionClientBox",
+          "delegate": {
+            "class":"foam.box.HTTPBox",
+            "url":
+            "service/resendNotificationService"
+          }
+        }
+      }
+    """
 })

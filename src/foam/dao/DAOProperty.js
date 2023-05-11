@@ -44,7 +44,31 @@ foam.CLASS({
       name: 'adapt',
       value: function(o, v, prop) {
         if ( ! v ) return;
-        if ( foam.String.isInstance(v) && this.__subContext__ ) return this.__subContext__[v];
+        if ( foam.String.isInstance(v) && this.__subContext__ ) {
+          // First, try to find in context
+          let result = this.__subContext__[v];
+          if ( result ) return result;
+
+          // Second, treat like dotted path and follow path from context
+          const path = v.split('.');
+          result = this.__subContext__;
+
+          for ( const part of path ) {
+            // Return 'undefined' as soon as the path is broken
+            if ( ! result[part] ) return;
+
+            result = result[part];
+          }
+
+          return result;
+        }
+        if ( foam.Array.isInstance(v) && v.length ) {
+          var dao = new foam.dao.MDAO.create({of: v[0].cls})
+
+          v.forEach(i => dao.put(i));
+
+          return dao;
+        }
         return foam.core.FObjectProperty.ADAPT.value.call(this, o, v, prop);
       }
     }

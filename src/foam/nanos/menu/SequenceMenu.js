@@ -37,6 +37,7 @@ foam.CLASS({
       for (let fluentSpec of this.sequence) {
         fluentSpec.apply(sequence);
       }
+
       return sequence.execute();
     }
   ]

@@ -12,19 +12,25 @@ foam.CLASS({
   documentation: `Response to ReplayCmd on Node`,
 
   javaImports: [
+    'foam.core.Agency',
+    'foam.core.ContextAgent',
+    'foam.core.Detachable',
     'foam.core.FObject',
     'foam.core.X',
+    'foam.dao.AbstractSink',
     'foam.dao.DAO',
     'foam.dao.Journal',
     'foam.dao.ProxyDAO',
     'foam.dao.NullDAO',
     'foam.dao.Sink',
+    'foam.mlang.MLang',
     'static foam.mlang.MLang.AND',
     'static foam.mlang.MLang.GT',
     'static foam.mlang.MLang.GTE',
     'static foam.mlang.MLang.LTE',
     'static foam.mlang.MLang.MAX',
     'static foam.mlang.MLang.MIN',
+    'static foam.mlang.MLang.TRUE',
     'foam.mlang.predicate.Predicate',
     'foam.mlang.sink.Count',
     'foam.mlang.sink.Max',
@@ -32,15 +38,19 @@ foam.CLASS({
     'foam.mlang.sink.Sequence',
     'foam.nanos.logger.Logger',
     'foam.nanos.logger.Loggers',
+    'foam.nanos.om.OMLogger',
+    'foam.nanos.pm.PM',
+    'java.time.Duration',
     'java.util.HashMap',
-    'java.util.Map'
+    'java.util.Map',
+    'java.util.concurrent.atomic.AtomicBoolean'
   ],
 
   properties: [
     {
       name: 'maxRetryAttempts',
       class: 'Int',
-      value: 12
+      value: 8
     },
     {
       name: 'journal',
@@ -48,82 +58,121 @@ foam.CLASS({
       of: 'foam.dao.Journal'
     },
     {
-      name: 'clients',
+      name: 'replaysInProgress',
       class: 'Map',
       javaFactory: 'return new HashMap();'
     }
   ],
 
+  javaCode: `
+  Object lock_ = new Object();
+  `,
+
   methods: [
     {
       name: 'cmd_',
       javaCode: `
+      final Logger logger = Loggers.logger(x, this, "cmd", obj.getClass().getSimpleName());
       if ( obj instanceof ReplayDetailsCmd ) {
+        ((foam.nanos.om.OMLogger) x.get("OMLogger")).log(obj.getClass().getSimpleName());
         ReplayDetailsCmd details = (ReplayDetailsCmd) obj;
+        logger.info("request", details);
+
         ReplayingInfo info = (ReplayingInfo) x.get("replayingInfo");
         details.setMinIndex(info.getMinIndex());
-        details.setMaxIndex(info.getMaxIndex());
+        details.setMaxIndex(info.getIndex());
         details.setCount(info.getCount());
 
-        ((Logger) x.get("logger")).info(this.getClass().getSimpleName(), "cmd", "ReplayDetailsCmd", "requester", details.getRequester(), "min", details.getMinIndex(), "max", details.getMaxIndex(), "count", details.getCount());
+        logger.info("response", details);
 
         return details;
       }
 
       if ( obj instanceof ReplayCmd ) {
-        Logger logger = Loggers.logger(x, this, "cmd", "ReplayCmd");
-        ReplayCmd cmd = (ReplayCmd) obj;
-        ReplayDetailsCmd details = (ReplayDetailsCmd) cmd.getDetails();
-        ReplayingInfo info = (ReplayingInfo) x.get("replayingInfo");
-        long indexAtStart = info.getIndex();
+        final ClusterConfigSupport support = (ClusterConfigSupport) x.get("clusterConfigSupport");
+        ((OMLogger) x.get("OMLogger")).log(obj.getClass().getSimpleName());
+        final ReplayCmd cmd = (ReplayCmd) obj;
+        final ReplayDetailsCmd details = (ReplayDetailsCmd) cmd.getDetails();
+        final ReplayingInfo info = (ReplayingInfo) x.get("replayingInfo");
 
-        logger.info("requester", details.getRequester(), "min", details.getMinIndex(), "max", details.getMaxIndex());
+        logger.info("request", details.getRequester(), "min", details.getMinIndex(), "max", details.getMaxIndex());
 
-        ClusterConfigSupport support = (ClusterConfigSupport) x.get("clusterConfigSupport");
-        ClusterConfig fromConfig = support.getConfig(x, support.getConfigId());
-        ClusterConfig toConfig = support.getConfig(x, details.getRequester());
-        if ( details.getMinIndex() <= info.getMaxIndex() ) {
+        final ClusterConfig fromConfig = support.getConfig(x, support.getConfigId());
+        final ClusterConfig toConfig = support.getConfig(x, details.getRequester());
+        if ( details.getMinIndex() <= info.getIndex() ) {
+         Agency agency = (Agency) x.get(support.getThreadPoolName());
+          agency.submit(x, new ContextAgent() {
+            public void execute(X x) {
+              ((OMLogger) x.get("OMLogger")).log("ReplayCmd", details.getRequester());
+              PM pm = PM.create(x, "ReplayNodeDAO", "ReplayCmd");
 
-          DAO clientDAO = (DAO) getClients().get(details.getRequester());
-          if ( clientDAO != null ) {
-            logger.info("cancel previous from", details.getRequester());
-            // REVIEW: have replay write to null dao. How to cancel replay?
-            // TODO: need the same support cache. For now expect cache to be small.
-            clientDAO.cmd_(x, RetryClientSinkDAO.CANCEL_RETRY_CMD);
-            ((ProxyDAO)clientDAO).setDelegate(new NullDAO(x, MedusaEntry.getOwnClassInfo()));
-          }
-          clientDAO = new RetryClientSinkDAO(x, getMaxRetryAttempts(), support.getBroadcastClientDAO(x, cmd.getServiceName(), fromConfig, toConfig));
-          getClients().put(details.getRequester(), clientDAO);
+              Predicate p = null;
+              if ( details.getMinIndex() > info.getMinIndex() ) {
+                p = GTE(MedusaEntry.INDEX, details.getMinIndex());
+              }
+              if ( details.getMaxIndex() > 0 &&
+                   details.getMaxIndex() < info.getIndex() ) {
+                if ( p == null ) {
+                  p = LTE(MedusaEntry.INDEX, details.getMaxIndex());
+                } else {
+                  p = AND(
+                       p,
+                       LTE(MedusaEntry.INDEX, details.getMaxIndex())
+                    );
+                }
+              }
+              if ( p == null ) {
+                p = TRUE;
+              }
 
-          Min min = (Min) MIN(MedusaEntry.INDEX);
-          Count count = new Count();
-          Sequence seq = new Sequence.Builder(x)
-            .setArgs(new Sink[] {count, min})
-            .build();
+              long startTime = 0L;
+              DAO clientDAO = new RetryClientSinkDAO(x, getMaxRetryAttempts(), support.getBroadcastClientDAO(x, cmd.getServiceName(), fromConfig, toConfig));
+              DAO cacheDAO = (DAO) x.get("medusaNodeDAO");
+              // use cache if it has min max range.
+              if ( ! TRUE.equals(p) &&
+                   details.getMinIndex() > 0 &&
+                   details.getMaxIndex() > 0 &&
+                   cacheDAO.find(details.getMinIndex()) != null &&
+                   cacheDAO.find(details.getMaxIndex()) != null ) {
+                logger.info("cache,select,start", details.getRequester(), p);
+                startTime = System.currentTimeMillis();
+                cacheDAO.where(p).select(new SetNodeSink(x, (Sink) clientDAO));
+                logger.info("cache,select,end", details.getRequester(), Duration.ofMillis(System.currentTimeMillis() - startTime));
+              } else {
+                synchronized ( lock_ ) {
+                  AtomicBoolean ab = (AtomicBoolean) getReplaysInProgress().get(details.getRequester());
+                  if ( ab == null ) {
+                    ab = new AtomicBoolean(false);
+                    getReplaysInProgress().put(details.getRequester(), ab);
+                  }
+                  if ( ab.get() ) {
+                    logger.info("journal,select,already in progress,ignoring request", details.getRequester(), p);
+                    return;
+                  } else {
+                    ab.set(true);
+                  }
+                }
+                try {
+                  logger.info("journal,select,start", details.getRequester(), p);
+                  startTime = System.currentTimeMillis();
+                  getJournal().replay(x, new PredicatedPutDAO(x, p, new MedusaSetNodeDAO(x, clientDAO)));
+                  logger.info("journal,select,end", details.getRequester(), Duration.ofMillis(System.currentTimeMillis() - startTime));
 
-          // cache - mdao (cache, fixed size, last x received)
-          // this includes storageTransient entries
-          DAO cache = (DAO) x.get("medusaNodeDAO");
-          cache.select(seq);
-
-          Predicate p = GTE(MedusaEntry.INDEX, details.getMinIndex());
-          if ( details.getMaxIndex() > 0 ) {
-            p = AND(
-                   p,
-                   LTE(MedusaEntry.INDEX, details.getMaxIndex())
-                );
-          }
-
-          // if ( ((Long) count.getValue()) > 0 &&
-          //      min.getValue() != null &&
-          //      details.getMinIndex() >= (Long) min.getValue() ) {
-            cache.where(p).select(new SetNodeSink(x, new RetryClientSinkDAO(x, getMaxRetryAttempts(), support.getBroadcastClientDAO(x, cmd.getServiceName(), fromConfig, toConfig))));
-          // } else {
-            getJournal().replay(x, new MedusaSetNodeDAO(x, clientDAO).where(p));
-            cache.where(p).select(new SetNodeSink(x, new RetryClientSinkDAO(x, getMaxRetryAttempts(), support.getBroadcastClientDAO(x, cmd.getServiceName(), fromConfig, toConfig))));
-          // }
+                  // cache of last x received, including storage transient
+                  logger.info("cache,select,start", details.getRequester());
+                  startTime = System.currentTimeMillis();
+                  cacheDAO.select(new SetNodeSink(x, (Sink) clientDAO));
+                  logger.info("cache,select,end", details.getRequester(), Duration.ofMillis(System.currentTimeMillis() - startTime));
+                } finally {
+                  AtomicBoolean ab = (AtomicBoolean) getReplaysInProgress().get(details.getRequester());
+                  ab.set(false);
+                }
+              }
+              pm.log(x);
+            }
+          }, "ReplayNodeDAO-replay");
         } else {
-          logger.info("requester", cmd.getDetails().getRequester(), "requested min", cmd.getDetails().getMinIndex(), "greater than local max", info.getMaxIndex());
+          logger.info("requester", cmd.getDetails().getRequester(), "requested min", cmd.getDetails().getMinIndex(), "greater than local max", info.getIndex());
         }
         return cmd;
       }
@@ -131,12 +180,10 @@ foam.CLASS({
       if ( obj instanceof foam.mlang.sink.Max ) {
         Max max = (Max) getDelegate().select((Max) obj);
         if ( max != null ) {
-          ((Logger) x.get("logger")).info(this.getClass().getSimpleName(), "cmd", "Max", "response", max.getValue());
+          logger.info("response", max.getValue());
         }
         return max;
       }
-
-      obj = getJournal().cmd(x, obj);
 
       return getDelegate().cmd_(x, obj);
       `

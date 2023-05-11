@@ -23,6 +23,7 @@ foam.CLASS({
     'popupMode',
     'flowAgent?',
     'stack',
+    'wizardClosing',
     'wizardController?'
   ],
 
@@ -43,48 +44,31 @@ foam.CLASS({
         return this.importedConfig || this.StepWizardConfig.create();
       }
     },
-    'wizardStackBlock'
+    'wizardStackBlock',
+    'lastLastActiveWizard'
   ],
 
   methods: [
     async function execute() {
-      if ( ! this.wizardController || ! this.config )
-        console.warn('Missing controller or config');
-      const usingFormController = this.config && this.config.controller;
-
-      window.lastWizardController = this.wizardController;
-
-      const controller = usingFormController ?
-        this.config.controller$create() : this.wizardController;
-
-      const view = usingFormController ? {
-        // new approach
-        ...controller.defaultView,
-        data: controller
-      } : {
-        // deprecated
-        ...this.config.wizardView
+      const view = {
+        ...this.wizardController.defaultView,
+        data: this.wizardController
       };
 
-      // Temporary; NP-7869 should remove this
-      if ( usingFormController ) {
-        controller.data = this.wizardController;
-      }
 
-      view.data = controller;
-      controller.onClose = this.resolveAgent;
-      view.onClose = this.resolveAgent;
+      this.onDetach(this.wizardController.status$.sub(() => {
+        const v = this.wizardController.status;
+        if ( v == this.WizardStatus.IN_PROGRESS ) return;
+        this.resolveAgent();
+        this.wizardController.onClose();
+      }));
 
       if ( (view?.class || view?.cls_?.id).endsWith('ScrollingStepWizardView') ) {
         this.wizardController.autoPositionUpdates = false;
       }
 
-      if ( ! this.wizardController.wizardlets[this.wizardController.wizardPosition?.wizardletIndex || 0].isVisible ) {
-        await this.wizardController.next();
-      }
-
-      if ( usingFormController ) {
-        await controller.setFirstPosition();
+      if ( this.wizardController.setFirstPosition ) {
+        await this.wizardController.setFirstPosition();
       }
 
       this.wizardStackBlock = this.StackBlock.create({
@@ -100,6 +84,8 @@ foam.CLASS({
         }));
 
         this.wizardStackBlock.removed.sub(() => {
+          this.crunchController.lastActiveWizard = this.lastLastActiveWizard;
+          this.wizardClosing = true;
           if ( this.wizardController.status == this.WizardStatus.IN_PROGRESS ) {
             this.wizardController.status = this.WizardStatus.DISCARDED;
           }
@@ -112,6 +98,7 @@ foam.CLASS({
         })
 
         if ( this.crunchController ) {
+          this.lastLastActiveWizard = this.crunchController.lastActiveWizard;
           this.crunchController.lastActiveWizard = this.wizardController;
         }
         this.stack.push(this.wizardStackBlock);
@@ -120,6 +107,8 @@ foam.CLASS({
   ],
   listeners: [
     function resolveAgent() {
+      if ( this.wizardClosing ) return;
+      this.wizardClosing = true;
       if ( this.stack.BACK.isEnabled(this.stack.pos) )
         this.stack.back();
       else

@@ -15,10 +15,13 @@ foam.CLASS({
   `,
 
   imports: [
-    'menuDAO'
+    'currentMenu',
+    'menuDAO',
+    'pushMenu'
   ],
 
   requires: [
+    'foam.nanos.menu.Menu',
     'foam.nanos.menu.VerticalMenu',
     'foam.nanos.u2.navigation.NotificationMenuItem',
     'foam.nanos.auth.LanguageChoiceView',
@@ -30,13 +33,20 @@ foam.CLASS({
       name: 'bottomContainerColor',
       value: '$foam.nanos.menu.VerticalMenu.menuBackground',
       fallback: '#FFFFFF'
+    },
+    {
+      name: 'boxShadowSize',
+      value: '0px -1px 2px rgba(0, 0, 0, 0.06), 0px -1px 3px rgba(0, 0, 0, 0.1)',
+    },
+    {
+      name: 'borderSize',
+      value: '2px solid $grey300',
     }
   ],
 
   css: `
     ^ {
       align-items: flex-start;
-      border-right: 1px solid $grey300;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -47,37 +57,47 @@ foam.CLASS({
       background: $bottomContainerColor;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      padding: 16px;
+      justify-content: flex-start;
+      padding: 16px 0;
       position: sticky;
       width: 100%;
       z-index: 10;
     }
     ^bottom-container {
       bottom: 0;
+      transition: all 0.2s ease;
     }
     ^top-container {
       top: 0;
     }
-    ^divider {
-      border-top: 2px solid $grey300;
-      box-shadow: 0px -1px 2px rgba(0, 0, 0, 0.06), 0px -1px 3px rgba(0, 0, 0, 0.1);
+    ^divider:not(^expand) {
+      border-top: $borderSize;
+      box-shadow: $boxShadowSize;
     }
     ^bottom-container > * + * {
       margin-top: 4px;
     }
     ^menu-container {
       flex: 1;
+      transition: all 0.2s ease;
     }
     ^logo {
       flex: 1;
+      padding: 0 16px;
     }
     ^menu-container.foam-nanos-menu-VerticalMenu {
       padding: 0px;
       border-right: none;
     }
-    ^padding.foam-nanos-menu-VerticalMenu {
+    ^padding.foam-nanos-menu-VerticalMenu:not(^collapse) {
       padding-top: 16px;
+    }
+    ^collapse {
+      flex: 0;
+      padding: 0px;
+    }
+    ^expand {
+      flex: 1;
     }
   `,
   properties: [
@@ -88,6 +108,9 @@ foam.CLASS({
     {
       name: 'showLogo',
       class: 'Boolean'
+    },
+    {
+      name: 'bottomRoot_'
     }
   ],
   methods: [
@@ -96,7 +119,7 @@ foam.CLASS({
       this.checkNotificationAccess();
       this.addClass()
         .add(this.slot(function(showLogo) {
-          return showLogo ? self.E().addClasses([this.myClass('sticky-container'), this.myClass('top-container')])
+          return showLogo ? self.E().addClass(this.myClass('sticky-container'), this.myClass('top-container'))
           .start({ class: 'foam.nanos.u2.navigation.ApplicationLogoView' })
             .addClass(self.myClass('logo'))
             .on('click', () => {
@@ -106,23 +129,45 @@ foam.CLASS({
         }))
         .start(this.VerticalMenu)
           .addClass(this.myClass('menu-container'))
+          .enableClass(this.myClass('collapse'), this.bottomRoot_$.map(v => !! v))
           .enableClass(this.myClass('padding'), this.showLogo$.not())
         .end()
         .start()
-          .addClasses([this.myClass('sticky-container'), this.myClass('bottom-container')])
+          .addClass(this.myClass('sticky-container'), this.myClass('bottom-container'))
           // TODO: make this enableClass based on scroll pos
           .addClass(this.myClass('divider'))
-          .start(this.NotificationMenuItem, { showText: true })
-            .show(this.hasNotifictionMenuPermission$)
+          .enableClass(this.myClass('expand'), this.bottomRoot_$.map(v => !! v))
+          .start({
+            class: 'foam.u2.view.NestedTreeView',
+            data: self.menuDAO.where(self.EQ(self.Menu.ENABLED, true)),
+            relationship: foam.nanos.menu.MenuMenuChildrenRelationship,
+            startExpanded: false,
+            onClickAddOn: function(data, hasChildren) { self.openMenu(data, hasChildren); },
+            selection$: self.currentMenu$.map(m => m),
+            formatter: function(data) {
+              this.translate(data.id + '.label', data.label);
+            },
+            defaultRoot: 'user-config',
+            currentRoot$: this.bottomRoot_$,
+            rowConfig: {
+              'notifications': { class: 'foam.nanos.u2.navigation.NotificationMenuItem', showText: true },
+              'settings': { class: 'foam.nanos.u2.navigation.UserInfoView', horizontal: true }
+            }
+          })
+            .addClass(this.myClass('menuList'))
+            
           .end()
-          .tag(this.LanguageChoiceView, { longName: true })
-          .tag(this.UserInfoNavigationView, { horizontal: true })
         .end();
     },
     function checkNotificationAccess() {
       this.menuDAO.find('notifications').then(bb=>{
         this.hasNotifictionMenuPermission = bb;
       });
+    },
+    function openMenu(menu, hasChildren) {
+      if ( menu.handler ) {
+        this.pushMenu(menu, true);
+      }
     }
   ]
 });

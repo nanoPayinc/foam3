@@ -34,7 +34,15 @@ foam.CLASS({
   ],
 
   methods: [
+    function hasImports(cls) {
+      return cls.getAxiomsByClass(foam.core.Import).length > 0;
+    },
+
     function installInClass(cls) {
+      if ( this.hasImports(cls) ) {
+        console.error('Invalid use of Singleton on Class with imports: ', cls.id);
+        return;
+      }
       /** @param {any} cls */
       var oldCreate = cls.create;
       var newCreate = cls.create = function() {
@@ -48,6 +56,8 @@ foam.CLASS({
     },
 
     function installInProto(p) {
+      if ( this.hasImports(p.cls_) ) return;
+
       // Not needed, but improves performance.
       p.clone  = function() { return this; };
       p.equals = function(o) { /** @param {any=} o */ return this === o; };

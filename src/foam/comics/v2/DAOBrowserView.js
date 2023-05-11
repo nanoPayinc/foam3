@@ -9,6 +9,10 @@ foam.CLASS({
   name: 'DAOBrowserView',
   extends: 'foam.u2.View',
 
+  documentation: `
+    A scrolling table view customized for the inline DAOController
+    with canned queries and a searchbar
+  `,
 
   requires: [
     'foam.comics.SearchMode',
@@ -31,10 +35,12 @@ foam.CLASS({
     'foam.mlang.Expressions'
   ],
 
-  documentation: `
-    A scrolling table view customized for the inline DAOController
-    with canned queries and a searchbar
-  `,
+  cssTokens: [
+    {
+      name: 'borderSize',
+      value: '1px solid'
+    }
+  ],
 
   css: `
     ^wrapper {
@@ -113,19 +119,19 @@ foam.CLASS({
       width: 100%;
       height: 34px;
       border-radius: 0 5px 5px 0;
-      border: 1px solid;
+      border: $borderSize;
     }
   `,
 
   messages: [
     { name: 'REFRESH_MSG', message: 'Refresh Requested... ' },
-    { name: 'ACTIONS', message: 'Actions' }
+    { name: 'ACTIONS',     message: 'Actions' }
   ],
 
   imports: [
     'auth',
     'ctrl',
-    'displayWidth',
+    'displayWidth?',
     'exportDriverRegistryDAO',
     'stack?'
   ],
@@ -152,14 +158,15 @@ foam.CLASS({
       of: 'foam.comics.v2.DAOControllerConfig',
       name: 'config',
       factory: function() {
-        return this.DAOControllerConfig.create({ dao: this.data });
+        return this.onDetach(this.DAOControllerConfig.create({dao: this.data}));
+
       }
     },
     {
       class: 'StringArray',
       name: 'searchColumns',
       factory: null,
-      expression: function(config$searchColumns){
+      expression: function(config$searchColumns) {
         return config$searchColumns;
       }
     },
@@ -233,65 +240,10 @@ foam.CLASS({
       class: 'Int',
       name: 'maxActions',
       expression: function(displayWidth) {
+        if ( displayWidth === undefined ) return 3;
         return displayWidth.minWidth < this.DisplayWidth.MD.minWidth ? 0 :
                displayWidth.minWidth < this.DisplayWidth.LG.minWidth ? 1 :
                3;
-      }
-    }
-  ],
-
-  actions: [
-    {
-      name: 'export',
-      label: 'Export',
-      toolTip: 'Export Table Data',
-      icon: 'images/export-arrow-icon.svg',
-      isAvailable: async function(config) {
-        if ( ! config.exportPredicate.f() ) return false;
-        var records = await this.exportDriverRegistryDAO.select();
-        return records && records.array && records.array.length != 0;
-      },
-      code: function(X) {
-        var adao;
-        if ( this.config?.summaryView?.selectedObjects && ! foam.Object.equals(this.config.summaryView.selectedObjects, {}) ) {
-          adao = foam.dao.ArrayDAO.create({ of: this.data.of });
-          foam.Object.forEach(this.config.summaryView.selectedObjects, function(y) { adao.put(y) })
-        }
-
-        this.add(this.Popup.create(null, X).tag({
-          class: 'foam.u2.ExportModal',
-          exportData: adao ? adao : this.predicatedDAO$proxy,
-          predicate: this.config.filterExportPredicate
-        }));
-      }
-    },
-    {
-      name: 'refreshTable',
-      label: 'Refresh',
-      toolTip: 'Refresh Table',
-      icon: 'images/refresh-icon-black.svg',
-      isAvailable: function(config) {
-        if ( ! config.refreshPredicate.f() ) return false;
-        return true;
-      },
-      code: function(X) {
-        this.config.dao.cmd_(X, foam.dao.DAO.PURGE_CMD);
-        this.config.dao.cmd_(X, foam.dao.DAO.RESET_CMD);
-        this.ctrl.notify(this.REFRESH_MSG, '', this.LogLevel.INFO, true, '/images/Progress.svg');
-      }
-    },
-    {
-      name: 'import',
-      label: 'Import',
-      icon: 'images/import-arrow-icon.svg',
-      availablePermissions: [ "data.import.googleSheets" ],
-      toolTip: 'Import From Google Sheet',
-      isAvailable: function(config) {
-        if ( ! config.importPredicate.f() ) return false;
-        return true;
-      },
-      code: function(X) {
-        this.add(this.Popup.create(null, X).tag(this.importModal));
       }
     }
   ],
@@ -313,7 +265,9 @@ foam.CLASS({
       });
 
       if ( ! foam.dao.QueryCachingDAO.isInstance(this.data) ) {
-        this.data = foam.dao.QueryCachingDAO.create({ delegate: this.data });
+        this.data = this.onDetach(foam.dao.QueryCachingDAO.create({ delegate: this.data }));
+      } else {
+        this.data.cache = {};
       }
 
       var self = this;
@@ -348,6 +302,10 @@ foam.CLASS({
             }));
           }
 
+          this.onDetach(this.cannedPredicate$.sub(() => {
+            filterView?.clearAll();
+          }));
+
           if ( config$cannedQueries.length >= 1 ) {
             cannedView = foam.u2.ViewSpec.createView(self.cannedQueriesView, {
               choices: config$cannedQueries.map((o) => [o.predicate, o.label]),
@@ -370,7 +328,6 @@ foam.CLASS({
             self.config.selectedObjs$ = summaryView.selectedObjects$;
 
           var buttonStyle = { buttonStyle: 'SECONDARY', size: 'SMALL', isIconAfter: true };
-
 
           return self.E()
             .start(self.Rows)
@@ -439,6 +396,62 @@ foam.CLASS({
               .end()
             .end();
         }));
+    }
+  ],
+
+  actions: [
+    {
+      name: 'export',
+      label: 'Export',
+      toolTip: 'Export Table Data',
+      icon: 'images/export-arrow-icon.svg',
+      isAvailable: async function(config) {
+        if ( ! config.exportPredicate.f() ) return false;
+        var records = await this.exportDriverRegistryDAO.select();
+        return records && records.array && records.array.length != 0;
+      },
+      code: function(X) {
+        var adao;
+        if ( this.config?.summaryView?.selectedObjects && ! foam.Object.equals(this.config.summaryView.selectedObjects, {}) ) {
+          adao = foam.dao.ArrayDAO.create({ of: this.data.of });
+          foam.Object.forEach(this.config.summaryView.selectedObjects, function(y) { adao.put(y) })
+        }
+
+        this.add(this.Popup.create(null, X).tag({
+          class: 'foam.u2.ExportModal',
+          exportData: adao ? adao : this.predicatedDAO$proxy,
+          predicate: this.config.filterExportPredicate
+        }));
+      }
+    },
+    {
+      name: 'refreshTable',
+      label: 'Refresh',
+      toolTip: 'Refresh Table',
+      icon: 'images/refresh-icon-black.svg',
+      isAvailable: function(config) {
+        if ( ! config.refreshPredicate.f() ) return false;
+        return true;
+      },
+      code: function(X) {
+        this.config.dao.cmd_(X, foam.dao.DAO.PURGE_CMD);
+        this.config.dao.cmd_(X, foam.dao.DAO.RESET_CMD);
+        this.ctrl.notify(this.REFRESH_MSG, '', this.LogLevel.INFO, true, '/images/Progress.svg');
+      }
+    },
+    {
+      name: 'import',
+      label: 'Import',
+      icon: 'images/import-arrow-icon.svg',
+      availablePermissions: [ "data.import.googleSheets" ],
+      toolTip: 'Import From Google Sheet',
+      isAvailable: function(config) {
+        if ( ! config.importPredicate.f() ) return false;
+        return true;
+      },
+      code: function(X) {
+        this.add(this.Popup.create(null, X).tag(this.importModal));
+      }
     }
   ]
 });

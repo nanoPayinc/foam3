@@ -12,8 +12,8 @@ foam.CLASS({
 
   imports: [
     'ctrl',
-    'emailVerificationService',
     'loginView?',
+    'resetPasswordService',
     'resetPasswordToken',
     'stack',
     'translationService'
@@ -28,20 +28,21 @@ foam.CLASS({
   ],
 
   messages: [
-    { name: 'TOKEN_INSTRUC_TITLE', message: 'Password Reset Instructions Sent' },
-    { name: 'TOKEN_INSTRUC',       message: 'Please check your inbox to continue' },
-    { name: 'CODE_INSTRUC_TITLE',  message: 'Verification code sent' },
-    { name: 'CODE_INSTRUC',        message: 'Please check your inbox for to verify your email' },
-    { name: 'REDIRECTION_TO',      message: 'Back to Sign in' },
-    { name: 'DUPLICATE_ERROR_MSG', message: 'This account requires username' },
-    { name: 'ERROR_MSG',           message: 'Issue resetting your password. Please try again' }
+    { name: 'TITLE', message: 'Forgot Password?' },
+    { name: 'INSTRUCTION', message: 'Enter the email you used to create your account in order to reset your password.' },
+    { name: 'TOKEN_INSTRUC_TITLE',      message: 'Password Reset Instructions Sent' },
+    { name: 'TOKEN_INSTRUC',            message: 'Please check your inbox to continue' },
+    { name: 'CODE_INSTRUC_TITLE',       message: 'Verification code sent' },
+    { name: 'CODE_INSTRUC',             message: 'Please check your inbox to reset your password' },
+    { name: 'REDIRECTION_TO',           message: 'Back to Sign in' },
+    { name: 'DUPLICATE_ERROR_MSG',      message: 'This account requires username' },
+    { name: 'ERROR_MSG',                message: 'Issue resetting your password. Please try again' },
+    { name: 'USER_NOT_FOUND_ERROR_MSG', message: 'Unabled to find user with email: '}
   ],
 
   sections: [
     {
-      name: 'emailPasswordSection',
-      title: 'Forgot your password?',
-      subTitle: 'Enter the email you signed up with and we\'ll send you a link to reset your password.',
+      name: 'resetPasswordSection',
       help: 'Enter your account email and we will send you an email with a link to create a new one.'
     }
   ],
@@ -50,7 +51,7 @@ foam.CLASS({
     {
       class: 'EMail',
       name: 'email',
-      section: 'emailPasswordSection',
+      section: 'resetPasswordSection',
       required: true,
       createVisibility: function(usernameRequired, readOnlyIdentifier) {
        return usernameRequired ? foam.u2.DisplayMode.HIDDEN :
@@ -71,7 +72,7 @@ foam.CLASS({
       validateObj: function(usernameRequired, username) {
         return usernameRequired && ! username ? 'Username is required.' : '';
       },
-      section: 'emailPasswordSection'
+      section: 'resetPasswordSection'
     },
     {
       class: 'Boolean',
@@ -103,7 +104,7 @@ foam.CLASS({
       name: 'sendEmail',
       label: 'Submit',
       buttonStyle: 'PRIMARY',
-      section: 'emailPasswordSection',
+      section: 'resetPasswordSection',
       isAvailable: function(showSubmitAction) {
         return showSubmitAction
       },
@@ -114,7 +115,7 @@ foam.CLASS({
         var instructionTitle, instruction;
         try {
           if ( this.resetByCode ) {
-            await this.emailVerificationService.verifyByCode(null, this.email, this.username);
+            await this.resetPasswordService.resetPasswordByCode(null, this.email, this.username);
             instructionTitle = this.CODE_INSTRUC_TITLE;
             instruction = this.CODE_INSTRUC;
           } else {
@@ -132,15 +133,10 @@ foam.CLASS({
           }));
           this.stack.push({ ...(this.loginView ?? { class: 'foam.u2.view.LoginView' }), mode_: 'SignIn' }, this);
         } catch(err) {
-          if ( this.UserNotFoundException.isInstance(err.data.exception) ) {
-              this.ctrl.add(this.NotificationMessage.create({
-                err: err.data,
-                type: this.LogLevel.ERROR,
-                transient: true
-              }));
-              return;
-          }
           var msg = this.ERROR_MSG;
+          if ( this.UserNotFoundException.isInstance(err.data.exception) ) {
+            msg = this.USER_NOT_FOUND_ERROR_MSG + this.email;
+          }
           if ( this.DuplicateEmailException.isInstance(err.data.exception) ) {
             this.usernameRequired = true;
             msg = this.DUPLICATE_ERROR_MSG;

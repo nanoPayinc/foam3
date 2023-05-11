@@ -22,7 +22,6 @@ foam.CLASS({
   imports: [
     'ctrl',
     'document',
-    'dropdown',
     'theme'
   ],
 
@@ -143,6 +142,7 @@ foam.CLASS({
 
     ^dropdown svg {
       font-size: 0.6rem;
+      fill: currentcolor;
     }
 
     ^iconContainer {
@@ -155,12 +155,8 @@ foam.CLASS({
       this.SUPER();
 
       this.shown = false;
-      for ( let action of this.data ) {
-        if ( ! foam.core.Action.isInstance(action) || await this.isAvailable(action) ) {
-          this.shown = true;
-          break;
-        }
-      }
+      this.onDetach(this.data$.sub(this.recheckShown));
+      await this.recheckShown();
     },
 
     function addContent() {
@@ -173,7 +169,7 @@ foam.CLASS({
             e.callIfElse(self.theme,
               function() {
                 this.start(self.HTMLView, { data: self.theme.glyphs.dropdown.expandSVG() })
-                  .addClasses([self.myClass('SVGIcon'), self.myClass('dropdown')])
+                  .addClass(self.myClass('SVGIcon'), self.myClass('dropdown'))
                 .end();
               },
               function() {
@@ -277,7 +273,7 @@ foam.CLASS({
   listeners: [
     function click(evt) {
       this.SUPER(evt);
-      this.overlay_.parentEl = this;
+      this.overlay_.parentEl = this.el_();
       this.isMouseClick = !! evt.detail;
       var x = evt.clientX || this.getBoundingClientRect().x;
       var y = evt.clientY || this.getBoundingClientRect().y;
@@ -306,6 +302,15 @@ foam.CLASS({
         if ( this.document.activeElement === this.lastEl_.el_() ) {
           this.firstEl_.focus();
           e.preventDefault();
+        }
+      }
+    },
+
+    async function recheckShown() {
+      for ( let action of this.data ) {
+        if ( ! foam.core.Action.isInstance(action) || await this.isAvailable(action) ) {
+          this.shown = true;
+          break;
         }
       }
     }

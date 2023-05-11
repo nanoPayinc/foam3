@@ -14,11 +14,40 @@ foam.CLASS({
   `,
   properties: [
     {
+      name: 'message',
+      type: 'String'
+    },
+    {
       name: 'code',
-      value: function (slot) {
+      value: function (slot, X) {
+        if (X.message)
+          slot.analyticsAgent?.pub('event', {
+            name: X.message,
+            tags: ['wizard']
+          });
         const wizardController = slot.data$.get();
         wizardController.goNext();
       }
+    },
+    {
+      name: 'isEnabled',
+      value: function (canGoNext, isLoading_) {
+        return canGoNext && ! isLoading_;
+      }
+    }
+  ],
+  methods: [
+    function toE(args, X) {
+      var view = foam.u2.ViewSpec.createView(this.view, {
+        ...(args || {}),
+        action: this
+      }, this, X);
+
+      if ( X.data$ && ! ( args && ( args.data || args.data$ ) ) ) {
+        view.data$ = X.data$;
+      }
+
+      return view;
     }
   ]
 });

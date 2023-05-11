@@ -50,8 +50,11 @@ foam.CLASS({
     'foam.nanos.u2.navigation.TopNavigation',
     'foam.nanos.u2.navigation.FooterView',
     'foam.nanos.crunch.CapabilityIntercept',
+    'foam.u2.LoadingSpinner',
     'foam.u2.crunch.CapabilityInterceptView',
     'foam.u2.crunch.CrunchController',
+    'foam.u2.crunch.WizardRunner',
+    'foam.u2.wizard.WizardType',
     'foam.u2.stack.Stack',
     'foam.u2.stack.StackBlock',
     'foam.u2.stack.DesktopStackView',
@@ -88,9 +91,11 @@ foam.CLASS({
     'loginView',
     'menuListener',
     'notify',
+    'prefersMenuOpen',
     'pushMenu',
     'requestLogin',
     'returnExpandedCSS',
+    'routeTo',
     'sessionID',
     'sessionTimer',
     'showFooter',
@@ -105,7 +110,10 @@ foam.CLASS({
   ],
 
   topics: [
-    'themeChange'
+    'themeChange',
+    // Published by reloadClient(), can be subbed to by client side services
+    // that need to refresh or cleanup on client reload
+    'clientReloading'
   ],
 
   constants: [
@@ -194,8 +202,8 @@ foam.CLASS({
           urlSession = window.location.search.substring(1).split('&')
            .find(element => element.startsWith("sessionId")).split('=')[1];
         } catch { };
-        return urlSession !== "" ? urlSession : foam.localStorage[this.sessionName] ||
-          ( foam.localStorage[this.sessionName] = foam.uuid.randomGUID() );
+        return urlSession !== "" ? urlSession : localStorage[this.sessionName] ||
+          ( localStorage[this.sessionName] = foam.uuid.randomGUID() );
       }
     },
     {
@@ -294,12 +302,16 @@ foam.CLASS({
     {
       class: 'Boolean',
       name: 'isMenuOpen',
+    },
+    {
+      class: 'Boolean',
+      name: 'prefersMenuOpen',
+      documentation: 'Stores the menu preference of the user',
       factory: function() {
-        return foam.localStorage['isMenuOpen'] === 'true'
-         || ( foam.localStorage['isMenuOpen'] = false );
+        return localStorage['prefersMenuOpen'] ? localStorage['prefersMenuOpen'] == 'true' : ( localStorage['prefersMenuOpen'] = true);
       },
       postSet: function(_, n) {
-        foam.localStorage['isMenuOpen'] = n;
+        localStorage['prefersMenuOpen'] = n;
       }
     },
     {
@@ -411,6 +423,11 @@ foam.CLASS({
     {
       class: 'Boolean',
       name: 'initSubject'
+    },
+    //TODO: temporary fix, remove when client signin service is fixed/added
+    {
+      name: 'groupLoadingHandled',
+      class: 'Boolean'
     }
   ],
 
@@ -423,42 +440,31 @@ foam.CLASS({
 
       var self = this;
 
-
       this.clientPromise.then(async function(client) {
-        self.setPrivate_('__subContext__', client.__subContext__);
+        self.originalSubContext = self.__subContext__;
+        self.setPrivate_('__subContext__', { name: 'ApplicationControllerProxy', __proto__: client.__subContext__});
 
         // For testing purposes only. Do not use in code.
-        globalThis.x     = client.__subContext__;
+        globalThis.x     = self.__subContext__;
         globalThis.MLang = foam.mlang.Expressions.create();
 
         await self.fetchTheme();
-        foam.locale = foam.localStorage.getItem('localeLanguage') || self.theme.defaultLocaleLanguage || 'en';
+        foam.locale = localStorage.getItem('localeLanguage') || self.theme.defaultLocaleLanguage || 'en';
 
         await client.translationService.initLatch;
         self.installLanguage();
 
         self.onDetach(self.__subContext__.cssTokenOverrideService?.cacheUpdated.sub(self.reloadStyles));
-        // TODO Interim solution to pushing unauthenticated menu while applicationcontroller refactor is still WIP
-        if ( self.route ) {
-          var menu = await self.__subContext__.menuDAO.find(self.route);
-          // explicitly check that the menu is unauthenticated
-          // since if there is a user session on refresh, this would also
-          // find authenticated menus to try to push before fetching subject
-          if ( menu && menu.authenticate === false ) {
-            await self.fetchSubject(false);
-            if ( ! self.subject?.user || ( await self.__subContext__.auth.isAnonymous() ) ) {
-              // only push the unauthenticated menu if there is no subject
-              // if client is authenticated, go on to fetch theme and set loginsuccess before pushing menu
-              // use the route instead of the menu so that the menu could be re-created under the updated context
-              self.pushMenu(self.route);
-              self.languageInstalled.resolve();
-              self.subToNotifications();
-              return;
-            }
-          }
-        }
+
+        let ret = await self.initMenu();
+        if ( ret ) return;
 
         await self.fetchSubject();
+
+        if ( self.client != client ) {
+          console.log('Stale Client in ApplicationController, waiting for update.');
+          await self.client.promise;
+        }
 
         await self.fetchGroup();
 
@@ -485,12 +491,41 @@ foam.CLASS({
         // Fetch the group only once the user has logged in. That's why we await
         // the line above before executing this one.
         await self.fetchTheme();
-        await self.onUserAgentAndGroupLoaded();
+        if ( ! self.groupLoadingHandled ) await self.onUserAgentAndGroupLoaded();
       });
 
       // Reload styling on theme change
       this.onDetach(this.sub('themeChange', this.reloadStyles));
     },
+
+    async function initMenu() {
+      var menu;
+
+      // TODO Interim solution to pushing unauthenticated menu while applicationcontroller refactor is still WIP
+      if ( this.route ) {
+        menu = await this.__subContext__.menuDAO.find(this.route);
+      }
+      // Check route again so that default theme menu doesnt override an auth menu the user is trying to go to
+      if ( ! this.route && ! menu && this.theme.unauthenticatedDefaultMenu ) {
+        menu = await this.__subContext__.menuDAO.find(this.theme.unauthenticatedDefaultMenu)
+      }
+
+      // explicitly check that the menu is unauthenticated
+      // since if there is a user session on refresh, this would also
+      // find authenticated menus to try to push before fetching subject
+      if ( menu && menu.authenticate === false ) {
+        await this.fetchSubject(false);
+        if ( ! this.subject?.user || ( await this.__subContext__.auth.isAnonymous() ) ) {
+          // only push the unauthenticated menu if there is no subject
+          // if client is authenticated, go on to fetch theme and set loginsuccess before pushing menu
+          // use the route instead of the menu so that the menu could be re-created under the updated context
+          this.pushMenu(menu.id);
+          this.languageInstalled.resolve();
+          this.subToNotifications();
+          return 1;
+        }
+      }
+   },
 
     function render() {
       var self = this;
@@ -501,36 +536,16 @@ foam.CLASS({
       this.updateDisplayWidth();
 
 
+      self.AppStyles.create();
 
-//      this.__subSubContext__.notificationDAO.where(
-//        this.EQ(this.Notification.USER_ID, userNotificationQueryId)
-//      ).on.put.sub((sub, on, put, obj) => {
-//        if ( obj.toastState == this.ToastState.REQUESTED ) {
-//          this.add(this.NotificationMessage.create({
-//            message: obj.toastMessage,
-//            type: obj.severity,
-//            description: obj.toastSubMessage
-//          }));
-//          var clonedNotification = obj.clone();
-//          clonedNotification.toastState = this.ToastState.DISPLAYED;
-//          this.__subSubContext__.notificationDAO.put(clonedNotification);
-//        }
-//      });
-
-      this.clientPromise.then(() => {
-        this.fetchTheme().then(() => {
-          // Work around to ensure wrapCSS is exported into context before
-          // calling AppStyles which needs theme replacement
-          self.AppStyles.create();
-          self.addMacroLayout();
-        });
-      });
+      self.addMacroLayout();
     },
 
     async function reloadClient() {
-      var newClient = await this.ClientBuilder.create({}, this).promise;
-      this.client = newClient.create(null, this);
-      this.setPrivate_('__subContext__', this.client.__subContext__);
+      this.clientReloading.pub();
+      var newClient = await this.ClientBuilder.create({}, this.originalSubContex).promise;
+      this.client = newClient.create(null, this.originalSubContext);
+      this.__subContext__.__proto__ = this.client.__subContext__;
       // TODO: find a better way to resub on client reloads
       this.onDetach(this.__subContext__.cssTokenOverrideService?.cacheUpdated.sub(this.reloadStyles));
       this.subject = await this.client.auth.getCurrentSubject(null);
@@ -620,7 +635,7 @@ foam.CLASS({
       /* A short-form macros is of the form %PRIMARY_COLOR%. */
       const M = m.toUpperCase();
       var prop = m.startsWith('DisplayWidth') ? m + '.minWidthString' : m
-      var val = foam.util.path(this.theme, prop, false);
+      var val = this.theme ? foam.util.path(this.theme, prop, false) : undefined;
 
       // NOTE: We add a negative lookahead for */, which is used to close a
       // comment in CSS. We do this because if we don't, then when a developer
@@ -640,7 +655,7 @@ foam.CLASS({
       // A long-form macros is of the form "/*%PRIMARY_COLOR%*/ blue".
       const M = m.toUpperCase();
       var prop = m.startsWith('DisplayWidth') ? m + '.minWidthString' : m
-      var val = foam.util.path(this.theme, prop, false);
+      var val = this.theme ? foam.util.path(this.theme, prop, false) : undefined;
       return val ? css.replace(
         new RegExp('/\\*%' + M + '%\\*/[^);!]*', 'g'),
         '/*%' + M + '%*/ ' + val) : css;
@@ -678,7 +693,7 @@ foam.CLASS({
         this.buildingStack = false;
         return;
       }
-      /**  Used for data management menus that are constructed on the fly
+      /**  Used for menus that are constructed on the fly (data management, support, legal)
        * required as those menus are not put in menuDAO and hence fail the
        * find call in pushMenu_.
        * This approach allows any generated menus to be permissioned/loaded as long as
@@ -689,9 +704,9 @@ foam.CLASS({
       /** Used to checking validity of menu push and launching default on fail **/
       var dao;
       if ( this.client ) {
-        this.pushMenu_(realMenu, menu, opt_forceReload);
+        return this.pushMenu_(realMenu, menu, opt_forceReload);
       } else {
-        await this.clientPromise.then(async () => {
+        return await this.clientPromise.then(async () => {
           await this.pushMenu_(realMenu, menu, opt_forceReload);
         });
       }
@@ -703,7 +718,7 @@ foam.CLASS({
       realMenu = await dao.find(realMenu);
       if ( ! realMenu ) {
         if ( ! this.loginSuccess ) {
-          await this.requestLogin();
+          await this.fetchSubject();
           this.memento_.str = m;
           return;
         }
@@ -722,7 +737,7 @@ foam.CLASS({
       if ( typeof menu == 'string' && ! menu.includes('/') )
         menu = realMenu;
       this.buildingStack = false;
-      menu && menu.launch && menu.launch(this);
+      return menu && menu.launch && menu.launch(this.__subContext__);
     },
 
     async function findDefaultMenu(dao) {
@@ -776,7 +791,7 @@ foam.CLASS({
       notification.severity        = severity || this.LogLevel.INFO;
       notification.transient       = transient;
       notification.icon            = icon;
-      this.__subContext__.myNotificationDAO.put(notification);
+      this.__subContext__.myNotificationDAO?.put(notification);
     },
 
     function displayToastMessage(sub, on, put, obj) {
@@ -811,11 +826,11 @@ foam.CLASS({
       let check = await this.checkGeneralCapability();
       if ( ! check ) return;
 
-      this.fetchTheme();
+      await this.fetchTheme();
       this.initLayout.resolve();
       var hash = this.window.location.hash;
       if ( hash ) hash = hash.substring(1);
-      if ( hash && hash != 'null' /* How does it even get set to null? */) {
+      if ( hash && hash != 'null' /* How does it even get set to null? */ && hash != this.currentMenu?.id ) {
         this.window.onpopstate();
       } else {
         this.pushMenu('');
@@ -824,36 +839,52 @@ foam.CLASS({
 //      this.__subContext__.localSettingDAO.put(foam.nanos.session.LocalSetting.create({id: 'homeDenomination', value: localStorage.getItem("homeDenomination")}));
     },
 
+    // TODO: simplify in NP-8928
     async function checkGeneralCapability() {
-      var capDAO = this.__subContext__.capabilityDAO;
-      var spid = await capDAO.find(this.user.spid);
-      if ( spid && spid.generalCapability != '' ) {
-        const ucjCheck = async () => await this.__subContext__.crunchService.getJunction(null, spid.generalCapability);
-        var ucj = await ucjCheck();
+      var groupDAO = this.__subContext__.groupDAO;
+      var group = await groupDAO.find(this.subject.user.group);
 
-        if ( ucj == null || ucj.status != this.CapabilityJunctionStatus.GRANTED ) {
-          await this.crunchController.createWizardSequence(spid.generalCapability, this.__subContext__).execute();
-          let postCheck = await ucjCheck();
-          if ( postCheck == null || postCheck.status != this.CapabilityJunctionStatus.GRANTED ) {
-            this.add(foam.u2.dialog.ConfirmationModal.create({
-              title: this.GC_ERROR_TITLE,
-              modalStyle: 'DESTRUCTIVE',
-              primaryAction: { name: 'close', code: () => this.pushMenu('sign-out') },
-              closeable: false,
-              showCancel: false
-            }, this)
-              .start()
-              .style({ 'min-width': '25vw'})
-              .add(this.GC_ERROR)
-              .end());
-            return false;
-          } else {
-            this.__subContext__.menuDAO.cmd_(this, foam.dao.DAO.PURGE_CMD);
-            this.__subContext__.menuDAO.cmd_(this, foam.dao.DAO.RESET_CMD);
-          }
-        }
+      if ( ! group || ! group.generalCapability ) return true;
+
+      const ucjCheck = async () => await this.__subContext__.crunchService.getJunction(null, group.generalCapability);
+      var ucj = await ucjCheck();
+      if ( ucj != null && ucj.status == this.CapabilityJunctionStatus.GRANTED ) {
+        return true;
       }
-      return true;
+
+      const wizardRunner = this.WizardRunner.create({
+        wizardType: this.WizardType.UCJ,
+        source: group.wizardFlow || group.generalCapability,
+        options: {inline: false, returnCompletionPromise: true}
+      });
+      // TODO: figure out why this cant be inlined
+      let retPromise = await wizardRunner.launch();
+      await retPromise;
+      return await this.doGeneralCapabilityPostCheck(ucjCheck);
+    },
+
+    async function doGeneralCapabilityPostCheck (ucjCheck) {
+      this.__subContext__.userCapabilityJunctionDAO.cmd_(this, foam.dao.DAO.PURGE_CMD);
+      this.__subContext__.userCapabilityJunctionDAO.cmd_(this, foam.dao.DAO.RESET_CMD);
+      let postCheck = await ucjCheck();
+      if ( postCheck == null || postCheck.status != this.CapabilityJunctionStatus.GRANTED ) {
+        this.add(foam.u2.dialog.ConfirmationModal.create({
+          title: this.GC_ERROR_TITLE,
+          modalStyle: 'DESTRUCTIVE',
+          primaryAction: { name: 'close', code: () => this.pushMenu('sign-out') },
+          closeable: false,
+          showCancel: false
+        }, this)
+          .start()
+          .style({ 'min-width': '25vw'})
+          .add(this.GC_ERROR)
+          .end());
+        return false;
+      } else {
+        this.__subContext__.menuDAO.cmd_(this, foam.dao.DAO.PURGE_CMD);
+        this.__subContext__.menuDAO.cmd_(this, foam.dao.DAO.RESET_CMD);
+        return true;
+      }
     },
 
     function addMacroLayout() {
@@ -864,6 +895,12 @@ foam.CLASS({
           mainView: {
             class: 'foam.u2.stack.DesktopStackView',
             data: this.stack,
+            stackDefault: { 
+              class: 'foam.u2.LoadingSpinner', 
+              size: 32, text: 'Loading...', 
+              showText: true,
+              color: this.document.querySelector(`meta[name='theme-color']`).getAttribute('content')
+            },
             showActions: false,
             nodeName: 'main'
           },
@@ -924,7 +961,6 @@ foam.CLASS({
 
       if ( this.theme.sideNav )
         this.sideNav_ = this.theme.sideNav;
-
       if ( this.theme.loginView )
         this.loginView = this.theme.loginView;
     },
@@ -957,6 +993,13 @@ foam.CLASS({
           this.replaceStyleTag(text, eid);
         }
       }
+    },
+    function routeTo(link) {
+      /**
+       * Replaces the url to redirect to the new menu without cleared tails
+       */
+      this.buildingStack = true;
+      this.memento_.str = link;
     }
   ]
 });

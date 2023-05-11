@@ -447,8 +447,9 @@ configuration for contacting the primary node.`,
       javaCode: `
       int c = getNodeCount();
       if ( c < 3 ) return 0; // size 2 test cluster - sacrifice HA
-      if ( c < 9 ) return 1;
-      return 2;
+      if ( c < 6 ) return 1; 
+      if ( c < 12 ) return 2; // 6 -> 2 buckets of 3, 9 -> 3 buckets of 3
+      return 3;
       `
     },
     // {
@@ -573,6 +574,9 @@ configuration for contacting the primary node.`,
       javaCode: `
       PM pm = PM.create(x, this.getClass().getSimpleName(), "getSocketClientBox");
       try {
+        if ( receiveClusterConfig.getId() == getConfigId() ) {
+          throw new RuntimeException("SocketClientBox to self");
+        }
         String address = receiveClusterConfig.getId();
         DAO hostDAO = (DAO) x.get("hostDAO");
         Host host = (Host) hostDAO.find(address);
@@ -947,12 +951,12 @@ configuration for contacting the primary node.`,
             return dao;
           }
         }
+        getLogger().error("mdao", serviceName, key, "not found");
       } catch (Throwable t) {
         getLogger().error("mdao", serviceName, key, t.getMessage(), t);
       } finally {
         pm.log(x);
       }
-      ((DAO) x.get("alarmDAO")).put(new Alarm("Medusa MDAO not found: "+serviceName));
       throw new IllegalArgumentException("MDAO not found: "+serviceName);
       `
     },

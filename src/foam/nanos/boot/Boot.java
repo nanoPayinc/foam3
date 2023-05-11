@@ -27,7 +27,7 @@ import static foam.mlang.MLang.EQ;
 
 public class Boot {
   // Context key used to store the top-level root context in the context.
-  public final static String ROOT = "_ROOT_";
+  public final static String ROOT      = "_ROOT_";
   public final static String BOOT_TIME = "BOOT_TIME";
 
   protected DAO                       serviceDAO_;
@@ -157,16 +157,6 @@ public class Boot {
         .setAuthorizer(new foam.nanos.auth.AuthorizableAuthorizer("service"))
         .build());
 
-    serviceDAO_.where(EQ(NSpec.LAZY, false)).select(new AbstractSink() {
-      @Override
-      public void put(Object obj, Detachable sub) {
-        NSpec sp = (NSpec) obj;
-
-        logger.info("Invoking Service", sp.getName());
-        root_.get(sp.getName());
-      }
-    });
-
     String startScript = System.getProperty("foam.main", "main");
     if ( startScript != null ) {
       DAO scriptDAO = (DAO) root_.get("bootScriptDAO");
@@ -182,6 +172,16 @@ public class Boot {
         logger.warning("Boot, Script not found", startScript);
       }
     }
+
+    serviceDAO_.where(EQ(NSpec.LAZY, false)).select(new AbstractSink() {
+      @Override
+      public void put(Object obj, Detachable sub) {
+        NSpec sp = (NSpec) obj;
+
+        logger.info("Invoking Service", sp.getName());
+        root_.get(sp.getName());
+      }
+    });
   }
 
   protected List perfectList(List src) {

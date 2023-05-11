@@ -40,11 +40,13 @@ foam.CLASS({
     'foam.nanos.auth.User',
     'foam.nanos.dao.Operation',
     'foam.nanos.logger.Logger',
+    'foam.nanos.om.OMLogger',
     'foam.nanos.pm.PM',
+    'java.util.Collection',
+    'java.util.Date',
     'foam.util.retry.RetryStrategy',
     'foam.util.retry.SimpleRetryStrategy',
-    'java.util.Collection',
-    'java.util.Date'
+    'foam.util.SafetyUtil'
   ],
 
   tableColumns: [
@@ -111,9 +113,11 @@ foam.CLASS({
       section: 'basicInfo'
     },
     {
-      class: 'String',
+      class: 'Reference',
       name: 'daoKey',
-      label: 'DAO Key',
+      of: 'foam.nanos.boot.NSpec',
+      targetDAOKey: 'nSpecDAO',
+      label: 'DAO',
       documentation: 'dao name that the rule is applied on.',
       readPermissionRequired: true,
       writePermissionRequired: true,
@@ -155,17 +159,6 @@ foam.CLASS({
       readPermissionRequired: true,
       writePermissionRequired: true,
       documentation: 'Defines if the rule is async. Async rule always runs after DAO put/remove, the after flag on the rule will be ignored.'
-    },
-    {
-      class: 'FObjectProperty',
-      of: 'foam.mlang.predicate.Predicate',
-      name: 'predicate',
-      factory: function() {
-        return this.True.create();
-      },
-      javaFactory: `
-        return foam.mlang.MLang.TRUE;
-      `
     },
     {
       class: 'FObjectProperty',
@@ -225,6 +218,7 @@ foam.CLASS({
       section: 'basicInfo',
       createVisibility: 'HIDDEN',
       updateVisibility: 'RO',
+      projectionSafe: false,
       tableCellFormatter: function(value, obj) {
         obj.userDAO.find(value).then(function(user) {
           if ( user ) {
@@ -240,6 +234,7 @@ foam.CLASS({
       section: 'basicInfo',
       createVisibility: 'HIDDEN',
       updateVisibility: 'RO',
+      projectionSafe: false,
       tableCellFormatter: function(value, obj) {
         obj.userDAO.find(value).then(function(user) {
           if ( user ) {
@@ -262,6 +257,7 @@ foam.CLASS({
       section: 'basicInfo',
       createVisibility: 'HIDDEN',
       updateVisibility: 'RO',
+      projectionSafe: false,
       tableCellFormatter: function(value, obj) {
         obj.userDAO.find(value).then(function(user) {
           if ( user ) {
@@ -277,6 +273,7 @@ foam.CLASS({
       section: 'basicInfo',
       createVisibility: 'HIDDEN',
       updateVisibility: 'RO',
+      projectionSafe: false,
       tableCellFormatter: function(value, obj) {
         obj.userDAO.find(value).then(function(user) {
           if ( user ) {
@@ -353,8 +350,7 @@ foam.CLASS({
         }
       ],
       javaCode: `
-        if ( ! getEnabled() ) return false;
-
+        ((OMLogger) x.get("OMLogger")).log("Rule", (SafetyUtil.isEmpty(getName()) ? getId() : getName()));
         try {
           if ( getPredicate() instanceof MQLExpr || getPredicate() instanceof FScriptPredicate ) {
             RulerData data = new RulerData();
@@ -410,6 +406,7 @@ foam.CLASS({
       javaCode: `
         PM pm = PM.create(x, this.getClass(), getDaoKey(), getId());
         try {
+          ((OMLogger) x.get("OMLogger")).log("Rule", (SafetyUtil.isEmpty(getName()) ? getId() : getName()), "Action");
           getAction().applyAction(x, obj, oldObj, ruler, rule, agency);
         } finally {
           pm.log(x);
@@ -445,6 +442,7 @@ foam.CLASS({
       ],
       javaCode: `
         try {
+          ((OMLogger) x.get("OMLogger")).log("Rule", (SafetyUtil.isEmpty(getName()) ? getId() : getName()), "AsyncAction");
           apply(x, obj, oldObj, ruler, rule, new DirectAgency());
         } catch ( Exception e ) {
           var strategy = getMaxRetry() > 0 ?
@@ -452,6 +450,7 @@ foam.CLASS({
             (RetryStrategy) x.get("ruleRetryStrategy");
 
           new RetryManager(strategy, rule.getName()).submit(x, userX -> {
+            ((OMLogger) x.get("OMLogger")).log("Rule", (SafetyUtil.isEmpty(getName()) ? getId() : getName()), "AsyncActionRetry");
             apply(x, obj, oldObj, ruler, rule, new DirectAgency());
           });
         }

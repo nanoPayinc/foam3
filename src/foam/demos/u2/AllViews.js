@@ -8,7 +8,12 @@ foam.CLASS({
   package: 'foam.demos.u2',
   name: 'SampleData',
   properties: [
-    'id', 'name', 'value'
+    {
+      class: 'String',
+      name: 'id'
+    }, 
+    'name', 
+    'value'
   ],
   methods: [
     function toSummary() { return this.id + ' ' + this.value; }
@@ -78,6 +83,57 @@ foam.CLASS({
   exports: [ 'sampleDataDAO', 'displayWidth' ],
 
   properties: [
+    {
+      class: 'FObjectProperty',
+      of: 'foam.flow.laminar.Document',
+      name: 'laminar',
+      value: {
+        class: 'foam.flow.laminar.Document',
+        doclets: [
+          {
+            class: 'foam.flow.laminar.MarkdownDoclet',
+            text: `
+              Lets learn about **foam.util.async.Sequence** and
+              **foam.flow.laminar.AutoDefinitionDoclet**
+            `
+          },
+          {
+            class: 'foam.flow.laminar.PrintDoclet',
+            key: 'definitionWords',
+            showMeta: true
+          },
+          {
+            class: 'foam.flow.laminar.AutoDefinitionDoclet'
+          }
+        ]
+      },
+      view: {
+        class: 'foam.flow.laminar.DocumentView'
+      }
+    },
+    {
+      class: 'String',
+      name: 'markdownView',
+      value: `
+        # Heading 1
+        ## Heading 2
+        ### Heading 3
+        #### Heading 4
+        ##### Heading 5
+        ###### Heading 6
+        text # not a heading
+
+        [a link](https://github.com/kgrgreer/foam3)
+
+        normal _italics_ **bold** \`code\`
+        \`\`\`
+        a block of code
+        \`\`\`
+      `,
+      view: {
+        class: 'foam.u2.view.MarkdownView'
+      }
+    },
     {
       class: 'Enum',
       of: 'foam.u2.layout.DisplayWidth',

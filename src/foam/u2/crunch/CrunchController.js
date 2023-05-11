@@ -45,6 +45,7 @@ foam.CLASS({
     'foam.u2.crunch.wizardflow.WizardStateAgent',
     'foam.u2.crunch.wizardflow.RequirementsPreviewAgent',
     'foam.u2.crunch.wizardflow.AutoSaveWizardletsAgent',
+    'foam.u2.crunch.wizardflow.PublishToWizardletsAgent',
     'foam.u2.crunch.wizardflow.PutFinalJunctionsAgent',
     'foam.u2.crunch.wizardflow.PutFinalPayloadsAgent',
     'foam.u2.crunch.wizardflow.TestAgent',
@@ -54,12 +55,12 @@ foam.CLASS({
     'foam.u2.crunch.wizardflow.MaybeDAOPutAgent',
     'foam.u2.crunch.wizardflow.ShowPreexistingAgent',
     'foam.u2.crunch.wizardflow.SaveAllAgent',
-    'foam.u2.crunch.wizardflow.SubmitAgent',
     'foam.u2.crunch.wizardflow.CapabilityStoreAgent',
     'foam.u2.crunch.wizardflow.DebugContextInterceptAgent',
     'foam.u2.crunch.wizardflow.DebugAgent',
     'foam.u2.crunch.wizardflow.WAOSettingAgent',
     'foam.u2.crunch.wizardflow.lite.CheckGrantedAgent',
+    'foam.u2.crunch.wizardflow.StatusPageAgent',
     'foam.u2.wizard.WizardStatus',
     'foam.u2.wizard.agents.ConfigureFlowAgent',
     'foam.u2.wizard.agents.DeveloperModeAgent',
@@ -67,7 +68,6 @@ foam.CLASS({
     'foam.u2.wizard.agents.CreateControllerAgent',
     'foam.u2.wizard.agents.DetachAgent',
     'foam.u2.wizard.agents.SpinnerAgent',
-    'foam.u2.wizard.agents.DetachSpinnerAgent',
     'foam.u2.wizard.agents.DetachSpinnerAgent',
     'foam.u2.wizard.agents.NullEventHandlerAgent',
     'foam.u2.wizard.wao.TopicWAO',
@@ -114,6 +114,12 @@ foam.CLASS({
 
   methods: [
     {
+      name: 'openWizardInspector',
+      code: function() {
+        this.lastActiveWizard.OPEN_WIZARD_INSPECTOR.code.call(this.lastActiveWizard);
+      }
+    },
+    {
       name: 'createWizardSequence',
       documentation: `
         Create the default wizard sequence for the specified capability in
@@ -148,13 +154,15 @@ foam.CLASS({
             this.add(self.DebugAgent)
           })
           .add(this.CreateControllerAgent)
+          .addAs('ReadyAgent', this.PublishToWizardletsAgent, { event: 'onReady' })
           .add(this.StepWizardAgent)
           .add(this.DetachAgent)
           .add(this.SpinnerAgent)
           .add(this.SaveAllAgent)
-          .add(this.SubmitAgent)
+          .addAs('SubmitAgent', this.PublishToWizardletsAgent, { event: 'onSubmit' })
           .add(this.DetachSpinnerAgent)
           .add(this.CapabilityStoreAgent)
+          .add(this.StatusPageAgent)
           // .add(this.TestAgent)
           ;
       }
@@ -176,7 +184,9 @@ foam.CLASS({
           intercept: intercept,
           capable: capable
         });
-        return this.createWizardSequence(capabilityId, x)
+
+        const capableCapabilityId = capable && capable.capabilityIds[0];
+        return this.createWizardSequence(capabilityId || capableCapabilityId, x)
           .reconfigure('WAOSettingAgent', {
             waoSetting: this.WAOSettingAgent.WAOSetting.CAPABLE })
           .remove('SkipGrantedAgent')
@@ -210,6 +220,7 @@ foam.CLASS({
           .remove('CheckNoDataAgent')
           .remove('AutoSaveWizardletsAgent')
           .remove('SaveAllAgent')
+          .remove('LoadWizardletsAgent')
           .remove('WizardStateAgent') // does not make sense in transient wizards
           .remove('FilterGrantModeAgent') // breaks for non-CapabilityWizardlet
           .remove('GrantedEditAgent')
@@ -218,6 +229,64 @@ foam.CLASS({
           .add(this.MaybeDAOPutAgent)
           ;
       }
+    },
+    {
+      name: 'createWizardFlowSequence',
+      documentation: `
+        This wizard sequence does not load a capability graph or any wizardlets.
+        This is intended for use with WizardFlow (Fluent/DSL for wizards).
+      `,
+      code: function createWizardFlowSequence(x) {
+        return this.toWizardFlowSequence(
+          this.createTransientWizardSequence(x)
+        );
+      }
+    },
+    {
+      name: 'toWizardFlowSequence',
+      documentation: `
+        This wizard sequence does not load a capability graph or any wizardlets.
+        This is intended for use with WizardFlow (Fluent/DSL for wizards).
+      `,
+      code: function toWizardFlowSequence(seq) {
+        return seq
+          .remove('LoadCapabilitiesAgent')
+          .remove('LoadTopConfig')
+          // Doesnt remove CreateWizardletsAgent since removing it would push a parent wizard's wizardlets into 
+          // the context creating duplicates
+          // .remove('CreateWizardletsAgent')
+          .remove('RequirementsPreviewAgent')
+          ;
+      }
+    },
+
+    // TODO: remove this during NP-8927
+    function createUCJInlineWizardSequence (x) {
+      const capable = foam.nanos.crunch.lite.BaseCapable.create();
+      x = x || this.__subContext__;
+      x = x.createSubContext({ capable });
+
+      return this.Sequence.create(null, x)
+        .add(this.CapabilityAdaptAgent)
+        .add(this.LoadCapabilitiesAgent)
+        .add(this.LoadCapabilityGraphAgent)
+        .add(this.WAOSettingAgent, {
+          waoSetting: this.WAOSettingAgent.WAOSetting.UCJ
+        })
+        .add(this.GraphWizardletsAgent)
+        .add(this.PublishToWizardletsAgent, { event: 'onReady' })
+    },
+
+    function createInlineWizardSequence (x) {
+      return this.Sequence.create(null, x)
+        .add(this.CapabilityAdaptAgent)
+        .add(this.LoadCapabilitiesAgent)
+        .add(this.LoadCapabilityGraphAgent)
+        .add(this.WAOSettingAgent, {
+          waoSetting: this.WAOSettingAgent.WAOSetting.CAPABLE
+        })
+        .add(this.GraphWizardletsAgent)
+        .add(this.PublishToWizardletsAgent, { event: 'onReady' })
     },
 
     function wizardSequenceToViewSequence_(sequence) {
@@ -277,7 +346,7 @@ foam.CLASS({
       } else if ( intercept.interceptType == intercept.InterceptType.CAPABLE ) {
         x = await self.launchCapableWizard(intercept, x);
       }
-      
+
       const wizardController = x.wizardController;
 
       if ( wizardController.status == this.WizardStatus.COMPLETED ) {
@@ -299,7 +368,14 @@ foam.CLASS({
       if ( ! this.canInlineIntercept(intercept, wizardController) ) {
         return false;
       }
-      await this.doInlineIntercept(intercept, wizardController);
+      for ( const capable of intercept.capables ) {
+        for ( const capabilityId of capable.capabilityIds ) {
+          await this.doInlineIntercept(
+            wizardController, capable, capabilityId, intercept,
+            { put: true }
+          );
+        }
+      }
       return true;
     },
 
@@ -317,51 +393,82 @@ foam.CLASS({
       if ( wizardController.status !== this.WizardStatus.IN_PROGRESS ) {
         return false;
       }
-    
+
       return true;
     },
 
-    async function doInlineIntercept(intercept, wizardController) {
-      const capabilityIds = [];
-      for ( const capable of intercept.capables ) {
-        capabilityIds.push(...capable.capabilityIds);
-        for ( const capabilityId of capable.capabilityIds ) {
-          let x = wizardController.__subContext__.createSubContext({
-            capable, intercept,
-            rootCapability: capabilityId,
-            wizardlets: []
-          });
-          x = await this.Sequence.create(null, x)
-            .add(this.CapabilityAdaptAgent)
-            .add(this.LoadCapabilitiesAgent)
-            .add(this.LoadCapabilityGraphAgent)
-            .add(this.WAOSettingAgent, {
-              waoSetting: this.WAOSettingAgent.WAOSetting.CAPABLE
-            })
-            .add(this.GraphWizardletsAgent)
-            .execute();
+    async function doInlineIntercept(
+      wizardController, capable, capabilityId,
+      opt_intercept, flags, opt_x,
+      opt_sequenceExtras
+    ) {
+      if ( ! capable ) {
+        capable = foam.nanos.crunch.lite.BaseCapable.create();
+      }
 
-          const lastWizardlet = x.wizardlets[x.wizardlets.length - 1];
-          lastWizardlet.wao = this.TopicWAO.create({
-            delegate: lastWizardlet.wao
-          });
+      let x = ( opt_x || wizardController.__subContext__ ).createSubContext({
+        capable,
+        intercept: opt_intercept,
+        wizardController: wizardController,
+        rootCapability: capabilityId,
+        wizardlets: []
+      });
 
-          // When the last wizardlet of the intercept (entry capability) is
-          // saved the Capable will be put in its respective DAO. This also
-          // means the intercept invoker WILL NOT get the return object.
-          lastWizardlet.wao.saved.sub(async () => {
-            const targetDAO = x[intercept.daoKey];
-            await targetDAO.put(capable);
-          });
+      const seq = this.createInlineWizardSequence(x);
 
-          // Resolve to current object - inline intercepts cannot provide
-          // the return object as the wizard must continue.
-          intercept.resolve(capable);
-
-          const wi = wizardController.wizardPosition.wizardletIndex;
-          wizardController.wizardlets$splice(wi + 1, 0, ...x.wizardlets);
+      if ( opt_sequenceExtras ) {
+        for ( const fluentSpec of opt_sequenceExtras ) {
+          fluentSpec.apply(seq);
         }
       }
+
+      const options = {};
+      if ( flags.put )  {
+        options.onLastWizardletSaved = async x => {
+          const targetDAO = x[opt_intercept.daoKey];
+          await targetDAO.put(capable);
+        }
+      }
+
+      await this.inlineWizardFromSequence(wizardController, seq, options);
+
+      if ( opt_intercept ) opt_intercept.resolve(capable);
+    },
+
+    async function inlineWizardFromSequence(wizardController, seq, options) {
+      options = options || {};
+
+      if ( ! wizardController ) wizardController = this.lastActiveWizard;
+
+      let x = await seq.execute();
+
+      if ( options.onLastWizardletSaved ) {
+        const lastWizardlet = x.wizardlets[x.wizardlets.length - 1];
+        lastWizardlet.wao = this.TopicWAO.create({
+          delegate: lastWizardlet.wao
+        });
+
+        lastWizardlet.wao.saved.sub(async () => {options.onLastWizardletSaved(x)});
+      }
+
+      for ( let i = 0; i < x.wizardlets.length; i++ ) {
+        let w = x.wizardlets[i];
+        w.wizardController = wizardController;
+      }
+
+      const wi = wizardController.activePosition.wizardletIndex;
+      console.log('splicing at wizard position', wi);
+      // Remove intercept wizardlets if user goes back beyond th intercept
+      wizardController.wizardlets[wi].wao = this.TopicWAO.create({
+        delegate: wizardController.wizardlets[wi].wao
+      });
+      wizardController.onDetach(wizardController.wizardlets[wi].wao.saving.sub(
+        foam.events.oneTime(() => {
+          wizardController.wizardlets$splice(wi + 1, x.wizardlets.length)
+        })
+      ));
+      wizardController.wizardlets$splice(wi + 1, 0, ...x.wizardlets);
+      return x;
     },
 
     function maybeLaunchInterceptView(intercept) {

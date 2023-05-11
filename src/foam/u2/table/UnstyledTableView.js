@@ -303,7 +303,7 @@ foam.CLASS({
       value: undefined,
       expression: function(props) {
         for ( var p of props ) {
-          if ( p.property.tableCellFormatter && ! p.property.cls_.hasOwnProperty('tableCellFormatter') ) {
+          if ( ! p.property.projectionSafe && ! p.property.cls_.hasOwnProperty('tableCellFormatter') ) {
             return false;
           }
           if ( ! foam.lookup(p.property.cls_.id) ) {
@@ -549,8 +549,8 @@ foam.CLASS({
       isMerged: true,
       mergeDelay: 5000,
       code: function() {
-        foam.localStorage.removeItem(this.of.id);
-        foam.localStorage.setItem(this.of.id, JSON.stringify(this.selectedColumnNames.map(c => {
+        localStorage.removeItem(this.of.id);
+        localStorage.setItem(this.of.id, JSON.stringify(this.selectedColumnNames.map(c => {
           var name = foam.String.isInstance(c) ? c : c.name;
           var size = this.selectedColumnsWidth[name] == undefined ? undefined : this.selectedColumnsWidth[name];
           return [name, size];

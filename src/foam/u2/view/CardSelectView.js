@@ -14,7 +14,9 @@ foam.CLASS({
   ],
 
   axioms: [
-    foam.pattern.Faceted.create()
+    foam.pattern.Faceted.create({
+      inherit: true
+    })
   ],
 
   topics: [
@@ -87,8 +89,7 @@ foam.CLASS({
         if ( n ) this.selectionDisabled.pub();
       }
     },
-    'largeCard',
-    'of'
+    'largeCard'
   ],
 
   methods: [

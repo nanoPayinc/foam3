@@ -19,6 +19,7 @@
     'foam.nanos.auth.User',
     'foam.nanos.auth.UserNotFoundException',
     'foam.nanos.logger.Logger',
+    'foam.mlang.predicate.Predicate',
     'foam.util.SafetyUtil',
     'java.util.List',
     'static foam.mlang.MLang.*'
@@ -26,14 +27,26 @@
 
   methods: [
     {
+      name: 'resetPasswordByCode',
+      args: 'Context x, String identifier, String userName',
+      javaCode: `
+        EmailVerificationService service = (EmailVerificationService) x.get("emailVerificationService");
+        service.verifyByCode(x, identifier, userName, "resetPasswordByCode");
+      `
+    },
+    {
       name: 'findUser',
-      args: 'Context x, String email, String userName',
+      args: 'Context x, String identifier, String userName',
       type: 'foam.nanos.auth.User',
       javaCode: `
+        Predicate identifierPredicate = SafetyUtil.isEmpty(userName) ? 
+          OR(EQ(User.EMAIL, identifier), EQ(User.USER_NAME, identifier)) :
+          AND(EQ(User.EMAIL, identifier), EQ(User.USER_NAME, userName));
         DAO userDAO = ((DAO) x.get("localUserDAO")).where(
           AND(
-            EQ(User.EMAIL, email),
-            EQ(User.LOGIN_ENABLED, true)
+            identifierPredicate,
+            EQ(User.LOGIN_ENABLED, true),
+            EQ(User.SPID, x.get("spid"))
           ))
           .limit(2);
         List list = ((ArraySink) userDAO.select(new ArraySink())).getArray();
@@ -42,7 +55,7 @@
         }
 
         if ( list.size() > 1 ) {
-          ((Logger) x.get("logger")).warning(this.getClass().getSimpleName(), "verifyByCode", "multiple valid users found for", email);
+          ((Logger) x.get("logger")).warning(this.getClass().getSimpleName(), "verifyByCode", "multiple valid users found for", identifier);
 
           if ( SafetyUtil.isEmpty(userName) ) throw new DuplicateEmailException();
 
@@ -61,7 +74,7 @@
       name: 'resetPassword',
       javaCode: `
         EmailVerificationService service = (EmailVerificationService) x.get("emailVerificationService");
-        if ( service.verifyCode(x, newPasswordObj.getEmail(), newPasswordObj.getUserName(), newPasswordObj.getResetPasswordCode()) ) {
+        if ( service.verifyUserEmail(x, newPasswordObj.getEmail(), newPasswordObj.getUserName(), newPasswordObj.getResetPasswordCode()) ) {
           String desiredPassword = newPasswordObj.getNewPassword();
 
           User systemUser = ((Subject) getX().get("subject")).getUser();

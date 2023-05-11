@@ -163,6 +163,25 @@ foam.CLASS({
       class: 'foam.u2.ViewSpec',
       name: 'detailView',
       value: { class: 'foam.u2.detail.VerticalDetailView' }
+    },
+    {
+      class: 'Map',
+      name: 'defaultValues',
+      documentation: `
+        A map of classes to default values. Useful when using FObjectView with
+        a small number of classes with little overlap in their properties.
+        
+        Example:
+        {
+          'com.example.PaddleStrategy': {
+            distanceFromBoat: 1,
+            surfaceArea: 20
+          },
+          'com.example.MotorStrategy': {
+            rpm: 3400
+          }
+        }
+      `
     }
   ],
 
@@ -209,6 +228,7 @@ foam.CLASS({
         }).catch(err => console.warn(err));
       } else {
         this.choices = this.choicesFallback(this.of);
+        this.choicesLoaded.resolve();
       }
     },
 
@@ -222,7 +242,11 @@ foam.CLASS({
       var classToData = (c) => {
         if ( ! c ) return undefined;
         var m = c && this.__context__.maybeLookup(c);
-        return m.create(this.data ? this.copyOldData(this.data) : null, this);
+        const o = m.create(this.data ? this.copyOldData(this.data) : null, this);
+        if ( this.defaultValues.hasOwnProperty(m.id) ) {
+          o.copyFrom(this.defaultValues[m.id]);
+        }
+        return o;
       };
 
       this.dataWasProvided_ = !! this.data;

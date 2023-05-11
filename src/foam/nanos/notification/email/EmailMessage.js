@@ -85,7 +85,7 @@ foam.CLASS({
 
   properties: [
     {
-      class: 'Long',
+      class: 'String',
       name: 'id',
       includeInDigest: true,
       section: 'emailInformation',
@@ -185,7 +185,7 @@ foam.CLASS({
       view: {
         class: 'foam.u2.MultiView',
         views: [
-          { class: 'foam.u2.IFrameHTMLView' },
+          { class: 'foam.u2.IFrameHTMLView', resizable: true },
           { class: 'foam.u2.tag.TextArea', rows: 30, cols: 130 }
         ]
       }
@@ -242,24 +242,7 @@ foam.CLASS({
       section: 'systemInformation',
       order: 10,
       createVisibility: 'HIDDEN',
-      updateVisibility: 'RO',
-      storageTransient: true,
-      javaGetter: `
-        if ( spidIsSet_ ) return spid_;
-        var map = new java.util.HashMap();
-        map.put(
-          EmailMessage.class.getName(),
-          new foam.core.PropertyInfo[] { EmailMessage.USER }
-        );
-        try {
-          spid_ = new ServiceProviderAwareSupport()
-            .findSpid(foam.core.XLocator.get(), map, this);
-          spidIsSet_ = true;
-        } catch ( Exception e ) {
-          // nop - occurs during replay
-        }
-        return spid_;
-      `
+      updateVisibility: 'RO'
     },
     {
       class: 'Reference',

@@ -15,9 +15,16 @@ foam.CLASS({
       flex-direction: column;
     }
     ^reverse {
+      width: 100%;
       display: flex;
       flex-direction: column-reverse;
       justify-content: flex-end;
+      flex: 1;
+      width: 100%;
+    }
+    /* Extra div added by borders?? */
+    ^reverse > div:not(.edge) {
+      flex: 1;
     }
     ^::before {
       display: block;
@@ -60,7 +67,8 @@ foam.CLASS({
       class: 'Boolean',
       name: 'botShadow'
     },
-    'topEdge_', 'botEdge_'
+    'topEdge_',
+    'botEdge_'
   ],
 
   methods: [
@@ -100,7 +108,7 @@ foam.CLASS({
         rootMargin: '0px 0px 0px',
         threshold: [0.25, 0.5, 0.25]
       };
-      
+
       const observer = new IntersectionObserver(this.onScrollUpdate, options);
 
       (async () => {
@@ -116,10 +124,12 @@ foam.CLASS({
     {
       name: 'onScrollUpdate',
       isFramed: true,
-      code: function (entries) {
+      code: function(entries) {
         for ( const entry of entries ) {
-          const prop = entry.target.dataset.pos;
-          this[prop] = ! entry.isIntersecting;
+            if ( (this.el_().scrollHeight - this.el_().clientHeight) > 7 || (this.el_().scrollHeight === this.el_().clientHeight) ) {
+            const prop = entry.target.dataset.pos;
+            this[prop] = ! entry.isIntersecting;
+          }
         }
       }
     }

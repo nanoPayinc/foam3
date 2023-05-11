@@ -129,15 +129,25 @@ foam.CLASS({
   ],
 
   methods: [
-    function createView(opt_spec) {
+    function createView(opt_spec, opt_ctx_extras) {
       if ( ! opt_spec ) opt_spec = {};
-      var ctx = this.wizardlet.__subSubContext__.createSubContext({ wizardController: this.wizardlet.wizardController });
+      var ctx = this.wizardlet.__subSubContext__.createSubContext({
+        wizardController: this.wizardlet.wizardController ||
+          this.wizardlet.__subContext__.wizardController
+      });
+
+      if ( opt_ctx_extras ) {
+        ctx = ctx.createSubContext(opt_ctx_extras);
+      }
+
+      ctx.analyticsAgent?.pub('event', {
+        name: 'VIEW_LOAD_' + this.wizardlet.id
+      });
 
       if ( this.customView ) {
         return this.ViewSpec.createView(
           this.customView, { data$: this.wizardlet.data$ }, this, ctx);
       }
-
 
       ctx.register(
         this.VerticalDetailView,

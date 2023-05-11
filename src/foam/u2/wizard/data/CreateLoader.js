@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.wizard.data',
   name: 'CreateLoader',
-  implements: ['foam.u2.wizard.data.Loader'],
+  extends: 'foam.u2.wizard.data.ProxyLoader',
 
   imports: [
     'wizardletOf?'
@@ -19,7 +19,7 @@ foam.CLASS({
       name: 'spec',
       factory: function(){
         return {
-          class: this.wizardletOf.id
+          class: this.wizardletOf?.id
         }
       }
     },
@@ -38,12 +38,29 @@ foam.CLASS({
         delete cloned.class;
         return cloned;
       }
+    },
+    {
+      class: 'Boolean',
+      name: 'updateWithSpec',
+      documentation: `
+        Set to true when we always want to update wizardlet data with spec data.
+      `
     }
   ],
 
   methods: [
-    async function load() {
-      return this.of.create(this.args, this);
+    async function load(o) {
+      // If CreateLoader has a delegate we assume copyFrom is expected
+      if ( this.delegate ) {
+        const delegateResult = await this.delegate.load(o);
+        if ( delegateResult ) {
+          return delegateResult.copyFrom(this.args);
+        }
+      }
+
+      // Otherwise behave as before
+      if ( o.old && this.updateWithSpec ) o.old.copyFrom(this.args);
+      return o?.old ?? this.of.create(this.args, this);
     }
   ]
 });

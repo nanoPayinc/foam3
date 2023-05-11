@@ -57,11 +57,15 @@ foam.CLASS({
 
     function installView(el, view) {
       var id = el.id;
-
+      // skip install if element doesnt exist in DOM
+      if ( ! this.document.getElementsByClassName(el.className).length ) return;
       // this.setAttributes(el, view);
 
+      view.replaceElement_(el);
+      /*
       el.outerHTML = view.outerHTML;
       view.load();
+      */
 
       // Store view in global variable if named. Useful for testing.
       if ( id ) globalThis[id] = view;

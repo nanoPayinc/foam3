@@ -29,6 +29,7 @@ foam.CLASS({
   requires: [
     'foam.dao.AbstractDAO',
     'foam.log.LogLevel',
+    'foam.nanos.auth.User',
     'foam.nanos.ticket.TicketStatus',
     'foam.u2.dialog.Popup'
   ],
@@ -62,7 +63,7 @@ foam.CLASS({
     'type',
     // REVIEW: view fails to display when owner in tableColumn, the 2nd entry in allColumns is undefined.
     // 'owner',
-    'assignedTo.legalName',
+    'assignedToSummary',
     'createdBy.legalName',
     'lastModified',
     'status',
@@ -70,6 +71,13 @@ foam.CLASS({
     'comment',
     'dateCommented',
     'createdFor'
+  ],
+
+  searchColumns: [
+    'id',
+    'status',
+    'created',
+    'title'
   ],
 
   messages: [
@@ -148,6 +156,7 @@ foam.CLASS({
       section: 'infoSection',
       order: 3,
       tableWidth: 130,
+      projectionSafe: false,
       tableCellFormatter: function(value, obj) {
         obj.ticketStatusDAO.find(value).then(function(status) {
           if (status) {
@@ -226,6 +235,7 @@ foam.CLASS({
           errorString: 'Please provide a comment.'
         }
       ],
+      projectionSafe: false,
       tableCellFormatter: function(_, obj) {
         obj.ticketCommentDAO
           .where(obj.EQ(foam.nanos.ticket.TicketComment.TICKET, obj.id))
@@ -245,7 +255,9 @@ foam.CLASS({
       name: 'dateCommented',
       value: '',
       storageTransient: true,
+      visibility: 'RO',
       section: 'infoSection',
+      projectionSafe: false,
       tableCellFormatter: function(_, obj) {
         obj.ticketCommentDAO
           .where(obj.EQ(foam.nanos.ticket.TicketComment.TICKET, obj.id))
@@ -273,6 +285,7 @@ foam.CLASS({
       name: 'createdBy',
       visibility: 'RO',
       includeInDigest: true,
+      projectionSafe: false,
       tableCellFormatter: function(value, obj) {
         obj.userDAO.find(value).then(function(user) {
           if ( user ) {
@@ -288,6 +301,7 @@ foam.CLASS({
       name: 'createdByAgent',
       visibility: 'RO',
       includeInDigest: true,
+      projectionSafe: false,
       tableCellFormatter: function(value, obj) {
         obj.userDAO.find(value).then(function(user) {
           if ( user ) {
@@ -309,6 +323,7 @@ foam.CLASS({
       of: 'foam.nanos.auth.User',
       name: 'lastModifiedBy',
       visibility: 'RO',
+      projectionSafe: false,
       tableCellFormatter: function(value, obj) {
         obj.userDAO.find(value).then(function(user) {
           if ( user ) {
@@ -323,6 +338,7 @@ foam.CLASS({
       of: 'foam.nanos.auth.User',
       name: 'lastModifiedByAgent',
       visibility: 'RO',
+      projectionSafe: false,
       tableCellFormatter: function(value, obj) {
         obj.userDAO.find(value).then(function(user) {
           if ( user ) {
@@ -337,6 +353,7 @@ foam.CLASS({
       class: 'String',
       transient: true,
       hidden: true,
+      projectionSafe: false,
       tableCellFormatter: function(value, obj) {
         this.add(obj.title);
       }
@@ -369,8 +386,36 @@ foam.CLASS({
           this.assignedToGroup = '';
         }
       },
+      javaPostSet: `
+        DAO userDAO = (DAO) foam.core.XLocator.get().get("localUserDAO");
+        if ( userDAO != null ) {
+          User user = (User) userDAO.find(val);
+          if ( user != null ) {
+            clearAssignedToSummary();
+            setAssignedToSummary(user.getLegalName());
+          }
+        }
+      `,
       order: 7,
       gridColumns: 6
+    },
+    {
+      class: 'String',
+      label: 'Assigned To',
+      name: 'assignedToSummary',
+      storageTransient: true,
+      createVisibility: 'HIDDEN',
+      visibility: 'RO',
+      javaGetter: `
+        DAO userDAO = (DAO) foam.core.XLocator.get().get("localUserDAO");
+        if ( userDAO != null ) {
+          User user = (User) userDAO.find(getAssignedTo());
+          if ( user != null ) {
+            return user.getLegalName();
+          }
+        }
+        return null;
+      `
     },
     {
       class: 'Reference',
@@ -421,12 +466,12 @@ foam.CLASS({
         { name: 'old', type: 'Ticket' }
       ],
       javaCode: `
-        DAO notificationDAO = (DAO) x.get("localNotificationDAO");
+        DAO notificationDAO = (DAO) x.get("notificationDAO");
         Subject subject = (Subject) x.get("subject");
         if (subject.getUser().getId() == getCreatedFor()) {
           if ( getAssignedTo() != 0 ) {
             Notification notification = new TicketNotification.Builder(x)
-              .setBody(this.COMMENT_NOTIFICATION)
+              .setBody(this.COMMENT_NOTIFICATION+this.getId())
               .setUserId(getAssignedTo())
               .setSpid(getSpid())
               .setTicket(this.getId())
@@ -438,7 +483,7 @@ foam.CLASS({
             }
           } else if ( ! SafetyUtil.isEmpty(getAssignedToGroup()) ){
             Notification notification = new TicketNotification.Builder(x)
-              .setBody(this.COMMENT_NOTIFICATION)
+              .setBody(this.COMMENT_NOTIFICATION+this.getId())
               .setGroupId(getAssignedToGroup())
               .setSpid(getSpid())
               .setTicket(this.getId())
@@ -447,7 +492,7 @@ foam.CLASS({
           }
         } else if ( getCreatedFor() != 0 ){
           Notification notification = new TicketNotification.Builder(x)
-            .setBody(this.COMMENT_NOTIFICATION)
+            .setBody(this.COMMENT_NOTIFICATION+this.getId())
             .setUserId(getCreatedFor())
             .setSpid(getSpid())
             .setTicket(this.getId())
@@ -467,7 +512,7 @@ foam.CLASS({
         { name: 'old', type: 'Ticket' }
       ],
       javaCode: `
-        DAO notificationDAO = (DAO) x.get("localNotificationDAO");
+        DAO notificationDAO = (DAO) x.get("notificationDAO");
         if ( getAssignedTo() != 0 ) {
           Notification notification = new TicketNotification.Builder(x)
             .setBody(this.COMMENT_NOTIFICATION)
@@ -556,24 +601,6 @@ foam.CLASS({
 
   actions: [
     {
-      name: 'close',
-      tableWidth: 70,
-      confirmationRequired: function() {
-        return true;
-      },
-      isAvailable: function(status, id) {
-        return id && status !== 'CLOSED';
-      },
-      code: function() {
-        this.status = 'CLOSED';
-        this.assignedTo = 0;
-        this.ticketDAO.put(this).then(function(ticket) {
-          this.copyFrom(ticket);
-          this.notify(this.SUCCESS_CLOSED, '', this.LogLevel.INFO, true);
-        }.bind(this));
-      }
-    },
-    {
       name: 'assign',
       section: 'infoSection',
       isAvailable: function(status){
@@ -582,7 +609,7 @@ foam.CLASS({
       availablePermissions: [
         "ticket.assign.*"
       ],
-      code: function(X) {        
+      code: function(X) {
         X.ctrl.tag({
           class: "foam.u2.PropertyModal",
           property: this.ASSIGNED_TO.clone().copyFrom({ label: '' }),
@@ -605,11 +632,12 @@ foam.CLASS({
         assignedTicket.assignedTo = X.subject.user.id;
 
         this.ticketDAO.put(assignedTicket).then(req => {
+          this.ticketDAO.cmd(this.AbstractDAO.PURGE_CMD);
           this.ticketDAO.cmd(this.AbstractDAO.RESET_CMD);
           this.finished.pub();
           this.notify(this.SUCCESS_ASSIGNED, '', this.LogLevel.INFO, true);
           if (
-            X.stack.top && 
+            X.stack.top &&
             ( X.currentMenu.id !== X.stack.top[2] )
           ) {
             X.stack.back();
@@ -626,16 +654,17 @@ foam.CLASS({
       isAvailable: function(subject, assignedTo, status){
         return (subject.user.id === assignedTo) && (status === 'OPEN');
       },
-      code: function(X) {        
+      code: function(X) {
         var unassignedTicket = this.clone();
         unassignedTicket.assignedTo = 0;
 
         this.ticketDAO.put(unassignedTicket).then(req => {
+          this.ticketDAO.cmd(this.AbstractDAO.PURGE_CMD);
           this.ticketDAO.cmd(this.AbstractDAO.RESET_CMD);
           this.finished.pub();
           this.notify(this.SUCCESS_UNASSIGNED, '', this.LogLevel.INFO, true);
           if (
-            X.stack.top && 
+            X.stack.top &&
             ( X.currentMenu.id !== X.stack.top[2] )
           ) {
             X.stack.back();
@@ -644,6 +673,25 @@ foam.CLASS({
           this.throwError.pub(e);
           this.notify(e.message, '', this.LogLevel.ERROR, true);
         });
+      }
+    },
+    {
+      name: 'close',
+      tableWidth: 70,
+      section: 'infoSection',
+      confirmationRequired: function() {
+        return true;
+      },
+      isAvailable: function(status, id) {
+        return id && status !== 'CLOSED';
+      },
+      code: function() {
+        this.status = 'CLOSED';
+        this.assignedTo = 0;
+        this.ticketDAO.put(this).then(function(ticket) {
+          this.copyFrom(ticket);
+          this.notify(this.SUCCESS_CLOSED, '', this.LogLevel.INFO, true);
+        }.bind(this));
       }
     }
   ],
@@ -660,7 +708,7 @@ foam.CLASS({
           this.notify(this.SUCCESS_ASSIGNED, '', this.LogLevel.INFO, true);
 
           if (
-            X.stack.top && 
+            X.stack.top &&
             ( X.currentMenu.id !== X.stack.top[2] )
           ) {
             X.stack.back();

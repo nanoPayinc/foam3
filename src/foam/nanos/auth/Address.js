@@ -9,6 +9,8 @@ foam.CLASS({
   name: 'Address',
 
   documentation: 'The base model for the postal address.',
+  
+  axioms: [ foam.pattern.Faceted.create({ ofProperty: 'countryId' }) ],
 
   implements: [
     {
@@ -30,15 +32,15 @@ foam.CLASS({
   ],
 
   messages: [
-    { name: 'CITY_REQUIRED', message: 'City required' },
+    { name: 'CITY_REQUIRED', message: 'Required' },
     { name: 'COUNTRY_REQUIRED', message: 'Country required' },
     { name: 'INVALID_COUNTRY', message: 'Invalid country' },
-    { name: 'REGION_REQUIRED', message: 'Region required' },
+    { name: 'REGION_REQUIRED', message: 'Required' },
     { name: 'INVALID_REGION', message: 'Invalid region. Please provide valid ISO-3166-2 region.' },
-    { name: 'INVALID_ADDRESS_1', message: 'Invalid value for address line 1' },
+    { name: 'INVALID_ADDRESS_1_REQUIRED', message: 'Required' },
     { name: 'INVALID_POSTAL_CODE', message: 'Valid Postal Code or ZIP Code required' },
-    { name: 'POSTAL_CODE_REQUIRE', message: 'Postal Code required' },
-    { name: 'STREET_NAME_REQUIRED', message: 'Street name required' },
+    { name: 'POSTAL_CODE_REQUIRE', message: 'Required' },
+    { name: 'STREET_NAME_REQUIRED', message: 'Street Name required' },
     { name: 'STREET_NUMBER_REQUIRED', message: 'Street number required' }
   ],
 
@@ -67,7 +69,7 @@ foam.CLASS({
         {
           args: ['structured', 'address1'],
           query: 'structured==true||address1.len>=1',
-          errorMessage: 'INVALID_ADDRESS_1'
+          errorMessage: 'INVALID_ADDRESS_1_REQUIRED'
         }
       ],
       hidden: true
@@ -108,7 +110,7 @@ foam.CLASS({
         }
       `,
       postSet: function(oldValue, newValue) {
-        if ( oldValue !== newValue ) {
+        if ( oldValue !== newValue && ! this.regionId.startsWith(newValue) ) {
           this.regionId = undefined;
         }
       },
@@ -185,7 +187,7 @@ foam.CLASS({
       // and not baked into the model.
       class: 'String',
       name: 'streetNumber',
-      label: 'Street number',
+      label: 'Street #',
       width: 16,
       documentation: 'The structured field for the street number of the postal address.',
       gridColumns: 3,
@@ -200,7 +202,7 @@ foam.CLASS({
     {
       class: 'String',
       name: 'streetName',
-      label: 'Street name',
+      label: 'Street Name',
       width: 70,
       documentation: 'The structured field for the street name of the postal address.',
       gridColumns: 6,
@@ -233,9 +235,11 @@ foam.CLASS({
       },
       gridColumns: 6,
       validationPredicates: [
+        // Requirement for PK is postalCode is optional
+        // real country distictions to come with NP-8818-facade Address
         {
           args: ['postalCode'],
-          query: 'postalCode.len>0',
+          query: 'postalCode.len>0||countryId=="PK"',
           errorMessage: 'POSTAL_CODE_REQUIRE'
         },
         {
@@ -658,6 +662,19 @@ foam.CLASS({
         {
           args: ['postalCode', 'countryId'],
           query: 'countryId!="ZA"||postalCode~/^\\d{4}$/',
+          errorMessage: 'INVALID_POSTAL_CODE',
+          jsErr: function(X) {
+            let postalCodeError = X.translationService.getTranslation(foam.locale, `${X.countryId.toLowerCase()}.foam.nanos.auth.Address.POSTAL_CODE.error`);
+            if ( ! postalCodeError ) {
+              postalCodeError = X.translationService.getTranslation(foam.locale, '*.foam.nanos.auth.Address.POSTAL_CODE.error');
+            }
+            return postalCodeError ? postalCodeError : X.INVALID_POSTAL_CODE;
+          }
+        },
+        // Pakistan
+        {
+          args: ['postalCode', 'countryId'],
+          query: 'countryId!="PK"||postalCode~/^(\\s*|\\d{5})$/',
           errorMessage: 'INVALID_POSTAL_CODE',
           jsErr: function(X) {
             let postalCodeError = X.translationService.getTranslation(foam.locale, `${X.countryId.toLowerCase()}.foam.nanos.auth.Address.POSTAL_CODE.error`);

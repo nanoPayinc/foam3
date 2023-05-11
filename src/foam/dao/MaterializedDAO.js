@@ -13,12 +13,17 @@ foam.CLASS({
     'foam.core.FObject',
     'foam.dao.index.AddIndexCommand',
     'foam.mlang.predicate.Predicate',
-    'foam.mlang.predicate.True'
+    'foam.mlang.predicate.True',
+    'foam.core.Detachable'
   ],
 
   documentation: 'Create a Materialized View from a source DAO.',
 
   properties: [
+    {
+      class: 'Boolean',
+      name: 'initialized'
+    },
     {
       class: 'Object',
       javaType: 'foam.mlang.predicate.Predicate',
@@ -43,23 +48,112 @@ foam.CLASS({
 //      javaFactory: 'return getSourceDAO().getOf();'
     },
     {
+      class: 'Boolean',
+      name: 'pm'
+    },
+    {
+      documentation: 'Decorate with a ServiceProviderAwareDAO',
+      name: 'serviceProviderAware',
+      class: 'Boolean',
+      javaFactory: 'return foam.nanos.auth.ServiceProviderAware.class.isAssignableFrom(getSourceDAO().getOf().getObjClass());'
+    },
+    {
+      documentation: 'Enable authorization',
+      class: 'Boolean',
+      name: 'authorize',
+      value: true
+    },
+    {
+      class: 'Object',
+      type: 'foam.nanos.auth.Authorizer',
+      name: 'authorizer',
+      javaFactory: `
+      String sourceClass = getSourceDAO().getOf().getObjClass().getSimpleName().toLowerCase();
+      if ( foam.nanos.auth.Authorizable.class.isAssignableFrom(getOf().getObjClass()) ) {
+        return new foam.nanos.auth.AuthorizableAuthorizer(sourceClass);
+      }
+      return new foam.nanos.auth.StandardAuthorizer(sourceClass);
+      `
+    },
+    {
+      class: 'String',
+      name: 'permissionPrefix',
+      factory: function() {
+        return this.of.name.toLowerCase();
+      },
+      javaFactory: `
+      return getOf().getObjClass().getSimpleName().toLowerCase();
+     `
+    },
+    {
       name: 'delegate',
+      javaPreSet: `
+        if ( getServiceProviderAware() ) {
+          val = new foam.nanos.auth.ServiceProviderAwareDAO.Builder(getX())
+            .setDelegate(val)
+            .build();
+        }
+
+        if ( getAuthorize() ) {
+          val = new foam.nanos.auth.AuthorizationDAO.Builder(getX())
+            .setDelegate(val)
+            .setAuthorizer(getAuthorizer())
+            .build();
+        }
+
+        /* TODO: get suitable NSpec
+        if ( getPm() )
+          val = new foam.dao.PMDAO.Builder(getX()).setNSpec(getNSpec()).setDelegate(val).build();
+        */
+      `,
       javaFactory: 'return new foam.dao.MDAO(getOf());'
+    },
+    {
+      class: 'Array',
+      of: 'String',
+      name: 'observedDAOs',
+      documentation: 'A list of DAOs that will be listened to',
+      javaFactory: 'return getAdapter().getObservedDAOs();'
     }
   ],
 
   methods: [
     {
-      name: 'init_',
+      name: 'maybeInit',
+      javaType: 'void',
+      synchronized: true,
       javaCode: `
-        AddIndexCommand cmd = new AddIndexCommand();
+        if ( ! getInitialized() ) {
+          setInitialized(true);
+          AddIndexCommand cmd = new AddIndexCommand();
 
-        cmd.setIndex(new MaterializedDAOIndex(this));
+          cmd.setIndex(new MaterializedDAOIndex(this));
 
-        getSourceDAO().cmd(cmd);
+          getSourceDAO().cmd(cmd);
+
+          String[] daoKeys = getObservedDAOs();
+          if ( daoKeys.length != 0 ) {
+            for ( String daoKey : daoKeys ) {
+              DAO dao = (DAO) getX().get(daoKey);
+              var self = this;
+              if ( dao != null ) dao.listen(new AbstractSink() {
+                public void put(Object obj, Detachable sub) {
+                  getAdapter().onObservedDAOUpdate(self, daoKey, obj);
+                }
+              }, foam.mlang.MLang.TRUE);
+            }
+          }
+      }
       `
     },
-
+    {
+      name: 'find_',
+      javaCode: 'maybeInit(); return getDelegate().find_(x, id);'
+    },
+    {
+      name: 'select_',
+      javaCode: 'maybeInit(); return getDelegate().select_(x, sink, skip, limit, order, predicate);'
+    },
     {
       name: 'adapt',
       args: 'FObject value',

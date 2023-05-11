@@ -9,6 +9,13 @@
   name: 'TableView',
   extends: 'foam.u2.table.UnstyledTableView',
 
+  cssTokens: [
+    {
+      name: 'borderSize',
+      value: '2px solid $grey300'
+    }
+  ],
+
   css: `
     ^ {
       border-spacing: 0px;
@@ -34,6 +41,25 @@
       scroll-behavior: smooth;
     }
 
+    @keyframes slide {
+      from {
+       top: 32px;
+       opacity: 0;
+      }
+      80% {
+        opacity: 0.3;
+      }
+      to {
+        top: 0;
+        opacity: 1;
+      }
+    }
+    ^row {
+      position: relative;
+      animation-duration: 0.3s;
+      animation-timing-function: ease;
+      animation-name: slide;
+    }
     ^tr {
       background: $white;
       display: flex;
@@ -54,7 +80,7 @@
     }
 
     ^thead > ^tr {
-      border-bottom: 2px solid $grey300;
+      border-bottom: $borderSize;
       box-sizing: border-box;
       border-radius: 4px 4px 0 0;
       width: 100%;

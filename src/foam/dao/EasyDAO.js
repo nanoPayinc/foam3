@@ -359,6 +359,9 @@ foam.CLASS({
             ( getNSpec() != null && getNSpec().getServe() ) )
           delegate = new foam.nanos.auth.PermissionedPropertyDAO.Builder(getX()).setDelegate(delegate).build();
 
+        if ( getNoSelect() )
+          delegate = new foam.dao.NoSelectDAO(getX());
+
         if ( getReadOnly() )
           delegate = new foam.dao.ReadOnlyDAO.Builder(getX()).setDelegate(delegate).build();
 
@@ -369,6 +372,9 @@ foam.CLASS({
             getMdao() != null &&
             ( delegate instanceof ProxyDAO ) )
             delegate = foam.dao.PipelinePMDAO.decorate(getX(), getNSpec(), delegate, 1);
+
+        if ( getOm() )
+          delegate = new foam.nanos.om.DAOOMLogger.Builder(getX()).setNSpec(getNSpec()).setDelegate(delegate).build();
 
         if ( getPm() )
           delegate = new foam.dao.PMDAO.Builder(getX()).setNSpec(getNSpec()).setDelegate(delegate).build();
@@ -563,6 +569,12 @@ foam.CLASS({
       name: 'journalName'
     },
     {
+      documentation: `See JDAO.  Force caller to wait on nspec initailzation. The first call to 'get' for an nspec (x.get(servicename)) will have the calling thread wait on reply of service. This is the default behaviour and should be used for all essential services.  Also this should be used if the model is using SeqNo or NUID for id generation.`,
+      class: 'Boolean',
+      name: 'waitReplay',
+      value: true
+    },
+    {
       class: 'FObjectProperty',
       of: 'foam.dao.Journal',
       generateJava: false,
@@ -577,6 +589,10 @@ foam.CLASS({
       documentation: 'Enable time tracking for concurrent DAO operations',
       class: 'Boolean',
       name: 'timing'
+    },
+    {
+      class: 'Boolean',
+      name: 'om'
     },
     {
       class: 'Boolean',
@@ -665,8 +681,9 @@ foam.CLASS({
       generateJava: false
     },
     {
+      class: 'Int',
       name: 'retryBoxMaxAttempts',
-      class: 'Boolean',
+      value: 5,
       generateJava: false,
     },
     {
@@ -801,6 +818,10 @@ model from which to test ServiceProvider ID (spid)`,
       `
     },
     {
+      name: 'noSelect',
+      class: 'Boolean'
+    },
+    {
       name: 'fixedSize',
       class: 'FObjectProperty',
       of: 'foam.dao.FixedSizeDAO'
@@ -894,7 +915,13 @@ model from which to test ServiceProvider ID (spid)`,
           if ( getWriteOnly() ) {
             delegate = new foam.dao.WriteOnlyJDAO(x, delegate, getOf(), getJournalName());
           } else {
-            delegate = new foam.dao.java.JDAO(x, delegate, getJournalName(), getCluster() && !getSAF());
+            foam.dao.java.JDAO jdao = new foam.dao.java.JDAO();
+            jdao.setX(x);
+            jdao.setFilename(getJournalName());
+            jdao.setCluster(getCluster() && !getSAF());
+            jdao.setWaitReplay(getWaitReplay());
+            jdao.setDelegate(delegate);
+            delegate = jdao;
           }
         }
         return delegate;

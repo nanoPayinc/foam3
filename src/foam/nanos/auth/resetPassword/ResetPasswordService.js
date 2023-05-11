@@ -12,6 +12,12 @@
 
   methods: [
     {
+      name: 'resetPasswordByCode',
+      async: true,
+      args: 'Context x, String identifier, String userName',
+      type: 'Void'
+    },
+    {
       name: 'resetPassword',
       async: true,
       args: 'Context x, ResetPasswordByCode newPasswordObj',

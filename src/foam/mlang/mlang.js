@@ -335,12 +335,14 @@ foam.CLASS({
   documentation: 'Property for Predicate values.',
 
   properties: [
-    ['type', 'foam.mlang.predicate.Predicate'],
+    [ 'type', 'foam.mlang.predicate.Predicate' ],
     {
       name: 'adapt',
-      value: function(_, o) {
-        if ( typeof o === 'function' && ! o.f ) return foam.mlang.predicate.Func.create({ fn: o });
-        return o;
+      value: function(_, o, prop) {
+        if ( foam.Function.isInstance(o) && ! o.f ) return foam.mlang.predicate.Func.create({ fn: o });
+
+        const OLD_ADAPT = foam.core.FObjectProperty.ADAPT.value;
+        return OLD_ADAPT.call(this, null, o, prop);
       }
     }
   ]
@@ -1901,7 +1903,7 @@ foam.CLASS({
     {
       name: 'toString',
       code: function() { return this.toString_(this.value); },
-      javaCode: 'return getValue() == null ? "null" : getValue().toString();'
+      javaCode: 'return getValue() == null ? null : getValue().toString();'
     },
 
     // TODO(adamvy): Re-enable when we can parse this in java more correctly.
@@ -3929,7 +3931,7 @@ foam.CLASS({
     {
       name: 'TRUE',
       factory: function() { return foam.mlang.predicate.True.create() }
-    },
+    }
   ],
 
   methods: [
@@ -4012,17 +4014,19 @@ foam.CLASS({
     function MQL(mql) { return this.MQLExpr.create({query: mql}); },
     function STRING_LENGTH(a) { return this._unary_("StringLength", a); },
     function IS_VALID(o) { return this.IsValid.create({arg1: o}); },
+    function YEARS(p) { return foam.mlang.Years.create({arg1: p}); },
     function MONTH(m) {
       var month = foam.mlang.Month.create({numberOfMonths: m});
       return month;
     },
-
     function DAYS(d) {
       var day = foam.mlang.Day.create({numberOfDays: d});
       return day;
-    }
+    },
+    function NOW() { return foam.mlang.CurrentTime.create(); }
   ]
 });
+
 
 foam.CLASS({
   package: 'foam.mlang',
@@ -4082,7 +4086,6 @@ foam.CLASS({
     'foam.core.ClassInfo',
     'foam.core.FObject',
     'foam.lib.parse.PStream',
-    'foam.lib.parse.ParserContext',
     'foam.lib.parse.ParserContext',
     'foam.lib.parse.ParserContextImpl',
     'foam.lib.parse.StringPStream',
@@ -4166,6 +4169,7 @@ foam.CLASS({
         sps.setString(getQuery());
         PStream ps = sps;
         ParserContext x = new ParserContextImpl();
+        x.set("X", getX());
         ps = parser.parse(ps, x);
         if (ps == null)
           return new False();
@@ -4235,6 +4239,7 @@ foam.CLASS({
     }
   ]
 });
+
 
 foam.CLASS({
   package: 'foam.mlang.predicate',
@@ -4435,9 +4440,11 @@ foam.CLASS({
   package: 'foam.mlang',
   name: 'CurrentTime',
   extends: 'foam.mlang.AbstractExpr',
+
   axioms: [
     { class: 'foam.pattern.Singleton' }
   ],
+
   methods: [
     {
       name: 'f',
@@ -4456,6 +4463,7 @@ foam.CLASS({
   ]
 });
 
+
 foam.CLASS({
   package: 'foam.mlang',
   name: 'StringLength',
@@ -4471,6 +4479,73 @@ foam.CLASS({
       name: 'f',
       code: function(o) { return this.arg1.f(o).length; },
       javaCode: 'return ((String) getArg1().f(obj)).length();'
+    }
+  ]
+});
+
+foam.CLASS({
+  package: 'foam.mlang',
+  name: 'TemplateString',
+  extends: 'foam.mlang.AbstractExpr',
+  javaImports: [
+    'foam.lib.parse.*',
+    'foam.core.AbstractStringPropertyInfo',
+    'foam.core.FObject',
+    'foam.core.PropertyInfo',
+    'java.util.ArrayList'
+  ],
+  properties: [
+    {
+      class: 'String',
+      name: 'string',
+      documentation: "TODO"
+    },
+    {
+      class: 'FObjectProperty',
+      of: 'foam.lib.parse.Parser',
+      name: 'parser',
+      documentation: `the syntax for a JSON is "fieldname": value. The grammar finds all the occurrences of fieldnames in
+        a JSON formatted string and replaces them with alternative field name provided in the map`,
+      javaFactory: `
+      return new Seq1(0,
+       new Repeat(
+         new Seq1(1, new Until(Literal.create("{{")), new Repeat(new foam.lib.parse.Not(Literal.create("}}"), AnyChar.instance()))
+         ), Literal.create("}}"), 1),
+       Literal.create("}}"),
+       new Optional(new Repeat(AnyChar.instance()))
+     );
+      `
+    }
+  ],
+  methods: [
+    {
+      name: 'f',
+      javaCode: `
+      var fobj = (FObject) obj;
+      var templparse = getParser();
+      StringPStream ps = new StringPStream();
+      ps.setString(getString());
+      var psRet = ps.apply(templparse, null);
+      if ( psRet == null ) return null;
+      var axiomsArr = (Object[]) psRet.value();
+      var axioms = new ArrayList<PropertyInfo>();
+      for ( Object a : axiomsArr ) {
+        Object[] arr = (Object[]) a;
+        StringBuilder sb = new StringBuilder();
+        for ( Object num: arr ) {
+          sb.append(num);
+        }
+        var p = (PropertyInfo) fobj.getClassInfo().getAxiomByName(sb.toString());
+        if ( p == null || !( p instanceof AbstractStringPropertyInfo ) ) return null;
+        axioms.add((PropertyInfo)fobj.getClassInfo().getAxiomByName(sb.toString()));
+      }
+      String ret = getString();
+      for ( PropertyInfo prop : axioms ) {
+        ret = ret.replace("{{"+prop.getName()+"}}", (String) prop.f(obj));
+      }
+
+      return ret;
+      `
     }
   ]
 });
@@ -4672,6 +4747,9 @@ foam.CLASS({
       try {
         for ( int i = 0; i < getArgs().length; i++) {
           var current = getArgs()[i].f(obj);
+          if ( current == null ) {
+            return null;
+          }
           if ( current instanceof Number ) {
             var oldResult = result;
             var value = ((Number) current).doubleValue();
@@ -4684,6 +4762,8 @@ foam.CLASS({
             }
           }
         }
+        if ( result == null )
+          return null;
         return getRounding() ? Math.round(result) : result;
       } catch (Throwable t) {
         foam.nanos.logger.Logger logger = foam.nanos.logger.StdoutLogger.instance();
@@ -4777,7 +4857,8 @@ foam.CLASS({
         sb.append(getClass().getSimpleName()).append('(');
         for ( int i = 0; i < getArgs().length; i++ ) {
           if ( i > 0 ) sb.append(", ");
-          sb.append(getArgs()[i].toString());
+          Object arg = getArgs()[i];
+          sb.append(arg != null ? arg.toString() : "null");
         }
         sb.append(')');
         return sb.toString();
@@ -4891,6 +4972,7 @@ foam.CLASS({
   ]
 });
 
+
 foam.CLASS({
   package: 'foam.mlang',
   name: 'If',
@@ -4917,10 +4999,7 @@ foam.CLASS({
       name: 'f',
       javaCode: `
         var expr = getPredicate().f(obj) ? getTrueExpr() : getFalseExpr();
-        if ( expr instanceof If ) {
-          return ((If) expr).f(obj);
-        }
-        return expr;
+        return expr.f(obj);
       `
     },
     {
@@ -4937,6 +5016,8 @@ foam.CLASS({
     }
   ]
 });
+
+
 foam.CLASS({
   package: 'foam.mlang',
   name: 'Month',
@@ -4967,13 +5048,13 @@ foam.CLASS({
       name: 'f',
       code: function() {
         var date = new Date();
-        if ( date.getMonath()+ numberOfMonths > 12 ) date.setYear(date.getYear()+ Math.floor((date.getMonth()+ numberOfMonths)/12));
-        if ( date.getMonth()+ numberOfMonths < 0 ) date.setYear(date.getYear()-1-Math.floor((date.getMonth()- numberOfMonths)/12));
+        if ( date.getMonath() + numberOfMonths > 12 ) date.setYear(date.getYear()+ Math.floor((date.getMonth()+ numberOfMonths)/12));
+        if ( date.getMonth() + numberOfMonths < 0 ) date.setYear(date.getYear()-1-Math.floor((date.getMonth()- numberOfMonths)/12));
         date.setMonth(date.getMonth()+numberOfMonths);
         date.setDate(1);
         date.setHours(0);
         date.setMinutes(0);
-        return date
+        return date;
       },
       javaCode: `
         Calendar cal = Calendar.getInstance();
@@ -4993,6 +5074,7 @@ foam.CLASS({
     }
   ]
 });
+
 
 foam.CLASS({
   package: 'foam.mlang',
@@ -5048,6 +5130,70 @@ foam.CLASS({
   ]
 });
 
-// TODO(braden): We removed Expr.pipe(). That may still be useful to bring back,
-// probably with a different name. It doesn't mean the same as DAO.pipe().
-// remove eof()
+
+foam.CLASS({
+  package: 'foam.mlang',
+  name: 'Years',
+  extends: 'foam.mlang.AbstractExpr',
+  documentation: 'Return the number of years since the specified date.',
+
+/*
+  implements: [
+    'foam.core.Serializable'
+  ],
+  */
+
+
+  javaImports:[
+    'java.time.LocalDate',
+    'java.time.Period',
+    'java.time.ZoneId',
+    'java.util.Date'
+  ],
+
+  properties: [
+    {
+      class: 'foam.mlang.ExprProperty',
+      name: 'arg1'
+    }
+  ],
+
+  methods: [
+    {
+      type: 'FObject',
+      name: 'fclone',
+      javaCode: 'return this;'
+    },
+    {
+      name: 'f',
+      code: function f(obj) {
+        var d = this.arg1.f(obj);
+
+        var monthDiff = Date.now() - d.getTime();
+
+        // convert the calculated difference in date format
+        var ageDt = new Date(monthDiff);
+
+        // extract year from date
+        var year = ageDt.getUTCFullYear();
+
+        // now calculate the age of the user
+        return Math.abs(year - 1970);
+      },
+      javaCode: `
+        Date      d = (Date) getArg1().f(obj);
+        LocalDate l = d.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        return Period.between(l, LocalDate.now()).getYears();
+      `
+    },
+    {
+      name: 'toString',
+      type: 'String',
+      code: function() {
+        return 'Years(\'' + this.arg1 + '\')';
+      },
+      javaCode: ' return "Day(\'" + getArg1() + "\')"; '
+    }
+  ]
+});

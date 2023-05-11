@@ -10,6 +10,8 @@ foam.CLASS({
 
   documentation: 'Javascript DAO Decorator which adds select caching to a delegate DAO.',
 
+  requires: ['foam.dao.FnSink'],
+
   properties: [
     {
       // The cache for local storage and fast access
@@ -21,6 +23,16 @@ foam.CLASS({
   ],
 
   methods: [
+    function init() {
+      // if anything changes in the delegate -> clear cache
+      // Can happen if the dao is modified outside the DAOController (for eg. in wizards)
+      this.onDetach(this.delegate.listen(this.FnSink.create({ fn: () => this.cache = {} })));
+    },
+    function detach() {
+      this.SUPER();
+      this.cache = {};
+    },
+
     // Put invalidates cache and is forwarded to the source.
     function put_(x, o) {
       this.cache = {};
@@ -55,11 +67,14 @@ foam.CLASS({
 
 
           // Return data from cache
+          // only add elements from cache that werent fetched directly from the dao
           for ( let idx = requestStartIdx ; idx < endIdx ; idx++ ) {
             if ( foam.dao.ArraySink.isInstance(sink) ) {
-              sink.put(self.cache[key][idx]);
+              if ( ! sink.array[idx-requestStartIdx] )
+                sink.array[idx-requestStartIdx] = self.cache[key][idx];
             } else if ( foam.mlang.sink.Projection.isInstance(sink) ) {
-              sink.projectionWithClass[idx-requestStartIdx] = self.cache[key][idx];
+              if ( ! sink.projectionWithClass[idx-requestStartIdx] )
+                sink.projectionWithClass[idx-requestStartIdx] = self.cache[key][idx];
             }
           }
 

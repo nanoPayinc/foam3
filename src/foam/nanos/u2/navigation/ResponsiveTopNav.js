@@ -24,6 +24,10 @@ foam.CLASS({
     {
       name: 'topNavBackground',
       value: '$foam.nanos.menu.VerticalMenu.menuBackground'
+    },
+    {
+      name: 'borderSize',
+      value: '2px solid rgba(0, 0, 0, 0.06)'
     }
   ],
 
@@ -31,7 +35,7 @@ foam.CLASS({
     ^ {
       align-items: center;
       background-color: $topNavBackground;
-      border-bottom: 2px solid rgba(0, 0, 0, 0.06);
+      border-bottom: $borderSize;
       display: flex;
       min-height: 64px;
       justify-content: space-between;
@@ -40,15 +44,16 @@ foam.CLASS({
       width: 100%;
     }
     ^components-container {
-      align-items: center;
-      display: flex;
       flex: 1;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
     }
-    ^components-container > * + * {
-      margin-left: 8px;
+    ^components-container^logo-adjust {
+      gap: 16px;
     }
-    ^menuControl{
-      position: absolute;
+    ^menuControl.foam-u2-view-NavigationButton {
+      justify-content: flex-start;
     }
     ^logo {
       flex: 1;
@@ -57,10 +62,12 @@ foam.CLASS({
 
     @media (min-width: /*%DISPLAYWIDTH.MD%*/ 768px) {
       ^components-container {
-        flex: unset;
+        display: flex;
+        flex: 1;
+        gap: 8px;
       }
-      ^menuControl{
-        position: relative;
+      ^right {
+        justify-content: flex-end;
       }
       ^logo {
         flex: unset;
@@ -71,8 +78,7 @@ foam.CLASS({
 
   properties: [
     {
-      class: 'Boolean',
-      name: 'hasNotifictionMenuPermission'
+      name: 'notifications'
     },
     {
       name: 'nodeName',
@@ -83,7 +89,7 @@ foam.CLASS({
   methods: [
     function checkNotificationAccess() {
       this.menuDAO.find('notifications').then(bb=>{
-        this.hasNotifictionMenuPermission = bb;
+        this.notifications = bb;
       });
     },
     function render() {
@@ -94,6 +100,7 @@ foam.CLASS({
         .addClass(this.myClass())
         .start().addClass(this.myClass('components-container'))
           // Menu Open/Close
+          .addClass(this.myClass('logo-adjust'))
           .startContext({ data: this })
             .start(this.MENU_CONTROL, { themeIcon: 'hamburger', buttonStyle: 'TERTIARY', size: 'SMALL' })
               .addClass(this.myClass('menuControl'))
@@ -106,17 +113,21 @@ foam.CLASS({
             })
           .end()
         .end()
-        // TODO: Make Responsive
         .add(this.slot(function(displayWidth) {
           if ( displayWidth.ordinal >= foam.u2.layout.DisplayWidth.MD.ordinal ) {
-            return this.E().addClass(this.myClass('components-container'))
-            .start({ class: 'foam.nanos.u2.navigation.NotificationMenuItem' })
-              .show(self.hasNotifictionMenuPermission$)
-            .end()
+            return this.E().addClass(this.myClass('components-container'), this.myClass('right'))
+            .add(self.slot(function(notifications) {
+              if ( ! notifications ) return;
+              return this.E().start(notifications, {
+                label: foam.nanos.u2.navigation.NotificationMenuItem.create({}, self),
+                buttonStyle: 'UNSTYLED'
+              }).show(notifications).end();
+            }))
             .tag({ class: 'foam.nanos.auth.LanguageChoiceView' })
             .tag({ class: 'foam.nanos.u2.navigation.UserInfoNavigationView' });
           } else {
-            return this.E();
+            return this.E()
+              .tag({ class: 'foam.nanos.auth.LanguageChoiceView' });
           }
         }));
     }

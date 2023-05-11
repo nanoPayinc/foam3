@@ -1052,7 +1052,14 @@ foam.CLASS({
           code += 'return ';
         }
 
-        code += 'get' + foam.String.capitalize(this.property) + '()';
+        var isContextOriented = this.args.length && this.args[0].name === 'x' && this.args[0].type === 'Context';
+
+        code += 'get' + foam.String.capitalize(this.property);
+        if ( isContextOriented ) {
+          code += '(x)';
+        } else {
+          code += '()';
+        }
         code += '.' + this.name + '(';
 
         for ( var i = 0 ; this.args && i < this.args.length ; i++ ) {
@@ -1281,8 +1288,8 @@ foam.CLASS({
   properties: [
     { class:           'foam.java.JavaType' },
     ['javaInfoType',   'foam.core.AbstractEnumPropertyInfo'],
-    ['javaJSONParser', 'foam.lib.json.IntParser.instance()'],
-    ['javaCSVParser',  'foam.lib.json.IntParser.instance()']
+    ['javaJSONParser', 'new foam.lib.parse.Alt(foam.lib.json.IntParser.instance(), foam.lib.json.StringParser.instance())'],
+    ['javaCSVParser',  'new foam.lib.parse.Alt(foam.lib.json.IntParser.instance(), foam.lib.json.StringParser.instance())']
   ],
 
   methods: [
@@ -1319,24 +1326,18 @@ foam.CLASS({
         name: 'toJSON',
         visibility: 'public',
         type: 'void',
+        // args: 'foam.lib.json.Outputter outputter, Object value',
         args: [
-          {
-            name: 'outputter',
-            type: 'foam.lib.json.Outputter'
-          },
-          {
-            name: 'value',
-            type: 'Object'
-          }
+          { type: 'foam.lib.json.Outputter', name: 'outputter' },
+          { type: 'Object',                  name: 'value' }
         ],
         body: `outputter.output(getOrdinal(value));`
       });
 
       var cast = info.getMethod('cast');
-      cast.body = `if ( o instanceof Integer ) {
-  return forOrdinal((int) o);
-}
-return (${this.of.id})o;`;
+      cast.body = `if ( o instanceof Integer ) return forOrdinal((int) o);
+  if ( o instanceof String ) return Enum.valueOf(${this.of.id}.class, (String) o);
+  return (${this.of.id})o;`;
 
       return info;
     }
@@ -1475,11 +1476,11 @@ foam.CLASS({
         try {
           if ( o instanceof Number ) {
             return new java.util.Date(((Number) o).longValue());
-          } else if ( o instanceof String ) {
-            return (java.util.Date) fromString((String) o);
-          } else {
-            return (java.util.Date) o;
           }
+          if ( o instanceof String ) {
+            return (java.util.Date) fromString((String) o);
+          }
+          return (java.util.Date) o;
         } catch ( Throwable t ) {
           throw new RuntimeException(t);
         }`;
@@ -1572,7 +1573,7 @@ foam.CLASS({
     function createJavaPropertyInfo_(cls) {
       var info = this.SUPER(cls);
 
-      var getValueClass = info.getMethod('getValueClass');
+      var getValueClass  = info.getMethod('getValueClass');
       getValueClass.body = 'return java.util.List.class;';
 
       return info;
@@ -1727,7 +1728,7 @@ foam.CLASS({
       }
       return info;
     }
-  ],
+  ]
 });
 
 
@@ -2037,6 +2038,19 @@ foam.CLASS({
     },
     ['javaInfoType', 'foam.core.AbstractFObjectPropertyInfo'],
     ['javaJSONParser', 'foam.lib.json.FObjectParser.instance()']
+  ],
+
+  methods: [
+    function buildJavaClass(cls) {
+      this.SUPER(cls);
+      cls.method({
+        name: `get${foam.String.capitalize(this.name)}`,
+        visibility: 'public',
+        type: this.javaType,
+        args: [ { name: 'x', type: 'foam.core.X' } ],
+        body: `return get${foam.String.capitalize(this.name)}();`
+      });
+    }
   ]
 });
 
@@ -2250,7 +2264,7 @@ foam.CLASS({
     function ensurePath(p) {
       var i     = 1 ;
       var parts = p.split(this.sep);
-      var path  = '/' + parts[0];
+      var path  = parts[0] === '' ? this.sep : parts[0];
 
       while ( i < parts.length ) {
         try {
