@@ -99,14 +99,21 @@ foam.CLASS({
         nu = foam.Array.shallowClone(nu);
 
         // Upgrade single values to [value, value].
-        for ( var i = 0; i < nu.length; i++ ) {
+        for ( var i = 0 ; i < nu.length ; i++ ) {
           if ( ! Array.isArray(nu[i]) ) {
             nu[i] = [ nu[i], nu[i] ];
           }
         }
 
         if ( this.dynamicSize ) this.size = Math.min(nu.length, this.maxSize);
+
         return nu;
+      },
+      postSet: function() {
+        if ( this.data ) {
+          var choice = this.findChoiceByData(this.data);
+          if ( choice !== this.choice ) this.choice = choice;
+        }
       }
     },
     {
@@ -226,7 +233,7 @@ foam.CLASS({
 
       this.onDAOUpdate();
 
-      this.add(this.slot(function(mode) {
+      this.add(this.slot(function(mode, text) {
         if ( mode !== foam.u2.DisplayMode.RO ) {
           return self.E()
             .start(self.selectSpec, {
@@ -245,7 +252,7 @@ foam.CLASS({
             .end();
         }
 
-        return self.E().translate(self.text + ".name", self.text);
+        return text ? self.E().translate(text + '.name', text) : '';
       }));
 
       this.dao$proxy.on.sub(this.onDAOUpdate);
@@ -331,7 +338,7 @@ foam.CLASS({
         */
 
         var p = this.mode === foam.u2.DisplayMode.RW ?
-          dao.limit(150).select().then(s => s.array) :
+          dao.limit(350).select().then(s => s.array) :
           dao.find(this.data).then(o => o ? [o] : []);
 
         p.then(a => {

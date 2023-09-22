@@ -25,6 +25,21 @@ foam.LIB({
           foam.assert(match, 'Unable to deduce method name from function');
           return match[1];
         }
+    },
+    {
+      name: 'isArrow',
+      code: function(f) {
+        return ! f.hasOwnProperty('prototype');
+      }
+    },
+    {
+      name: 'assertNotArrow',
+      code: function(f) {
+        // Choose your level of debugging:
+//        console.warn('Invalid use of arrow function in fluent method.');
+//        if ( foam.Function.isArrow(f) ) debugger;
+//        foam.assert(! foam.Function.isArrow(f), 'Illegal use of arrow function in fluent method.');
+      }
     }
   ]
 });
@@ -534,7 +549,7 @@ foam.LIB({
       var intArrayForHash   = new Int32Array(bufForHash);
 
       return function hashCode(n) {
-        if (Number.isInteger(n)) return n & n; // Truncate to 32 bits.
+        if ( Number.isInteger(n) ) return n & n; // Truncate to 32 bits.
 
         floatArrayForHash[0] = n;
         var hash = ((intArrayForHash[0] << 5) - intArrayForHash[0]) +
@@ -1239,19 +1254,19 @@ foam.LIB({
      * The provided factory function creates the class.
      */
     function registerClassFactory(m, thunk) {
-      var pkg = foam.package.ensurePackage(globalThis, m.package);
-      var tmp;
+      var value;
 
       Object.defineProperty(
-        pkg,
+        foam.package.ensurePackage(globalThis, m.package),
         m.name, {
           configurable: true,
           get: function() {
-            if ( tmp ) return tmp;
+            if ( value ) return value;
 
-            tmp = thunk();
+            value = thunk();
+            if ( value ) thunk = undefined;
 
-            return tmp;
+            return value;
           }
         }
       );

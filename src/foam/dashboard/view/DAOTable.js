@@ -40,7 +40,7 @@ foam.CLASS({
       padding-left: 20px;
       padding-right: 20px;
     }
-    ^ div.table-row:last-child div {
+    ^ div.table-row:last-child > div {
       border-bottom: none;
     }
     ^ .view-more button {
@@ -70,6 +70,7 @@ foam.CLASS({
   properties: [
     {
       name: 'citationView',
+      class: 'foam.u2.ViewSpec',
       factory: function() {
         return this.DashboardCitationView;
       }
@@ -122,7 +123,11 @@ foam.CLASS({
       menu item. Default is empty.
       `
     },
-    ['limit', 5],
+    {
+      class: 'Int',
+      name: 'limit',
+      value: 5
+    },
     'mode'
   ],
 
@@ -155,8 +160,7 @@ foam.CLASS({
             })
             .forEach(currentValues, function(obj) {
               e.start().addClass('table-row')
-                .start({
-                  class: self.citationView,
+                .start(self.citationView, {
                   data: obj
                 })
                .end();

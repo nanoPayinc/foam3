@@ -224,7 +224,7 @@ foam.CLASS({
       documentation: 'The first name of the User.',
       section: 'userInformation',
       order: 70,
-      gridColumns: 6,
+gridColumns: { columns: 4, smColumns: 12, xsColumns: 12 },
       includeInDigest: true,
       containsPII: true,
       trim:true
@@ -235,7 +235,7 @@ foam.CLASS({
       documentation: 'The middle name of the User.',
       section: 'userInformation',
       order: 80,
-      gridColumns: 6,
+gridColumns: { columns: 4, smColumns: 12, xsColumns: 12 },
       includeInDigest: true,
       containsPII: true,
       columnPermissionRequired: true,
@@ -248,7 +248,7 @@ foam.CLASS({
       documentation: 'The last name of the User.',
       section: 'userInformation',
       order: 90,
-      gridColumns: 6,
+gridColumns: { columns: 4, smColumns: 12, xsColumns: 12 },
       includeInDigest: true,
       containsPII: true,
       trim:true
@@ -425,7 +425,7 @@ foam.CLASS({
         defaulting to a placeholder picture.`,
       view: {
         class: 'foam.nanos.auth.ProfilePictureView',
-        placeholderImage: 'images/ic-placeholder.png'
+        placeholderImage: '/images/ic-placeholder.png'
       },
       section: 'userInformation',
       order: 230,
@@ -446,25 +446,16 @@ foam.CLASS({
       name: 'created',
       includeInDigest: true,
       documentation: 'The date and time of when the User was created in the system.',
-      createVisibility: 'HIDDEN',
-      updateVisibility: 'RO',
-      section: 'userInformation',
-      order: 250,
-      gridColumns: 6,
-      includeInDigest: true
+      readPermissionRequired: true,
+      order: 250
     },
     {
       class: 'DateTime',
       name: 'lastModified',
       includeInDigest: true,
       documentation: 'The date and time the User was last modified.',
-      createVisibility: 'HIDDEN',
-      updateVisibility: 'RO',
-      storageOptional: true,
-      section: 'userInformation',
       readPermissionRequired: true,
-      order: 260,
-      gridColumns: 6
+      order: 260
     },
     {
       class: 'String',

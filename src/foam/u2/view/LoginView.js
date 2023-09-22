@@ -86,12 +86,6 @@ foam.CLASS({
     height: 4vh;
   }
 
-  /* TITLE TXT ON DATA */
-  ^ .title-top {
-    font-size: 2.5em;    
-    font-weight: bold;
-  }
-
   /* ON DATA */
   ^content-form {
     width: 75%;
@@ -99,6 +93,7 @@ foam.CLASS({
     display: flex;
     flex-direction: column;
     gap: 2rem;
+    align-self: center;
   }
 
   /* ON ALL FOOTER TEXT */
@@ -140,10 +135,8 @@ foam.CLASS({
       /* ON NO IMG SPLIT & IMG SPLIT */
   ^ .disclaimer-login {
     width: 35vw;
-    font-size: 0.75em;
     color: #8e9090;
     margin-left: 12vw;
-    line-height: 1.5;
     background: transparent;
   }
 
@@ -172,11 +165,6 @@ foam.CLASS({
     }
     .foam-u2-view-LoginView-image-one {
       width: 28vw;
-    }
-  }
-  @media (min-width: /*%DISPLAYWIDTH.SM%*/ 576px ) {
-    ^content-form {
-      align-self: center;
     }
   }
   `,
@@ -308,7 +296,7 @@ foam.CLASS({
           }))
         .end()
         // Title txt and Data
-        .callIf(self.showTitle, function() { this.start().addClass('title-top').add(self.data.TITLE).end(); })
+        .callIf(self.showTitle, function() { this.start().addClass('h300').add(self.data.TITLE).end(); })
         .addClass(self.myClass('content-form'))
         .callIf(self.displayWidth, function() { this.onDetach(self.displayWidth$.sub(self.resize)); })
         .start()
@@ -361,7 +349,7 @@ foam.CLASS({
           }});
         split.rightPanel.add(right);
       } else {
-        right.addClass('centerVertical').start().addClass('disclaimer-login').add(this.data.DISCLAIMER).end();
+        right.addClass('centerVertical').start().addClass('p-xs', 'disclaimer-login').add(this.data.DISCLAIMER).end();
       }
 
       // RENDER EVERYTHING ONTO PAGE
@@ -384,7 +372,7 @@ foam.CLASS({
           .end()
         .end()
       // deciding to render half screen with img and data or just centered data
-        .callIfElse( this.imgPath && this.leftView && split, () => {
+        .callIfElse( (this.imgPath || this.leftView) && split, () => {
           if ( ! this.leftView ) {
             split.leftPanel
               .addClass('cover-img-block1')

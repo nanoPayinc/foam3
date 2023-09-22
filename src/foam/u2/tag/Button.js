@@ -307,7 +307,7 @@ foam.CLASS({
 
     ^text{
       background: none;
-      border: 1px solid $buttonPrimaryColor;
+      border: 1px solid transparent;
       color: $buttonPrimaryColor;
     }
 
@@ -393,8 +393,8 @@ foam.CLASS({
     }
     ^large svg,
     ^large img {
-      width: 2.25em;
-      height: 2.25em;
+      width: 1.5em;
+      height: 1.5em;
     }
     ^link svg, link img {
       width: 1em;

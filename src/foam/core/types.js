@@ -943,6 +943,12 @@ foam.CLASS({
       value: true
     },
     {
+      class: 'Boolean',
+      name: 'showSubColumns',
+      documentation: 'Allow for selection of referenced columns in table views.',
+      value: true
+    },
+    {
       name: 'menuKeys',
       documentation: `
         A list of menu ids.
@@ -998,7 +1004,10 @@ foam.CLASS({
 
       Object.defineProperty(proto, daoName, {
         get: function classGetter() {
-          return this.__subContext__[self.targetDAOKey] || this[self.targetDAOKey];
+          var dao = this.__subContext__[self.targetDAOKey] || this[self.targetDAOKey];
+          if ( ! dao )
+            console.warn(`Missing Reference DAO: ${self.targetDAOKey} for property ${proto.cls_.id}.${self.name}`);
+          return dao;
         },
         configurable: true
       });

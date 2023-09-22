@@ -20,11 +20,11 @@ require('../src/foam_node.js');
 
 var [argv, X, flags] = require('./processArgs.js')(
   '',
-  { version: '', license: '', pom: 'pom' },
-  { debug: true, java: false, web: true, genjava: false }
+  { version: '', pom: 'pom' },
+  { debug: true, java: false, web: true }
 );
 
-foam.require(X.pom, false, true);
+X.pom.split(',').forEach(pom => foam.require(pom, false, true));
 
 var version  = X.version;
 var files    = {}; // filename to content map for uglify
@@ -36,19 +36,43 @@ loaded.unshift(path_.dirname(__dirname) + '/src/foam.js');
 loaded.forEach(l => {
   try {
     l = path_.resolve(__dirname, l);
-    if ( foam.excluded[l] ) { console.log('****** EXCLUDING', l); return; }
-    console.log('****** INCLUDING', l);
+    if ( foam.excluded[l] ) { /* console.log('****** EXCLUDING', l); */ return; }
+    // console.log('****** INCLUDING', l);
     files[l] = fs_.readFileSync(l, "utf8");
   } catch (x) {}
 });
 
 try {
+  var licenses = {};
+  function addLicense(l) {
+    l = l.split('\n').map(l => l.trim()).join('\n');
+    licenses[l] = true;
+  }
+
+  foam.poms.forEach(pom => {
+    if ( foam.String.isInstance(pom.licenses) ) {
+      addLicense(pom.licenses);
+    } else if ( foam.Array.isInstance(pom.licenses) ) {
+      pom.licenses.forEach(addLicense);
+    }
+  });
+  var a = Object.keys(licenses);
+  var license = '';
+  if ( a.length == 1 ) {
+    license = '\nCopyright:\n';
+  } else if ( a.length ) {
+    license = '\nPortions Copyright:\n';
+  }
+  license += a.join('');
+
+  license = license.split('\n').map(l => '// ' + l).join('\n');
+
   var code = uglify_.minify(
     files,
     {
       compress: false,
       mangle:   false,
-      output:   { preamble: `// Generated: ${new Date()}\n//\n${X.license}\nvar foam = { main: function() { /* prevent POM loading since code is in-lined below */ } };\n` }
+      output:   { preamble: `// Generated: ${new Date()}\n\n${license}\nvar foam = { main: function() { /* prevent POM loading since code is in-lined below */ } };\n` }
     }).code;
 
   // Remove most Java and Swift Code
@@ -82,7 +106,9 @@ try {
   // Put each Model on its own line
   code = code.replaceAll(/foam.CLASS\({/gm, '\nfoam.CLASS({');
 
-  fs_.writeFileSync(version ? `foam-bin-${version}.js` : 'foam-bin.js', code);
+  var filename = version ? `foam-bin-${version}.js` : 'foam-bin.js';
+  console.log('GENJS: Writing', filename);
+  fs_.writeFileSync(filename, code);
 } catch (x) {
   console.log('ERROR (JSBUILD):', x);
 }

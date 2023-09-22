@@ -11,19 +11,21 @@ foam.CLASS({
 
   axioms: [foam.pattern.Faceted.create()],
 
+  imports: ['wizardlet'],
   css: `
     ^ {
       text-align: center;
+      margin: 8rem 0;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       margin: 8rem 0;
       height: 100%;
-      gap: 42px;
+      gap: 2rem;
     }
     ^image {
-      width: 12rem;
+      width: 8rem;
     }
   `,
 
@@ -31,7 +33,9 @@ foam.CLASS({
     {
       class: 'String',
       name: 'message',
-      value: 'Success!'
+      expression: function(wizardlet$message) {
+        return wizardlet$message || 'Success!';
+      }
     },
     {
       class: 'Image',
@@ -52,7 +56,7 @@ foam.CLASS({
           .end()
         .endContext()
         .start()
-          .addClass('h200')
+          .addClass('h300')
           .add(this.message$)
         .end();
     }

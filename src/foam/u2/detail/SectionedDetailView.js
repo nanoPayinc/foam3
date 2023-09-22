@@ -17,26 +17,21 @@ foam.CLASS({
   ],
 
   css: `
-    ^ .inner-card {
-      padding: 14px 24px
-    }
-
     ^ .foam-u2-view-ScrollTableView table {
       width: 100%;
-    }
-
-    ^ ^card-container + ^card-container {
-      margin-top: 16px;
     }
   `,
 
   properties: [
     {
-      class: 'foam.u2.ViewSpec',
-      name: 'border',
-      factory: function() {
-        return this.CardBorder;
-      }
+      class: 'Map',
+      name: 'borders',
+      documentation: `Map of borders for each section in the format of  { sectionName: {sectionBorderSpec} }`
+    },
+    {
+      class: 'Boolean',
+      name: 'showTitle',
+      value: true
     }
   ],
 
@@ -75,12 +70,13 @@ foam.CLASS({
                   .addClass(self.myClass('card-container'))
                   .start('h2')
                     .add(title$)
-                    .show(title$)
+                    .show(title$.and(self.showTitle$))
                   .end()
-                  .start(self.border)
+                  .start(self.borders[s.name] || self.CardBorder)
                     .addClass('inner-card')
-                    .tag(self.SectionView, {
+                    .tag(s.view, {
                       data$: self.data$,
+                      of$: self.of$,
                       section: s,
                       showTitle: false
                     })

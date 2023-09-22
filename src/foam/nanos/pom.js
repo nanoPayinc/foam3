@@ -7,16 +7,32 @@
 foam.POM({
   name: "nanos",
   version: 3,
+  licenses: [
+    `
+    Copyright 2023 The FOAM Authors. All Rights Reserved.
+    http://www.apache.org/licenses/LICENSE-2.0
+    `,
+    `
+    Copyright 2016 Google Inc. All Rights Reserved.
+    http://www.apache.org/licenses/LICENSE-2.0
+    `
+  ],
   projects: [
-    { name: "medusa/pom"}
+    { name: "app/pom"},
+    { name: "crunch/pom"},
+    { name: "jetty/pom"},
+    { name: "medusa/pom"},
+    { name: "ruler/pom"}
   ],
   files: [
     { name: "client/ClientBuilder",                                                       flags: "js" },
     { name: "controller/AppStyles",                                                       flags: "web" },
+    { name: "controller/Fonts",                                                           flags: "web" },
     { name: "logger/DAOLogger",                                                           flags: "js|java" },
     { name: "logger/Logger",                                                              flags: "js|java" },
     { name: "logger/LoggingDAO",                                                          flags: "js|java" },
     { name: "logger/LogMessage",                                                          flags: "js|java" },
+    { name: "logger/LogMessageCitationView",                                             flags: "js" },
     { name: "logger/LogMessageDAO",                                                       flags: "js|java" },
     { name: "logger/AbstractLogger",                                                      flags: "js|java" },
     { name: "logger/ProxyLogger",                                                         flags: "js|java" },
@@ -30,6 +46,7 @@ foam.POM({
     { name: "logger/LoggerUserInfo",                                                      flags: "js|java" },
     { name: "er/EventRecord",                                                             flags: "js|java" },
     { name: "er/EventRecordAlarmRuleAction",                                              flags: "js|java" },
+    { name: "er/EventRecordCitationView",                                                 flags: "js" },
     { name: "er/EventRecordDAO",                                                          flags: "js|java" },
     { name: "er/EventRecordResponseDAO",                                                  flags: "js|java" },
     { name: "er/EventRecordNotificationRuleAction",                                       flags: "js|java" },
@@ -77,6 +94,7 @@ foam.POM({
     { name: "alarming/AddAlarmNameDAO",                                                   flags: "js|java" },
     { name: "alarming/Alarm",                                                             flags: "js|java" },
     { name: "alarming/AlarmAndMonitoring",                                                flags: "js|java" },
+    { name: "alarming/AlarmCitationView",                                                 flags: "js" },
     { name: "alarming/AlarmConfig",                                                       flags: "js|java" },
     { name: "alarming/AlarmConfigOMNameDAO",                                              flags: "js|java" },
     { name: "alarming/AlarmConfigOMNameSink",                                             flags: "js|java" },
@@ -287,7 +305,6 @@ foam.POM({
     { name: "script/Relationships",                                                       flags: "js" },
     { name: "script/TestRunnerConfig",                                                    flags: "js|java" },
     { name: "script/TestRunnerScript",                                                    flags: "js|java" },
-    { name: "jetty/HttpServer",                                                           flags: "js|java" },
     { name: "servlet/Servlet",                                                            flags: "js|java" },
     { name: "servlet/ErrorPageMapping",                                                   flags: "js|java" },
     { name: "servlet/FilterMapping",                                                      flags: "js|java" },
@@ -296,6 +313,7 @@ foam.POM({
     { name: "test/Test",                                                                  flags: "js|java" },
     { name: "test/TestBorder",                                                            flags: "js" },
     { name: "cron/Cron",                                                                  flags: "js|java" },
+    { name: "cron/CronCitationView",                                                      flags: "js" },
     { name: "cron/CronDAO",                                                               flags: "js|java" },
     { name: "cron/CronJobDAO",                                                            flags: "js|java" },
     { name: "cron/CronSchedule",                                                          flags: "js|java" },
@@ -315,6 +333,7 @@ foam.POM({
     { name: "cron/NextDate",                                                              flags: "js|java" },
     { name: "cron/NextDateService",                                                       flags: "js|java" },
     { name: "cron/ClientNextDateService",                                                 flags: "js|java" },
+    { name: "cron/test/CronScheduleTest",                                                 flags: "js|java" },
     { name: "cron/test/IntervalScheduleTest",                                             flags: "js|java" },
     { name: "cron/test/TimeOfDayScheduleTest",                                            flags: "js|java" },
     { name: "export/ClientGoogleSheetsExportService",                                     flags: "js|java" },
@@ -340,6 +359,7 @@ foam.POM({
     { name: "google/api/sheets/views/GoogleSheetsImportConfig",                           flags: "js|java" },
     { name: "google/api/sheets/views/GoogleSheetsDataImportService",                      flags: "js|java" },
     { name: "google/api/sheets/views/GoogleSheetsDataImportServiceImpl",                  flags: "js|java" },
+    { name: "google/api/sheets/views/GoogleSheetsTransactionsDataImportServiceImpl",     flags: "js|java" },
     { name: "google/api/sheets/views/ImportDataMessage",                                  flags: "js|java" },
     { name: "google/api/sheets/views/wizardModal/WizardModal",                            flags: "js" },
     { name: "google/api/sheets/views/wizardModal/WizardModalSubView",                     flags: "js" },
@@ -369,7 +389,6 @@ foam.POM({
     { name: "pm/TemperatureCView",                                                        flags: "js" },
     { name: "pm/PMFactory",                                                               flags: "js|java" },
     { name: "pool/ThreadPoolAgency",                                                      flags: "js|java" },
-    { name: "jetty/JettyThreadPoolConfig",                                                flags: "js|java" },
     { name: "auth/PMAuthService",                                                         flags: "js|java" },
     { name: "notification/ClientResendNotificationService",                               flags: "js|java" },
     { name: "notification/DAONotificationRuleAction",                                     flags: "js|java" },
@@ -445,9 +464,11 @@ foam.POM({
     { name: "demo/relationship/Student",                                                  flags: "js|java" },
     { name: "demo/relationship/Controller",                                               flags: "js" },
     { name: "dashboard/Demo",                                                             flags: "js" },
-    { name: "ticket/TicketStatus",                                                        flags: "js|java" },
-    { name: "ticket/TicketComment",                                                       flags: "js|java" },
     { name: "ticket/Ticket",                                                              flags: "js|java" },
+    { name: "ticket/TicketComment",                                                       flags: "js|java" },
+    { name: "ticket/TicketCommentCompactionSink",                                      flags: "js|java" },
+    { name: "ticket/TicketCompactionSink",                                                flags: "js|java" },
+    { name: "ticket/TicketStatus",                                                        flags: "js|java" },
     { name: "ticket/Relationships",                                                       flags: "js" },
     { name: "ticket/TicketAddCommentDAO",                                                 flags: "js|java" },
     { name: "ticket/TicketOwnerDAO",                                                      flags: "js|java" },
@@ -457,6 +478,8 @@ foam.POM({
     { name: "ticket/TicketNotification",                                                  flags: "js|java" },
     { name: "ticket/TicketNotificationNotificationCitationView",                          flags: "js" },
     { name: "ticket/SummaryCard",                                                         flags: "js" },
+    { name: "ticket/TicketCloseCommand",                                                  flags: "js|java" },
+    { name: "ticket/CloseTicketCommandDAO",                                               flags: "js|java" },
     { name: "dig/bench/DIGBenchmark",                                                     flags: "js|java" },
     { name: "dig/bench/DistributedDIGBenchmarkRunner",                                    flags: "js|java" },
     { name: "dig/ExternalDataAware",                                                      flags: "js|java" },
@@ -543,6 +566,7 @@ foam.POM({
     { name: "analytics/ruler/LogAnalyticEventRuleAction",                                 flags: "js|java" },
     { name: "analytics/Candlestick",                                                      flags: "js|java" },
     { name: "analytics/CandlestickChartView",                                             flags: "js" },
+    { name: "analytics/CandlestickChartCitationView",                                     flags: "js" },
     { name: "analytics/CandlestickKeyView",                                               flags: "js" },
     { name: "analytics/CandlestickUniqueKeyPredicate",                                    flags: "js|java" },
     { name: "analytics/DemoChartView",                                                    flags: "js" },
@@ -581,7 +605,6 @@ foam.POM({
     { name: "crunch/UserCapabilityJunctionRefine",                                        flags: "js|java" },
     { name: "crunch/CapabilityCapabilityJunctionRefine",                                  flags: "js|java" },
     { name: "crunch/CapabilityCategoryCapabilityJunctionRefine",                          flags: "js" },
-    { name: "crunch/RenewableData",                                                       flags: "js|java" },
     { name: "crunch/UCJProperty",                                                         flags: "js" },
     { name: "crunch/UCJUpdateApprovable",                                                 flags: "js|java" },
     { name: "crunch/connection/CapabilityPayload",                                        flags: "js|java" },
@@ -592,7 +615,6 @@ foam.POM({
     { name: "crunch/connection/CapabilityPayloadDAO",                                     flags: "js|java" },
     { name: "crunch/PredicatedPrerequisiteCapabilityJunctionDAO",                         flags: "js|java" },
     { name: "crunch/SendNotificationOnTopLevelCapabilityStatusUpdate",                    flags: "js|java" },
-    { name: "crunch/IsUserCapabilityJunctionStatusUpdate",                                flags: "js|java" },
     { name: "crunch/RemoveJunctionsOnUserRemoval",                                        flags: "js|java" },
     { name: "crunch/CrunchService",                                                       flags: "js|java" },
     { name: "crunch/SessionCrunchCache",                                                  flags: "js|java" },
@@ -609,6 +631,7 @@ foam.POM({
     { name: "crunch/predicate/IsAgentUpdate",                                             flags: "js|java" },
     { name: "crunch/predicate/IsCapabilityJunctionOf",                                    flags: "js|java" },
     { name: "auth/CreateUserCapabilityJunctionOnSpidSet",                                 flags: "js|java" },
+    { name: "auth/Credential",                                                            flags: "js|java" },
     { name: "auth/SetUserServiceProviderJunctionRuleAction",                              flags: "js|java" },
     { name: "auth/FilterBySpidService",                                                   flags: "js|java" },
     { name: "auth/PreventDuplicateEmailLoginService",                                     flags: "js|java" },
@@ -695,6 +718,7 @@ foam.POM({
     { name: 'auth/email/EmailVerificationService',                                        flags: 'js|java' },
     { name: 'auth/email/ServerEmailVerificationService',                                  flags: 'js|java' },
     { name: 'auth/email/VerifyEmail',                                                     flags: 'js|java' },
-    { name: 'auth/email/VerificationCodeException',                                       flags: 'js|java' }
+    { name: 'auth/email/VerificationCodeException',                                       flags: 'js|java' },
+    { name: 'auth/email/wizard/EmailVerificationCodeLoader',                              flags: 'web' }
   ]
 });

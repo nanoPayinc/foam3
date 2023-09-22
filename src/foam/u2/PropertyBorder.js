@@ -62,13 +62,11 @@
     ^errorText {
       display: flex;
       align-items: center;
-      line-height: 1.25;
       /*
         Have to use this style here since nanos uses CSS resets to
         set 1 rem = 10px instead of the default 16px
         May cause weird styling outside nanos
       */
-      font-size: 1.2rem;
       min-height: 1.25em;
       justify-content: flex-start;
       gap: 0.2rem;
@@ -122,7 +120,10 @@
 
       this.SUPER();
 
-      var data = this.__context__.data;
+      if ( this.__context__.controllerMode$ )
+        this.controllerMode$.follow(this.__context__.controllerMode$);
+
+      var data = this.data;
 
       // TODO: Add simplified "required: true" UI
       // TODO: Required checks on props are ignored if validateObj returns undefined. Bug? - Sarthak
@@ -143,13 +144,12 @@
       // Boolean version of modeSlot for use with show()
       var visibilitySlot = modeSlot.map(m => m != foam.u2.DisplayMode.HIDDEN)
 
-      var colorSlot = this.__context__.data$.dot(prop.name).map(v => !! v);
-
+      var colorSlot = this.data$.dot(prop.name).map(v => !! v);
       this.
         addClass().
         show(visibilitySlot).
         add(this.slot(function(prop$reserveLabelSpace, prop$label){
-          let el = this.E().addClass(this.myClass('label'), 'p-semiBold');
+          let el = this.E().addClass(this.myClass('label'), this.myClass('label' + '-' + prop.name), 'p-semiBold');
           return prop$label ?
             el.call(prop.labelFormatter, [data, prop]) :
             ( prop$reserveLabelSpace ? el : undefined )
@@ -190,7 +190,7 @@
            * Potential improvement area: this approach makes it slightly harder to understand why
            * submit action may be unavilable for long/tabbed  forms
            */
-          addClass(this.myClass('errorText')).
+          addClass('p-legal-light', this.myClass('errorText')).
           enableClass(this.myClass('colorText'), colorSlot).
            show(errorSlot.and(modeSlot.map(m => m == foam.u2.DisplayMode.RW))).
           // Using the line below we can reserve error text space instead of shifting layouts

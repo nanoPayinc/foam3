@@ -3830,6 +3830,12 @@ foam.CLASS({
 
   documentation: 'Predicate which checks if the class of object is a specified class.',
 
+  javaCode: `
+  public IsClassOf(foam.core.ClassInfo targetClass) {
+    setTargetClass(targetClass);
+  }
+  `,
+
   properties: [
     {
       class: 'Class',
@@ -3838,17 +3844,22 @@ foam.CLASS({
         class: 'foam.u2.view.StrategizerChoiceView',
         desiredModelId: 'foam.Class'
       }
-    }
+    },
+    {
+      class: 'FObjectProperty',
+      javaType: 'foam.mlang.Expr',
+      name: 'propExpr'
+   }
   ],
 
   methods: [
     {
       name: 'f',
       code: function(obj) {
-        return obj && this.targetClass.id == obj.cls_.id;
+        return this.propExpr == null || this.propExpr == undefined ? this.targetClass.id == obj.cls_.id : this.targetClass.id == this.propExpr.f(obj).cls_.id;
       },
       javaCode: `
-        return getTargetClass().getObjClass() == obj.getClass();
+      return getPropExpr() == null ? getTargetClass().getObjClass() == obj.getClass() : getTargetClass().getObjClass() == getPropExpr().f(obj).getClass();
       `
     },
     function toString() {
@@ -4015,14 +4026,12 @@ foam.CLASS({
     function STRING_LENGTH(a) { return this._unary_("StringLength", a); },
     function IS_VALID(o) { return this.IsValid.create({arg1: o}); },
     function YEARS(p) { return foam.mlang.Years.create({arg1: p}); },
-    function MONTH(m) {
-      var month = foam.mlang.Month.create({numberOfMonths: m});
-      return month;
-    },
-    function DAYS(d) {
-      var day = foam.mlang.Day.create({numberOfDays: d});
-      return day;
-    },
+    function MONTHS(d) { return foam.mlang.Months.create({arg1: d}); },
+    function MONTH(d) { return foam.mlang.Month.create({numberOfMonths: d}); },
+    function DAYS(d) { return foam.mlang.Days.create({arg1: d}); },
+    function DAY(d) { return foam.mlang.Day.create({numberOfDays: d}); },
+    function HOURS(d) { return foam.mlang.Hours.create({arg1: d}); },
+    function MINUTES(d) { return foam.mlang.Minutes.create({arg1: d}); },
     function NOW() { return foam.mlang.CurrentTime.create(); }
   ]
 });
@@ -4234,6 +4243,9 @@ foam.CLASS({
       if (ps == null)
         return null;
 
+      if ( ps.value() instanceof foam.mlang.Expr ) {
+        return ((foam.mlang.Expr) ps.value()).f(obj);
+      }
       return ((foam.mlang.predicate.Nary) ps.value()).f(obj);
       `
     }
@@ -4560,8 +4572,16 @@ foam.CLASS({
   methods: [
     {
       name: 'f',
-      code: function(o) { return o; },
-      javaCode: 'return obj;'
+      code: function(o) {
+        return o.model_.ID && o.model_ID.get(o) || o;
+      },
+      javaCode: `
+      if ( obj instanceof foam.core.FObject ) {
+        foam.core.PropertyInfo id = (foam.core.PropertyInfo) ((foam.core.FObject) obj).getClassInfo().getAxiomByName("id");
+        if ( id != null ) return id.get(obj);
+      }
+      return obj;
+      `
     }
   ]
 });
@@ -5145,8 +5165,8 @@ foam.CLASS({
 
   javaImports:[
     'java.time.LocalDate',
-    'java.time.Period',
     'java.time.ZoneId',
+    'java.time.temporal.ChronoUnit',
     'java.util.Date'
   ],
 
@@ -5166,23 +5186,17 @@ foam.CLASS({
     {
       name: 'f',
       code: function f(obj) {
-        var d = this.arg1.f(obj);
-
-        var monthDiff = Date.now() - d.getTime();
-
-        // convert the calculated difference in date format
-        var ageDt = new Date(monthDiff);
-
-        // extract year from date
-        var year = ageDt.getUTCFullYear();
-        // now calculate the age of the user
-        return Math.abs(year - 1970);
+        var from = this.arg1.f(obj).getUTCFullYear();
+        var now = new Date().getUTCFullYear();
+        var years = now - from;
+        if ( from > now ) {
+          years = from - now;
+        }
+        return years;
       },
       javaCode: `
-        Date      d = new Date(((Date) getArg1().f(obj)).getTime() + 3600*24*1000);
-        LocalDate l = d.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-
-        return Period.between(l, LocalDate.now()).getYears();
+        LocalDate d = LocalDate.ofInstant(((Date) getArg1().f(obj)).toInstant(), ZoneId.systemDefault());
+        return ChronoUnit.YEARS.between(d, LocalDate.now());
       `
     },
     {
@@ -5190,6 +5204,240 @@ foam.CLASS({
       type: 'String',
       code: function() { return 'YEARS(\'' + this.arg1.toString() + '\')'; },
       javaCode: ' return "YEARS(\'" + getArg1() + "\')"; '
+    }
+  ]
+});
+
+foam.CLASS({
+  package: 'foam.mlang',
+  name: 'Months',
+  extends: 'foam.mlang.AbstractExpr',
+  documentation: 'Return the number of months since the specified date.',
+
+/*
+  implements: [
+    'foam.core.Serializable'
+  ],
+  */
+
+  javaImports:[
+    'java.time.LocalDate',
+    'java.time.ZoneId',
+    'java.time.temporal.ChronoUnit',
+    'java.util.Date'
+  ],
+
+  properties: [
+    {
+      class: 'foam.mlang.ExprProperty',
+      name: 'arg1'
+    }
+  ],
+
+  methods: [
+    {
+      type: 'FObject',
+      name: 'fclone',
+      javaCode: 'return this;'
+    },
+    {
+      name: 'f',
+      code: function f(obj) {
+        var from = this.arg1.f(obj);
+        var now = new Date(Date.now());
+        if ( from > now ) {
+          now = from;
+          from = new Date(Date.now());
+        }
+        var monthDiff = now.getMonth() - from.getMonth();
+        var yearDiff = now.getYear() - from.getYear();
+
+        var months = monthDiff + yearDiff * 12
+        return months;
+      },
+      javaCode: `
+        LocalDate d = LocalDate.ofInstant(((Date) getArg1().f(obj)).toInstant(), ZoneId.systemDefault());
+        return ChronoUnit.MONTHS.between(d, LocalDate.now());
+     `
+    },
+    {
+      name: 'toString',
+      type: 'String',
+      code: function() { return 'MONTHS(\'' + this.arg1.toString() + '\')'; },
+      javaCode: ' return "MONTHS(\'" + getArg1() + "\')"; '
+    }
+  ]
+});
+
+foam.CLASS({
+  package: 'foam.mlang',
+  name: 'Days',
+  extends: 'foam.mlang.AbstractExpr',
+  documentation: 'Return the number of calendar days since the specified date.',
+
+/*
+  implements: [
+    'foam.core.Serializable'
+  ],
+  */
+
+  javaImports:[
+    'java.time.LocalDate',
+    'java.time.ZoneId',
+    'java.time.temporal.ChronoUnit',
+    'java.util.Date'
+  ],
+
+  properties: [
+    {
+      class: 'foam.mlang.ExprProperty',
+      name: 'arg1'
+    }
+  ],
+
+  methods: [
+    {
+      type: 'FObject',
+      name: 'fclone',
+      javaCode: 'return this;'
+    },
+    {
+      name: 'f',
+      code: function f(obj) {
+        var millisecondsPerDay = 24 * 60 * 60 * 1000;
+        var from = this.arg1.f(obj);
+        var now = new Date(Date.now());
+        from.setMinutes(from.getMinutes() - from.getTimezoneOffset());
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+
+        var days = Math.floor(Math.abs(now - from) / millisecondsPerDay);
+        return days;
+      },
+      javaCode: `
+        LocalDate d = LocalDate.ofInstant(((Date) getArg1().f(obj)).toInstant(), ZoneId.systemDefault());
+        return ChronoUnit.DAYS.between(d, LocalDate.now());
+      `
+    },
+    {
+      name: 'toString',
+      type: 'String',
+      code: function() { return 'DAYS(\'' + this.arg1.toString() + '\')'; },
+      javaCode: ' return "DAYS(\'" + getArg1() + "\')"; '
+    }
+  ]
+});
+
+foam.CLASS({
+  package: 'foam.mlang',
+  name: 'Hours',
+  extends: 'foam.mlang.AbstractExpr',
+  documentation: 'Return the number of full hours since the specified date.',
+
+/*
+  implements: [
+    'foam.core.Serializable'
+  ],
+  */
+
+  javaImports:[
+    'java.time.LocalDateTime',
+    'java.time.ZoneId',
+    'java.time.temporal.ChronoUnit',
+    'java.util.Date'
+  ],
+
+  properties: [
+    {
+      class: 'foam.mlang.ExprProperty',
+      name: 'arg1'
+    }
+  ],
+
+  methods: [
+    {
+      type: 'FObject',
+      name: 'fclone',
+      javaCode: 'return this;'
+    },
+    {
+      name: 'f',
+      code: function f(obj) {
+        var millisecondsPerHour = 60 * 60 * 1000;
+        var from = this.arg1.f(obj);
+        var now = new Date(Date.now());
+        from.setMinutes(from.getMinutes() - from.getTimezoneOffset());
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+
+        var hours = Math.floor(Math.abs(now - from) / millisecondsPerHour);
+        return hours;
+      },
+      javaCode: `
+        LocalDateTime d = LocalDateTime.ofInstant(((Date) getArg1().f(obj)).toInstant(), ZoneId.systemDefault());
+        return ChronoUnit.HOURS.between(d, LocalDateTime.now());
+      `
+    },
+    {
+      name: 'toString',
+      type: 'String',
+      code: function() { return 'HOURS(\'' + this.arg1.toString() + '\')'; },
+      javaCode: ' return "HOURS(\'" + getArg1() + "\')"; '
+    }
+  ]
+});
+foam.CLASS({
+  package: 'foam.mlang',
+  name: 'Minutes',
+  extends: 'foam.mlang.AbstractExpr',
+  documentation: 'Return the number of minutes since the specified date.',
+
+/*
+  implements: [
+    'foam.core.Serializable'
+  ],
+  */
+
+  javaImports:[
+    'java.time.LocalDateTime',
+    'java.time.ZoneId',
+    'java.time.temporal.ChronoUnit',
+    'java.util.Date'
+  ],
+
+  properties: [
+    {
+      class: 'foam.mlang.ExprProperty',
+      name: 'arg1'
+    }
+  ],
+
+  methods: [
+    {
+      type: 'FObject',
+      name: 'fclone',
+      javaCode: 'return this;'
+    },
+    {
+      name: 'f',
+      code: function f(obj) {
+        var millisecondsPerMinute = 60 * 1000;
+        var from = this.arg1.f(obj);
+        var now = new Date(Date.now());
+        from.setMinutes(from.getMinutes() - from.getTimezoneOffset());
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+
+        var minutes = Math.floor(Math.abs(now - from) / millisecondsPerMinute);
+        return minutes;
+      },
+      javaCode: `
+        LocalDateTime d = LocalDateTime.ofInstant(((Date) getArg1().f(obj)).toInstant(), ZoneId.systemDefault());
+        return ChronoUnit.MINUTES.between(d, LocalDateTime.now());
+      `
+    },
+    {
+      name: 'toString',
+      type: 'String',
+      code: function() { return 'MINUTES(\'' + this.arg1.toString() + '\')'; },
+      javaCode: ' return "MINUTES(\'" + getArg1() + "\')"; '
     }
   ]
 });

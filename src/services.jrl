@@ -48,11 +48,20 @@ p({
         "class":"foam.nanos.servlet.ServletMapping",
         "className":"foam.nanos.http.NanoRouter",
         "pathSpec":"/service/*"
-      }, {
+      },
+      {
         "class":"foam.nanos.servlet.ServletMapping",
         "className":"org.eclipse.jetty.servlet.DefaultServlet",
         "pathSpec":"/*",
         "initParameters":{"dirAllowed":"true","redirectWelcome":"true"}
+      },
+      {
+        "class": "foam.nanos.servlet.ServletMapping"
+        "className": "foam.nanos.servlet.ImageServlet",
+        "pathSpec": "/favicon/*",
+        "initParameters": {
+          "paths": "/"
+        }
       }
     ]
   }
@@ -460,8 +469,6 @@ p({"class":"foam.nanos.boot.NSpec", "name":"resetPasswordToken",                
 
 p({"class":"foam.nanos.boot.NSpec", "name":"demoObjectDAO",                      "serve":true,  "serviceScript":"return new foam.dao.EasyDAO.Builder(x).setJournalType(foam.dao.JournalType.SINGLE_JOURNAL).setJournalName(\"demoObjects\").setGuid(true).setOf(foam.nanos.demo.DemoObject.getOwnClassInfo()).build();", "client":"{\"of\":\"foam.nanos.demo.DemoObject\", \"remoteListenerSupport\": false}"})
 
-p({"class":"foam.nanos.boot.NSpec", "name":"liveScriptBundler",                      "lazy":false,  "serve":false, "authenticate": false, "serviceClass":"foam.nanos.http.LiveScriptBundler"})
-
 p({"class":"foam.nanos.boot.NSpec", "name":"twofactor",                          "serve":true,  "authenticate": false, "boxClass":"foam.nanos.auth.twofactor.OTPAuthServiceSkeleton", "serviceClass":"foam.nanos.auth.twofactor.GoogleTOTPAuthService", "client":"{\"class\":\"foam.nanos.auth.twofactor.ClientOTPAuthService\"}"})
 p({
   "class":"foam.nanos.boot.NSpec",
@@ -762,7 +769,7 @@ p({
   "serve": true,
   "authenticate": true,
   "boxClass": "foam.nanos.google.api.sheets.views.GoogleSheetsDataImportServiceSkeleton",
-  "serviceClass": "foam.nanos.google.api.sheets.GoogleSheetsTransactionsDataImportServiceImpl",
+  "serviceClass": "foam.nanos.google.api.sheets.views.GoogleSheetsTransactionsDataImportServiceImpl",
   "client":"""
     {
       "class": "foam.nanos.google.api.sheets.views.ClientGoogleSheetsDataImportService",

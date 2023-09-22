@@ -30,6 +30,11 @@ foam.CLASS({
       name: 'properties'
     },
     {
+      class: 'foam.u2.ViewSpec',
+      name: 'view',
+      value: { class: 'foam.u2.detail.SectionView' }
+    },
+    {
       name: 'help'
     },
     {
@@ -94,9 +99,17 @@ foam.CLASS({
       if ( this.hasOwnProperty('properties') ) {
         props = this.properties.map(p => {
           if ( foam.String.isInstance(p) ) return data.cls_.getAxiomByName(p);
-          if ( p.name ) return data.cls_.getAxiomByName(p.name).clone().copyFrom(p);
+          // TODO: allow string only path props
+          if ( p.name ) {
+            if ( p.name.indexOf('.') != -1 ) {
+              let p2 = Object.assign({}, p);
+              delete p2.name;
+              return foam.layout.PathPropertyHolder.create({ name: p.name.split('.').pop(), value: p.name, config: p2 });
+            }
+            return data.cls_.getAxiomByName(p.name).clone().copyFrom(p);
+          }
         });
-      }  else {
+      } else {
         props = data.cls_.getAxiomsByClass(foam.core.Property)
           .filter(p => p.section === this.name);
       }
@@ -110,7 +123,7 @@ foam.CLASS({
           )
         )
       }).map(arr => arr.some(m => {
-        return m != foam.u2.DisplayMode.HIDDEN
+        return m != foam.u2.DisplayMode.HIDDEN;
       }));
 
       // add check for at least one available action as well (actionAvailSlot)

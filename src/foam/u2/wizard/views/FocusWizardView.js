@@ -11,7 +11,8 @@ foam.CLASS({
 
   imports: [
     'controlBorder?',
-    'popup?'
+    'popup?',
+    'transaltionService'
   ],
 
   exports: [ 'showTitle' ],
@@ -40,9 +41,6 @@ foam.CLASS({
       text-align: center;
       margin-bottom: 2.4rem;
     }
-    ^wizardletSub {
-      font-size: 1.6rem;
-    }
   `,
 
   properties: [
@@ -61,7 +59,7 @@ foam.CLASS({
       class: 'String',
       name: 'viewTitle',
       expression: function (showTitle, data$currentWizardlet) {
-        return showTitle && data$currentWizardlet.showTitle ? data$currentWizardlet.title : '';
+        return showTitle && data$currentWizardlet.showTitle ? this.translationService.getTranslation(foam.locale, data$currentWizardlet.id + 'wizardlet.title', data$currentWizardlet.title) : '';
       }
     }
   ],
@@ -87,8 +85,8 @@ foam.CLASS({
         .add(this.slot(function (data$currentWizardlet) {
           return data$currentWizardlet.subTitle ?
             this.E().start()
-              .addClass(self.myClass('wizardletTitle'), 'p', self.myClass('wizardletSub'))
-              .tag(foam.u2.HTMLView.create({ nodeName: 'div', data: data$currentWizardlet.subTitle }))
+              .addClass(self.myClass('wizardletTitle'), 'p-md')
+              .tag(foam.u2.HTMLView.create({ nodeName: 'div', data:this.translationService.getTranslation(foam.locale, data$currentWizardlet.id + 'wizardlet.subTitle', data$currentWizardlet.subTitle) }))
             .end() : null
         }))
         .start(this.contentsView, { data: this.data })

@@ -297,13 +297,13 @@ foam.CLASS({
           indexes.add((foam.core.PropertyInfo) getOf().getAxiomByName("lifecycleState"));
        }
 
-        if ( getDeletedAware() ) {
-          System.out.println("DEPRECATED: Will be completely removed after services journal migration script. No functionality as of now.");
-        }
-
         if ( getRuler() ) {
           String name = foam.util.SafetyUtil.isEmpty(getRulerDaoKey()) ? getName() : getRulerDaoKey();
-          delegate = new foam.nanos.ruler.RulerDAO(getX(), delegate, name);
+          if ( ((foam.nanos.app.AppConfig)getX().get("appConfig")).getMode() == foam.nanos.app.Mode.TEST ) {
+            delegate = new foam.nanos.ruler.test.TestRulerDAO(getX(), delegate, name);
+          } else {
+            delegate = new foam.nanos.ruler.RulerDAO(getX(), delegate, name);
+          }
         }
 
         if ( getCreatedAware() ) {

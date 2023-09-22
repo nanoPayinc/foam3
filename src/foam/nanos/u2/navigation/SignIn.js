@@ -161,11 +161,10 @@ foam.CLASS({
               data: {
                 class: 'foam.nanos.auth.email.EmailVerificationCode',
                 email: email,
-                userName: username,
-                showAction: true
+                userName: username
               }
             }]
-          }
+          }, parent: this
         }, this));
       }
     },
@@ -228,11 +227,14 @@ foam.CLASS({
               if ( ! this.pureLoginFunction ) await this.nextStep();
             }
 
-            this.loginSuccess = true;
-            await this.ctrl.reloadClient();
-            // Temp fix to prevent breaking wizard sign in since that also calls this function
-            if ( ! this.pureLoginFunction )
-              await this.ctrl.onUserAgentAndGroupLoaded();
+            // Reload only if it wasn't done by the 'nextStep()' call
+            if ( ! this.loginSuccess ) {
+              this.loginSuccess = true;
+              await this.ctrl.reloadClient();
+              // Temp fix to prevent breaking wizard sign in since that also calls this function
+              if ( ! this.pureLoginFunction )
+                await this.ctrl.onUserAgentAndGroupLoaded();
+            }
           } catch (err) {
             this.loginFailed = true;
             let e = err && err.data ? err.data.exception : err;
