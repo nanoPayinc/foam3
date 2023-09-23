@@ -14,6 +14,7 @@ import foam.nanos.app.AppConfig;
 import foam.nanos.auth.*;
 import foam.nanos.boot.Boot;
 import foam.nanos.logger.Logger;
+import foam.nanos.logger.Loggers;
 import foam.nanos.session.Session;
 import foam.util.SafetyUtil;
 import java.io.PrintWriter;
@@ -253,6 +254,7 @@ public class AuthWebAgent
           return session;
         }
 
+        Loggers.logger(x, this).debug("Session", session);
         user = auth.login(session.getContext()
           .put(HttpServletRequest.class,  req)
           .put(HttpServletResponse.class, resp), email, password);
