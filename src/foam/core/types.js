@@ -57,9 +57,10 @@ foam.CLASS({
                 typeof a === 'number'   ? String(a)                :
                 a && a.toString         ? a.toString()             :
                                           ''                       ;
-        return p.trim ? s.trim() : s;
+        return s;
       }
     },
+    [ 'normalize', function(value, p) { return p.trim ? value.trim() : value; } ],
     [ 'type', 'String' ],
     [ 'value', '' ]
   ]
@@ -635,10 +636,11 @@ foam.CLASS({
   label: 'Email address',
   properties: [
     [ 'displayWidth', 50 ],
+    [ 'trim', true ],
     [
       'preSet',
       function(_, v) {
-        return v.toLowerCase().trim();
+        return v.toLowerCase();
       }
     ]
   ]

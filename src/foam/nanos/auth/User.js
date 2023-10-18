@@ -13,7 +13,6 @@ foam.CLASS({
     'foam.nanos.auth.Authorizable',
     'foam.nanos.auth.CreatedAware',
     'foam.nanos.auth.EnabledAware',
-    'foam.nanos.auth.HumanNameTrait',
     'foam.nanos.auth.LastModifiedAware',
     'foam.nanos.auth.ServiceProviderAware',
     'foam.nanos.auth.LifecycleAware',
@@ -170,7 +169,7 @@ foam.CLASS({
       order: 20,
       gridColumns: 6,
       columnPermissionRequired: true,
-      trim:true
+      trim: true
     },
     {
       class: 'Boolean',
@@ -182,7 +181,7 @@ foam.CLASS({
       value: true,
       section: 'userInformation',
       order: 30,
-      gridColumns: 6,
+      gridColumns: 6
     },
     {
       class: 'DateTime',
@@ -224,10 +223,11 @@ foam.CLASS({
       documentation: 'The first name of the User.',
       section: 'userInformation',
       order: 70,
-gridColumns: { columns: 4, smColumns: 12, xsColumns: 12 },
+      gridColumns: { columns: 4, smColumns: 12, xsColumns: 12 },
       includeInDigest: true,
       containsPII: true,
-      trim:true
+      trim: true,
+      tableWidth: 160
    },
     {
       class: 'String',
@@ -235,11 +235,11 @@ gridColumns: { columns: 4, smColumns: 12, xsColumns: 12 },
       documentation: 'The middle name of the User.',
       section: 'userInformation',
       order: 80,
-gridColumns: { columns: 4, smColumns: 12, xsColumns: 12 },
+      gridColumns: { columns: 4, smColumns: 12, xsColumns: 12 },
       includeInDigest: true,
       containsPII: true,
       columnPermissionRequired: true,
-      trim:true
+      trim: true
     },
     {
       class: 'String',
@@ -248,10 +248,11 @@ gridColumns: { columns: 4, smColumns: 12, xsColumns: 12 },
       documentation: 'The last name of the User.',
       section: 'userInformation',
       order: 90,
-gridColumns: { columns: 4, smColumns: 12, xsColumns: 12 },
+      gridColumns: { columns: 4, smColumns: 12, xsColumns: 12 },
       includeInDigest: true,
       containsPII: true,
-      trim:true
+      trim: true,
+      tableWidth: 160
     },
     {
       class: 'String',
@@ -264,7 +265,30 @@ gridColumns: { columns: 4, smColumns: 12, xsColumns: 12 },
       includeInDigest: false,
       containsPII: true,
       columnPermissionRequired: true,
-      trim:true
+      trim: true,
+      transient: true,
+      expression: function(firstName, middleName, lastName) {
+        return [firstName, middleName, lastName].filter(name => name).join(' ');
+      },
+      javaGetter: `
+        String firstName = getFirstName();
+        String middleName = getMiddleName();
+        String lastName = getLastName();
+
+        StringBuilder sb = new StringBuilder();
+
+        if ( ! SafetyUtil.isEmpty(firstName) ) sb.append(firstName);
+        if ( ! SafetyUtil.isEmpty(middleName) ) {
+          if ( sb.length() > 0 ) sb.append(' ');
+          sb.append(middleName);
+        }
+        if ( ! SafetyUtil.isEmpty(lastName) ) {
+          if( sb.length() > 0 ) sb.append(' ');
+          sb.append(lastName);
+        }
+
+        return sb.toString();
+      `
     },
     {
       class: 'Date',
