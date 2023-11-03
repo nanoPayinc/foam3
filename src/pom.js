@@ -291,7 +291,7 @@ foam.POM({
     { name: "foam/mlang/expr/Ref",                                    flags: "js|java" },
     { name: "foam/mlang/expr/TimeOfDay",                              flags: "js|java" },
     { name: "foam/mlang/predicate/ContextUserPredicate",              flags: "js|java" },
-    { name: "foam/mlang/predicate/CapabilityAuthServicePredicate",      flags: "js|java" },
+    { name: "foam/mlang/predicate/CapabilityAuthServicePredicate",    flags: "js|java" },
     { name: "foam/mlang/predicate/AuthPermissionPredicate",           flags: "js|java" },
     { name: "foam/swift/refines/MLang",                               flags: "swift" },
     { name: "foam/swift/refines/Predicate",                           flags: "swift" },
@@ -622,6 +622,7 @@ foam.POM({
     { name: "foam/u2/view/StringView",                                flags: "web" },
     { name: "foam/u2/view/DateView",                                  flags: "web" },
     { name: "foam/u2/view/DateTimeView",                              flags: "web" },
+    { name: "foam/u2/view/RODateTimeView",                            flags: "web" },
     { name: "foam/u2/view/TimeView",                                  flags: "web" },
     { name: "foam/u2/view/FloatView",                                 flags: "web" },
     { name: "foam/u2/view/IntView",                                   flags: "web" },
@@ -845,6 +846,11 @@ foam.POM({
     { name: "foam/core/ContextAware",                                 flags: "js|java" },
     { name: "foam/dao/history/PropertyUpdate",                        flags: "js|java" },
     { name: "foam/dao/history/HistoryRecord",                         flags: "js|java" },
+    { name: "foam/dao/history/HistoryRecordService",                  flags: "js|java" },
+    { name: "foam/dao/history/HistoryRecordServiceServer",            flags: "js|java" },
+    { name: "foam/dao/history/view/HistoryRecordView",                flags: "web" },
+    { name: "foam/dao/history/view/HistoryRecordCitationView",        flags: "web" },
+    { name: "foam/dao/history/test/HistoryRecordServiceTest",         flags: "js|java" },
     { name: "foam/dao/jdbc/JDBCConnectionSpec",                       flags: "js|java" },
     { name: "foam/dao/jdbc/ConnectionPool",                           flags: "js|java" },
     { name: "foam/lib/Outputter",                                     flags: "js|java" },
@@ -925,8 +931,6 @@ foam.POM({
     { name: "foam/dashboard/view/CardWrapper",                        flags: "js" },
     { name: "foam/dashboard/view/Dashboard",                          flags: "js" },
     { name: "foam/dashboard/view/DashboardView",                      flags: "js" },
-    { name: "foam/build/Library",                                     flags: "js" },
-    { name: "foam/build/EmbeddedModelDAO",                            flags: "js" },
     { name: "foam/u2/view/JSONTextView",                              flags: "web" },
     { name: "foam/u2/view/MapView",                                   flags: "web" },
     { name: "foam/u2/view/AnyView",                                   flags: "web" },
@@ -1092,7 +1096,6 @@ foam.POM({
     { name: "foam/box/sf/SFManager",                                  flags: "js|java" },
     { name: "foam/box/sf/SF",                                         flags: "js|java" },
     { name: "foam/box/sf/SFFileJournal",                              flags: "js|java" },
-    { name: "foam/box/sf/SFTestObject",                               flags: "js|java" },
     { name: "foam/box/sf/SFException",                                flags: "js|java" },
     { name: "foam/box/sf/SFMonitorDAO",                               flags: "js|java" },
     { name: "foam/box/sf/SFMonitor",                                  flags: "js|java" },
@@ -1174,5 +1177,5 @@ foam.POM({
     { name: "foam/u2/view/ClassCompleterView",                        flags: "web" },
     { name: "foam/css/TokenUtils",                                    flags: "web" },
     { name: "foam/demos/u2/AllViews",                                 flags: "web" }
- ]
+  ]
 });

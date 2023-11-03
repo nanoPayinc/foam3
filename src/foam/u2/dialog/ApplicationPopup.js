@@ -23,10 +23,6 @@ foam.CLASS({
     'translationService'
   ],
 
-  exports: [
-    'as controlBorder'
-  ],
-
   requires: [
     'foam.core.Action',
     'foam.u2.ActionReference',
@@ -211,6 +207,11 @@ foam.CLASS({
       ^bodyWrapper{
         padding: 2.4rem 4rem;
         gap: 2rem;
+      }
+    }
+    @media only screen and (min-width: /*%DISPLAYWIDTH.XL%*/ 1280px) {
+      ^:not(^fullscreen) ^inner {
+        width: min(120rem, 100%);
       }
     }
   `,

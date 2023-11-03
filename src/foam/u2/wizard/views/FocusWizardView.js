@@ -29,10 +29,6 @@ foam.CLASS({
       */
     }
 
-    ^:not(^isFullscreen) {
-      margin: 0 40pt;
-    }
-
     ^contents {
       flex: 1;
       min-height: 0;
@@ -74,7 +70,6 @@ foam.CLASS({
     function render() {
       const self = this;
       this.addClass()
-        .enableClass(this.myClass('isFullscreen'), this.popup?.fullscreen$.or(this.popup?.forceFullscreen$))
         .add(this.slot(function (controlBorder, showTitle, data$currentWizardlet) {
           return showTitle && data$currentWizardlet.showTitle && ! controlBorder ?
             this.E().start()

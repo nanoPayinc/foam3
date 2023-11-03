@@ -85,6 +85,9 @@ NOTE: when using the java client, the first call to a newly started instance may
       name: 'supportDetails'
     },
     {
+      name: 'authDetails'
+    },
+    {
       name: '_defaultSection',
       permissionRequired: true
     }
@@ -248,6 +251,17 @@ NOTE: when using the java client, the first call to a newly started instance may
       section: 'details',
       visibility: function(cmd) {
         return (cmd == 'PUT') ? foam.u2.DisplayMode.RW : foam.u2.DisplayMode.HIDDEN;
+      },
+      view: function(_, X) {
+        // Only Support entering data with a DetailView when the format is JSON,
+        // since that's the only format supported on the client.
+        return X.objData.format === 'JSON' ?
+          {
+            class: 'foam.u2.view.DualView',
+            viewa: {class: 'foam.u2.tag.TextArea', rows: 32, cols: 120},
+            viewb: {class: 'foam.nanos.dig.DIGDetailView' }
+          } :
+          {class: 'foam.u2.tag.TextArea', rows: 20, cols: 120} ;
       }
     },
     {
@@ -373,19 +387,19 @@ NOTE: when using the java client, the first call to a newly started instance may
       documentation: 'Session token / BEARER token',
       name: 'sessionId',
       class: 'String',
-      // javaFactory: 'return getX().get(Session.class).getId();',
-      visibility: 'HIDDEN'
+      section: 'authDetails'
     },
     {
       documentation: 'Basic Auth',
       name: 'userName',
       class: 'String',
-      value: 'admin',
+      section: 'authDetails',
       visibility: 'HIDDEN'
     },
     {
       name: 'password',
       class: 'Password',
+      section: 'authDetails',
       visibility: 'HIDDEN'
     },
     {
@@ -407,7 +421,9 @@ NOTE: when using the java client, the first call to a newly started instance may
     {
       name: 'secure',
       class: 'Boolean',
-      javaFactory: `return getPostURL().contains("https");`,
+      javaFactory: `
+      return ( ! SafetyUtil.isEmpty(getPostURL())) && getPostURL().contains("https");
+      `,
       visibility: 'HIDDEN'
     },
     // {
@@ -440,11 +456,27 @@ NOTE: when using the java client, the first call to a newly started instance may
       name: 'of',
       class: 'Class',
       javaFactory: `
-        DAO dao = (DAO) foam.core.XLocator.get().get(getDaoKey());
-        return dao.getOf();
+      if ( ! SafetyUtil.isEmpty(getDaoKey()) ) {
+        DAO dao = (DAO) getX().get(getDaoKey());
+        if ( dao == null ) {
+          dao = (DAO) foam.core.XLocator.get().get(getDaoKey());
+        }
+        if ( dao != null ) {
+          return dao.getOf();
+        }
+        foam.nanos.logger.StdoutLogger.instance().error("DAO not found", getDaoKey());
+      }
+      return null;
       `,
       hidden: true,
       transient: true
+    },
+    {
+      documentation: 'submit() returns null for a 200 with an empty response body, retrieving the response code of 200 can be useful for text based clients (not expecting FObjects)',
+      name: 'lastResponseCode',
+      class: 'Int',
+      transient: true,
+      hidden: true
     }
   ],
 
@@ -454,8 +486,7 @@ NOTE: when using the java client, the first call to a newly started instance may
       label: 'Send Request',
       section: "details",
       code: async function() {
-        var url = this.window.location.origin + this.postURL + "&sessionId=" + localStorage.defaultSession;
-        var url = this.postURL + "&sessionId=" + localStorage.defaultSession;
+        var url = this.postURL + "&sessionId=" + (this.sessionId || localStorage.defaultSession);
         var req = this.HTTPRequest.create({
           url: url,
           method: 'POST',
@@ -548,16 +579,7 @@ NOTE: when using the java client, the first call to a newly started instance may
     },
     {
       name: 'find_',
-      args: [
-        {
-          name: 'x',
-          type: 'Context'
-        },
-        {
-          name: 'id',
-          type: 'Object'
-        }
-      ],
+      args: 'Context x, Object id',
       type: 'foam.core.FObject',
       javaCode: `
       Object result = submit(x, DOP.SELECT, "id=" + id.toString());
@@ -567,6 +589,13 @@ NOTE: when using the java client, the first call to a newly started instance may
           return ((FObject[]) result)[0];
         }
         return null;
+      }
+      if ( result instanceof String &&
+           getLastResponseCode() != 200 ) {
+        throw new FOAMException((String) result);
+      }
+      if ( result instanceof String ) {
+        return new foam.core.StringHolder((String) result);
       }
       return (FObject) result;
       `
@@ -579,16 +608,7 @@ NOTE: when using the java client, the first call to a newly started instance may
     },
     {
       name: 'put_',
-      args: [
-        {
-          name: 'x',
-          type: 'Context'
-        },
-        {
-          name: 'obj',
-          type: 'foam.core.FObject'
-        }
-      ],
+      args: 'Context x, foam.core.FObject obj',
       type: 'foam.core.FObject',
       javaCode: `
       // Special support for Sessions as they must go through SUGAR
@@ -599,7 +619,15 @@ NOTE: when using the java client, the first call to a newly started instance may
         return session;
       }
 
-      return (FObject) submit(x, DOP.PUT, adapt(x, DOP.PUT, obj));
+      Object result = submit(x, DOP.PUT, adapt(x, DOP.PUT, obj));
+      if ( result instanceof String &&
+           getLastResponseCode() != 200 ) {
+        throw new FOAMException((String) result);
+      }
+      if ( result instanceof String ) {
+        return new foam.core.StringHolder((String) result);
+      }
+      return (FObject) result;
       `
     },
     {
@@ -725,36 +753,24 @@ NOTE: when using the java client, the first call to a newly started instance may
     },
     {
       name: 'unAdapt',
-      args: [
-        {
-          name: 'x',
-          type: 'Context'
-        },
-        {
-          name: 'dop',
-          type: 'foam.dao.DOP'
-        },
-        {
-          name: 'data',
-          type: 'Object'
-        }
-      ],
+      args: 'Context x, foam.dao.DOP dop, Object data',
       type: 'Object',
       javaCode: `
       PM pm = PM.create(x, "DIG", "unAdapt", getPostURL(), getDaoKey(), dop);
       try {
         Object result = null;
         String text = data.toString();
-        if ( ! foam.util.SafetyUtil.isEmpty(text) ) {
+        if ( ! SafetyUtil.isEmpty(text) ) {
+          Class of = getOf() != null ? getOf().getObjClass() : null;
           if ( text.startsWith("[") ) {
-            result = parser_.get().parseStringForArray(text, getOf().getObjClass());
+            result = parser_.get().parseStringForArray(text, of);
             // convert Object[] to FObject[]
             if ( result != null &&
                  result instanceof Object[] ) {
               result = Arrays.copyOf((Object[]) result, ((Object[]) result).length, FObject[].class);
             }
           } else if ( text.startsWith("{") ) {
-            result = parser_.get().parseString(text, getOf().getObjClass());
+            result = parser_.get().parseString(text, of);
           }
         }
         if ( result == null ) {
@@ -781,24 +797,21 @@ NOTE: when using the java client, the first call to a newly started instance may
     },
     {
       name: 'buildUrl',
-      args: [
-        {
-          name: 'x',
-          type: 'Context'
-        },
-        {
-          name: 'dop',
-          type: 'foam.dao.DOP'
-        },
-        {
-          name: 'data',
-          type: 'String'
-        },
-      ],
+      args: 'Context x, foam.dao.DOP dop, String data',
       type: 'String',
       javaCode: `
       StringBuilder sb = new StringBuilder();
-      sb.append(getPostURL());
+      String postUrl = getPostURL();
+      if ( SafetyUtil.isEmpty(postUrl) ) {
+        if ( getSecure() ) {
+          sb.append("https://");
+        } else {
+          sb.append("http://");
+        }
+        sb.append(System.getProperty("hostname", "localhost"));
+        sb.append(":");
+        sb.append(System.getProperty("http.port", "8080"));
+      }
       sb.append("/service/");
       sb.append(getServiceName());
       sb.append("?cmd=");
@@ -820,20 +833,7 @@ NOTE: when using the java client, the first call to a newly started instance may
     },
     {
       name: 'submit',
-      args: [
-        {
-          name: 'x',
-          type: 'Context'
-        },
-        {
-          name: 'dop',
-          type: 'foam.dao.DOP'
-        },
-        {
-          name: 'data',
-          type: 'String'
-        },
-      ],
+      args: 'Context x, foam.dao.DOP dop, String data',
       type: 'Object',
       javaCode: `
       String url = buildUrl(x, dop, data);
@@ -850,9 +850,10 @@ NOTE: when using the java client, the first call to a newly started instance may
         builder = builder.header("Authorization", "BASIC "+Base64.getEncoder().encodeToString((getUserName()+":"+getPassword()).getBytes()));
       } else {
         Loggers.logger(x, this).warning("submit", "Missing auth details", "session", getSessionId(), "username", getUserName(), "password", getPassword());
-        throw new IllegalArgumentException("Missing auth details");
+        // throw new IllegalArgumentException("Missing auth details");
       }
-      if ( dop == DOP.PUT ) {
+      if ( dop == DOP.PUT &&
+           ! SafetyUtil.isEmpty(data) ) {
         builder = builder.POST(HttpRequest.BodyPublishers.ofString(data));
       }
       HttpRequest request = builder.build();
@@ -865,13 +866,15 @@ NOTE: when using the java client, the first call to a newly started instance may
         } finally {
           pm.log(x);
         }
+        setLastResponseCode(response.statusCode());
+        String body = response.body();
         if ( response.statusCode() != 200 ) {
-          Loggers.logger(x, this).warning("submit", "request", dop, url, "response", response.statusCode(), response.body());
+          Loggers.logger(x, this).warning("submit", "request", dop, url, "response", response.statusCode(), body);
         } else {
-          // Loggers.logger(x, this).debug("submit", "request", dop, url, "response", response.statusCode(), response.body());
+          // Loggers.logger(x, this).debug("submit", "request", dop, url, "response", response.statusCode(), body);
         }
-        if ( SafetyUtil.isEmpty(response.body()) ) return null;
-        Object result = unAdapt(x, dop, response.body());
+        if ( SafetyUtil.isEmpty(body)) return null;
+        Object result = unAdapt(x, dop, body);
         // Empty array has a trailing new line - assume server side dig is doing this.
         if ( result instanceof String &&
              result.toString().startsWith("[]") ) {

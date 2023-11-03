@@ -273,7 +273,7 @@ p({
       "ttlPurgeTime": 0
     }
   """,
-  "authNotes": "The \"authenticate\" flag is explicitly set to false because we want to be able to use the countryDAO to populate a dropdown in the sign up form. The DAO is decorated with an AuthenticatedDAO decorator with \"authenticateRead\" set to false so that anyone can read from countryDAO but only those with permission can write to or remove from it."
+  "authNotes": "The \"authenticate\" flag is explicitly set to false because we want to be able to use the countryDAO to populate a dropdown in the sign up form. The DAO is decorated with an AuthorizationDAO decorator with \"authorizeOnRead\" set to false so that anyone can read from countryDAO but only those with permission can write to or remove from it."
 })
 
 p({
@@ -322,7 +322,7 @@ p({
   """,
   "client": "{\"of\":\"foam.nanos.auth.Region\"}",
   "documentation": "A DAO which contains information about regions in countries. A region is a province or a state, for example.",
-  "authNotes": "The \"authenticate\" flag is explicitly set to false because we want to be able to use the regionDAO to populate a dropdown in the sign up form. The DAO is decorated with an AuthenticatedDAO decorator with \"authenticateRead\" set to false so that anyone can read from regionDAO but only those with permission can write to or remove from it."
+  "authNotes": "The \"authenticate\" flag is explicitly set to false because we want to be able to use the regionDAO to populate a dropdown in the sign up form. The DAO is decorated with an AuthenticatedDAO decorator with \"authorizeOnRead\" set to false so that anyone can read from regionDAO but only those with permission can write to or remove from it."
 })
 p({"class":"foam.nanos.boot.NSpec", "name":"regionService",                      "serve":false, "serviceClass":"foam.nanos.auth.RegionService"})
 
@@ -555,23 +555,6 @@ p({
       .build();
   """,
   "client": "{\"of\":\"foam.flow.Document\"\}"
-})
-
-p({
-  "class":"foam.nanos.boot.NSpec",
-  "name":"supportEmailDAO",
-  "serve":true,
-  "serviceScript":
-  """
-    return new foam.dao.EasyDAO.Builder(x)
-      .setPm(true)
-      .setSeqProperty(true)
-      .setOf(foam.support.model.SupportEmail.getOwnClassInfo())
-      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
-      .setJournalName("supportEmails")
-      .build();
-  """,
-  "client":"{\"of\":\"foam.support.model.SupportEmail\"}"
 })
 
 p({"class":"foam.nanos.boot.NSpec", "name":"serializationTestEchoService", "boxClass": "foam.nanos.test.EchoServiceSkeleton",  "serve":true, "serviceClass":"foam.nanos.test.SerializationTestEchoService", "client":"{\"class\":\"foam.nanos.test.ClientEchoService\",\"delegate\":{\"class\":\"foam.box.SessionClientBox\",\"delegate\":{\"class\":\"foam.box.HTTPBox\",\"method\":\"POST\",\"url\":\"service/serializationTestEchoService\"}}}"})

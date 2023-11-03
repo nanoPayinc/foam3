@@ -4,7 +4,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-exports.description = 'copies .jrl files into /target/journals';
+exports.description = 'copies .jrl files into /build/journals';
 
 const fs_   = require('fs');
 const path_ = require('path');
@@ -16,6 +16,7 @@ const imageDirs     = [ 'images' ];
 
 exports.init = function() {
   X.journaldir = X.builddir + '/journals/';
+  b_.emptyDir(X.journaldir);
 }
 
 
@@ -76,14 +77,6 @@ p({
   }
 })
 `;
-  }
-
-  b_.ensureDir(X.journaldir);
-
-  if ( fs_.existsSync(X.journaldir) ) {
-    fs_.readdirSync(X.journaldir).forEach(f => fs_.rmSync(`${X.journaldir}/${f}`));
-  } else {
-    fs_.mkdirSync(X.journaldir, {recursive: true});
   }
 
   Object.keys(journalOutput).forEach(f => {
