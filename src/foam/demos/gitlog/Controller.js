@@ -341,6 +341,15 @@ foam.CLASS({
       'spacing',
     ],
     AUTHOR_MAP: {
+      'dependabot[bot]': 'dependabot[bot]',
+      'Mritunjay Chauhan': 'Mritunjay Chauhan',
+      'Mritunjay': 'Mritunjay Chauhan',
+      'mritunjay51': 'Mritunjay Chauhan',
+      'kiana-nanopay': 'Kiana Omoerah',
+      'Kiana Omoerah': 'Kiana Omoerah',
+      'Bipin': 'Bipinjot Kaur',
+      'BipinjotKaur': 'Bipinjot Kaur',
+      'Bipinjot Kaur': 'Bipinjot Kaur',
       'Adam Fox': 'Adam Fox',
       'Alexey Greer': 'Alexey Greer',
       'AlexeyGreer': 'Alexey Greer',
@@ -418,6 +427,7 @@ foam.CLASS({
       'Ruby Zhang': 'Ruby Zhang',
       'Ruby': 'Ruby Zhang',
       'Sarthak Marwaha': 'Sarthak Marwaha',
+      'sarthakmarwaha55': 'Sarthak Marwaha',
       'sarthak-marwaha': 'Sarthak Marwaha',
       'sarthak': 'Sarthak Marwaha',
       'Scott Head': 'Scott Head',
@@ -433,7 +443,7 @@ foam.CLASS({
       {
         name: 'Hybrid-Blockchain',
         keywords: [ 'saf', 'storeandforward', 'replay', 'crypt', 'medusa', 'socket', 'compact' ],
-        paths: [ 'cluster' ]
+        paths: [ 'medusa', 'cluster', 'sf' ]
       },
       {
         name: 'NANOS',
@@ -496,6 +506,11 @@ name: 'NANOS',
         name: 'NANOS',
         keywords: [ 'view', 'u3', 'u2', 'demo', 'example' ],
         paths: [ 'u2', 'demo', 'layout', 'google/flow', 'phonecat' ]
+      },
+      {
+        name: 'Test',
+        keywords: [ 'test', 'tests' ],
+        paths: [ 'test', 'tests' ]
       }
     ]
   },
@@ -516,7 +531,7 @@ name: 'NANOS',
       value: '2021',
       view: function(_, X) {
         return foam.u2.view.ChoiceView.create({choices: [
-          [0, '-- All --'], [ 2021, '2021' ], [ 2022, '2022' ]
+          [0, '-- All --'], [ 2021, '2021' ], [ 2022, '2022' ], [ 2023, '2023' ]
         ]}, X);
       }
     },
@@ -667,16 +682,12 @@ name: 'NANOS',
     function init() {
       this.SUPER();
       // TODO: make this configurable
-      const year = 2022;
+      this.loadYear(2023);
+    },
 
-      if ( year == 2021 ) {
-        this.loadData('data2021.log');
-        this.loadData('np2021.log');
-      } else if ( year == 2022 ) {
-        this.loadData('data2022.log');
-        this.loadData('np2022.log');
-      }
-
+    function loadYear(year) {
+      this.loadData(`data/data${year}.log`);
+      this.loadData(`data/np${year}.log`);
     },
 
     function loadData(f) {
@@ -698,7 +709,7 @@ name: 'NANOS',
             commit = this.Commit.create({id: line.substring(7)});
             data.push(commit);
           } else if ( line.startsWith('Author: ') ) {
-            commit.author = line.substring(8, line.indexOf('<')).trim();
+            commit.author = line.substring(8, line.indexOf('<')).trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
           } else if ( line.startsWith('Date: ') ) {
             commit.date = new Date(line.substring(6).trim());
             i++;
