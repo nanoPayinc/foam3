@@ -9,6 +9,15 @@ p({
 
 
 p({
+  "class":"foam.nanos.boot.NSpec",
+  "name":"http",
+  "service":{
+    "class":"foam.nanos.jetty.HttpServer",
+    "welcomeFiles":["/deployment/demo/index.html"]
+  }
+})
+
+p({
   "class": "foam.nanos.boot.NSpec",
   "name": "theme",
   "authenticate": false,

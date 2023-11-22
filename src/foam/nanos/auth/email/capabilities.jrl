@@ -35,12 +35,14 @@ p({
           {
             class: 'foam.u2.wizard.data.PrerequisiteLoader',
             prerequisiteCapabilityId: 'foam.nanos.auth.email.RetrievePassword',
+            useInitialData: true,
             loadIntoPath: 'userName',
             loadFromPath: 'username'
           },
           {
             class: 'foam.u2.wizard.data.PrerequisiteLoader',
             prerequisiteCapabilityId: 'foam.nanos.auth.email.RetrievePassword',
+            useInitialData: true,
             loadIntoPath: 'email',
             loadFromPath: 'email'
           }
@@ -62,6 +64,8 @@ p({
   of: 'foam.nanos.auth.RetrievePassword',
   wizardlet: {
     class: 'foam.u2.wizard.wizardlet.AlternateFlowWizardlet',
+    title: 'Forgot Password?',
+    subTitle: 'Enter the email you used to create your account in order to reset your password.',
     of: 'foam.nanos.auth.RetrievePassword',
     sections: [
       {
@@ -70,7 +74,7 @@ p({
         customView: {
           "class": "foam.u2.detail.VerticalDetailView",
           "useSections": ['resetPasswordWizardSection'],
-          "centered": true
+          "showTitle": false
         }
       }
     ],

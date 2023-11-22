@@ -1,15 +1,57 @@
 p({
   "class":"foam.nanos.boot.NSpec",
-  "name":"issueDAO",
+  "name":"issueDAO_",
   "serve": true,
   "serviceScript": """
     return new foam.dao.EasyDAO.Builder(x)
       .setOf(foamdev.fit.Issue.getOwnClassInfo())
-      .setName("issues")
+      .setSeqNo(true)
+      .setName("issueDAO_")
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("issues")
       .build();
-  """
+  """,
+  "client": "{\"of\":\"foamdev.fit.Issue\"}"
+})
+
+p({
+  "class":"foam.nanos.boot.NSpec",
+  "name":"issueDAO_foam1",
+  "serve": true,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foamdev.fit.Issue.getOwnClassInfo())
+      .setSeqNo(true)
+      .setName("issueDAO_foam1")
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("issues_foam")
+      .build();
+  """,
+  "client": "{\"of\":\"foamdev.fit.Issue\"}"
+})
+
+p({
+  "class":"foam.nanos.boot.NSpec",
+  "name":"issueDAO_foam2",
+  "serve": true,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foamdev.fit.Issue.getOwnClassInfo())
+      .setSeqNo(true)
+      .setName("issueDAO_foam2")
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("issues_foam")
+      .build();
+  """,
+  "client": "{\"of\":\"foamdev.fit.Issue\"}"
+})
+
+p({
+  "class":"foam.nanos.boot.NSpec",
+  "name":"issueDAO",
+  "serve": true,
+  "serviceScript": "return new foam.nanos.boot.ByServiceProviderFactory();",
+  "client": "{\"of\":\"foamdev.fit.Issue\"}"
 })
 
 p({
@@ -19,6 +61,22 @@ p({
     "class":"foam.nanos.jetty.HttpServer",
     "welcomeFiles":["/deployment/fit/index.html"]
   }
+})
+
+p({
+  "class": "foam.nanos.boot.NSpec",
+  "name": "uniqueUserService",
+  "serve": true,
+  "authenticate": true,
+  "boxClass": "foam.nanos.auth.UniqueUserServiceSkeleton",
+  "serviceScript": """
+    ul = new foam.nanos.auth.PreventDuplicateEmailLoginService(x);
+    /*
+    ul = new foam.nanos.auth.FilterBySpidService.Builder(x)
+      .setDelegate(ul)
+      .build();*/
+    return ul;
+  """
 })
 
 p({
