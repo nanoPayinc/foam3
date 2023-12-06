@@ -597,6 +597,7 @@ foam.POM({
     { name: "foam/u2/view/DraftDetailView",                           flags: "web" },
     { name: "foam/u2/view/TitledArrayView",                           flags: "web" },
     { name: "foam/u2/view/FObjectArrayView",                          flags: "web" },
+    { name: "foam/u2/view/FObjectArrayElementView",                   flags: "web" },
     { name: "foam/u2/view/ChoiceView",                                flags: "web" },
     { name: "foam/u2/view/UnstyledChooseNView",                       flags: "web" },
     { name: "foam/u2/view/ChooseNView",                               flags: "web" },
@@ -860,6 +861,7 @@ foam.POM({
     { name: "foam/lib/StorageOptionalPropertyPredicate",              flags: "js|java" },
     { name: "foam/lib/StoragePropertyPredicate",                      flags: "js|java" },
     { name: "foam/lib/AndPropertyPredicate",                          flags: "js|java" },
+    { name: "foam/lib/formatter/test/JSONFObjectFormatterParserTest", flags: "js|java"},
     { name: "foam/lib/json/JSONParser",                               flags: "js|java" },
     { name: "foam/lib/json/OutputterMode",                            flags: "js|java" },
     { name: "foam/lib/json/ClassReferenceParserTest",                 flags: "js|java" },
@@ -1176,6 +1178,7 @@ foam.POM({
     { name: "foam/nanos/cron/SimpleIntervalScheduleView",             flags: "web" },
     { name: "foam/u2/view/ClassCompleterView",                        flags: "web" },
     { name: "foam/css/TokenUtils",                                    flags: "web" },
-    { name: "foam/demos/u2/AllViews",                                 flags: "web" }
+    { name: "foam/demos/u2/AllViews",                                 flags: "web" },
+    { name: "foam/lib/json/StringToStringArrayParserTest",            flags: "js|java" }
   ]
 });
