@@ -81,14 +81,16 @@ foam.CLASS({
     {
       name: 'compare',
       code: function(o1, o2) {
-        let a1 = this.f(o1);
-        let a2 = this.f(o2);
-        return foam.String.compare(a1, a2);
+        let a1 = new Date(o1?.created);
+        let a2 = new Date(o2?.created);
+        return foam.util.compare(a1, a2);
       },
       javaCode: `
-        var date1 = f(o1);
-        var date2 = f(o2);
-        return foam.util.SafetyUtil.compare(date1, date2);
+        CreatedAware c1 = (CreatedAware) o1;
+        CreatedAware c2 = (CreatedAware) o2;
+        java.util.Date date1 = (java.util.Date) c1.getCreated();
+        java.util.Date date2 = (java.util.Date) c2.getCreated();
+        return date1.compareTo(date2);
       `
     }
   ]
