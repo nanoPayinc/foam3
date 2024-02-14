@@ -34,31 +34,19 @@ foam.CLASS({
             DAO userCapabilityJunctionDAO = (DAO) x.get("userCapabilityJunctionDAO");
 
             UserCapabilityJunction ucj = (UserCapabilityJunction) obj;
-            UserCapabilityJunction old = (UserCapabilityJunction) userCapabilityJunctionDAO.find(ucj.getId());
-            // logger.debug(clsName, "ucj ", ucj);
-            // logger.debug(clsName, "old ", old);
+            UserCapabilityJunction oldUcj = (UserCapabilityJunction) oldObj;
 
             if ( ucj.getStatus() != CapabilityJunctionStatus.GRANTED || ucj.getIsRenewable() ) return;
-            if ( old != null && old.getStatus() == CapabilityJunctionStatus.GRANTED && ! old.getIsRenewable() &&
-              ( ( old.getData() == null && ucj.getData() == null ) ||
-                ( old.getData() != null && old.getData().equals(ucj.getData()) ) )
+            if ( oldUcj != null && oldUcj.getStatus() == CapabilityJunctionStatus.GRANTED && ! oldUcj.getIsRenewable() &&
+              ( ( oldUcj.getData() == null && ucj.getData() == null ) ||
+                ( oldUcj.getData() != null && oldUcj.getData().equals(ucj.getData()) ) )
             ) return;
 
             Capability capability = (Capability) ucj.findTargetId(x);
-            // logger.debug(clsName, "ucj.findTargetId(x) - capability ", capability);
             if ( capability == null ) throw new RuntimeException("Data not saved to target object: Capability not found.");
 
             foam.core.FObject obj = null;
             if ( capability.getOf() != null && capability.getDaoKey() != null ) obj = (foam.core.FObject) ucj.saveDataToDAO(x, capability, true);
-            // if ( obj instanceof foam.nanos.auth.User ) {
-            //   logger.debug(clsName, "ucj.saveDataToDAO(x, "+capability.getId()+", true). - subject", x.get("subject"));
-            //   logger.debug(clsName, "ucj.saveDataToDAO(x, "+capability.getId()+", true). - user", ((foam.nanos.auth.Subject) x.get("subject")).getUser());
-            //   logger.debug(clsName, "ucj.saveDataToDAO(x, "+capability.getId()+", true). - realuser", ((foam.nanos.auth.Subject) x.get("subject")).getRealUser());
-            //   logger.debug(clsName, "ucj.saveDataToDAO(x, "+capability.getId()+", true). - capability", capability);
-            //   logger.debug(clsName, "ucj.saveDataToDAO(x, "+capability.getId()+", true). - ucj", ucj);
-            //   logger.debug(clsName, "ucj.saveDataToDAO(x, "+capability.getId()+", true). - data", ucj.getData());
-            //   logger.debug(clsName, "ucj.saveDataToDAO(x, "+capability.getId()+", true). - savedObj", obj);
-            // }
           }
         }, "");
       `
