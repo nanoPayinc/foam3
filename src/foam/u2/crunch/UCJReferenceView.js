@@ -8,6 +8,7 @@ foam.CLASS({
   package: 'foam.u2.crunch',
   name: 'UCJReferenceView',
   extends: 'foam.u2.View',
+
   documentation: `
     Render the UCJ specified by 'data' in an inline CRUNCH wizard. The default
     WAO setting is APPROVAL, which means UCJ changes will generate approvals
@@ -79,7 +80,7 @@ foam.CLASS({
           this.capabilitiesList = (
             await this.capabilityDAO.where(this.AND(
               this.IN(this.Capability.ID, this.ucjPropertyList.map(u => u.targetId)),
-              this.NEQ(this.Capability.OF, null))).select()
+              this.HAS(this.Capability.OF))).select()
           ).array;
           return this.UCJView.create({
             isSettingCapabilities: true,

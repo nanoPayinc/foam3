@@ -107,12 +107,8 @@ foam.CLASS({
     text-align: end;
   }
 
-  ^center-footer > ^signupLink {
-    margin-bottom: 2rem;
-  }
   ^disclaimer {
     text-align: center;
-    margin-bottom: 2rem;
   }
 
   /* TOP-TOP BAR NAV to go with backLink_ */
@@ -156,6 +152,19 @@ foam.CLASS({
     border: 1px solid transparent;
     color: $primary400;
     text-decoration: none;
+  }
+  ^playLink {
+    display: block;
+    width: min(140px, 100%);
+    margin: auto;
+  }
+  ^legal {
+    position: absolute;
+    bottom: 1.2rem;
+    margin: 0 1rem;
+    text-align: center;
+    font-size: 0.8rem;
+    width: 100%;
   }
   @media (min-width: /*%DISPLAYWIDTH.LG%*/ 960px ) {
     .topBar-logo-Back {
@@ -254,7 +263,8 @@ foam.CLASS({
   messages: [
     { name: 'GO_BACK', message: 'Go to ' },
     { name: 'MODE1', message: 'SignUp' },
-    { name: 'DISCLAIMER_TEXT', message: 'By signing up, you accept our ' }
+    { name: 'DISCLAIMER_TEXT', message: 'By signing up, you accept our ' },
+    { name: 'GPLAY_LEGAL', message: 'Google Play and the Google Play logo are trademarks of Google LLC.'}
   ],
 
   methods: [
@@ -277,7 +287,8 @@ foam.CLASS({
       var self = this;
 
       let logo = self.imgPath || (this.theme.largeLogo ? this.theme.largeLogo : this.theme.logo);
-
+      let showPlayBadge = this.appConfig.playLink && this.data.showAction 
+        && (! navigator.standalone) && (! this.data.referralToken);
       // CREATE DATA VIEW
       var right = this.E()
       // Header on-top of rendering data
@@ -296,17 +307,22 @@ foam.CLASS({
         .callIf(self.showTitle, function() { this.start().addClass('h300').add(self.data.TITLE).end(); })
         .addClass(self.myClass('content-form'))
         .callIf(self.displayWidth, function() { this.onDetach(self.displayWidth$.sub(self.resize)); })
-        .start()
+        .start('form')
+          .setID('login')
           .startContext({ data: this }).tag(this.DATA).endContext()
           .start()
             .addClass('align-end')
-            .tag(this.data.SUB_FOOTER)
+            .start(this.data.SUB_FOOTER)
+              .attr('type', 'button')
+            .end()
           .end()
         .end()
-        .tag(this.data.LOGIN)
+        .start(this.data.LOGIN)
+          .attrs({ type: 'submit', form: 'login' })
+        .end()
         .add(
           this.slot(function(data$showAction, data$disclaimer, appConfig) {
-            var disclaimer = self.E().callIf(data$disclaimer && appConfig, function() {
+            var disclaimer = self.E().style({ display: 'contents' }).callIf(data$disclaimer && appConfig, function() {
               this.start()
                 .addClass(self.myClass('disclaimer'))
                 .add(self.DISCLAIMER_TEXT)
@@ -329,7 +345,7 @@ foam.CLASS({
                 .end()
               .end();
             });
-            return self.E().callIfElse(data$showAction,
+            return self.E().style({ display: 'contents' }).callIfElse(data$showAction,
               function() {
                 this
                   .start()
@@ -353,9 +369,14 @@ foam.CLASS({
               function() {
                 this.start().add(disclaimer).end()
               }
-            )
+            ).callIf(showPlayBadge, function() {
+              this.start('a').addClass(self.myClass('playLink')).attrs({ href: appConfig.playLink })
+              .start('img')
+                .attrs({ alt:'Get it on Google Play', src:'https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png'})
+              .end().end();
+            })
           })
-        );
+        )
         
 
       // CREATE SPLIT VIEW
@@ -373,7 +394,15 @@ foam.CLASS({
             lgColumns: 8,
             xlColumns: 8
           }});
-        split.rightPanel.add(right);
+        split.rightPanel
+          .style({ position: 'relative' })
+          .add(right)
+          .callIf(showPlayBadge, function() {
+            this.start()
+            .addClass('p-legal', self.myClass('legal'))
+            .add(self.GPLAY_LEGAL)
+            .end();
+          })
       }
 
       // RENDER EVERYTHING ONTO PAGE

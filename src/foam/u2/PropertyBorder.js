@@ -6,10 +6,12 @@
 
 foam.CLASS({
   package: 'foam.u2',
-  name: 'PropertyBorder',
+  name: 'AbstractPropertyBorder',
   extends: 'foam.u2.Element',
 
   documentation: `
+    This model is abstract. Add css: and implement layout() to complete.
+
     Wraps a Property's underlying View with extra functionality to:
       1. Display a Label from Property's label:
       2. Display Units, if set in Property's units:
@@ -38,6 +40,88 @@ foam.CLASS({
     { name: 'HELP',       message: 'Help' },
     { name: 'LEARN_MORE', message: 'Click to learn more' }
   ],
+
+  properties: [
+    'prop',
+    {
+      class: 'Map',
+      name: 'viewArgs',
+      documentation: `Map prop that gets passed to the prop's view`
+    },
+    {
+      class: 'Map',
+      name: 'config',
+      documentation: `
+        Map of propertyProperty: value for configuring properties
+        values include 'label', 'units', and 'view'.
+        WARNING: Config accepts slots as key value pairs however config's slot does not update the prop. Eg:
+          VALID: config: { label$: someLabelSlot$ }; --> Will update prop label
+          INVALID: config$: someLabelSlot$.map(v => { return {label: v} }) --> Will not update prop label
+      `
+    },
+    [ 'helpEnabled', false ]
+  ],
+
+  methods: [
+    function render() {
+      var self = this;
+      var prop = this.prop = this.prop.clone().copyFrom(this.config);
+
+      this.SUPER();
+
+      if ( this.__context__.controllerMode$ )
+        this.controllerMode$.follow(this.__context__.controllerMode$);
+
+      var data = this.data;
+
+      // TODO: Add simplified "required: true" UI
+      // TODO: Required checks on props are ignored if validateObj returns undefined. Bug? - Sarthak
+      /* Future Version:
+      var errorSlot = prop.validators && prop.validationTextVisible ?
+        foam.core.Validation.orValidators(data, prop.validators) :
+        this.ConstantSlot.create({ value: null });
+        */
+
+      var errorSlot = prop.validateObj && prop.validationTextVisible ?
+        data.slot(prop.validateObj) :
+        this.ConstantSlot.create({ value: null });
+
+      var modeSlot = this.prop.createVisibilityFor(
+        this.data$,
+        this.controllerMode$);
+
+      // Boolean version of modeSlot for use with show()
+      var visibilitySlot = modeSlot.map(m => m != foam.u2.DisplayMode.HIDDEN)
+
+      var colorSlot = this.data$.dot(prop.name).map(v => !! v);
+
+      var labelSlot = this.slot(function(prop$reserveLabelSpace, prop$label){
+        let el = this.E().addClass(this.myClass('label'), this.myClass('label' + '-' + prop.name), 'p-light');
+        return prop$label ?
+          el.call(prop.labelFormatter, [data, prop]) :
+          ( prop$reserveLabelSpace ? el : this.E().style({ display: 'contents' }) )
+      });
+
+      var viewSlot = prop.view$.map(v => {
+        // Add the Property's View
+        var e = prop.toE({
+          ...self.viewArgs,
+          mode$: modeSlot
+        }, this.__subContext__ );
+
+        return this.E().addClass(self.myClass('view')).add(e).enableClass('error', errorSlot.and(colorSlot));
+      });
+
+      this.layout(prop, visibilitySlot, modeSlot, labelSlot, viewSlot, colorSlot, errorSlot);
+    }
+  ]
+});
+
+
+foam.CLASS({
+  package: 'foam.u2',
+  name: 'PropertyBorder',
+  extends: 'foam.u2.AbstractPropertyBorder',
 
   css: `
     ^ {
@@ -84,95 +168,38 @@ foam.CLASS({
       width: 100%;
       gap: 0.2rem
     }
-    ^propHolder > :first-child{
+    ^propHolder > :first-child {
       display: flex;
       align-items: center;
       justify-content: flex-start;
       gap: 0.4rem;
       width: 100%;
     }
+    ^view {
+      flex-grow: 1;
+      max-width: 100%;
+     }
   `,
 
-  properties: [
-    'prop',
-    {
-      class: 'Map',
-      name: 'viewArgs',
-      documentation: `Map prop that gets passed to the prop's view`
-    },
-    {
-      class: 'Map',
-      name: 'config',
-      documentation: `
-        Map of propertyProperty: value for configuring properties
-        values include 'label', 'units', and 'view'.
-        WARNING: Config accepts slots as key value pairs however config's slot does not update the prop. Eg:
-          VALID: config: { label$: someLabelSlot$ }; --> Will update prop label
-          INVALID: config$: someLabelSlot$.map(v => { return {label: v} }) --> Will not update prop label
-      `
-    },
-    ['helpEnabled', false]
-  ],
-
   methods: [
-    function render() {
+    function layout(prop, visibilitySlot, modeSlot, labelSlot, viewSlot, colorSlot, errorSlot) {
       var self = this;
-      this.prop = this.prop.clone().copyFrom(this.config);
-      var prop = this.prop;
 
-      this.SUPER();
-
-      if ( this.__context__.controllerMode$ )
-        this.controllerMode$.follow(this.__context__.controllerMode$);
-
-      var data = this.data;
-
-      // TODO: Add simplified "required: true" UI
-      // TODO: Required checks on props are ignored if validateObj returns undefined. Bug? - Sarthak
-      /* Future Version:
-      var errorSlot = prop.validators && prop.validationTextVisible ?
-        foam.core.Validation.orValidators(data, prop.validators) :
-        this.ConstantSlot.create({ value: null });
-        */
-
-        var errorSlot = prop.validateObj && prop.validationTextVisible ?
-          data.slot(prop.validateObj) :
-          this.ConstantSlot.create({ value: null });
-
-      var modeSlot = this.prop.createVisibilityFor(
-        this.data$,
-        this.controllerMode$);
-
-      // Boolean version of modeSlot for use with show()
-      var visibilitySlot = modeSlot.map(m => m != foam.u2.DisplayMode.HIDDEN)
-
-      var colorSlot = this.data$.dot(prop.name).map(v => !! v);
       this.
         addClass().
         show(visibilitySlot).
-        add(this.slot(function(prop$reserveLabelSpace, prop$label){
-          let el = this.E().addClass(this.myClass('label'), this.myClass('label' + '-' + prop.name), 'p-light');
-          return prop$label ?
-            el.call(prop.labelFormatter, [data, prop]) :
-            ( prop$reserveLabelSpace ? el : this.E().style({ display: 'contents' }) )
-        })).
+        add(labelSlot).
         start().
           addClass(this.myClass('propHolder')).
-          start().
-            add(prop.view$.map(v => {
-              // Add the Property's View
-              return this.E().add(prop.toE({
-                ...self.viewArgs,
-                mode$: modeSlot
-              }, this.__subContext__ ))
-                .style({ 'flex-grow': 1,'max-width': '100%' })
-                .enableClass('error', errorSlot.and(colorSlot));
-            })).
-            add(prop.units$).
+          start('span').
+            addClass(this.myClass('propHolderInner')).
+            add(viewSlot).
+            // Not needed anymore since is now handled by TextField
+//            start('span').addClass(self.myClass('units')).add(prop.units$).end().
           end().
           callIf(prop.help, function() {
             this.start().addClass(self.myClass('helper-icon'))
-              .start('', { tooltip: self.LEARN_MORE })
+              .start('', { tooltip: prop.help.length < 60 ? prop.help : self.LEARN_MORE })
                 .start(self.CircleIndicator, {
                   icon: self.theme ? self.theme.glyphs.helpIcon.getDataUrl({ fill: self.theme.black }) : '/images/question-icon.svg',
                   size: 20
@@ -194,7 +221,7 @@ foam.CLASS({
            */
           addClass('p-legal-light', this.myClass('errorText')).
           enableClass(this.myClass('colorText'), colorSlot).
-           show(errorSlot.and(modeSlot.map(m => m == foam.u2.DisplayMode.RW))).
+          show(errorSlot.and(modeSlot.map(m => m == foam.u2.DisplayMode.RW))).
           // Using the line below we can reserve error text space instead of shifting layouts
           // show(modeSlot.map(m => m == foam.u2.DisplayMode.RW)).
           start({
@@ -203,8 +230,8 @@ foam.CLASS({
             embedSVG: true
           }).show(errorSlot.and(colorSlot)).end().
           add(' ', errorSlot).
-        end()
-        .callIf(prop.help, function() {
+        end().
+        callIf(prop.help, function() {
           this
             .start(self.ExpandableBorder, { expanded$: self.helpEnabled$, title: self.HELP })
               .style({ 'flex-basis': '100%', width: '100%' })

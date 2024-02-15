@@ -16,6 +16,7 @@ foam.CLASS({
     'foam.core.X',
     'foam.core.XLocator',
     'foam.core.ProxyX',
+    'foam.nanos.om.OMLogger',
     'foam.nanos.logger.Logger',
     'foam.nanos.logger.Loggers',
     'java.util.concurrent.BlockingQueue',
@@ -54,6 +55,22 @@ foam.CLASS({
 
   methods: [
     {
+      name: 'incrQueued',
+      javaCode: `
+        setQueued(getQueued() + 1);
+        ((OMLogger) getX().get("OMLogger")).log(getName(), "queued");
+      `,
+      synchronized: true
+    },
+    {
+      name: 'incrExecuted',
+      javaCode: `
+        setExecuted(getExecuted() + 1);
+        ((OMLogger) getX().get("OMLogger")).log(getName(), "executed");
+      `,
+      synchronized: true
+    },
+    {
       name: 'start',
       javaCode: `
       Thread t = new Thread(this);
@@ -65,7 +82,7 @@ foam.CLASS({
     {
       name: 'submit',
       javaCode: `
-      setQueued(getQueued() + 1);
+      incrQueued();
       try {
         getQueue().put(new Runnable() { public void run() {
           X oldX = ((ProxyX) XLocator.get()).getX();
@@ -93,7 +110,7 @@ foam.CLASS({
           try {
             Runnable agent = (Runnable) getQueue().take();
 
-            setExecuted(getExecuted() + 1);
+            incrExecuted();
 
             long start = System.currentTimeMillis();
 
