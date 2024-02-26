@@ -25,30 +25,40 @@ foam.CLASS({
     display: flex;
     gap: 2rem;
     justify-content: center;
+    
   }
-  ^appStoreBadge > img, ^playStoreBadge > img {
-    width: 108px;
-    height: 54px;
+  ^appStoreBadge > img {
+      width: 108px;
+      height: 54px;
+  }
+  ^playStoreBadge > img {
+      width: 108px;
+      height: 54px;
   }
   ^legal {
     display: flex;
     justify-content: center;
     flex-direction: column;
     gap: 0.8rem;
+    margin: 0 1rem;
     text-align: center;
     font-size: 0.8rem;
     width: 100%;
   }
+  ^legal-container{
+    position: absolute;
+    bottom: 1.2rem;
+    left: 0;
+  }
 
   @media only screen and (min-width:  /*%DISPLAYWIDTH.MD%*/ 768px) {
-    ^appStoreBadge > img, ^playStoreBadge > img {
+    ^appStoreBadge > img {
       width: 125px;
       height: 62px;
     }
-    ^legal-container {
-      position: absolute;
-      bottom: 1.2rem;
-      left: 0;
+    ^playStoreBadge > img {
+      width: 125px;
+      height: 62px;
     }
   }
   `,
@@ -66,13 +76,25 @@ foam.CLASS({
       }
     },
     {
+      name: 'isDesktop',
+      expression: function(isIOS, isAndroid) { 
+        return ! (isIOS || isAndroid);
+      }
+    },
+    {
+      name: 'showAction',
+      class: 'Boolean',
+      value: true
+    },
+    {
       name:'isReferral',
       class: 'Boolean'
     },
     {
       name: 'showBadges',
       expression: function() { 
-        return (this.appConfig.playLink || this.appConfig.appLink) && (! navigator.standalone) && (! this.isReferral)
+        return this.appConfig.playLink && this.showAction 
+        && (! navigator.standalone) && (! this.isReferral)
       }
     },
     {
@@ -93,12 +115,12 @@ foam.CLASS({
 
       this.addClass(this.myClass()).show(this.showBadges)
       .start().addClass(this.myClass('badge-container'))
-        .start('a').addClass(this.myClass('appStoreBadge')).hide(this.isAndroid || !this.appConfig.appLink).attrs({ href: this.appConfig.appLink })
+        .start('a').addClass(this.myClass('appStoreBadge')).show(this.isIOS || this.isDesktop ).attrs({ href: this.appConfig.appStoreLink })
           .start('img')
             .attrs({ alt:'Download on the App Store', src:'/images/app-store-badge.svg'})
           .end()
         .end()
-        .start('a').addClass(this.myClass('playStoreBadge')).hide(this.isIOS || !this.appConfig.playLink).attrs({ href: this.appConfig.playLink })
+        .start('a').addClass(this.myClass('playStoreBadge')).show(this.isAndroid || this.isDesktop).attrs({ href: this.appConfig.playLink })
           .start('img')
             .attrs({ alt:'Get it on Google Play', src:'/images/play-store-badge.svg'})
           .end()
@@ -106,8 +128,8 @@ foam.CLASS({
       .end()
 
       .start().addClass('p-legal', this.myClass('legal')).enableClass(this.myClass('legal-container'), this.legalTextAbsolute$)
-        .start().hide(this.isAndroid || !this.appConfig.appLink).add(this.APPSTORE_LEGAL).end()
-        .start().hide(this.isIOS || !this.appConfig.playLink).add(this.GPLAY_LEGAL).end()
+        .start().show(this.isIOS || this.isDesktop ).add(this.APPSTORE_LEGAL).end()
+        .start().show(this.isAndroid || this.isDesktop).add(this.GPLAY_LEGAL).end()
       .end();
     }
     
