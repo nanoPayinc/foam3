@@ -254,6 +254,7 @@ foam.POM({
     { name: "foam/u2/borders/AlertMessageBorder",                     flags: "web" },
     { name: "foam/u2/borders/StatusPageBorder",                       flags: "web" },
     { name: "foam/u2/borders/MenuGroupBorder",                        flags: "web" },
+    { name: "foam/u2/borders/BaseUnAuthBorder",                       flags: "web" },
     { name: "foam/nanos/u2/navigation/IFrameTopNavigation",           flags: "web" },
     { name: "foam/version/VersionTrait",                              flags: "js" },
     { name: "foam/version/VersionedClass",                            flags: "js" },
