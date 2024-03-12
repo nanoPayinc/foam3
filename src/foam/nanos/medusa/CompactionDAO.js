@@ -23,6 +23,10 @@ compaction start - medusaentry data to nodes
 compaction complete - purge medusaentry dao before new indexes
 
 TODO: handle node roll failure - or timeout
+
+Configuration:
+Use ScriptParameter named 'compactionDAO' to set flags such
+as 'ignoreHealth'.
   `,
 
   javaImports: [
@@ -51,6 +55,7 @@ TODO: handle node roll failure - or timeout
     'foam.util.concurrent.AsyncAssemblyLine',
     'java.time.Duration',
     'java.util.ArrayList',
+    'java.util.Arrays',
     'java.util.HashMap',
     'java.util.HashSet',
     'java.util.List',
@@ -102,6 +107,12 @@ TODO: handle node roll failure - or timeout
       name: 'notFound',
       class: 'Map',
       javaFactory: 'return new HashMap();'
+    },
+    {
+      documentation: 'Set to true to compact a larger medusa cluster to a smaller configuration. Bring the system up normally, then OFFLINE nodes and mediators until at the configuration desired.',
+      name: 'ignoreHealth',
+      class: 'Boolean',
+      value: false
     }
   ],
 
@@ -110,6 +121,14 @@ TODO: handle node roll failure - or timeout
       name: 'cmd_',
       javaCode: `
       if ( COMPACTION_CMD.equals(obj) ) {
+        foam.nanos.script.ScriptParameter sp = (foam.nanos.script.ScriptParameter) ((DAO) x.get("scriptParameterDAO")).find("compactionDAO");
+        if ( sp != null ) {
+          Map params = sp.getParameters();
+          if ( params.get("ignoreHealth") != null ) {
+            setIgnoreHealth(Boolean.valueOf(params.get("ignoreHealth").toString()));
+            // TODO: could also use this to configure dry run.
+          }
+        }
         ((foam.nanos.om.OMLogger) x.get("OMLogger")).log(obj.toString());
         ReplayingInfo replaying = (ReplayingInfo) x.get("replayingInfo");
         if ( replaying.getReplaying() ) {
@@ -258,6 +277,9 @@ TODO: handle node roll failure - or timeout
       args: 'X x',
       javaCode: `
       Logger logger = Loggers.logger(x, this, "health");
+
+      if ( getIgnoreHealth() ) return;
+
       ClusterConfigSupport support = (ClusterConfigSupport) x.get("clusterConfigSupport");
       DAO healthDAO = (DAO) x.get("healthDAO");
 
@@ -328,6 +350,11 @@ TODO: handle node roll failure - or timeout
       final Map replies = new HashMap();
       List<ClusterConfig> nodes = support.getReplayNodes();
       for ( ClusterConfig cfg : nodes ) {
+        if ( cfg.getStatus() == Status.OFFLINE &&
+             getIgnoreHealth() ) {
+          nodes.remove(cfg);
+          continue;
+        }
         line.enqueue(new AbstractAssembly() {
           public void executeJob() {
             DAO client = support.getClientDAO(x, "medusaEntryDAO", myConfig, cfg);
@@ -415,7 +442,8 @@ TODO: handle node roll failure - or timeout
       // update other mediators
       final ClusterConfigSupport support = (ClusterConfigSupport) x.get("clusterConfigSupport");
       final ClusterConfig myConfig = support.getConfig(x, support.getConfigId());
-      ClusterConfig[] mediators = support.getSfBroadcastMediators();
+      List<ClusterConfig> mediators = Arrays.asList(support.getSfBroadcastMediators());
+      // ClusterConfig[] mediators = support.getSfBroadcastMediators();
 
       AssemblyLine line = new AsyncAssemblyLine(x, null, support.getThreadPoolName());
       final Map failures = new HashMap();
@@ -423,7 +451,15 @@ TODO: handle node roll failure - or timeout
       final DaggerBootstrap bs = bootstrap;
 
       for ( ClusterConfig cfg : mediators ) {
-        if ( cfg.getId() == myConfig.getId() ) continue;
+        if ( cfg.getId() == myConfig.getId() ) {
+          mediators.remove(cfg);
+          continue;
+        }
+        if ( cfg.getStatus() == Status.OFFLINE &&
+             getIgnoreHealth() ) {
+          mediators.remove(cfg);
+          continue;
+        }
         line.enqueue(new AbstractAssembly() {
           public void executeJob() {
             DAO client = support.getClientDAO(x, "daggerBootstrapDAO", myConfig, cfg);
@@ -451,15 +487,14 @@ TODO: handle node roll failure - or timeout
         } catch (InterruptedException e) {
           break;
         }
-        if ( replies.size() >= mediators.length -1 ) {
+        if ( replies.size() >= mediators.size() ) {
           break;
         }
       }
-      // getSfBroacastMediators returns self as well, hence the -1
-      if ( replies.size() < (mediators.length -1) ||
+      if ( replies.size() < (mediators.size() ) ||
            failures.size() > 0 ) {
         // TODO: in a failed state, need to shutdown - all mediators
-        logger.error("secondary, reconfigure, failed", failures.size(), "of", mediators.length -1, "failed", failures);
+        logger.error("secondary, reconfigure, failed", failures.size(), "of", mediators.size(), "failed", failures);
         throw new CompactionException("dagger");
       }
       // verify all bootstrap hashes are the same.
@@ -572,13 +607,19 @@ TODO: handle node roll failure - or timeout
 
       final ClusterConfigSupport support = (ClusterConfigSupport) x.get("clusterConfigSupport");
       final ClusterConfig myConfig = support.getConfig(x, support.getConfigId());
-      ClusterConfig[] mediators = support.getSfBroadcastMediators();
+      // ClusterConfig[] mediators = support.getSfBroadcastMediators();
+      List<ClusterConfig> mediators = Arrays.asList(support.getSfBroadcastMediators());
 
       AssemblyLine line = new AsyncAssemblyLine(x, null, support.getThreadPoolName());
       final Map failures = new HashMap();
       final Map replies = new HashMap();
 
       for ( ClusterConfig cfg : mediators ) {
+        if ( cfg.getStatus() == Status.OFFLINE &&
+             getIgnoreHealth() ) {
+          mediators.remove(cfg);
+          continue;
+        }
         line.enqueue(new AbstractAssembly() {
           public void executeJob() {
             if ( cfg.getId() == myConfig.getId() ) {
@@ -612,15 +653,15 @@ TODO: handle node roll failure - or timeout
         } catch (InterruptedException e) {
           break;
         }
-        if ( replies.size() == mediators.length ) {
+        if ( replies.size() == mediators.size() ) {
           break;
         }
       }
-      if ( replies.size() < (mediators.length) ||
+      if ( replies.size() < (mediators.size()) ||
            failures.size() > 0 ) {
         // REVIEW: purge failure is ok, just means the same data may
         // written out again if another mediator is primary.
-        logger.warning("secondary, purge, failed", failures.size(), "of", mediators.length, "failed");
+        logger.warning("secondary, purge, failed", failures.size(), "of", mediators.size(), "failed");
         throw new CompactionException("purge");
       }
       `
