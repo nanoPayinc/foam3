@@ -23,6 +23,10 @@ compaction start - medusaentry data to nodes
 compaction complete - purge medusaentry dao before new indexes
 
 TODO: handle node roll failure - or timeout
+
+Configuration:
+Use ScriptParameter named 'compactionDAO' to set flags such
+as 'ignoreHealth'.
   `,
 
   javaImports: [
@@ -51,6 +55,7 @@ TODO: handle node roll failure - or timeout
     'foam.util.concurrent.AsyncAssemblyLine',
     'java.time.Duration',
     'java.util.ArrayList',
+    'java.util.Arrays',
     'java.util.HashMap',
     'java.util.HashSet',
     'java.util.List',
@@ -64,6 +69,12 @@ TODO: handle node roll failure - or timeout
       name: 'COMPACTION_CMD',
       type: 'String',
       value: 'COMPACTION_CMD'
+    },
+    {
+      documentation: 'Initiate Compaction process',
+      name: 'COMPACTION_DRY_RUN_CMD',
+      type: 'String',
+      value: 'COMPACTION_DRY_RUN_CMD'
     },
     {
       name: 'ALARM_NAME',
@@ -102,6 +113,17 @@ TODO: handle node roll failure - or timeout
       name: 'notFound',
       class: 'Map',
       javaFactory: 'return new HashMap();'
+    },
+    {
+      name: 'dryRun',
+      class: 'Boolean',
+      value: false
+    },
+    {
+      documentation: 'Set to true to compact a larger medusa cluster to a smaller configuration. Bring the system up normally, then OFFLINE nodes and mediators until at the configuration desired.',
+      name: 'ignoreHealth',
+      class: 'Boolean',
+      value: false
     }
   ],
 
@@ -110,6 +132,14 @@ TODO: handle node roll failure - or timeout
       name: 'cmd_',
       javaCode: `
       if ( COMPACTION_CMD.equals(obj) ) {
+        foam.nanos.script.ScriptParameter sp = (foam.nanos.script.ScriptParameter) ((DAO) x.get("scriptParameterDAO")).find("compactionDAO");
+        if ( sp != null ) {
+          Map params = sp.getParameters();
+          if ( params.get("ignoreHealth") != null ) {
+            setIgnoreHealth(Boolean.valueOf(params.get("ignoreHealth").toString()));
+            // TODO: could also use this to configure dry run.
+          }
+        }
         ((foam.nanos.om.OMLogger) x.get("OMLogger")).log(obj.toString());
         ReplayingInfo replaying = (ReplayingInfo) x.get("replayingInfo");
         if ( replaying.getReplaying() ) {
@@ -122,7 +152,18 @@ TODO: handle node roll failure - or timeout
         if ( ! config.getIsPrimary() ) {
           throw new IllegalStateException("Compaction not allowed from Secondaries");
         }
-
+        setDryRun(false);
+        execute(x);
+        return obj;
+      }
+      if ( COMPACTION_DRY_RUN_CMD.equals(obj) ) {
+        ((foam.nanos.om.OMLogger) x.get("OMLogger")).log(obj.toString());
+        ReplayingInfo replaying = (ReplayingInfo) x.get("replayingInfo");
+        if ( replaying.getReplaying() ) {
+          Loggers.logger(x, this, "cmd").warning("Compaction not allowed during replay");
+          throw new IllegalStateException("Compaction not allowed during Replay");
+        }
+        setDryRun(true);
         execute(x);
         return obj;
       }
@@ -154,47 +195,56 @@ TODO: handle node roll failure - or timeout
         logger.info("health");
         health(x);
 
-        // setup
-        logger.info("stopServices");
-        stopServices(x);
+        if ( getDryRun() ) {
 
-        // block
-        logger.info("block");
-        setBlocking(true);
+          // compaction
+          logger.info("compaction");
+          long compactionTime = compaction(x);
 
-        // wait
-        logger.info("in-flight");
-        try {
-          inFlight(x);
-        } catch (Throwable t) {
+        } else {
+
+          // setup
+          logger.info("stopServices");
+          stopServices(x);
+
+          // block
+          logger.info("block");
+          setBlocking(true);
+
+          // wait
+          logger.info("in-flight");
+          try {
+            inFlight(x);
+          } catch (Throwable t) {
+            setBlocking(false);
+            throw t;
+          }
+
+          // nodes
+          logger.info("roll");
+          roll(x);
+
+          // dagger
+          logger.info("dagger");
+          long oldGlobalIndex = dagger(x);
+
+          // unblock
+          logger.info("unblock");
           setBlocking(false);
-          throw t;
+          super.unblock(x);
+
+          // compaction
+          logger.info("compaction");
+          long compactionTime = compaction(x);
+
+          // purge
+          logger.info("purge");
+          purge(x, oldGlobalIndex, compactionTime);
+
+          // startServices
+          logger.info("startServices");
+          startServices(x);
         }
-
-        // nodes
-        logger.info("roll");
-        roll(x);
-
-        // dagger
-        logger.info("dagger");
-        long oldGlobalIndex = dagger(x);
-
-        // unblock
-        logger.info("unblock");
-        setBlocking(false);
-        super.unblock(x);
-
-        // compaction
-        logger.info("compaction");
-        long compactionTime = compaction(x);
-
-        // purge
-        logger.info("purge");
-        purge(x, oldGlobalIndex, compactionTime);
-
-        // startServices
-        logger.info("startServices");
-        startServices(x);
 
         // report
         logger.info("report");
@@ -258,6 +308,9 @@ TODO: handle node roll failure - or timeout
       args: 'X x',
       javaCode: `
       Logger logger = Loggers.logger(x, this, "health");
+
+      if ( getIgnoreHealth() ) return;
+
       ClusterConfigSupport support = (ClusterConfigSupport) x.get("clusterConfigSupport");
       DAO healthDAO = (DAO) x.get("healthDAO");
 
@@ -328,6 +381,11 @@ TODO: handle node roll failure - or timeout
       final Map replies = new HashMap();
       List<ClusterConfig> nodes = support.getReplayNodes();
       for ( ClusterConfig cfg : nodes ) {
+        if ( cfg.getStatus() == Status.OFFLINE &&
+             getIgnoreHealth() ) {
+          nodes.remove(cfg);
+          continue;
+        }
         line.enqueue(new AbstractAssembly() {
           public void executeJob() {
             DAO client = support.getClientDAO(x, "medusaEntryDAO", myConfig, cfg);
@@ -415,7 +473,8 @@ TODO: handle node roll failure - or timeout
       // update other mediators
       final ClusterConfigSupport support = (ClusterConfigSupport) x.get("clusterConfigSupport");
       final ClusterConfig myConfig = support.getConfig(x, support.getConfigId());
-      ClusterConfig[] mediators = support.getSfBroadcastMediators();
+      List<ClusterConfig> mediators = Arrays.asList(support.getSfBroadcastMediators());
+      // ClusterConfig[] mediators = support.getSfBroadcastMediators();
 
       AssemblyLine line = new AsyncAssemblyLine(x, null, support.getThreadPoolName());
       final Map failures = new HashMap();
@@ -423,7 +482,15 @@ TODO: handle node roll failure - or timeout
       final DaggerBootstrap bs = bootstrap;
 
       for ( ClusterConfig cfg : mediators ) {
-        if ( cfg.getId() == myConfig.getId() ) continue;
+        if ( cfg.getId() == myConfig.getId() ) {
+          mediators.remove(cfg);
+          continue;
+        }
+        if ( cfg.getStatus() == Status.OFFLINE &&
+             getIgnoreHealth() ) {
+          mediators.remove(cfg);
+          continue;
+        }
         line.enqueue(new AbstractAssembly() {
           public void executeJob() {
             DAO client = support.getClientDAO(x, "daggerBootstrapDAO", myConfig, cfg);
@@ -451,15 +518,14 @@ TODO: handle node roll failure - or timeout
         } catch (InterruptedException e) {
           break;
         }
-        if ( replies.size() >= mediators.length -1 ) {
+        if ( replies.size() >= mediators.size() ) {
           break;
         }
       }
-      // getSfBroacastMediators returns self as well, hence the -1
-      if ( replies.size() < (mediators.length -1) ||
+      if ( replies.size() < (mediators.size() ) ||
            failures.size() > 0 ) {
         // TODO: in a failed state, need to shutdown - all mediators
-        logger.error("secondary, reconfigure, failed", failures.size(), "of", mediators.length -1, "failed", failures);
+        logger.error("secondary, reconfigure, failed", failures.size(), "of", mediators.size(), "failed", failures);
         throw new CompactionException("dagger");
       }
       // verify all bootstrap hashes are the same.
@@ -495,12 +561,13 @@ TODO: handle node roll failure - or timeout
                     new CompactionSink(x,
                     new UniqueSink(x,
                     new NSpecSink(x, this,
+                    new DaggerSink(x, this,
                     new Sequence.Builder(x)
                       .setArgs(new Sink[] {
                         compacted,
-                        new NodeSink(x) })
+                        new NodeSink(x, this) })
                       .build()
-                    ))));
+                    )))));
       final Sink sink = new Sequence.Builder(x)
                      .setArgs(new Sink[] {
                        processed,
@@ -572,13 +639,19 @@ TODO: handle node roll failure - or timeout
 
       final ClusterConfigSupport support = (ClusterConfigSupport) x.get("clusterConfigSupport");
       final ClusterConfig myConfig = support.getConfig(x, support.getConfigId());
-      ClusterConfig[] mediators = support.getSfBroadcastMediators();
+      // ClusterConfig[] mediators = support.getSfBroadcastMediators();
+      List<ClusterConfig> mediators = Arrays.asList(support.getSfBroadcastMediators());
 
       AssemblyLine line = new AsyncAssemblyLine(x, null, support.getThreadPoolName());
       final Map failures = new HashMap();
       final Map replies = new HashMap();
 
       for ( ClusterConfig cfg : mediators ) {
+        if ( cfg.getStatus() == Status.OFFLINE &&
+             getIgnoreHealth() ) {
+          mediators.remove(cfg);
+          continue;
+        }
         line.enqueue(new AbstractAssembly() {
           public void executeJob() {
             if ( cfg.getId() == myConfig.getId() ) {
@@ -612,15 +685,15 @@ TODO: handle node roll failure - or timeout
         } catch (InterruptedException e) {
           break;
         }
-        if ( replies.size() == mediators.length ) {
+        if ( replies.size() == mediators.size() ) {
           break;
         }
       }
-      if ( replies.size() < (mediators.length) ||
+      if ( replies.size() < (mediators.size()) ||
            failures.size() > 0 ) {
         // REVIEW: purge failure is ok, just means the same data may
         // written out again if another mediator is primary.
-        logger.warning("secondary, purge, failed", failures.size(), "of", mediators.length, "failed");
+        logger.warning("secondary, purge, failed", failures.size(), "of", mediators.size(), "failed");
         throw new CompactionException("purge");
       }
       `
@@ -699,7 +772,7 @@ TODO: handle node roll failure - or timeout
       name: 'NSpecSink',
       extends: 'foam.dao.ProxySink',
 
-      documentation: 'Creates new MedusaEntry for current Object',
+      documentation: `Creates new MedusaEntry for current Object. Consults Compaction entries to determine if this nspec should be compacted.`,
 
       javaCode: `
         public NSpecSink(X x, CompactionDAO self, ProxySink delegate) {
@@ -722,6 +795,7 @@ TODO: handle node roll failure - or timeout
           javaCode: `
           X x = getX();
           Logger logger = Loggers.logger(x, this, "put");
+          ClusterConfigSupport support = (ClusterConfigSupport) x.get("clusterConfigSupport");
           MedusaEntry entry = (MedusaEntry) obj;
           if ( entry.getObjectId() == null ) {
              if ( ! "bootstrap".equals(entry.getNSpecName()) ) {
@@ -730,17 +804,17 @@ TODO: handle node roll failure - or timeout
              return;
           }
 
-          Object nspec = x.get(entry.getNSpecName());
-           if ( nspec == null ) {
-            logger.warning("NSpec not found", entry.getNSpecName());
+          DAO mdao = null;
+          try {
+            mdao = (DAO) support.getMdao(x, entry.getNSpecName());
+          } catch (IllegalArgumentException e) {
+            logger.warning(e.getMessage());
+            // Don't throw, the caller can decide if compaction should
+            // be aborted. It is not uncommon for a service entry to
+            // be removed.
             return;
           }
-          if ( ! ( nspec instanceof DAO ) ) {
-            logger.warning("NSpec not DAO", entry.getNSpecName());
-            return;
-          }
-
-          FObject found = ((DAO) nspec).find(entry.getObjectId());
+          FObject found = mdao.find(entry.getObjectId());
           if ( found == null ) {
             if ( entry.getDop().equals(DOP.REMOVE) ) {
               // OK
@@ -783,8 +857,6 @@ TODO: handle node roll failure - or timeout
               MedusaEntry.OBJECT.clear(me);
               MedusaEntry.HASH.clear(me);
               me.setData(data);
-              DaggerService dagger = (DaggerService) x.get("daggerService");
-              me = dagger.link(x, me);
               getDelegate().put(me, sub);
             }
           }
@@ -793,10 +865,47 @@ TODO: handle node roll failure - or timeout
       ]
     },
     {
+      name: 'DaggerSink',
+      extends: 'foam.dao.ProxySink',
+
+      documentation: 'Links new MedusaEntry',
+
+      javaCode: `
+        public DaggerSink(X x, CompactionDAO self, ProxySink delegate) {
+          super(x, delegate);
+          setSelf(self);
+        }
+      `,
+
+      properties: [
+        {
+          name: 'self',
+          class: 'foam.dao.DAOProperty',
+          of: 'foam.nanos.medusa.CompactionDAO'
+        }
+      ],
+
+      methods: [
+        {
+          name: 'put',
+          javaCode: `
+          X x = getX();
+          Logger logger = Loggers.logger(x, this, "put");
+          MedusaEntry entry = (MedusaEntry) obj;
+          if ( ! getSelf().getDryRun() ) {
+            DaggerService dagger = (DaggerService) x.get("daggerService");
+            entry = dagger.link(x, entry);
+          }
+          getDelegate().put(entry, sub);
+          `
+        }
+      ]
+    },
+    {
       name: 'CompactibleSink',
       extends: 'foam.dao.ProxySink',
 
-      documentation: 'Skip entries which are not compactible',
+      documentation: 'Skip MedusaEntries which are not compactible:true. This is flag is seperate from the Compaction model which acts at the nspec level.',
 
       properties: [
         {
@@ -833,11 +942,28 @@ TODO: handle node roll failure - or timeout
 
       documentation: 'Sends MedusaEntry to nodes',
 
+      javaCode: `
+        public NodeSink(X x, CompactionDAO self) {
+          setX(x);
+          setSelf(self);
+        }
+      `,
+
       properties: [
+        {
+          name: 'self',
+          class: 'foam.dao.DAOProperty',
+          of: 'foam.nanos.medusa.CompactionDAO'
+        },
         {
           class: 'foam.dao.DAOProperty',
           name: 'dao',
-          javaFactory: 'return new MedusaBroadcast2NodesDAO(getX());'
+          javaFactory: `
+          if ( getSelf().getDryRun() )
+            return new foam.dao.NullDAO(getX(), MedusaEntry.getOwnClassInfo());
+
+          return new MedusaBroadcast2NodesDAO(getX());
+          `
         }
       ],
 
