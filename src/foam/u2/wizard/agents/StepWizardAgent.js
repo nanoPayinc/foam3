@@ -24,7 +24,7 @@ foam.CLASS({
     'popupMode',
     'flowAgent?',
     'stack',
-    'pushMenu',
+    'popupManager',
     'wizardClosing',
     'wizardController?'
   ],
@@ -46,7 +46,7 @@ foam.CLASS({
         return this.importedConfig || this.StepWizardConfig.create();
       }
     },
-    'wizardStackBlock',
+    'wizardView',
     'lastLastActiveWizard'
   ],
 
@@ -63,11 +63,8 @@ foam.CLASS({
         if ( v == this.WizardStatus.IN_PROGRESS ) return;
         this.resolveAgent();
         let closePromise = this.wizardController.onClose();
-        if ( closePromise?.then ) {
-          closePromise.then(self.pushDefault)
-        } else {
-          self.pushDefault()
-        }
+        if ( closePromise?.then )
+          closePromise.then(() => {})
       }));
 
       if ( (view?.class || view?.cls_?.id).endsWith('ScrollingStepWizardView') ) {
@@ -78,26 +75,12 @@ foam.CLASS({
         await this.wizardController.setFirstPosition();
       }
 
-      this.wizardStackBlock = this.StackBlock.create({
-        view, ...(this.popupMode ? { popup: this.config.popup || {} } : {}),
-        parent: this
-      });
-
       await new Promise((resolve, onError) => {
         this.onDetach(this.wizardController.lastException$.sub(() => {
           let e = this.wizardController.lastException;
           if ( ! e ) return;
           onError(e);
         }));
-
-        this.wizardStackBlock.removed.sub(() => {
-          this.crunchController.lastActiveWizard = this.lastLastActiveWizard;
-          this.wizardClosing = true;
-          if ( this.wizardController.status == this.WizardStatus.IN_PROGRESS ) {
-            this.wizardController.status = this.WizardStatus.DISCARDED;
-          }
-          resolve();
-        })
 
         // If this is published to, wizard status will stay IN_PROGRESS
         this.flowAgent?.sub(this.cls_.name,() => {
@@ -108,30 +91,28 @@ foam.CLASS({
           this.lastLastActiveWizard = this.crunchController.lastActiveWizard;
           this.crunchController.lastActiveWizard = this.wizardController;
         }
-        this.stack.push(this.wizardStackBlock);
+        if ( this.popupMode ) {
+          this.wizardView = this.popupManager.push(view, this, this.config.popup || {})
+        } else {
+          this.wizardView = this.stack.push(view, this)
+        }
+
+        this.wizardView.onDetach(() => {
+          this.crunchController.lastActiveWizard = this.lastLastActiveWizard;
+          this.wizardClosing = true;
+          if ( this.wizardController.status == this.WizardStatus.IN_PROGRESS ) {
+            this.wizardController.status = this.WizardStatus.DISCARDED;
+          }
+          resolve();
+        })
       });
     }
   ],
   listeners: [
-    function pushDefault() {
-      // Prevent sending the user to the default menu when finishing the wizard
-      // in an iframe as it makes more sense to yield the control back to the
-      // parent window instead of redirecting to the home page.
-      if ( this.isIframe() ) return;
-
-      if ( this.stack.pos < 0 ) {
-        this.pushMenu('');
-      }  
-    },
     function resolveAgent() {
       if ( this.wizardClosing ) return;
       this.wizardClosing = true;
-      if ( this.stack.BACK.isEnabled(this.stack.pos) )
-        this.stack.back();
-      else
-        // This is temporarily necessary to fake a StackBlock removal
-        // in case the stack is empty when the wizard is pushed.
-        this.wizardStackBlock.removed.pub();
+      this.wizardView.remove();
     }
   ]
 });

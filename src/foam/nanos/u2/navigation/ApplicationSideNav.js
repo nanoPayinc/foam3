@@ -17,7 +17,7 @@ foam.CLASS({
   imports: [
     'currentMenu',
     'menuDAO',
-    'pushMenu',
+    'pushDefaultMenu',
     'isMenuOpen?',
     'displayWidth?'
   ],
@@ -125,7 +125,7 @@ foam.CLASS({
           .start({ class: 'foam.nanos.u2.navigation.ApplicationLogoView' })
             .addClass(self.myClass('logo'))
             .on('click', () => {
-              self.pushMenu('', true);
+              self.pushDefaultMenu();
             })
           .end() : null;
         }))
@@ -171,7 +171,7 @@ foam.CLASS({
       // When menu is opened close it if window size is small(e.g. phone or tablet) and there are no sub menus
         if ( ! hasChildren && this.displayWidth?.ordinal <= foam.u2.layout.DisplayWidth.MD.ordinal )
           this.isMenuOpen = false;
-        this.pushMenu(menu, true);
+        menu.handler.select(this.__context__, menu);
       }
     }
   ]

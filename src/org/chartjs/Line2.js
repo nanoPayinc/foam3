@@ -8,9 +8,9 @@ foam.CLASS({
   package: 'org.chartjs',
   name: 'Line2',
   extends: 'foam.graphics.CView',
-  requires: [
-    'org.chartjs.Lib',
-  ],
+
+  mixins: [ 'org.chartjs.Lib' ],
+
   properties: [
     'chart',
     {
@@ -38,14 +38,14 @@ foam.CLASS({
           maintainAspectRatio: false,
           interaction: {
             mode: 'index',
-            intersect: false,
+            intersect: false
           },
           stacked: false,
           scales: {
             y: {
               type: 'linear',
               display: true,
-              position: 'left',
+              position: 'left'
             }
           }
         };
@@ -72,17 +72,18 @@ foam.CLASS({
   ],
 
   methods: [
-    function initCView(x) {
-      this.chart = new this.Lib.CHART(x, this.config);
-      this.update();
-    },
     function paintSelf(x) {
+      if ( ! this.chart ) {
+        this.chart = new Chart(x, this.config);
+        this.update();
+      }
       this.chart.render();
     },
     function allOptions() {
       return this.options && new Map([...new Map(Object.entries(this.localOptions)), ...new Map(Object.entries(this.options))]) || this.localOptions;
     }
   ],
+
   listeners: [
     {
       name: 'update',

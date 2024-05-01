@@ -8,18 +8,21 @@ foam.CLASS({
   package: 'org.chartjs',
   name: 'ChartJSPropertyFormatterRefinement',
   refines: 'foam.core.Property',
+
   properties: [
     {
       name: 'chartJsFormatter',
       value: function(v) { return v.toLocaleString(foam.locale) },
-    },
+    }
   ]
 });
+
 
 foam.CLASS({
   package: 'org.chartjs',
   name: 'ChartJSDateFormatterRefinement',
   refines: 'foam.core.Date',
+
   properties: [
     {
       name: 'chartJsFormatter',
@@ -36,10 +39,12 @@ foam.CLASS({
   ]
 });
 
+
 foam.CLASS({
   package: 'org.chartjs',
   name: 'ChartJSDateTimeFormatterRefinement',
   refines: 'foam.core.DateTime',
+
   properties: [
     {
       name: 'chartJsFormatter',
@@ -61,16 +66,20 @@ foam.CLASS({
   ]
 });
 
+
 foam.CLASS({
   package: 'org.chartjs',
   name: 'AbstractChartCView',
   extends: 'foam.graphics.CView',
+
   requires: [
     'foam.dao.ProxySink',
     'foam.mlang.sink.AbstractUnarySink',
-    'foam.mlang.sink.GroupBy',
-    'org.chartjs.Lib',
+    'foam.mlang.sink.GroupBy'
   ],
+
+  mixins: [ 'org.chartjs.Lib' ],
+
   properties: [
     'chart',
     'chartType',
@@ -81,26 +90,26 @@ foam.CLASS({
       expression: function(dataProperties_) {
         return dataProperties_[dataProperties_.length - 2].chartJsFormatter ||
           function(v) { return v.toLocaleString(foam.locale) }
-      },
+      }
     },
     {
       name: 'xAxisLabel',
       expression: function(dataProperties_) {
         return dataProperties_[dataProperties_.length - 2].label
-      },
+      }
     },
     {
       name: 'yFormatter',
       expression: function(dataProperties_) {
         return dataProperties_[dataProperties_.length - 1].chartJsFormatter ||
           function(v) { return v.toLocaleString(foam.locale) }
-      },
+      }
     },
     {
       name: 'yAxisLabel',
       expression: function(dataProperties_) {
         return dataProperties_[dataProperties_.length - 1].label
-      },
+      }
     },
     {
       name: 'tooltipLabelFormatter',
@@ -132,7 +141,7 @@ foam.CLASS({
           }
         }.bind(this);
         return getData(data)
-      },
+      }
     },
     {
       name: 'config',
@@ -146,19 +155,19 @@ foam.CLASS({
             tooltips: {
               callbacks: {
                 title: this.tooltipTitleFormatter.bind(this),
-                label: this.tooltipLabelFormatter.bind(this),
+                label: this.tooltipLabelFormatter.bind(this)
               }
             },
             scales: {
               yAxes: [
                 {
                   ticks: {
-                    callback: this.yFormatter.bind(this),
+                    callback: this.yFormatter.bind(this)
                   },
                   scaleLabel: {
                     display: true,
-                    labelString: this.yAxisLabel,
-                  },
+                    labelString: this.yAxisLabel
+                  }
                 }
               ],
               xAxes: [
@@ -168,39 +177,42 @@ foam.CLASS({
                   },
                   scaleLabel: {
                     display: true,
-                    labelString: this.xAxisLabel,
-                  },
+                    labelString: this.xAxisLabel
+                  }
                 }
               ]
             }
           }
         };
       }
-    },
+    }
   ],
+
   reactions: [
-    ['data', 'propertyChange', 'update' ],
-    ['', 'propertyChange.data', 'update' ],
-    ['', 'propertyChange.chart', 'update' ],
+    [ 'data', 'propertyChange',       'update' ],
+    [ '',     'propertyChange.data',  'update' ],
+    [ '',     'propertyChange.chart', 'update' ]
   ],
+
   classes: [
     {
       name: 'ChartData',
       properties: [
         'key',
-        'data',
-      ],
-    },
+        'data'
+      ]
+    }
   ],
+
   methods: [
-    function initCView(x) {
-      this.chart = new this.Lib.CHART(x, this.config);
-      this.configChart_(this.chart);
-    },
     function paintSelf(x) {
+      if ( ! this.chart ) {
+        this.configChart_();
+        this.chart = new Chart(x, this.config);
+      }
       this.chart.render();
     },
-    function configChart_(chart) {
+    function configChart_() {
       // template method
     },
     function genChartData_(data) {
@@ -275,14 +287,15 @@ foam.CLASS({
           ]
         };
       }
-    },
+    }
   ],
+
   listeners: [
     {
       name: 'update',
       isFramed: true,
       code: function() {
-        if ( this.chart && this.data ) {
+        if ( globalThis.Chart && this.chart && this.data ) {
           // Simply doing this.chart.data = this.data will cause the entire
           // chart to re-render when chart.update() is called. Doing a deep
           // copyFrom makes the chart update only what it needs to which is a
@@ -297,9 +310,11 @@ foam.CLASS({
                 to[i] = copyFrom(to[i], from[i]);
               }
               return to;
-            } else if ( foam.Date.isInstance(from) ) {
+            }
+            if ( foam.Date.isInstance(from) ) {
               return from;
-            } else if ( foam.Object.isInstance(to) ) {
+            }
+            if ( foam.Object.isInstance(to) ) {
               to = to || {};
               Object.keys(from).forEach(function(k) {
                 to[k] = copyFrom(to[k], from[k])
@@ -309,12 +324,11 @@ foam.CLASS({
             return from;
           }
 
-          this.normalizeData().then(function(o) {
+          this.normalizeData().then(o => {
             var data = this.genChartData_(o);
             copyFrom(this.chart.data, data);
             this.chart.update();
-          }.bind(this))
-
+          });
         }
       }
     }

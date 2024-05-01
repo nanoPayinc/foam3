@@ -7,6 +7,7 @@
 foam.CLASS({
   package: 'org.chartjs.demos',
   name: 'Pie',
+
   requires: [
     'foam.dao.EasyDAO',
     'foam.graphics.CView',
@@ -14,22 +15,24 @@ foam.CLASS({
     'foam.graphics.PieGraph2',
     'foam.graphics.PieGraphLabels',
     'foam.u2.DetailView',
-    'org.chartjs.Pie',
+    'org.chartjs.Pie'
   ],
+
   implements: [
-    'foam.mlang.Expressions',
+    'foam.mlang.Expressions'
   ],
+
   properties: [
     {
       class: 'Boolean',
       name: 'autoAdd',
-      postSet: function() { this.maybeAdd() },
+      postSet: function() { this.maybeAdd() }
     },
     {
       name: 'bar',
       view: {
         class: 'org.chartjs.demos.ConfigurableChartView',
-        view: 'org.chartjs.Bar',
+        view:  'org.chartjs.Bar',
       },
       factory: function() {
         var sink = this.GROUP_BY(this.Person.NAME, this.COUNT());
@@ -41,7 +44,7 @@ foam.CLASS({
       name: 'pie',
       view: {
         class: 'org.chartjs.demos.ConfigurableChartView',
-        view: 'org.chartjs.Pie',
+        view:  'org.chartjs.Pie',
       },
       factory: function() {
         var sink = this.GROUP_BY(this.Person.NAME, this.COUNT());
@@ -104,4 +107,3 @@ foam.CLASS({
     },
   ],
 });
-

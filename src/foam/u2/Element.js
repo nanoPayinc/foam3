@@ -4,8 +4,6 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-
-
 foam.CLASS({
   package: 'foam.u2',
   name: 'Entity',
@@ -2203,7 +2201,7 @@ foam.CLASS({
       documentation: `
         The order to render the property in if rendering multiple properties.
       `,
-      value: Number.MAX_SAFE_INTEGER
+      value: 0
     },
     {
       class: 'Boolean',
@@ -2242,7 +2240,7 @@ foam.CLASS({
     },
 
     function createElFromSpec_(spec, args, X) {
-      let el = foam.u2.ViewSpec.createView(spec, args, this, X);
+      let el = foam.u2.ViewSpec.createView(spec, args, this, X.createSubContext({ prop: this }));
 
       if ( X.data$ && ! ( args && ( args.data || args.data$ ) ) ) {
         el.data$ = X.data$.dot(this.name);
@@ -2830,6 +2828,20 @@ foam.CLASS({
   documentation: 'A Controller is an Element which exports itself as "data".',
 
   exports: [ 'as data' ]
+});
+
+
+
+foam.CLASS({
+  package: 'foam.u2',
+  name: 'Router',
+  extends: 'foam.u2.Controller',
+  mixins: [ 'foam.u2.memento.Memorable' ],
+
+  exports: [ 'route' ],
+
+  properties: [
+  ]
 });
 
 

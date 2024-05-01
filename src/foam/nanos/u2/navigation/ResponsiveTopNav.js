@@ -16,7 +16,7 @@ foam.CLASS({
     'isMenuOpen',
     'loginSuccess',
     'menuDAO',
-    'pushMenu?',
+    'pushDefaultMenu?',
     'theme'
   ],
 
@@ -111,10 +111,11 @@ foam.CLASS({
           .start({ class: 'foam.nanos.u2.navigation.ApplicationLogoView' })
             .addClass(this.myClass('logo'))
             .on('click', () => {
-              this.pushMenu('', true);
+              this.pushDefaultMenu();
             })
           .end()
         .end()
+        // .tag({class: 'foam.nanos.so.SystemNotificationBorder'})
         .add(this.slot(function(displayWidth) {
           if ( displayWidth.ordinal >= foam.u2.layout.DisplayWidth.MD.ordinal ) {
             return this.E().addClass(this.myClass('components-container'), this.myClass('right'))

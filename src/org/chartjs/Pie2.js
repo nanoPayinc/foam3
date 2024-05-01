@@ -8,9 +8,9 @@ foam.CLASS({
   package: 'org.chartjs',
   name: 'Pie2',
   extends: 'foam.graphics.CView',
-  requires: [
-    'org.chartjs.Lib',
-  ],
+
+  mixins: [ 'org.chartjs.Lib' ],
+
   properties: [
     'chart',
     {
@@ -26,32 +26,33 @@ foam.CLASS({
       }
     },
     {
+      name: 'chartJSOptions',
+      factory: function() {
+        return {};
+      },
+    },
+    {
       name: 'config',
       factory: function() {
         return {
           type: 'pie',
           data: this.data,
-          options: {
-            animation: {
-              duration: 0
-            },
-            responsive: false,
-            maintainAspectRatio: false,
-          }
+          options: {...this.chartJSOptions}
         };
       }
     }
   ],
 
   methods: [
-    function initCView(x) {
-      this.chart = new this.Lib.CHART(x, this.config);
-      this.update();
-    },
     function paintSelf(x) {
+      if ( ! this.chart ) {
+        this.chart = new Chart(x, this.config);
+        this.update();
+      }
       this.chart.render();
     }
   ],
+
   listeners: [
     {
       name: 'update',

@@ -64,16 +64,6 @@ foam.CLASS({
     'controllerMode'
   ],
 
-  messages: [
-    { name: 'DETAIL',    message: 'Detail' },
-    { name: 'TABBED',    message: 'Tabbed' },
-    { name: 'SECTIONED', message: 'Sectioned' },
-    { name: 'MATERIAL',  message: 'Material' },
-    { name: 'WIZARD',    message: 'Wizard' },
-    { name: 'VERTICAL',  message: 'Vertical' },
-    { name: 'ALL',       message: 'All ' }
-  ],
-
   properties: [
     {
       class: 'FObjectProperty',
@@ -214,7 +204,7 @@ foam.CLASS({
       },
       isAvailable: function(config) {
         try {
-          return config.createPredicate.f();
+          return config.copyPredicate.f();
         } catch(e) {
           return false;
         }
@@ -367,13 +357,17 @@ foam.CLASS({
       if ( acArray && acArray.length ) {
         let res;
         for ( let a of acArray ) {
-          var aSlot = a.createIsAvailable$(this.__subContext__, data);
-          let b = aSlot.get();
-          if ( aSlot.promise ) {
-            await aSlot.promise;
-            b = aSlot.get();
+          try {
+            var aSlot = a.createIsAvailable$(this.__subContext__, data);
+            let b = aSlot.get();
+            if ( aSlot.promise ) {
+              await aSlot.promise;
+              b = aSlot.get();
+            }
+            if (b) res = a;
+          } catch ( e ) {
+            console.error("Action: " + a.name + " for the class: " + a.source + " has an error: " + e);
           }
-          if (b) res = a;
         }
         this.primary = res;
       }

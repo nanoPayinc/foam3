@@ -54,7 +54,8 @@ foam.CLASS({
     function click(evt) {
       this.SUPER(evt);
       if ( evt.detail && evt.detail > 1 ) return;
-      let ret = this.menu.launch_(this.__subContext__, this);
+      let ret;
+      ret = this.menu.handler.select(this.__subContext__, this.menu);
       if ( ret && ret.then ) {
         this.loading_ = true;
         ret.then(() => { this.loading_ = false; })

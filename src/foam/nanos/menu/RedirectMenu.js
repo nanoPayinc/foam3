@@ -13,7 +13,8 @@ foam.CLASS({
 
   imports: [
     'menuDAO',
-    'pushMenu',
+    'pushDefaultMenu',
+    'routeTo',
     'window'
   ],
 
@@ -48,13 +49,13 @@ foam.CLASS({
       url.searchParams.delete('menus');
       this.window.history.replaceState('', '', url);
       if ( ! this.menus.length ) {
-        this.pushMenu('', true);
+        this.pushDefaultMenu();
         return;
       }
       for ( menu of this.menus ) {
         let found = await this.menuDAO.find(menu);
         if ( found ) {
-          this.pushMenu(menu);
+          this.routeTo(menu);
           break;
         }
       }
