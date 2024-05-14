@@ -200,19 +200,8 @@ foam.CLASS({
           return e;
         }));
       }
-      let availSlots = this.data.map(action => {
-        if (  foam.u2.ActionReference.isInstance(action) ) return action.action.createIsAvailable$(this.__context__, action.data)
-        if ( ! foam.core.Action.isInstance(action) ) return foam.core.SimpleSlot.create({ value: true }, this);
-        return action.createIsAvailable$(this.__context__, this.obj)
-      })
-      this.onDetach(this.disabled_$.follow(foam.core.ArraySlot.create({
-        slots: availSlots
-      }, this)
-        .map(async arr => {
-          arr = await Promise.all(arr) 
-          return ! arr.reduce((l, r) => l || r, false)
-        })
-      ));
+
+      this.linkActionAvailabilitySlots();
     },
 
     async function initializeOverlay(x, y) {
@@ -225,7 +214,7 @@ foam.CLASS({
       this.ctrl.add(this.overlay_);
       this.overlay_.open(x, y);
 
-      if ( this.obj && this.dao ) {
+      if ( ! this.obj && this.dao ) {
         this.obj = await this.dao.inX(this.__context__).find(this.obj.id);
       }
 
@@ -236,7 +225,7 @@ foam.CLASS({
         self.overlay_.close();
       });
       // sub to actions from view data
-      self.obj?.data.sub('action', function() {
+      self.obj?.data?.sub('action', function() {
         self.overlay_.close();
       });
 
@@ -316,13 +305,33 @@ foam.CLASS({
   ],
 
   listeners: [
+    {
+      name: 'linkActionAvailabilitySlots',
+      isMerged: true,
+      on: ['this.propertyChange.data'],
+      code: function() {
+        let availSlots = this.data.map(action => {
+          if (  foam.u2.ActionReference.isInstance(action) ) return action.action.createIsAvailable$(this.__context__, action.data)
+          if ( ! foam.core.Action.isInstance(action) ) return foam.core.SimpleSlot.create({ value: true }, this);
+          return action.createIsAvailable$(this.__context__, this.obj)
+        })
+        this.disabled_$.follow(foam.core.ArraySlot.create({
+          slots: availSlots
+        }, this)
+          .map(async arr => {
+            arr = await Promise.all(arr) 
+            return ! arr.reduce((l, r) => l || r, false)
+          })
+        );
+      }
+    },
     function click(evt) {
       this.SUPER(evt);
       this.overlay_.parentEl = this.el_();
       this.isMouseClick = !! evt.detail;
       var x = evt.clientX || this.getBoundingClientRect().x;
       var y = evt.clientY || this.getBoundingClientRect().y;
-      if ( this.disabled_ ) return;
+      // if ( this.disabled_ ) return;
       if ( ! this.overlayInitialized_ ) {
         this.initializeOverlay(x, y);
       } else {

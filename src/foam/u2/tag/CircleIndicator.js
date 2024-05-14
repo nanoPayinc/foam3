@@ -16,7 +16,8 @@ foam.CLASS({
 
   requires: [
     'foam.core.ExpressionSlot',
-    'foam.u2.LoadingSpinner'
+    'foam.u2.LoadingSpinner',
+    'foam.u2.tag.Image'
   ],
 
   css: `
@@ -26,7 +27,7 @@ foam.CLASS({
       text-align: center;
       display: inline-flex;
       overflow: hidden;
-      align-items: stretch;
+      align-items: center;
       justify-content: center;
     }
     ^ > img {
@@ -66,8 +67,10 @@ foam.CLASS({
       class: 'Image'
     },
     {
+      name: 'glyph'
+    },
+    {
       name: 'size',
-      class: 'Int',
       value: 30
     },
     {
@@ -107,7 +110,6 @@ foam.CLASS({
           'border-color': this.stateBorderColor_$,
           'width': size,
           'height': size,
-          'font-size': '65%',
           'color': this.textColor$,
           'border': this.borderThickness + 'px solid',
           'padding': this.padding,
@@ -126,9 +128,8 @@ foam.CLASS({
         })
         .attr('border');
 
-      if ( this.icon ) {
-        this.start('img')
-          .attr('src', this.icon$)
+      if ( this.glyph || this.icon ) {
+        this.start(this.Image, { data: this.icon, glyph: this.glyph })
         .end();
       }
 

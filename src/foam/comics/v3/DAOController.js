@@ -16,7 +16,7 @@ foam.CLASS({
   `,
 
   css: `
-    ^content > *  { height: 100%; }
+    ^content, ^content > *  { height: 100%; }
   `,
   imports: [
     'auth',
@@ -99,7 +99,7 @@ foam.CLASS({
         if ( route == 'create' ) {
           if ( this.config.createMenu ) {
             self.pushMenu(self.config.createMenu);
-            return self.renderDAOView();
+            this.route = '';
           }
           if ( this.config.createController ) {
             this.stack.push({

@@ -110,19 +110,19 @@ foam.CLASS({
       order: 0
     },
     {
-      name: 'commentsSection',
-      isAvailable: function(id) {
-        return !! id;
-      },
-      title: 'Comments',
-      order: 1
-    },
-    {
       name: 'metaSection',
       isAvailable: function(id) {
         return !! id;
       },
       title: 'Audit',
+      order: 1
+    },
+    {
+      name: 'commentsSection',
+      isAvailable: function(id) {
+        return !! id;
+      },
+      title: 'Comments',
       order: 3
     },
     {
@@ -646,17 +646,11 @@ foam.CLASS({
         assignedTicket.assignedTo = X.subject.user.id;
         assignedTicket.clearProperty('assignedToGroup');
 
-        this.ticketDAO.put(assignedTicket).then(req => {
+        return this.ticketDAO.put(assignedTicket).then(req => {
           this.ticketDAO.cmd(this.AbstractDAO.PURGE_CMD);
           this.ticketDAO.cmd(this.AbstractDAO.RESET_CMD);
           this.finished.pub();
           this.notify(this.SUCCESS_ASSIGNED, '', this.LogLevel.INFO, true);
-          if (
-            X.stack.top &&
-            ( X.currentMenu.id !== X.stack.top[2] )
-          ) {
-            X.stack.back();
-          }
         }, e => {
           this.throwError.pub(e);
           this.notify(e.message, '', this.LogLevel.ERROR, true);
@@ -674,17 +668,11 @@ foam.CLASS({
         unassignedTicket.clearProperty('assignedTo');
         unassignedTicket.clearProperty('assignedToGroup');
 
-        this.ticketDAO.put(unassignedTicket).then(req => {
+        return this.ticketDAO.put(unassignedTicket).then(req => {
           this.ticketDAO.cmd(this.AbstractDAO.PURGE_CMD);
           this.ticketDAO.cmd(this.AbstractDAO.RESET_CMD);
           this.finished.pub();
           this.notify(this.SUCCESS_UNASSIGNED, '', this.LogLevel.INFO, true);
-          if (
-            X.stack.top &&
-            ( X.currentMenu.id !== X.stack.top[2] )
-          ) {
-            X.stack.back();
-          }
         }, e => {
           this.throwError.pub(e);
           this.notify(e.message, '', this.LogLevel.ERROR, true);
@@ -706,7 +694,7 @@ foam.CLASS({
           ticket: this.id
         });
 
-        this.ticketDAO.cmd(ticketCloseCommand).then(function(res) {
+        return this.ticketDAO.cmd(ticketCloseCommand).then(function(res) {
           if ( res?.status === 'CLOSED' ) {
             this.copyFrom(res);
             this.notify(this.SUCCESS_CLOSED, '', this.LogLevel.INFO, true);
@@ -728,13 +716,6 @@ foam.CLASS({
           this.ticketDAO.cmd(this.AbstractDAO.RESET_CMD);
           this.finished.pub();
           this.notify(this.SUCCESS_ASSIGNED, '', this.LogLevel.INFO, true);
-
-          if (
-            X.stack.top &&
-            ( X.currentMenu.id !== X.stack.top[2] )
-          ) {
-            X.stack.back();
-          }
         }, (e) => {
           this.throwError.pub(e);
           this.notify(e.message, '', this.LogLevel.ERROR, true);
