@@ -475,6 +475,9 @@ foam.CLASS({
         if ( self.client != client ) {
           console.log('Stale Client in ApplicationController, waiting for update.');
           await self.client.promise;
+          // Rebuild stack with correct context 
+          self.stack = self.Stack.create({}, self.__subContext__);
+          self.routeTo(self.window.location.hash.substring(1));
         }
 
         await self.fetchGroup();
@@ -733,8 +736,6 @@ foam.CLASS({
     },
 
     async function pushMenu_(realMenu, menu) {
-      let idCheck = menu && ( menu.id ? menu.id : menu );
-      let currentMenuCheck = this.currentMenu?.id;
       var realMenu = menu;
       dao = this.client.menuDAO;
       let stringMenu = menu && foam.String.isInstance(menu);
@@ -930,7 +931,7 @@ foam.CLASS({
         .addClass(this.myClass())
         .tag(this.NavigationController, {
           topNav$: this.topNavigation_$,
-          mainView: this.stack,
+          mainView$: this.stack$,
           footer$: this.footerView_$,
           sideNav$: this.sideNav_$
         });

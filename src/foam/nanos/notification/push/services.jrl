@@ -1,5 +1,29 @@
 p({
   "class":"foam.nanos.boot.NSpec",
+  "name":"pushRegistrationDAO",
+  "serve":true,
+  "serviceScript":"""
+    mdao = new foam.dao.MDAO(foam.nanos.notification.push.PushRegistration.getOwnClassInfo());
+    mdao.addIndex(new foam.core.PropertyInfo[] {foam.nanos.notification.push.PushRegistration.USER});
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.nanos.notification.push.PushRegistration.getOwnClassInfo())
+      .setMdao(mdao)
+      .setGuid(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("pushRegistrations")
+      .setOrder(new foam.mlang.order.Comparator[] { foam.nanos.notification.push.PushRegistration.USER })
+      .build();
+  """,
+  "client":"""
+    {
+      "of":"foam.nanos.notification.push.PushRegistration"
+    }
+  """
+})
+
+
+p({
+  "class":"foam.nanos.boot.NSpec",
   "name":"pushRegistry",
   "lazy":true,
   "serve":true,
@@ -23,23 +47,22 @@ p({
 
 p({
   "class":"foam.nanos.boot.NSpec",
-  "name":"pushRegistrationDAO",
-  "serve":true,
-  "serviceScript":"""
-    mdao = new foam.dao.MDAO(foam.nanos.notification.push.PushRegistration.getOwnClassInfo());
-    mdao.addIndex(new foam.core.PropertyInfo[] {foam.nanos.notification.push.PushRegistration.USER});
-    return new foam.dao.EasyDAO.Builder(x)
-      .setOf(foam.nanos.notification.push.PushRegistration.getOwnClassInfo())
-      .setMdao(mdao)
-      .setGuid(true)
-      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
-      .setJournalName("pushRegistrations")
-      .setOrder(new foam.mlang.order.Comparator[] { foam.nanos.notification.push.PushRegistration.USER })
-      .build();
-  """,
+  "name":"pushService",
+  "lazy":true,
+  "serve":true, // set to false when done testing
+  "authenticate":false,
+  "boxClass":"foam.nanos.notification.push.PushServiceSkeleton",
+  "serviceClass":"foam.nanos.notification.push.WebPushService",
   "client":"""
     {
-      "of":"foam.nanos.notification.push.PushRegistration"
+      "class":"foam.nanos.notification.push.ClientPushService",
+      "delegate": {
+        "class":"foam.box.SessionClientBox",
+        "delegate": {
+          "class":"foam.box.HTTPBox",
+          "url":"service/pushService"
+        }
+      }
     }
   """
 })
