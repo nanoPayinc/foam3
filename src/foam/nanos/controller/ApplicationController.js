@@ -475,7 +475,7 @@ foam.CLASS({
         if ( self.client != client ) {
           console.log('Stale Client in ApplicationController, waiting for update.');
           await self.client.promise;
-          // Rebuild stack with correct context 
+          // Rebuild stack with correct context
           self.stack = self.Stack.create({}, self.__subContext__);
           self.routeTo(self.window.location.hash.substring(1));
         }
@@ -752,8 +752,7 @@ foam.CLASS({
           await this.fetchSubject();
           return;
         }
-        menu = await this.findFirstMenuIHavePermissionFor(dao);
-        menu?.launch?.(this.__subContext__);
+        await this.routeTo(menu?.id || '');
         return;
       }
 
