@@ -59,11 +59,11 @@ public class XMLSupport {
     return objList;
   }
 
-  public static FObject createObj (X x, XMLStreamReader xmlr) {
+  public static FObject createObj(X x, XMLStreamReader xmlr) {
     return createObj(x, xmlr, null);
   }
 
-  public static FObject createObj (X x, XMLStreamReader xmlr, Class defaultClass) {
+  public static FObject createObj(X x, XMLStreamReader xmlr, Class defaultClass) {
     Object clsInstance = null;
     String objClass;
     try {
@@ -115,9 +115,9 @@ public class XMLSupport {
         eventType = reader.next();
         switch ( eventType ) {
           case XMLStreamConstants.START_ELEMENT:
-            var prop = (PropertyInfo) cInfo.getAxiomByName(reader.getLocalName());
+            var prop = (PropertyInfo) cInfo.getAxiomByNameOrShortName(reader.getLocalName());
             if ( prop != null ) {
-              prop.set(obj, prop.fromXML(x, reader));
+              prop.copyFromXML(x, obj, reader);
               prop = null;
             }
             break;

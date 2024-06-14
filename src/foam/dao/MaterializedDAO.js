@@ -9,6 +9,11 @@ foam.CLASS({
   name: 'MaterializedDAO',
   extends: 'foam.dao.ReadOnlyDAO',
 
+  javaImplements: [
+    'Runnable',
+    'foam.nanos.NanoService'
+  ],
+
   constants: [
     { type: 'String', name: 'PUT',        value: 'PUT' },
     { type: 'String', name: 'REMOVE',     value: 'REMOVE' },
@@ -23,7 +28,6 @@ foam.CLASS({
     'foam.core.Detachable'
   ],
 
-  javaImplements: [ 'Runnable' ],
 
   documentation: `
     Create a Materialized View from a source DAO.
@@ -43,6 +47,11 @@ foam.CLASS({
   `,
 
   properties: [
+    {
+      documentation: 'When true, DAO will be initialized (loaded) immediately on startup of the system, rather than wait for first user request.',
+      class: 'Boolean',
+      name: 'autoStart',
+    },
     {
       class: 'Object',
       name: 'queue',
@@ -166,7 +175,10 @@ foam.CLASS({
 
           cmd.setIndex(new MaterializedDAOIndex(this));
 
+          // TODO: Set mode to PARALLEL to predicate and adapt
+          // initial data being loaded concurrently.
           getSourceDAO().cmd(cmd);
+          // TODO: Now set mode to SERIAL to prevent timing ordering issues
 
           String[] daoKeys = getObservedDAOs();
           if ( daoKeys.length != 0 ) {
@@ -248,6 +260,13 @@ foam.CLASS({
 
         foam.core.XLocator.set(getX());
 
+        // TODO: Support two modes: SERIAL and PARALLEL
+        // SERIAL mode is as below
+        // PARALLEL mode only has to handle PUT, can just submit
+        // to threadpool
+        // Transition from PARALLEL to SERIAL needs to block until
+        // pool is drained. Might be easier to have own pool to make
+        // this easier. Or maintain a count.
         while ( true ) {
           try {
             cmd = (Object[]) getQueue().take();
@@ -274,7 +293,12 @@ foam.CLASS({
           } catch (InterruptedException e) {}
         }
       `
+    },
+    {
+      name: 'start',
+      javaCode: `
+      if ( getAutoStart() ) maybeInit();
+      `
     }
-
   ]
 });

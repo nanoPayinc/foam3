@@ -120,8 +120,9 @@ foam.CLASS({
           javaType: 'foam.mlang.Expr'
         }
       ],
-      code: function (of, propName, i, expr) {
-        var prop = of.getAxiomByName(propName[i]);
+      code: function (clsof, propName, i, expr) {
+        clsof = foam.maybeLookup(clsof);
+        var prop = clsof.getAxiomByName(propName[i]);
         if ( ! prop ) return null;
 
         if ( i === propName.length - 1 )
@@ -279,7 +280,11 @@ foam.CLASS({
       code: function(objClass, propNames) {
         var exprArray = [];
         for ( var propName of propNames ) {
-          var expr = foam.nanos.column.NestedPropertiesExpression.create({ objClass: objClass, nestedProperty: propName });
+          var expr = objClass.getAxiomByName(propName) || foam.nanos.column.NestedPropertiesExpression.create({ objClass: objClass, nestedProperty: propName });
+          if ( foam.dao.DAOProperty.isInstance(expr) ||
+               foam.dao.OneToManyRelationshipProperty.isInstance(expr) ||
+               foam.dao.ManyToManyRelationshipProperty.isInstance(expr) ) 
+            continue
           if ( expr )
             exprArray.push(expr);
         }

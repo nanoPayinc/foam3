@@ -22,14 +22,14 @@ foam.CLASS({
 //      args: 'Context x, String sub, String endpoint, String key, String auth'
       javaCode: `
         User user = ((Subject) x.get("subject")).getUser();
+
         if ( user == null ) throw new IllegalArgumentException("Missing user.");
 
         PushRegistration r = new PushRegistration();
-        r.setUser(user.getId());
-        r.setSubscription(sub);
         r.setEndpoint(endpoint);
         r.setKey(key);
         r.setAuth(auth);
+        r.setUser(user.getId());
         DAO dao = (DAO) x.get("pushRegistrationDAO");
         dao.put(r);
       `

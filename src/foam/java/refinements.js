@@ -245,8 +245,9 @@ foam.CLASS({
     {
       class: 'String',
       name: 'javaValidateObj',
-      expression: function(validationPredicates) {
-        return validationPredicates.length == 0 ? `` : `var sps    = new foam.lib.parse.StringPStream();
+      expression: function(required, validationPredicates) {
+        return validationPredicates.length == 0 ? `` : (required ? 'super.validateObj(x, obj);' : '') + `
+var sps    = new foam.lib.parse.StringPStream();
 var parser = new foam.parse.FScriptParser(this);
 var px = new foam.lib.parse.ParserContextImpl();` +
         validationPredicates
@@ -1996,6 +1997,26 @@ foam.CLASS({
     ['javaType',       'boolean'],
     ['javaInfoType',   'foam.core.AbstractBooleanPropertyInfo'],
     ['javaCompare',    '']
+  ],
+
+  methods: [
+    function createJavaPropertyInfo_(cls) {
+      var info = this.SUPER(cls);
+
+      if ( this.value ) {
+        info.method({
+          name: 'isDefaultValue',
+          visibility: 'public',
+          args: [
+            { name: 'o', type: 'Object'}
+          ],
+          type: 'boolean',
+          body: `return get_(o);`
+        });
+      }
+
+      return info;
+    }
   ]
 });
 

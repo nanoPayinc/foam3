@@ -5,6 +5,11 @@
  */
 
 // See: https://github.com/web-push-libs/webpush-java
+//
+// To generate public/private keys:
+// npm install web-push --save
+// ./node_modules2/.bin/web-push generate-vapid-keys --json
+
 foam.CLASS({
   package: 'foam.nanos.notification.push',
   name: 'WebPushService',
@@ -14,17 +19,49 @@ foam.CLASS({
   ],
 
   javaImports: [
+    'java.security.Security',
     'foam.dao.*',
     'foam.dao.ArraySink',
     'foam.nanos.auth.*',
     'java.util.List',
-    'nl.martijndwars.webpush.*'
+    'nl.martijndwars.webpush.Notification',
+    'org.bouncycastle.jce.provider.BouncyCastleProvider'
   ],
 
   properties: [
     {
       class: 'String',
-      name: 'apiKey'
+      name: 'supportEmail',
+      javaPostSet: 'clearPushService();'
+    },
+    // TODO: move to KeyPairDAO
+    {
+      class: 'String',
+      name: 'publicKey',
+      javaPostSet: 'clearPushService();'
+    },
+    {
+      class: 'String',
+      name: 'privateKey',
+      javaPostSet: 'clearPushService();'
+    },
+    {
+      class: 'Object',
+      of: 'nl.martijndwars.webpush.PushService',
+      name: 'pushService',
+      transient: true,
+      javaFactory: `
+      // TODO: rebuild if settings change
+      try {
+        if ( Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null ) {
+          Security.addProvider(new BouncyCastleProvider());
+        }
+        return new nl.martijndwars.webpush.PushService(getPublicKey(), getPrivateKey(), "mailto:" + getSupportEmail() );
+      } catch (Throwable t) {
+        t.printStackTrace();
+        return null;
+      }
+      `
     }
   ],
 
@@ -34,12 +71,10 @@ foam.CLASS({
       javaCode:
 `
   System.err.println("Push to User: " + id);
-  DAO userDAO = (DAO) getX().get("localUserDAO");
-  User user = (User) userDAO.find(id);
+  DAO  userDAO = (DAO) getX().get("localUserDAO");
+  User user    = (User) userDAO.find(id);
 
-  System.err.println("UserFound");
-
-  sendPush(user, msg, data);
+  sendPush(user, title, body);
 
   return true;
 `
@@ -52,32 +87,47 @@ foam.CLASS({
     throw new RuntimeException("Invalid Parameters: Missing user");
   }
 
-  System.err.println("Push to User: " + user);
+  getPushService();
+
+  System.err.println("Push to User: " + user.getId());
   DAO pushRegistrationDAO = user.getPushRegistrations(getX());
 
-  List subs = ((ArraySink) pushRegistrationDAO.select(new ArraySink())).getArray();
+  List   subs = ((ArraySink) pushRegistrationDAO.select(new ArraySink())).getArray();
+  // TODO: remove " characters or escape properly.
+  String msg  = "{\\"title\\":\\"" + title + "\\",\\"body\\":\\"" + body + "\\"}";
 
   for ( Object obj : subs ) {
     PushRegistration sub = (PushRegistration) obj;
-    System.err.println("*********** sub");
+    send(sub, msg);
   }
 
-  /*
-  PushService pushService = new PushService(...);
-  Notification notification = new Notification(...);
-
-  notification = new Notification(
-      sub.getEndpoint(),
-      sub.getUserPublicKey(),
-      sub.getAuthAsBytes(),
-      payload
-    );
-
-    pushService = new PushService();
-    pushService.send(notification);
-  */
   return true;
 `
+    },
+    {
+      name: 'send',
+      args: 'PushRegistration sub, String msg',
+      type: 'Void',
+      javaCode: `
+      /*
+      System.err.println("  Sending:    " + msg);
+      System.err.println("    endpoint: " + sub.getEndpoint());
+      System.err.println("         key: " + sub.getKey());
+      System.err.println("        auth: " + sub.getAuth());
+      */
+        try {
+          Notification n = new Notification(
+            sub.getEndpoint(),
+            sub.getKey(),  // sub.getUserPublicKey(),
+            sub.getAuth(), // sub.getAuthAsBytes(),
+            msg
+          );
+
+          ((nl.martijndwars.webpush.PushService) getPushService()).sendAsync(n);
+        } catch (Throwable t) {
+          t.printStackTrace();
+        }
+      `
     }
   ]
 });
