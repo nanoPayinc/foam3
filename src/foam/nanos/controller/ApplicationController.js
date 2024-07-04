@@ -438,6 +438,9 @@ foam.CLASS({
     {
       name: 'groupLoadingHandled',
       class: 'Boolean'
+    },
+    {
+      name: 'notificationSub'
     }
   ],
 
@@ -840,7 +843,7 @@ foam.CLASS({
         if ( ! obj.transient ) {
           var clonedNotification = obj.clone();
           clonedNotification.toastState = this.ToastState.DISPLAYED;
-          this.__subSubContext__.notificationDAO.put(clonedNotification);
+          this.__subContext__.notificationDAO.put(clonedNotification);
         }
       }
     }
@@ -939,7 +942,10 @@ foam.CLASS({
     },
 
     function subToNotifications() {
-      this.__subContext__.myNotificationDAO?.on.put.sub(this.displayToastMessage.bind(this));
+      let unsub = () => { this.notificationSub.detach(); this.notificationSub = undefined; }
+      if ( this.notificationSub ) unsub();
+      this.notificationSub =  this.__subContext__.myNotificationDAO?.on.put.sub(this.displayToastMessage.bind(this));
+      this.clientReloading.sub(unsub);
     },
 
     function menuListener(m) {
