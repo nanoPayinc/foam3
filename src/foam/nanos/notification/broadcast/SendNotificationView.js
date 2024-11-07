@@ -52,7 +52,7 @@ foam.CLASS({
       .start(this.Rows)
         .addClass(this.myClass('container'))
         .start()
-          .add('Send Notification')
+          .add('Send Notifications')
           .addClass('h100')
         .end()
         .start(this.CardBorder)

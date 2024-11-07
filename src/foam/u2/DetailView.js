@@ -37,16 +37,57 @@ foam.CLASS({
       properties: [ [ 'nodeName', 'TR' ] ],
 
       css: `
+        ^ .error input, ^ .error input:focus {
+          border-color: $destructive400!important;
+        }
+
+        ^colorText {
+          color: $destructive400;
+        }
+
         ^label {
-          vertical-align: top;
-          padding-top: 4px;
-          white-space: nowrap;
+          min-height: 28px;
           padding-right: 20px;
+          padding-top: 4px;
+          vertical-align: top;
+          white-space: nowrap;
         }
 
         ^view { display: inline; }
 
-        ^errorText { font-size: smaller; }
+        ^errorText {
+          align-items: center;
+          display: flex;
+          font-size: small;
+          gap: 0.2rem;
+          justify-content: flex-start;
+          min-height: 1.25em;
+          padding: 4px 0;
+        }
+
+        ^errorText svg {
+          width: 1rem;
+          height: 1rem;
+        }
+
+        ^propHolder {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+          gap: 0.2rem
+        }
+        ^propHolder > :first-child {
+          display: flex;
+          align-items: center;
+          justify-content: flex-start;
+          gap: 0.4rem;
+          width: 100%;
+        }
+        ^view {
+          flex-grow: 1;
+          max-width: 100%;
+        }
 
         ^helper-icon { display: inline; vertical-align: middle; margin-left: 4px; }
 
@@ -64,6 +105,10 @@ foam.CLASS({
       `,
 
       methods: [
+        function layoutView(self, prop, viewSlot) {
+          this.add(viewSlot);
+        },
+
         function layout(prop, visibilitySlot, modeSlot, labelSlot, viewSlot, colorSlot, errorSlot) {
           var self = this;
 
@@ -76,7 +121,7 @@ foam.CLASS({
               addClass(this.myClass('propHolder')).
               start('span').
                 addClass(this.myClass('propHolderInner')).
-                add(viewSlot).
+                call(this.layoutView, [self, prop, viewSlot]).
               end().
               callIf(prop.help, function() {
                 this.start().addClass(self.myClass('helper-icon'))
@@ -138,12 +183,21 @@ foam.CLASS({
       margin-bottom: 10px;
       padding: 6px;
     }
+
+    ^toolbar { margin-top: 4px; }
+    ^toolbar .foam-u2-ActionView { margin-right: 4px; }
+
+    ^collapsePropertyViews .foam-u2-DetailView-PropertyBorder-propHolder { width: auto; display: inline-flex; }
   `,
 
   properties: [
     {
       name: 'route',
       memorable: true
+    },
+    {
+      class: 'Boolean',
+      name: 'expandPropertyViews'
     },
     {
       name: 'data',
@@ -225,7 +279,14 @@ foam.CLASS({
   ],
 
   methods: [
+    function fromProperty(p) {
+      this.SUPER(p);
+
+      if ( ! this.of && p.of ) this.of = p.of;
+    },
+
     function render() {
+//      if ( ! this.data && this.of ) this.data = this.of.create({}, this);
       var self = this;
       this.dynamic(function(route) {
         self.removeAllChildren(); // TODO: not needed in U3
@@ -233,10 +294,19 @@ foam.CLASS({
         if ( route ) {
           self.currentData = self.data;
           var axiom = self.of.getAxiomByName(route);
-          this.br().add(axiom.__);
-        } else {
-          self.renderDetailView();
+          if ( axiom ) {
+            this.br().add(axiom.__);
+            return;
+          }
         }
+
+        self.renderDetailView();
+      });
+    },
+
+    function renderTitle(self) {
+      this.callIf(self.title, function() {
+        this.start('tr').start('td').attrs({colspan: 2}).addClass(self.myClass('title')).add(self.title$).end().end();
       });
     },
 
@@ -262,11 +332,10 @@ foam.CLASS({
         var tabs;
 
         return this.start('table').
+          enableClass(self.myClass('collapsePropertyViews'), self.expandPropertyViews$, true).
           attrs({'cellpadding': 2}).
           addClass(self.myClass()).
-          callIf(self.title, function() {
-            this.start('tr').start('td').attrs({colspan: 2}).addClass(self.myClass('title')).add(self.title$);
-          }).
+          call(self.renderTitle, [self]).
           forEach(properties, function(p) {
             var config = self.config && self.config[p.name];
             var expr   = foam.mlang.Expressions.create();
@@ -309,7 +378,7 @@ foam.CLASS({
             this.start('tr').start('td').setAttribute('colspan', '2').add(tabs).end().end();
           }).
         end().
-        callIf(this.showActions && this.actions.length, function() {
+        callIf(self.showActions && self.actions.length, function() {
           this.start('div').addClass(self.myClass('toolbar')).add(self.actions).end();
         });
       })); // add

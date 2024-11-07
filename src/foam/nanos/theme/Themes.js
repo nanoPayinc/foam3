@@ -11,7 +11,8 @@ foam.CLASS({
   documentation: 'Support methods for Theme',
 
   implements: [
-    'foam.mlang.Expressions'
+    'foam.mlang.Expressions',
+    'foam.nanos.theme.ThemeService'
   ],
 
   requires: [
@@ -33,7 +34,7 @@ foam.CLASS({
     'foam.nanos.logger.Logger',
     'foam.util.SafetyUtil',
     'foam.util.Arrays',
-    'javax.servlet.http.HttpServletRequest',
+    'jakarta.servlet.http.HttpServletRequest',
     'org.eclipse.jetty.server.Request'
   ],
 
@@ -47,6 +48,7 @@ Later themes:
       name: 'findTheme',
       type: 'foam.nanos.theme.Theme',
       args: 'Context x',
+      async: true,
       code: async function(x) {
         var theme;
         var themeDomain;
@@ -85,7 +87,8 @@ Later themes:
         }
 
         var group = x.group;
-        if ( user && group ) { // non-null when logged in.
+        // Turn off group theme merging until fixed
+        if ( false && user && group ) { // non-null when logged in.
           group           = group || await user.group$find;
           var defaultMenu = group && group.defaultMenu;
           while ( group ) {
@@ -151,6 +154,7 @@ Later themes:
           // }
         }
         if ( td != null ) {
+          // logger.debug("Themes", "ThemeDomain found", domain, td.getId());
           theme = (Theme) themeDAO.find(
             MLang.AND(
               MLang.EQ(Theme.ID, td.getTheme()),
@@ -160,6 +164,7 @@ Later themes:
           //   logger.debug("Themes", "Theme not found", td.getTheme());
           // }
           if ( theme != null ) {
+            // logger.debug("Themes", "Theme found", domain, theme.getId());
             theme = (Theme) theme.fclone();
           }
         }
@@ -202,9 +207,11 @@ Later themes:
       }
 
       // Merge the theme with group and user themes
-      if ( user != null ) {
+      // Turn off group theme merging until fixed
+      Group group = null;
+      if ( false && user != null ) {
         DAO groupDAO = (DAO) x.get("groupDAO");
-        Group group = user.findGroup(x);
+        group = user.findGroup(x);
         String[] defaultMenu = group != null ? group.getDefaultMenu() : null;
         while ( group != null ) {
           Theme groupTheme = group.findTheme(x);
@@ -243,6 +250,8 @@ Later themes:
           appConfig.setUrl("https://"+domain);
         }
       }
+
+      // logger.debug("Themes", "domain", domain, "user", (user != null ? user.getId() : "null"), "group", (group != null ? group.getId() : "null") , "theme", theme.getId());
 
       return theme;
       `

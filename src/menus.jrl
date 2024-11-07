@@ -13,12 +13,12 @@ p({
       title: "Ops Dashboard",
       main: true,
       widgets: {
-        "foam.nanos.cron.cronJobWidget": "6/1",
-        "foam.nanos.alarming.alarmWidget": "6/1",
-        "foam.nanos.er.eventRecordWidget": "6/1",
-        "foam.nanos.medusa.medusaHealthWidget": "6/1",
-        "foam.nanos.logger.logMessageWidget": "12/1",
-        "foam.nanos.medusa.medusaIndexChartWidget": "12/1"
+        "foam.nanos.cron.cronJobWidget": { column: 6 },
+        "foam.nanos.alarming.alarmWidget": { column: 6 },
+        "foam.nanos.er.eventRecordWidget": { column: 6 },
+        "foam.nanos.medusa.medusaHealthWidget": { column: 6 },
+        "foam.nanos.logger.logMessageWidget": { column: 12 },
+        "foam.nanos.medusa.medusaIndexChartWidget": { column: 12 }
       }
     }
   },
@@ -27,6 +27,7 @@ p({
 //        "foam.nanos.er.logMessageWidget": "6/1",
 p({"class":"foam.nanos.menu.Menu","id":"user-config","label":"User Config","handler":{"class":"foam.nanos.menu.SubMenu"},"parent":"hidden"})
 p({"class":"foam.nanos.menu.Menu","id":"settings","label":"Settings","handler":{"class":"foam.nanos.menu.SubMenu"},"parent":"user-config"})
+
 p({"class":"foam.nanos.menu.Menu","id":"admin.all-views","label":"All Views","handler":{"class":"foam.nanos.menu.ViewMenu","view":{"class":"foam.demos.u2.AllViews"}},"parent":"admin"})
 p({
   "class":"foam.nanos.menu.Menu",
@@ -321,6 +322,20 @@ p({
     "view":{
       class: "foam.u2.borders.BaseUnAuthBorder",
       children: [ {"class":"foam.u2.view.LoginView", "mode_":"SignIn"} ]
+    }
+  },
+  "parent":"hidden"
+})
+p({
+  "class":"foam.nanos.menu.Menu",
+  "id":"sign-up",
+  "authenticate":false,
+  "label":"Sign Up",
+  "handler":{
+    "class":"foam.nanos.menu.ViewMenu",
+    "view":{
+      class: "foam.u2.borders.BaseUnAuthBorder",
+      children: [ {"class":"foam.u2.view.LoginView", "mode_":"SignUp"} ]
     }
   },
   "parent":"hidden"

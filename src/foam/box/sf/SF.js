@@ -31,7 +31,6 @@ foam.CLASS({
     'foam.lib.NetworkPropertyPredicate',
     'foam.lib.StoragePropertyPredicate',
     'foam.log.LogLevel',
-    'foam.nanos.er.EventRecord',
     'foam.nanos.logger.Loggers',
     'java.nio.file.*',
     'java.nio.file.attribute.*',
@@ -293,7 +292,7 @@ foam.CLASS({
                     this.getFileName()
                   }, (Logger) x.get("logger"));
         createDelegate();
-        FileSystemStorage fileSystemStorage = (FileSystemStorage) getX().get(foam.nanos.fs.Storage.class);
+        FileSystemStorage fileSystemStorage = getX().get(foam.nanos.fs.FileSystemStorage.class);
         java.io.File folder = fileSystemStorage.get(getFilePrefix());
         if ( ! folder.exists() ) folder.mkdir();
         List<String> filenames = new ArrayList<>(fileSystemStorage.getAvailableFiles(getFilePrefix(), getFileName()+".*"));
@@ -344,11 +343,11 @@ foam.CLASS({
 
             journalMap_.put(getSimpleFilename(filename), journal);
             if ( journal.getFileOffset() == journal.getFileSize() ) {
-              ((DAO) x.get("eventRecordDAO")).put(new EventRecord(getX(), this, "SAF file complete", getId(), null, "file: " + getSimpleFilename(filename), LogLevel.INFO, null));
+              Loggers.logger(getX(), this).info("SAF file complete", getId(), "file: " + getSimpleFilename(filename));
               continue;
             }
             if ( journal.getFileOffset() > journal.getFileSize() ) {
-              ((DAO) x.get("eventRecordDAO")).put(new EventRecord(getX(), this, "SAF file error", getId(), null, "Atime of file: " + getSimpleFilename(filename) + " is greater than its filesize", LogLevel.ERROR, null));
+              Loggers.logger(getX(), this).error("SAF file error", getId(), "A-time of file: " + getSimpleFilename(filename) + " is greater than its filesize");
               journal.setFileOffset(journal.getFileSize());
               continue;
             }

@@ -446,13 +446,46 @@ foam.CLASS({
       hidden: true
     },
     {
+      class: 'Double',
       name: 'x',
-      class: 'Float'
+      precision: 4
     },
     {
+      class: 'Double',
       name: 'y',
-      class: 'Float'
+      precision: 4
     },
+  {
+    class: 'Float',
+    name: 'r',
+    precision: 4,
+    getter: function() {
+      return Math.sqrt(this.x*this.x + this.y*this.y);
+    },
+    setter: function(r) {
+      var t = this.theta;
+      this.x = r * Math.cos(t);
+      this.y = r * Math.sin(t);
+    }
+  },
+  {
+    class: 'Float',
+    name: 'theta',
+    precision: 4,
+    getter: function() {
+      return Math.atan2(this.y, this.x);
+    },
+    setter: function(t) {
+      var r = this.r;
+      this.x = r * Math.cos(t);
+      this.y = r * Math.sin(t);
+    },
+    view: {
+      class: 'foam.u2.view.DualView',
+      viewa: { class: 'foam.u2.FloatView', precision: 4, onKey: true },
+      viewb: { class: 'foam.u2.RangeView', step: 0.00001, minValue: -Math.PI*2, maxValue: Math.PI*2, onKey: true }
+    }
+  },
     {
       name: 'alpha',
       class: 'Float',
@@ -468,6 +501,7 @@ foam.CLASS({
       name: 'border'
     },
     {
+      class: 'Color',
       name: 'color'
     },
     {
@@ -1038,22 +1072,22 @@ foam.CLASS({
 
   properties: [
     {
+      class: 'Double',
       name: 'radius',
-      class: 'Float',
       preSet: function(_, r) { return Math.max(0, r); }
     },
     {
-      name: 'start',
-      class: 'Float'
+      class: 'Double',
+      name: 'start'
     },
     {
-      name: 'end',
-      class: 'Float'
+      class: 'Double',
+      name: 'end'
     },
     {
       // TODO: rename this
-      name: 'arcWidth',
-      class: 'Float'
+      class: 'Double',
+      name: 'arcWidth'
     },
     {
       name: 'border',
@@ -1150,7 +1184,7 @@ foam.CLASS({
       view: {
         class: 'foam.u2.view.DualView',
         viewa: { class: 'foam.u2.FloatView', precision: 4, onKey: true },
-        viewb: { class: 'foam.u2.RangeView', maxValue: Math.PI*2, step: 0.01, onKey: true }
+        viewb: { class: 'foam.u2.RangeView', maxValue: Math.PI*2, step: 0.001, onKey: true }
       }
     },
     {
@@ -1159,7 +1193,7 @@ foam.CLASS({
       view: {
         class: 'foam.u2.view.DualView',
         viewa: { class: 'foam.u2.FloatView', precision: 4, onKey: true },
-        viewb: { class: 'foam.u2.RangeView', maxValue: Math.PI*2, step: 0.01, onKey: true }
+        viewb: { class: 'foam.u2.RangeView', maxValue: Math.PI*2, step: 0.001, onKey: true }
       }
     }
   ],
@@ -1169,7 +1203,8 @@ foam.CLASS({
       x.beginPath();
       x.arc(0, 0, this.radius, this.start, this.end);
 
-      if ( this.start != 0 || this.end != Math.PI*2 ) {
+      if ( this.start != 0 || Math.abs(this.end-Math.PI*2)>0.01 ) {
+//      if ( this.start != 0 || this.end != Math.PI*2 ) {
         x.lineTo(0,0);
         x.lineTo(this.radius*Math.cos(this.start)+0.5,this.radius*Math.sin(this.start));
       }
@@ -1194,31 +1229,33 @@ foam.CLASS({
 
   properties: [
     {
-      class: 'Float',
+      class: 'Double',
       name: 'radiusX',
       preSet: function(_, r) { return Math.max(0, r); }
     },
     {
-      class: 'Float',
+      class: 'Double',
       name: 'radiusY',
       preSet: function(_, r) { return Math.max(0, r); }
     },
     {
+      class: 'Double',
       name: 'start',
       value: 0,
       view: {
         class: 'foam.u2.view.DualView',
         viewa: { class: 'foam.u2.FloatView', precision: 4, onKey: true },
-        viewb: { class: 'foam.u2.RangeView', maxValue: Math.PI*2, step: 0.01, onKey: true }
+        viewb: { class: 'foam.u2.RangeView', maxValue: Math.PI*2, step: 0.001, onKey: true }
       }
     },
     {
+      class: 'Double',
       name: 'end',
       value: 2*Math.PI,
       view: {
         class: 'foam.u2.view.DualView',
         viewa: { class: 'foam.u2.FloatView', precision: 4, onKey: true },
-        viewb: { class: 'foam.u2.RangeView', maxValue: Math.PI*2, step: 0.01, onKey: true }
+        viewb: { class: 'foam.u2.RangeView', maxValue: Math.PI*2, step: 0.001, onKey: true }
       }
     },
     {

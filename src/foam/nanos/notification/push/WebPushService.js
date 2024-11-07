@@ -25,6 +25,7 @@ foam.CLASS({
     'foam.nanos.auth.*',
     'java.util.List',
     'java.util.HashMap',
+    'foam.util.SafetyUtil',
     'nl.martijndwars.webpush.Notification',
     'org.bouncycastle.jce.provider.BouncyCastleProvider',
     'foam.nanos.notification.push.iOSNativePushRegistration',
@@ -86,9 +87,9 @@ foam.CLASS({
       name: 'sendPush',
       javaCode:
       `
-        if ( user == null ) {
-          throw new RuntimeException("Invalid Parameters: Missing user");
-        }
+      if ( user == null || title.isEmpty() ) {
+        throw new RuntimeException("Invalid Parameters: Missing user or title"); 
+      }
 
         getPushService();
 
@@ -131,6 +132,9 @@ foam.CLASS({
             }
             APNSpushService.send((iOSNativePushRegistration) sub, msgMap);
           } else { 
+            if ( SafetyUtil.isEmpty(sub.getEndpoint()) ) {
+              return;
+            }
             String msg  = "{\\"title\\":\\"" + msgMap.get("title") + "\\",\\"body\\":\\"" + msgMap.get("body") + "\\"}";
             Notification n = new Notification(
               sub.getEndpoint(),

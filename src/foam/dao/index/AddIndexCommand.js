@@ -15,8 +15,8 @@ foam.CLASS({
     },
     {
       class: 'FObjectArray',
-      of: 'foam.core.PropertyInfo',
-      name: 'props'
+      of: 'foam.core.Indexer',
+      name: 'indexers'
     },
     {
        class: 'Object',

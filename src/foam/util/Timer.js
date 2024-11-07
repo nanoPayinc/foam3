@@ -134,7 +134,23 @@ if a == nil { return s }
 if b == nil { return s * a! }
 return a! + (1 + s) * (b!-a!)/2;
      `
-    }
+   },
+   {
+     /**
+        range(frequency)             - range between -1 and 1 frequency times a second
+        range(frequency, amplitude)  - range between -amplitude and amplitude frequency times a second
+        range(frequency, start, end) - range between start and end frequency times a second
+     */
+     name: 'range',
+     code: function(frequency, a, b) {
+       var r = this.time/1000*frequency;
+
+       var s = r - Math.floor(r);
+       if ( arguments.length === 1 ) return s;
+       if ( arguments.length === 2 ) return s * a;
+       return a + (1 + s) * (b-a)/2;
+     }
+   }
   ],
 
   actions: [

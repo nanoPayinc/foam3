@@ -28,7 +28,7 @@ foam.CLASS({
       name: 'children_',
       factory: function() {
         /* ignoreWarning */
-        var aDAO = this.ArrayDAO.create();
+        var aDAO = this.MDAO.create({of: this.Menu});
         var pDAO = this.PromisedDAO.create();
         this.nSpecDAO.where(
           this.AND(

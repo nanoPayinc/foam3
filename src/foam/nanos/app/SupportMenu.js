@@ -24,7 +24,7 @@ foam.CLASS({
     {
       name: 'children_',
       factory: function() {
-        var aDAO = this.ArrayDAO.create();
+        var aDAO = this.MDAO.create({of: this.Menu});
         if ( this.theme && this.theme.supportConfig.supportEmail ) {
           aDAO.put(this.Menu.create({
             id: this.id + '/email',

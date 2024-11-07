@@ -16,6 +16,7 @@ foam.CLASS({
   ]
 });
 
+
 foam.CLASS({
   package: 'foam.core',
   name: 'StringHolder',
@@ -40,6 +41,7 @@ foam.CLASS({
   ]
 });
 
+
 foam.CLASS({
   package: 'foam.core',
   name: 'BooleanHolder',
@@ -51,6 +53,7 @@ foam.CLASS({
     }
   ]
 });
+
 
 foam.CLASS({
   package: 'foam.core',
@@ -67,7 +70,6 @@ foam.CLASS({
       class: 'Boolean',
       validationPredicates: [
         {
-          args: ['value'],
           query: 'value==true',
           errorMessage: 'WRONG_VALUE'
         }
@@ -75,6 +77,7 @@ foam.CLASS({
     }
   ]
 });
+
 
 foam.CLASS({
   package: 'foam.core',
@@ -87,6 +90,37 @@ foam.CLASS({
     }
   ]
 });
+
+foam.CLASS({
+  package: 'foam.core',
+  name: 'RawMapHolder',
+
+  documentation: 'Map items are stored as raw json objects without being parsed to fobjects.',
+
+  properties: [
+    {
+      name: 'value',
+      class: 'Map',
+      fromJSON: function fromJSON(value) {
+        return value;
+      },
+      javaJSONParser: 'foam.lib.json.RawMapParser.instance()'
+    }
+  ]
+});
+
+foam.CLASS({
+  package: 'foam.core',
+  name: 'StringArrayHolder',
+
+  properties: [
+    {
+      class: 'StringArray',
+      name: 'value'
+    }
+  ]
+});
+
 
 foam.CLASS({
   package: 'foam.core',

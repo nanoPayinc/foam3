@@ -15,7 +15,7 @@ p({
   "keywords": ["crunchlab", "crunch lab", "crunch", "lab", "debug crunch", "debug capabilities"],
   "handler": {
     "class": "foam.nanos.menu.ViewMenu",
-    "view": {"class":"foam.u2.crunch.CrunchLab"}
+    "view": {"class":"foam.u2.crunch.lab.CrunchLab"}
   },
   "parent":"crunch"
 })
@@ -129,4 +129,18 @@ p({
     }
   },
   "parent":"crunch"
+})
+
+p({
+  "class":"foam.nanos.menu.Menu",
+  "id": "appStore",
+  "label": "Features",
+  "themeIcon":"extension",
+  "handler":{
+    "class":"foam.nanos.menu.ViewMenu",
+    "view":{
+      "class":"foam.u2.crunch.CapabilityStore"
+    }
+  },
+  "order":1
 })

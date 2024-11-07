@@ -14,7 +14,6 @@ foam.CLASS({
     'body',
     'notificationType',
     'broadcasted',
-    'groupId.id',
     'createdBy.userName'
   ],
 });

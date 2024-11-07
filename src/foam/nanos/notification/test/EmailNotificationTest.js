@@ -28,27 +28,32 @@ foam.CLASS({
       name: 'setUp',
       args: 'X x',
       javaCode: `
-      // see deployment/test for 
-      // groups, users, 
+      // see deployment/test for
+      // groups, users,
       // emailTemplate, notificationTemplate
-      // notificationSettings, ... 
+      // notificationSettings, ...
       `
     },
     {
       name: 'runTest',
       javaCode: `
       Notification notification = new Notification();
-      notification.setTemplate("761590193");
+      notification.setTemplate("DAONotificationTest-test");
       notification.setUserId(185426801);
       notification.setBody("EmailNotificationTest");
       ((DAO) x.get("notificationDAO")).put_(x, notification);
 
+      try {
+        Thread.sleep(100L);
+      } catch (InterruptedException e ) {
+        // ignore - nop
+      }
       // test for email
       DAO emailMessageDAO = (DAO) x.get("emailMessageDAO");
       List<EmailMessage> emailMessages = (List) ((ArraySink) emailMessageDAO.select(new ArraySink())).getArray();
       EmailMessage message = null;
       for ( EmailMessage msg : emailMessages ) {
-        if ( msg.getUser() == notification.getUserId() && msg.getBody().contains(notification.getBody()) && msg.getSubject().equals("Notification from FOAM") ) {
+        if ( msg.getUser() == notification.getUserId() && msg.getBody().contains(notification.getBody()) && msg.getSubject().equals("DAONotificationEmailTemplateTest") ) {
           message = msg;
           break;
         }

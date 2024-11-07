@@ -16,7 +16,7 @@ foam.CLASS({
   implements: ['foam.mlang.Expressions'],
 
   requires: [
-    'foam.dao.ArrayDAO'
+    'foam.dao.MDAO'
   ],
 
   properties: [
@@ -33,7 +33,7 @@ foam.CLASS({
       name: 'children_',
       factory: function() {
         // To be implemented by sub-classes
-        return this.ArrayDAO.create();
+        return this.MDAO.create({of: foam.nanos.menu.Menu});
       }
     },
     {

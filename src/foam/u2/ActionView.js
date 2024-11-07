@@ -110,7 +110,7 @@ foam.CLASS({
       class: 'Enum',
       of: 'foam.u2.ButtonStyle',
       name: 'buttonStyle',
-      factory: function(action) { return this.action.buttonStyle || 'SECONDARY'; }
+      factory: function(action) { return this.action.buttonStyle || foam.u2.tag.Button.BUTTON_STYLE.value; }
     },
     {
       class: 'Boolean',
@@ -122,6 +122,10 @@ foam.CLASS({
       factory: function() {
         return false;
       }
+    },
+    {
+      name: 'size',
+      factory: function() { return this.action.size || foam.u2.ButtonSize.MEDIUM; }
     },
     {
       name: 'mementoName',

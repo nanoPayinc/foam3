@@ -117,8 +117,11 @@ foam.CLASS({
       notification.setBody(sb.toString());
       notification.setEmailArgs(args);
       notification.setSpid(rule.getSpid());
+      if ( ! foam.util.SafetyUtil.isEmpty(getGroup()) ) notification.setGroupId(getGroup());
       notification.setTemplate(getNotificationTemplate());
-      notification.setEmailName(getEmailTemplate());
+      if ( ! foam.util.SafetyUtil.isEmpty(getEmailTemplate()) ) {
+        notification.setEmailName(getEmailTemplate());
+      }
       ((DAO) ruler.getX().get("notificationDAO")).put_(ruler.getX(), notification);
       `
     }

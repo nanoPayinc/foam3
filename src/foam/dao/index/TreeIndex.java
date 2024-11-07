@@ -5,7 +5,7 @@
 package foam.dao.index;
 
 import foam.core.FObject;
-import foam.core.PropertyInfo;
+import foam.core.Indexer;
 import foam.dao.AbstractDAO;
 import foam.dao.Sink;
 import foam.mlang.Expr;
@@ -18,24 +18,24 @@ import java.util.Arrays;
 public class TreeIndex
   extends AbstractIndex
 {
-  protected Index        tail_;
-  protected PropertyInfo prop_;
-  protected long         selectCount_;
+  protected Index    tail_;
+  protected Indexer  indexer_;
+  protected long     selectCount_;
   // Non primary indices shouldn't provide plans unless they can contribute
   // because they might be partial indices on properties from sub-classes
   // so they will win auctions but only return a subset of the data.
-  protected boolean      isPrimary_;
+  protected boolean  isPrimary_;
 
-  public TreeIndex(PropertyInfo prop) {
-    this(prop, ValueIndex.instance(), true);
+  public TreeIndex(Indexer indexer) {
+    this(indexer, ValueIndex.instance(), true);
   }
 
-  public TreeIndex(PropertyInfo prop, Index tail) {
-    this(prop, tail, true);
+  public TreeIndex(Indexer indexer, Index tail) {
+    this(indexer, tail, true);
   }
 
-  public TreeIndex(PropertyInfo prop, Index tail, boolean isPrimary) {
-    prop_        = prop;
+  public TreeIndex(Indexer indexer, Index tail, boolean isPrimary) {
+    indexer_     = indexer;
     selectCount_ = 0;
     tail_        = tail;
     isPrimary_   = isPrimary;
@@ -43,7 +43,7 @@ public class TreeIndex
 
   public Object bulkLoad(FObject[] a) {
     Arrays.sort(a);
-    return TreeNode.getNullNode().bulkLoad(tail_, prop_, 0, a.length-1, a);
+    return TreeNode.getNullNode().bulkLoad(tail_, indexer_, 0, a.length-1, a);
   }
 
   /**
@@ -54,41 +54,41 @@ public class TreeIndex
    */
   protected Object[] simplifyPredicate(Object state, Predicate predicate) {
     Predicate p = predicate;
-    if ( predicate == null || prop_ == null ) {
+    if ( predicate == null || indexer_ == null ) {
       return new Object[] {state, predicate};
     }
 
     if ( predicate instanceof Binary ) {
       Binary expr = (Binary) predicate;
 
-      if ( predicate.getClass().equals(Eq.class) && expr.getArg1().toString().equals(prop_.toString()) ) {
-        state = ((TreeNode) state).get((TreeNode) state, expr.getArg2().f(expr), prop_);
+      if ( predicate.getClass().equals(Eq.class) && expr.getArg1().toString().equals(indexer_.toString()) ) {
+        state = ((TreeNode) state).get((TreeNode) state, expr.getArg2().f(expr), indexer_);
         return new Object[] {state, null};
       }
 
       // TODO: Handle NEQ
-//      if ( predicate.getClass().equals(Neq.class) && expr.getArg1().toString().equals(prop_.toString()) ) {
-//        state = ( (TreeNode) state ).neq((TreeNode) state, expr.getArg2().f(expr), prop_);
+//      if ( predicate.getClass().equals(Neq.class) && expr.getArg1().toString().equals(indexer_.toString()) ) {
+//        state = ( (TreeNode) state ).neq((TreeNode) state, expr.getArg2().f(expr), indexer_);
 //        return new Object[]{state, null};
 //      }
 
-      if ( predicate.getClass().equals(Gt.class) && expr.getArg1().toString().equals(prop_.toString()) ) {
-        state = ((TreeNode) state).gt((TreeNode) state, expr.getArg2().f(expr), prop_);
+      if ( predicate.getClass().equals(Gt.class) && expr.getArg1().toString().equals(indexer_.toString()) ) {
+        state = ((TreeNode) state).gt((TreeNode) state, expr.getArg2().f(expr), indexer_);
         return new Object[] {state, null};
       }
 
-      if ( predicate.getClass().equals(Gte.class) && expr.getArg1().toString().equals(prop_.toString()) ) {
-        state = ((TreeNode) state).gte((TreeNode) state, expr.getArg2().f(expr), prop_);
+      if ( predicate.getClass().equals(Gte.class) && expr.getArg1().toString().equals(indexer_.toString()) ) {
+        state = ((TreeNode) state).gte((TreeNode) state, expr.getArg2().f(expr), indexer_);
         return new Object[] {state, null};
       }
 
-      if ( predicate.getClass().equals(Lt.class) && expr.getArg1().toString().equals(prop_.toString()) ) {
-        state = ((TreeNode) state).lt((TreeNode) state, expr.getArg2().f(expr), prop_);
+      if ( predicate.getClass().equals(Lt.class) && expr.getArg1().toString().equals(indexer_.toString()) ) {
+        state = ((TreeNode) state).lt((TreeNode) state, expr.getArg2().f(expr), indexer_);
         return new Object[] {state, null};
       }
 
-      if ( predicate.getClass().equals(Lte.class) && expr.getArg1().toString().equals(prop_.toString()) ) {
-        state = ( (TreeNode) state ).lte((TreeNode) state, expr.getArg2().f(expr), prop_);
+      if ( predicate.getClass().equals(Lte.class) && expr.getArg1().toString().equals(indexer_.toString()) ) {
+        state = ( (TreeNode) state ).lte((TreeNode) state, expr.getArg2().f(expr), indexer_);
         return new Object[] {state, null};
       }
     } else if ( predicate instanceof And ) {
@@ -122,21 +122,26 @@ public class TreeIndex
   public Object put(Object state, FObject value) {
     if ( state == null ) state = TreeNode.getNullNode();
     Object key = returnKeyForValue(value);
-    return ((TreeNode) state).putKeyValue((TreeNode) state, prop_, key, value, tail_);
+    return ((TreeNode) state).putKeyValue((TreeNode) state, indexer_, key, value, tail_);
   }
 
   public Object remove(Object state, FObject value) {
     Object key = returnKeyForValue(value);
-    return ((TreeNode) state).removeKeyValue((TreeNode) state, prop_, key, value, tail_);
+    return ((TreeNode) state).removeKeyValue((TreeNode) state, indexer_, key, value, tail_);
   }
 
   public Object returnKeyForValue(FObject value) {
     Object key;
     try {
-      key = prop_.f(value);
+      key = indexer_.f(value);
     } catch (ClassCastException e) {
+      // Can happen when the Indexer is a PropertyInfo for a sub-class
+      key = null;
+    } catch (NullPointerException e) {
+      // Can happen when the Indexer is Dot(x, y) when x is null
       key = null;
     }
+
     return key;
   }
 
@@ -147,7 +152,7 @@ public class TreeIndex
   //TODO
   @Override
   public FindPlan planFind(Object state, Object key) {
-    return new TreeLookupFindPlan(prop_, (state != null ? ((TreeNode) state).size : 0) );
+    return new TreeLookupFindPlan(indexer_, (state != null ? ((TreeNode) state).size : 0) );
   }
 
 
@@ -163,7 +168,7 @@ public class TreeIndex
     state     = statePredicate[0];
     predicate = (Predicate) statePredicate[1];
 
-    if ( ! isPrimary_ && state == originalState && ( order == null || ! order.toString().equals(prop_.toString()) ) ) {
+    if ( ! isPrimary_ && state == originalState && ( order == null || ! order.toString().equals(indexer_.toString()) ) ) {
       // Unless we're the primary index, we shouldn't offer a plan if we can't contribute
       return NoPlan.instance();
     }
@@ -176,14 +181,14 @@ public class TreeIndex
 
       // We return a groupByPlan only if no order, no limit, no skip, no predicate
       if ( sink instanceof GroupBy
-          && ((GroupBy) sink).getArg1().toString().equals(prop_.toString())
+          && ((GroupBy) sink).getArg1().toString().equals(indexer_.toString())
           && order == null && skip == 0 && limit == AbstractDAO.MAX_SAFE_INTEGER )
       {
-        return new GroupByPlan(state, sink, predicate, prop_, tail_);
+        return new GroupByPlan(state, sink, predicate, indexer_, tail_);
       }
     }
 
-    return new ScanPlan(state, sink, skip, limit, order, predicate, prop_, tail_);
+    return new ScanPlan(state, sink, skip, limit, order, predicate, indexer_, tail_);
   }
 
   public long size(Object state) {
@@ -191,6 +196,6 @@ public class TreeIndex
   }
 
   public String toString() {
-    return "TreeIndex(" + prop_.getName() + "," + tail_ + ")";
+    return "TreeIndex(" + indexer_ + "," + tail_ + ")";
   }
 }

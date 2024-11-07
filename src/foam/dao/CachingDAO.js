@@ -39,6 +39,7 @@ foam.CLASS({
   ],
 
   imports: [
+    'document',
     'loginSuccess?',
     'setInterval'
   ],
@@ -74,8 +75,7 @@ foam.CLASS({
       forwards: [ 'find_', 'select_' ],
       expression: function(src) {
         var cache = this.cache;
-
-        // The PromisedDAO resolves as our delegate when the cache is ready to use
+        // The PromisedDAO resolves as our delegatec when the cache is ready to use
         return this.PromisedDAO.create({
           promise: (async function() {
             var a = await src.select();
@@ -182,13 +182,16 @@ foam.CLASS({
 
     /** Polls updates from the source. */
     function poll() {
-      var self = this;
+      // No need to update if the tab is hidden
+      if ( this.document.hidden ) return;
 
       if ( ! this.loginSuccess ) return;
 
+      var self = this;
+
       self.delegate
         .orderBy(this.DESC(self.pollingProperty))
-        .limit(1) 
+        .limit(1)
         .select().then(function(data) {
           if ( data.array.length === 1 ) {
             self.src

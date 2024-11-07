@@ -1,0 +1,3 @@
+The symlink is used to ensure that localhost:8080/foam3/src/foam/... works
+when running nanos directly from the foam3 repo or when running as a submodule
+of some other application.

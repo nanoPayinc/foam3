@@ -39,7 +39,13 @@ public class AltIndex
     final Object[] sa = toObjectArray(state);
     Sink sink = new AbstractSink() {
       public void put(Object obj, foam.core.Detachable sub) {
-        sa[sa.length-1] = i.put(sa[sa.length-1], (FObject) obj);
+        try {
+          sa[sa.length-1] = i.put(sa[sa.length-1], (FObject) obj);
+        } catch (ClassCastException e) {
+          // Expected for Indices of subclasses
+        } catch (NullPointerException e) {
+          // Expected for Dot() Indexes when FObject is null
+        }
       }
     };
 

@@ -1,0 +1,27 @@
+p({
+    "class": "foam.nanos.boot.NSpec",
+    "name": "oidc",
+    "lazy": true,
+    "serve": false,
+    "serviceClass": "foam.nanos.auth.oidc.OIDCWebAgent",
+    "authenticate": false,
+    "pm": true
+})
+
+p({
+  "class":"foam.nanos.boot.NSpec",
+  "name":"oidcProviderDAO",
+  "lazy":true,
+  "serve":true,
+  "authenticate": false,
+  "serviceScript":`
+    return new foam.dao.EasyDAO.Builder(x)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("oidcProviders")
+      .setPermissioned(true)
+      .setAuthorizer(new foam.nanos.auth.GlobalReadAuthorizer("oidcProvider"))
+      .setOf(foam.nanos.auth.oidc.OIDCProvider.getOwnClassInfo())
+      .build();
+    `,
+  "client":"{\"of\":\"foam.nanos.auth.oidc.OIDCProvider\"}"
+})

@@ -12,8 +12,8 @@ foam.CLASS({
 
   imports: [
     'capable',
-    'capabilityDAO',
-    'crunchService'
+    'crunchService',
+    'capabilityDAO'
   ],
 
   requires: [
@@ -22,26 +22,17 @@ foam.CLASS({
     'foam.nanos.crunch.ui.CapabilityWizardlet'
   ],
 
-  properties: [
-    {
-      name: 'capability',
-      factory: function() {
-        return this.wizardlet?.capability;
-      }
-    }
-  ],
-
   methods: [
     async function save(wizardlet) {
-      if ( wizardlet.loading ) return;
+      if ( wizardlet.loading || ! wizardlet.storeOnCapable ) return;
       if ( ! wizardlet.isAvailable ) return;
-      var wData = wizardlet.data ? wizardlet.data.clone(this) : null;
       wizardlet.loading = true;
 
       if ( wizardlet.status === this.CapabilityJunctionStatus.AVAILABLE ) {
         wizardlet.status = this.CapabilityJunctionStatus.ACTION_REQUIRED;
       }
-
+      if ( ! this.capability )
+        this.capability = await this.capabilityDAO.find(wizardlet.id);
       return this.capable.getCapablePayloadDAO().put(
         this.makePayload(wizardlet)
       ).then(payload => {
@@ -61,18 +52,15 @@ foam.CLASS({
     },
     async function load(wizardlet) {
       if ( wizardlet.loading ) return;
-      if ( ! this.capability )
-        this.capability = await this.capabilityDAO.find(wizardlet.id);
 
-      var targetPayload = await this.capable.getCapablePayloadDAO().find(
-        this.capability.id ) || this.targetPayload;
+      var targetPayload = await this.capable.getCapablePayloadDAO().find(wizardlet.id);
 
       // TODO: investigate nullWAO decorator not working on beforeWizardlet
       if ( wizardlet.data && ! targetPayload ){
         return;
       }
 
-      this.load_(wizardlet, targetPayload);
+      await this.load_(wizardlet, targetPayload);
     },
     async function load_(wizardlet, payload) {
       wizardlet.isLoaded = true;
@@ -94,7 +82,7 @@ foam.CLASS({
 
       // Set transient 'capability' property if it exists
       var prop = wizardlet.of.getAxiomByName('capability');
-      if ( prop ) prop.set(loadedData, this.capability);
+      if ( prop ) prop.set(loadedData, wizardlet.capability);
 
       // Finally, apply new data to wizardlet
       if ( wizardlet.data ) {
@@ -103,13 +91,13 @@ foam.CLASS({
         wizardlet.data = loadedData;
       }
 
-      foam.u2.wizard.Slot.blockFramed().then(() => {
+      return foam.u2.wizard.Slot.blockFramed().then(() => {
         wizardlet.loading = false;
       });
     },
     function makePayload(wizardlet) {
       return this.CapabilityJunctionPayload.create({
-        capability: this.capability,
+        capability: wizardlet.capability,
         data: wizardlet.data
       });
     }

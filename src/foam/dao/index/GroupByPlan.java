@@ -4,7 +4,7 @@
  */
 package foam.dao.index;
 
-import foam.core.PropertyInfo;
+import foam.core.Indexer;
 import foam.dao.Sink;
 import foam.mlang.order.Comparator;
 import foam.mlang.order.Desc;
@@ -14,20 +14,19 @@ import foam.mlang.sink.GroupBy;
 public class GroupByPlan
   implements SelectPlan
 {
-
   protected Object  state_;
   protected long    cost_;
   protected Index   tail_;
   protected boolean reverseSort_ = false;
   protected boolean needGroupBy = true;
 
-  public GroupByPlan(Object state, Sink sink, Predicate predicate, PropertyInfo propertyInfo, Index tail) {
+  public GroupByPlan(Object state, Sink sink, Predicate predicate, Indexer indexer, Index tail) {
     state_ = state;
-    cost_  = calculateCost(propertyInfo);
+    cost_  = calculateCost(indexer);
     tail_  = tail;
   }
 
-  public long calculateCost(PropertyInfo propertyInfo) {
+  public long calculateCost(Indexer indexer) {
     long cost;
     if ( state_ == null ) return 0;
     cost = ( (TreeNode) state_ ).size;

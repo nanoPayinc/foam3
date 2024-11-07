@@ -15,8 +15,8 @@ import foam.nanos.session.Session;
 import foam.util.SafetyUtil;
 import java.io.IOException;
 import java.io.PrintWriter;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * ProxyWebAgent that checks for a sessionId in the query parameters of the request,
@@ -81,15 +81,14 @@ public class SessionWebAgent
       }
 
       // check permissions
-      Subject subject = new Subject.Builder(x).setUser(user).build();
-      session.setContext(session.getContext().put("subject", subject));
-      if ( ! auth.check(session.getContext(), permission_) ) {
+      var applyX = session.applyTo(x);
+      if ( ! auth.check(applyX, permission_) ) {
         throw new AuthorizationException();
       }
 
       // execute delegate
       // Update session context with support setup from earlier WebAgents.
-      getDelegate().execute(session.getContext().put(HttpServletResponse.class, resp).put(HttpServletRequest.class, req));
+      getDelegate().execute(applyX);
 
     } catch ( AuthorizationException e ) {
       // report permission issues

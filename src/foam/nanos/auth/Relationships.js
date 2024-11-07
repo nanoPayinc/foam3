@@ -54,6 +54,9 @@ foam.RELATIONSHIP({
     hidden: true
   },
   sourceDAOKey: 'agentJunctionDAO',
+  targetProperty: {
+    hidden: true
+  },
   targetDAOKey: 'notificationSettingDAO',
   unauthorizedTargetDAOKey: 'localNotificationSettingDAO'
 });
@@ -69,5 +72,31 @@ foam.RELATIONSHIP({
     columnPermissionRequired: true
   },
   targetDAOKey: 'notificationSettingDAO',
-  unauthorizedTargetDAOKey: 'localNotificationSettingDAO'
+  unauthorizedTargetDAOKey: 'localNotificationSettingDAO',
+  targetProperty: {
+    view: function(_, X) {
+      var userDAOSlot = X.data.slot(spid => {
+        if ( spid ) {
+          return X.userDAO.where(X.data.EQ(X.data.User.SPID, spid));
+        } else {
+          return X.userDAO;
+        }
+      });
+      return {
+        class: 'foam.u2.view.ModeAltView',
+        readView: 'foam.u2.view.ReadReferenceView',
+        writeView: {
+          class: 'foam.u2.view.RichChoiceReferenceView',
+          sections: [
+            {
+              heading: 'Owner',
+              dao$: userDAOSlot
+            }
+          ],
+          placeholder: '--'
+        }
+      }
+    },
+    tableCellFormatter: { class: 'foam.u2.view.ReferenceToSummaryCellFormatter' }
+  }
 });

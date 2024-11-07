@@ -6,15 +6,15 @@
 package foam.dao.index;
 
 import foam.core.FObject;
-import foam.core.PropertyInfo;
+import foam.core.Indexer;
 import foam.dao.index.TreeNode;
 
 public class TreeLookupFindPlan implements FindPlan {
 
-  protected PropertyInfo prop_;
+  protected Indexer prop_;
   protected long size_;
 
-  public TreeLookupFindPlan(PropertyInfo prop, long size) {
+  public TreeLookupFindPlan(Indexer prop, long size) {
     prop_ = prop;
     size_ = size;
   }

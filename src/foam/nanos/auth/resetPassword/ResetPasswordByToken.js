@@ -45,7 +45,7 @@
         return ! errors_;
       },
       isAvailable: function(showSubmitAction) {
-        return showSubmitAction
+        return showSubmitAction;
       },
       code: function(X) {
         const user = this.User.create({

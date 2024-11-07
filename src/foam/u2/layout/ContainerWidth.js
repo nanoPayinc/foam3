@@ -14,28 +14,37 @@ foam.CLASS({
       name: 'containerWidth',
       class: 'FObjectProperty',
       of: 'foam.u2.layout.DisplayWidth'
+    },
+    {
+      name: 'inlineSize',
+      class: 'Float'
     }
   ],
 
   methods: [
-    function initContainerWidth(el) {
+    function initContainer(el) {
       el = el || this;
       let ro = new ResizeObserver(this.updateWidth);
       el.el().then(o => {
         ro.observe(o);
       });
+      return this;
     }
   ],
 
   listeners: [
-    function updateWidth(entries) {
-      if ( entries.length > 1 ) console.warn('ContainerWidth called with mutiple observe targets');
-      for ( const entry of entries ) {
-        let width = entry.target.getBoundingClientRect().width;
-        this.containerWidth = foam.u2.layout.DisplayWidth.VALUES
-        .concat()
-        .sort((a, b) => b.minWidth - a.minWidth)
-        .find(o => o.minWidth <= Math.min(width) );
+    {
+      name: 'updateWidth',
+      isFramed: true,
+      code: function updateWidth(entries) {
+        if ( entries.length > 1 ) console.warn('ContainerWidth called with mutiple observe targets');
+        for ( const entry of entries ) {
+          this.inlineSize = entry.target.getBoundingClientRect().width;
+          this.containerWidth = foam.u2.layout.DisplayWidth.VALUES
+          .concat()
+          .sort((a, b) => b.minWidth - a.minWidth)
+          .find(o => o.minWidth <= Math.min(this.inlineSize) );
+        }
       }
     }
   ]

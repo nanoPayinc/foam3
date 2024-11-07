@@ -18,7 +18,7 @@ The advantages of a Virtual-DOM are:
 Improved security was the primary motivation for U2.
 Simplified use over U2, without losing any of U2's security benefits, was the primary motivation for U3.
 
-All 32 components extend foam.u2.Element, which loosely modelled after the DOM <a href="https://www.w3schools.com/jsref/dom_obj_all.asp">Element<a> class.
+All U2/3 components extend foam.u2.Element, which loosely modelled after the DOM <a href="https://www.w3schools.com/jsref/dom_obj_all.asp">Element<a> class.
 --
 add('testing');
 
@@ -56,6 +56,37 @@ test2()
 console.profileEnd('p2');
 
 ##   DSL
+The U3 library is structured as a Fluent Internal Domain Specific Language (DSL).
+<br>
+It is Domain-Specific because, rather than being a general all-purpose language,
+it is designed for the specific domain of creating DOM User Interfaces.
+<br>
+It is an Internal DSL (Domain Specific Language) because rather than inventing
+a whole new (and probably limited) language, it reuses a host language (Javascript, in our case).
+This means that there is no new syntax to learn, just new methods. Also, it means that you
+have the full power of our host language at your disposal.
+<br>
+It is Fluent because each method return's 'this' so that they can be chained.
+So instead of doing:
+--
+var tag = this.start('blockquote');
+tag.add('foo');
+var tag2 = tag.start('blockquote');
+tag2.add('bar');
+tag.add('baz');
+
+// You can just do:
+this.start('blockquote').
+  add('foo').
+  start('blockquote').
+    add('bar').
+  end().
+  add('baz').
+end();
+
+// The Fluent style more closely models the nested structure of HTML without requireming
+// the creation of temporary variables for each intermediate Element.
+--
 ##   Intro1
 ##   Hello World!
 Let's use U3 to say hello
@@ -98,9 +129,101 @@ But if you didn't need to add() anything inside the tag, you could just use the 
 start('input').end();
 tag('input');
 ##   ControllerMode
+There are three ControllerModes, defined by the foam.u2.ControllerMode enum:
+CREATE, VIEW, and EDIT.
+The ControllerMode specifies the type of operation being performed at the whole
+Object level.
+CREATE means a new objects is being created.
+VIEW means an objects is being viewed, but not edited.
+EDIT means an existing object is being updated.
+Some fields, like the primary keys, don't make sense to be edited after an
+object is created.
+--
+foam.CLASS({
+  name: 'Example',
+  properties: [
+    { name: 'id',    value: 'id', updateVisibility: 'RO' },
+    { name: 'prop1', value: 'value1', },
+    { name: 'prop2', value: 'value2', visibility: 'RO' }
+  ]
+});
+
+var e = Example.create();
+
+foam.u2.ControllerMode.VALUES.forEach(m => {
+  start().
+    start('h3').add(m.name).end().
+    startContext({controllerMode: m}).
+      add(e).
+    endContext().
+  end();
+});
+
 ##   DisplayMode
+Display modes are assigned to individual property views to control if they're shown,
+and if they are, if they're read-only, read-write or disabled.
+DisplayMode can be further restricted by the ControllerMode. For example,
+even if a Property has a RW (Read-Write) display mode, it will still be in
+read-only mode when the VIEW ControllerMode is selected.
+TODO: debug
+--
+foam.CLASS({
+  name: 'Example',
+  properties: [
+    { name: 'default',  value: 'default' },
+    { name: 'rw',       value: 'rw',       visibility: 'RW' },
+    { name: 'disabled', value: 'disabled', visibility: 'DISABLED' },
+    { name: 'ro',       value: 'ro',       visibility: 'RO'},
+    { name: 'hidden',   value: 'hidden',   visibility: 'HIDDEN' },
+    { name: 'hidden2',  hidden: true }
+  ]
+});
+
+var e = Example.create();
+
+add(e);
+
+foam.u2.ControllerMode.VALUES.forEach(m => {
+  start().
+    start('h3').add(m.name).end().
+    startContext({controllerMode: m}).
+      add(e).
+    endContext().
+  end();
+});
+
+##   Hidden Properties
+From the previous example, we could see that there are two different ways to
+hide a Property:
+  visibility: 'HIDDEN
+  hidden: true
+The difference is that with visibility: it just means that a property is
+currently hidden, but something could change so that you could see it,
+whereas hidden: true means the view will never be shown. From the point of
+view of views like DetailView, hidden: true properties don't exist.
+--
+foam.CLASS({
+  name: 'Example',
+  properties: [
+    { class: 'Boolean', name: 'enable', value: '' },
+    { name: 'prop1', hidden: true },
+    { name: 'prop2', visibility: 'HIDDEN' },
+    {
+      name: 'prop3',
+      value: 'here I am',
+      visibility: function(enable) {
+        return enable ?
+          foam.u2.DisplayMode.RW :
+          foam.u2.DisplayMode.HIDDEN ;
+      }
+    }
+  ]
+});
+
+tag(Example);
+
 ##   Borders
-A Border is a component meant to be a container for other elements. Examples might inluce
+A Border is a component meant to be a container for other elements. Examples might include
 a card, a shadow border, a tab-control, etc.
 If an element has a 'content' element, then when children are add()'ed to the element,
 they will be inserted into the 'content' element, rather that at the end of the element,
@@ -136,7 +259,6 @@ foam.CLASS({
 
 add(CardBorder.create().add('content').tag('br').add('more content').tag('br').add('even more content'));
 
-##    content
 ##   ViewSpec
 ##   Tooltips
 You can set the tooltip for an element by setting the 'tooltip' property
@@ -185,7 +307,7 @@ foam.CLASS({
   `,
 
   properties: [
-    [ 'nodeName', 'i' ],
+    [ 'nodeName', 'i' ] // defaults to 'div'
   ],
 
   methods: [
@@ -212,8 +334,11 @@ foam.CLASS({
 });
 
 tag({class:'ExampleElement'});
+// Or:
+// tag(ExampleElement)
 
 ##    render()
+The render() method is where an Element's DOM/HTML is rendered/created.
 --
 foam.CLASS({
   name: 'Sample',
@@ -237,9 +362,7 @@ foam.CLASS({
   name: 'KeyboardTest',
   extends: 'foam.u2.Controller',
   properties: [
-    // TODO: view: shouldn't be required, remove when fixed.
-    // appears to be issue with ModeAltView
-    { class: 'Int', name: 'count', value: 5, view: 'foam.u2.IntView' }
+    { class: 'Int', name: 'count', value: 5 }
   ],
   methods: [
     function render() { this.add(this.COUNT, ' ', this.INCR); }
@@ -273,11 +396,23 @@ You can set an element's id, but keep in mind that it isn't normally a good idea
 it prevents you from instantiating two instances of your component.
 --
 start('b', {id: 'myId1'}).add('inspect me to see my id').end();
+add().br();
 start('i').setID('myId2').add('this method also works').end();
 
 ##   E()
 ##   Children
 ##    start() / end()
+start() starts a new tag and end() closes it. So start('b').<stuff>.end() is the
+equivalent of <b>stuff</b>.
+--
+start('b').add('bold text').end().br().start('i').add('italic text').end();
+start().
+  style({background: 'pink'}).
+  on('click', function() { window.alert('clicked'); }).
+  add('text').
+  start('pre').add('nested').end().
+end();
+
 ##    br()
 br() is just short form for tag('br'), the html line-break element.
 --
@@ -298,13 +433,179 @@ start('div')
   .add('Breaking space').br()
   .add('NonBreaking').nbsp().add('space').br().
 end();
+
 ##    remove()
+Calling remove() on an Element will remove it from the DOM.
+--
+/*
+  TODO: Fix
+  This version doesn't work because 'this' in the callback binds to the real
+  DOM element rather that the U2/U3 Element.
+start().
+  start().add('1 remove me X').on('click', function() { this.remove(); }).end().
+  start().add('2 remove me X').on('click', function() { this.remove(); }).end().
+  start().add('3 remove me X').on('click', function() { this.remove(); }).end().
+end();
+*/
+// This works by capturing the correct 'this'
+start().
+  start().add('1 remove me X').call(function() { this.on('click', () => this.remove()); }).end().
+  start().add('2 remove me X').call(function() { this.on('click', () => this.remove()); }).end().
+  start().add('3 remove me X').call(function() { this.on('click', () => this.remove()); }).end().
+end();
+
 ##    add()
+--
+foam.CLASS({
+  name: 'Example',
+  extends: 'foam.u2.Controller',
+
+  properties: [
+    { name: 'p1', value: 'p1' },
+    { name: 'p2', value: 'p2' }
+  ],
+
+  methods: [
+    function render() {
+      // Add Properties
+      this.add('P1: ', this.P1).br();
+      this.add('P2: ', this.P2).br();
+
+      // Add a String to the DOM:
+      this.add('foo').br();
+
+      // Or add multiple Strings at once:
+      this.add('foo', ' bar', ' baz').br();
+
+      // Or add multiple Literals at once:
+      this.add('foo ', 42, ' ', true).br();
+
+      // Or add an Array of values, including other Arrays
+      this.add(['foo ', 42, ' ', 1, ' ', 2, ' ', 3]).br();
+
+      // Or add multiple values, including Arrays:
+      this.add('foo', ' bar ', [ 1, ' ', 2, ' ', 3]).br();
+
+      // Slot
+      this.add('p1: ', this.p1$).br();
+      this.add('p2: ', this.p2$).br();
+
+      // Function
+      this.add(function(p1, p2) { this.add('function: ' + p1 + ' ' + p2); }).br();
+
+      // Dynamic Function
+      this.add(this.dynamic(function(p1, p2) { this.add('dynamic: ' + p1 + ' ' + p2); })).br();
+
+      // Promises
+      this.add('A Resolved Promise: ', Promise.resolve('already resolved')).br();
+
+      var promise = new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve("resolved in future");
+        }, 3000);
+      });
+      this.add('An Unresolved Promise: ', promise).br().br();
+
+      // FObject
+      this.add(foam.util.Timer.create()).br();
+    }
+  ]
+});
+tag(Example);
+
 ##     adding properties
 ##     toE()
+If an object implements the toE(args, X) function, it can control which
+view is used to when add()-ing it to a U3 Element.
+--
+foam.CLASS({
+  name: 'Example',
+  properties: [ 'p1', 'p2', 'p3' ]
+});
+// Will be added as a foam.u2.DetailView, since that's what FObject.toE() returns.
+add(Example.create());
+
+// Now let's create a sub-class which overrides toE() to return a SectionedDetailView:
+foam.CLASS({
+  name: 'Example2',
+  extends: 'Example',
+  methods: [
+    function toE(args, X) {
+      return foam.u2.detail.SectionedDetailView({data: this});
+    }
+  ]
+});
+add(Example2.create());
+
 ##     view:
+It is the purpose of the view: Property Property to specify which View should be used for
+viewing or editing this property inside a DetailView or custom View when the property is added
+to the DOM with either cls.PROPERTY_CONSTANT or cls.PROPERTY_CONSTANT.__.
+Normally, when you specify a Property's class:, a suitable default view: is automatically provided.
+If however you would like to use a different View class, or even the same View class, but with a
+different configuration, then you can specify your desired view with view:.
+
+--
+foam.CLASS({
+  name: 'Example',
+  properties: [
+    { class: 'String', name: 'prop1', required: true, help: 'Some help' },
+    { class: 'String', name: 'prop2', view: 'foam.u2.TextField' },
+    { class: 'String', name: 'prop3', view: 'foam.u2.view.ValueView', value: 'read-only' },
+    { class: 'String', name: 'prop4', view: { class: 'foam.u2.tag.TextArea', rows: 3, cols: 40 } },
+    { class: 'String', name: 'prop5', view: { class: 'foam.u2.view.ChoiceView', choices: ['Yes', 'No'] } },
+    { class: 'String', name: 'prop6', view: { class: 'foam.u2.view.RadioView', choices: ['Yes', 'No'] } }
+  ]
+});
+
+var e = Example.create();
+tag({class: 'foam.u2.DetailView', data: e});
+
+
+// Now create a custom View
+// Adding this.data.PROP1 adds just the View
+// Adding this.data.PROP1.__ add the View wrapped in a PropertyBorder, which adds:
+//  1. Display a Label from Property's label:
+//  2. Display Units, if set in Property's units:
+//  3. Show/Hide the View based on the Property's visibility:
+//  4. Change the underlying View's Visibility to RO/RW/etc based on visibility:
+//  5. Display error messages based on the Property's validateObj: & validationPredicates:
+//  6. Add Property's help
+
+foam.CLASS({
+  name: 'ExampleView',
+  extends: 'foam.u2.View',
+  methods: [
+    function render() {
+      this.add('Prop1: ', this.data.PROP1);
+      this.add('Prop2: ', this.data.PROP2);
+      this.add(this.data.PROP1.__);
+      this.add(this.data.PROP2.__);
+    }
+  ]
+});
+
+tag({class: 'ExampleView', data: e});
+
 ##    removeAllChildren()
+Calling removeAllChilfen() will remove all of an Element's children.
+--
+start('b').
+  add('Remove All Children').
+  start().add('child1').end().
+  start().add('child2').end().
+  start().add('child3').end().
+  call(function() {
+    // Use => instead of function() so that 'this' is the U2/U3 Element
+    // rather than the DOM element
+    this.on('click', () => this.removeAllChildren());
+  }).
+end();
+
 ##    setChildren()
+TODO: Is this needed? Is it used anywhere?
+--
+
 ##   Styling
 CSS styling can be added to your elements in two ways:
 <ol>
@@ -362,7 +663,7 @@ add(`
 Notice that it also has a pink background and
 black border. CSS has leaked from CSSExample into CSSExample2.
 This happens because CSS has a global namespace and names can leak between
-components. Two component writers might choose common CSS classnames like:
+components. Two component authors might choose common CSS classnames like:
 'important', 'left-panel', 'content', 'header', 'section', etc. and the result
 would be the corruption of both of their components.
 
@@ -453,7 +754,7 @@ foam.CLASS({
   css: '^ { color: red; }',
   methods: [
     function render() {
-      this.addClass().add('No-inheritCSS: ', this.model_.inheritCSS);
+      this.addClass().add('No-inheritCSS: ', '' + this.model_.inheritCSS);
     }
   ]
 });
@@ -482,7 +783,7 @@ foam.CLASS({
        name: 'SubTest',
        extends: 'foam.u2.Element',
        css: `
-         ^ { background: pink; }
+         ^ { background: lightGreen; }
        `,
        methods: [
          function render() {
@@ -510,6 +811,29 @@ foam.CLASS({
 });
 add(some.good.package.Test.create());
 ##    removeClass()
+RemoveClass() removes a CSS class.
+--
+foam.CLASS({
+  name: 'Example',
+  extends: 'foam.u2.Controller',
+  css: `
+    .important { color: red }
+  `,
+  methods: [
+    function render() {
+      this.addClass('important').add('status ').add(this.REMOVE_CLS);
+    }
+  ],
+  actions: [
+    {
+      name: 'removeCls', // Don't name removeClass to avoid name conflict
+      labe: 'Remove Class',
+      code: function() { this.removeClass('important'); }
+    }
+  ]
+});
+
+tag(Example);
 
 ##   Attributes
 ##    attr() & setAttribute()
@@ -548,7 +872,7 @@ start()
 ##    callIfElse
 --
 start()
-  .callIfElse(true,  function() { this.add('true'); }, function() { this.add('false'); })
+  .callIfElse(true,  function() { this.add('true');  }, function() { this.add('false'); })
   .br()
   .callIfElse(false, function() { this.add('false'); }, function() { this.add('false'); })
 .end();
@@ -587,32 +911,34 @@ tag(RemoveEventListenerDemo);
 --
 foam.CLASS({
   name: 'OnKeyDemo',
-  extends: 'foam.u2.Element',
+  extends: 'foam.u2.Controller',
 
   properties: [
     {
       class: 'String',
       name: 'value1',
+      value: 'value1',
       onKey: true
     },
     {
       class: 'String',
       name: 'value2',
+      value: 'value2',
       // onKey: false // not needed, as false is the default
     }
   ],
 
   methods: [
     function render() {
-      this.add(this.VALUE1, this.value1$, this.VALUE2, this.value2$);
+      this.add(this.VALUE1, this.VALUE2);
       this.tag(this.VALUE2, { onKey: true});
-      this.tag({class: 'foam.u2.TextField', onKey: true, data: this.value1$});
-      this.tag({class: 'foam.u2.TextField', onKey: false, data: this.value1$});
+      this.tag({class: 'foam.u2.TextField', onKey: true,  data$: this.value1$});
+      this.tag({class: 'foam.u2.TextField', onKey: false, data$: this.value1$});
+      this.br().add('value1: ', this.value1$).br().add('value2: ', this.value2$);
     }
   ]
 });
 
-// TODO: fix
 tag({class: 'OnKeyDemo'});
 
 ##    DAOs
@@ -628,7 +954,7 @@ foam.CLASS({
   ]
 });
 
-var dao = foam.dao.EasyDAO.create({
+globalThis.dao = foam.dao.EasyDAO.create({
   of: DAOSampleData,
   daoType: 'MDAO',
   testData: [
@@ -641,6 +967,9 @@ var dao = foam.dao.EasyDAO.create({
   ]
 });
 
+##     select
+--
+var dao = globalThis.dao;
 // Now, to add the data to our view, we can just call dao.select():
 add('Example 1');
 start('ul').call(function() {
@@ -676,7 +1005,6 @@ start('a').add('click to add more data').on('click', function() {
   }
 }).end();
 
-##    select()
 ##   startContext() / endContext()
 --
 foam.CLASS({
@@ -688,7 +1016,7 @@ var t = Test.create();
 
 start().
   startContext({data: t}).
-    add('A: ', t.A, ' B: ', t.B).
+    add('A: ', t.A).br().add(' B: ', t.B).
   endContext().
 end();
 
@@ -742,7 +1070,10 @@ This is typically only used for debugging purposes, not in production code.
 foam.u2.Element.create().start().add('Here I am, way at the bottom of the page!').end().write();
 
 ##   Tags
-##    attributes
+Tags let you register U3 Elements to replace regular DOM tags.
+For example, you might have a custom ImageView that you would like
+to use as a replacement whenever regular <img> tags are added.
+--
 ##    registerElement
 The Context method 'registerElement' can be used to declare that a specified
 Element subclass should be transparently used whenever an tag is created
@@ -758,7 +1089,9 @@ foam.CLASS({
 
   methods: [
     function render() {
-      this.show(this.on$);
+      // this.show(this.on$);
+      // This works better than previous line because it doesn't cause the output to grow and shrink
+      this.style({visibility: this.on$.map(s => s ? '' : 'hidden')});
       this.toggle();
     }
   ],
@@ -773,20 +1106,65 @@ foam.CLASS({
   ]
 });
 
-// TODO: doesn't work
 foam.__context__.registerElement(Blink, 'blink');
 start('blink').add('blinking').end();
 
 ##    elementForName
+ElementForName is the reverse of registerElement. It is used internally in FOAM
+to determine if a node/tag name has a registered class associated with it.
+Isn't used directly by application developers.
+--
+add(foam.__context__.elementForName('blink').id);
+
+##    attributes
+If a property has 'attribute: true' it is treated as a psedo-attribute and can
+be set with with the setAttribute(), attr(), and attrs() methods.
+This is done for DOM compatibility.
+For example, if we had registered an ImageView to replace <img> tags, then:
+start('img').attr('src', 'http://acme.com/logo.png').end()
+when we set the 'src' attribute, it would instead set the value of the
+'src' Property.
+--
+
 ##   View
 The foam.u2.View class extends Element and adds a property named 'data', which it exports.
 Views act as the display component (view) for their data. This is the standard MVC
 pattern where the View is the View, and the 'data' is the Model.
+--
+foam.CLASS({
+  name: 'Test',
+  properties: [ 'a', 'b' ]
+});
+
+var t = Test.create();
+
+start().
+  startContext({data: t}).
+    add('A: ', t.A).br().add(' B: ', t.B).
+  endContext().
+end();
+
+// The above code is the same as the startContext() / endContext() example, but
+now let's create a View for Test objects so we have the same functionality
+as a reusable component without having to use start/endContext explicitly:
+
+foam.CLASS({
+  name: 'TestView',
+  extends: 'foam.u2.View',
+  methods: [
+    function render() {
+      this. add('A: ', this.data.A).br().add(' B: ', this.data.B);
+    }
+  ]
+});
+
+tag(TestView.create({data: t}));
+
 ##    fromProperty()
 When Elements are used to view Property values, the fromProperty() method is called
 and provided the Property object that the view is being associated with.
 This allows the view to optionally configure itself based on Property values.
-Examples properties that may be taken from the property include:
+Examples of properties that may be taken from the property include:
 onKey, placeholder, displayWidth, size, min, max, of, daoKey, etc.
 --
 foam.CLASS({
@@ -820,7 +1198,7 @@ foam.CLASS({
 
   methods: [
     function render() {
-      this.add(this.FIRST_NAME, this.LAST_NAME);
+      this.add('First Name:', this.FIRST_NAME, this.LAST_NAME);
 
       this.tag('hr');
 
@@ -837,6 +1215,22 @@ tag({class: 'LabelledTextFieldExample'});
 The foam.u2.Controller class extends Element and exports itself as 'data'. Unlike Views, which
 provide a view for some other piece of data, a Controller provides a view for itself. It may
 however create sub-Views which it includes in its own rendering.
+Lets revisit the same example from startContext() / endContext() and Views above,
+but instead of having separate classes for Test and TestView, we'll combine the
+two into a single TestController class:
+--
+foam.CLASS({
+  name: 'TestController',
+  extends: 'foam.u2.Controller',
+  properties: [ 'a', 'b' ],
+  methods: [
+    function render() {
+      this.add('A: ', this.A).br().add(' B: ', this.B);
+    }
+  ]
+});
+
+tag({class: 'TestController'});
 ##   Views
 ##    ActionView
 Create an ActionView directly.
@@ -847,7 +1241,7 @@ tag(foam.u2.DetailView.create({data: timer}));
 add(timer.time$);
 tag('hr');
 tag(av);
-tag( foam.u2.ActionView.create({data: timer, action: timer.STOP}));
+tag(foam.u2.ActionView.create({data: timer, action: timer.STOP}));
 this.startContext({data: timer}).add(timer.I);
 
 ##   StackView
@@ -896,3 +1290,83 @@ foam.CLASS({
 
 var t2 = foam.u2.table.TableView.create({data: foam.dao.MDAO.create({of: 'TableColumnsExampleSubClass'})});
 start(t2).style({height: '200px'});
+
+
+##   Dynamic Content
+Example of using obj.dynamic() to add dynamic DOM content.
+--
+foam.CLASS({
+  name: 'Example',
+  extends: 'foam.u2.Controller',
+
+  properties: [
+    { name: 'a', onKey: true },
+    { name: 'b', onKey: true }
+  ],
+
+  methods: [
+    function render() {
+      this.a = 'foo'; this.b = 'a,b,c';
+      this.add('A:', this.A, ' B: ', this.B).br().br();
+
+      this.dynamic({
+        pre:  function()     { console.log('pre-react'); },
+        code: function(a, b) { console.log('React: ', a, b); },
+        post: function()     { console.log('post-react'); }
+      });
+
+      this.start().add(this.dynamic(function(a, b) {
+        this.add('Dynamic Test A+B a:', a, ', b:', b).br();
+      })).end();
+
+      this.tag('hr');
+
+      this.start().add(function(a, b) {
+        this.add('Function Test A+B a:', a, ', b:', b).br();
+      }).end();
+
+      this.tag('hr');
+
+      this.start().add(function(a) {
+        this.add('TEST A: ', a).br();
+      }).end();
+
+      this.start().add(function(b) {
+        this.add('TEST B: ', b).br();
+      }).end();
+
+      this.tag('hr');
+
+      this.start().add('Show (if a == "show"): ').add(function(a) {
+        if ( a === 'show' ) this.add('SHOWING');
+      }).end().br();
+
+      this.tag('hr');
+
+      this.add('Dynamic OL:').start('ol').
+        add(this.dynamic(function(b) {
+          b.split(',').forEach(i => this.start('li').add(i).end());
+        })).
+      end();
+
+      this.add('Function OL:').start('ol').
+        add(function(b) {
+          b.split(',').forEach(i => this.start('li').add(i).end());
+        }).
+      end();
+
+      this.tag('hr');
+
+      this.b$.sub(() => { console.log('****', this.b$.get(), this.b); });
+      this.add('select:').tag(foam.u2.tag.Select, {choices$: this.b$.map(b => b.split(',')) });
+
+      this.add('END').br();
+    }
+  ],
+
+  listeners: [
+    function invalidate() { this.clearProperty('value'); this.value; }
+  ]
+});
+
+add(Example.create());

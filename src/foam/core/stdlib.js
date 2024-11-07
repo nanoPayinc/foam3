@@ -548,7 +548,7 @@ foam.LIB({
       name: 'constantize',
       code: foam.Function.memoize1(function(/* String */ str) {
         // switches from from camelCase to CAMEL_CASE
-        return str.replace(/([a-z])([^0-9a-z_])/g, '$1_$2').toUpperCase();
+        return str.replace(/([a-z])([^0-9a-z_])/g, '$1_$2').replace(/\s/g,'').toUpperCase();
       })
     },
     {
@@ -1113,20 +1113,6 @@ foam.LIB({
 
 (function() {
   var typeOf = foam.typeOf;
-  /*
-  var typeOf = mmethod({
-    Undefined: () => foam.Undefined,
-    Null:      () => foam.Null,
-    String:    () => foam.String,
-    Number:    () => foam.Number,
-    Boolean:   () => foam.Boolean,
-    Date:      () => foam.Date,
-    Function:  () => foam.Function,
-    FObject:   () => foam.FObject,
-    Array:     () => foam.Array,
-    Object:    () => foam.Object
-  });
-  */
 
   foam.LIB({
     name: 'foam.util',
@@ -1285,6 +1271,7 @@ foam.LIB({
     }
   ]
 });
+
 
 foam.LIB({
   name: 'foam.CSS',

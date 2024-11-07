@@ -8,6 +8,7 @@ foam.CLASS({
   package: 'foam.nanos.notification.push',
   name: 'PushSetting',
   extends: 'foam.nanos.notification.NotificationSetting',
+  label: 'Push Notifications',
 
   javaImports: [
     'foam.core.Agency',
@@ -17,7 +18,8 @@ foam.CLASS({
     'foam.core.XLocator',
     'foam.nanos.logger.Logger',
     'foam.nanos.logger.Loggers',
-    'foam.nanos.notification.push.PushService'
+    'foam.nanos.notification.push.PushService',
+    'foam.util.SafetyUtil'
   ],
 
   properties: [
@@ -32,9 +34,6 @@ foam.CLASS({
     {
       name: 'sendNotification',
       javaCode: `
-        if ( ! notification.getPushEnabled() )
-          return;
-
         Agency agency = (Agency) x.get(getThreadPoolName());
         agency.submit(x, new ContextAgent() {
           public void execute(X x) {
@@ -42,6 +41,11 @@ foam.CLASS({
             PushService pushService = (PushService) x.get("pushService");
             String title = notification.getToastMessage();    // restricted to 30 chars
             String body  = notification.getToastSubMessage(); // restricted to 60 chars
+            if ( SafetyUtil.isEmpty(title) ||
+                 SafetyUtil.isEmpty(body) ) {
+              // Loggers.logger(x, this).debug("push suppressed, title or body empty");
+              return;
+            }
             try {
               pushService.sendPush(user, title, body);
             } catch (Throwable t) {

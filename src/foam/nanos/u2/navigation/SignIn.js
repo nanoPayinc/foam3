@@ -15,23 +15,26 @@ foam.CLASS({
 
   imports: [
     'auth',
+    'appConfig',
     'ctrl',
     'emailVerificationService',
     'logAnalyticEvent',
     'loginSuccess',
     'loginView?',
     'memento_',
-    'menuDAO',
     'routeTo',
     'stack',
     'subject',
-    'window'
+    'window',
+    'sessionID',
+    'oidcProviderDAO'
   ],
 
   requires: [
     'foam.log.LogLevel',
     'foam.nanos.auth.DuplicateEmailException',
     'foam.nanos.auth.UnverifiedEmailException',
+    'foam.nanos.auth.oidc.OIDCLoginState',
     'foam.u2.crunch.WizardRunner',
     'foam.u2.dialog.NotificationMessage',
     'foam.u2.stack.StackBlock',
@@ -86,14 +89,11 @@ foam.CLASS({
       name: 'identifier',
       required: true,
       label: 'Email or Username',
-      preSet: function(_, n) {
-        return n.trim();
-      },
       view: {
         class: 'foam.u2.TextField',
-        type: 'email',
         focused: true
       },
+      trim: true,
       visibility: function(disableIdentifier_, usernameRequired) {
         return usernameRequired ? foam.u2.DisplayMode.HIDDEN :
           disableIdentifier_ ? foam.u2.DisplayMode.DISABLED : foam.u2.DisplayMode.RW;
@@ -104,8 +104,8 @@ foam.CLASS({
       class: 'Password',
       name: 'password',
       required: true,
-      view: { 
-        class: 'foam.u2.view.PasswordView', 
+      view: {
+        class: 'foam.u2.view.PasswordView',
         passwordIcon: true,
         autocomplete: 'current-password'
       },
@@ -185,6 +185,60 @@ foam.CLASS({
           type: type
         }));
       }
+    },
+    {
+      name: 'signInWithOIDC',
+      code: async function(provider) {
+        // TODO: Validate nonce
+        var nonce = crypto.randomUUID();
+
+        var reqParams = {
+          response_type: 'code',
+          client_id: provider.clientId,
+          scope: 'openid email',
+          redirect_uri: location.origin + "/service/oidc",
+          nonce: nonce,
+          state: foam.json.Network.stringify(this.OIDCLoginState.create({
+            sessionId: this.sessionID,
+            oidcProvider: provider.id,
+            returnToApp: false
+          }), this.OIDCLoginState),
+        }
+
+        let authURL = provider.authURL + '?' + Object.entries(reqParams).map(v => v.map(p => encodeURIComponent(p)).join('=')).join('&')
+
+        // If you want to run the login flow in the same window with a redirect
+        // set returnToApp: true in the above OICDLoginState and redirect the current
+        // page to the authURL
+
+        try {
+          await new Promise((resolve, reject) => {
+            let listener = (e) => {
+              if (e.origin == location.origin && e.data && e.data.sessionID == this.sessionID) {
+                window.removeEventListener('message', listener);
+                if (e.data.msg == "success") {
+                  resolve();
+                } else {
+                  reject(e.data.error)
+                }
+                authwindow.close();
+              }
+            }
+
+            window.addEventListener('message', listener);
+
+            let authwindow = window.open(authURL);
+          });
+        } catch(e) {
+          this.notifyUser(undefined, e, this.LogLevel.ERROR);
+        }
+
+        this.subject = await this.auth.getCurrentSubject(x);
+        this.username = this.subject.user
+        await this.ctrl.reloadClient();
+        this.loginSuccess = true;
+        await this.ctrl.onUserAgentAndGroupLoaded();
+      }
     }
   ],
 
@@ -213,7 +267,7 @@ foam.CLASS({
             return;
           }
           try {
-            this.logAnalyticEvent('USER_CLICKED_SIGN_IN', '', this.sessionID, '');
+            this.logAnalyticEvent({ name: 'USER_CLICKED_SIGN_IN' });
             var loginId = this.usernameRequired ? this.username : this.identifier;
             let logedInUser = await this.auth.login(x, loginId, this.password);
             this.loginFailed = false;
@@ -238,8 +292,8 @@ foam.CLASS({
 
             // Reload only if it wasn't done by the 'nextStep()' call
             if ( ! this.loginSuccess ) {
-              this.loginSuccess = true;
               await this.ctrl.reloadClient();
+              this.loginSuccess = true;
               // Temp fix to prevent breaking wizard sign in since that also calls this function
               if ( ! this.pureLoginFunction )
                 await this.ctrl.onUserAgentAndGroupLoaded();

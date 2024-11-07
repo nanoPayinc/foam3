@@ -13,18 +13,21 @@ foam.CLASS({
     'appConfig',
     'window'
   ],
+
   requires: [
     'foam.nanos.menu.Menu'
   ],
+
   messages: [
     { name: 'TERMS_AND_CONDITIONS_TITLE', message: 'Terms and Conditions' },
     { name: 'PRIVACY_TITLE', message: 'Privacy Policy' }
   ],
+
   properties: [
     {
       name: 'children_',
       factory: function() {
-        var aDAO = this.ArrayDAO.create();
+        var aDAO = this.MDAO.create({of: this.Menu});
         if ( this.appConfig.termsAndCondLink ) {
           aDAO.put(this.Menu.create({
             id: this.id + '/TC',

@@ -1,0 +1,26 @@
+p({
+  "class":"foam.nanos.menu.Menu",
+  "id":"notification.broadcastnotifications",
+  "label":"Broadcasted Notifications",
+  "handler": {
+    "class":"foam.nanos.menu.DAOMenu2",
+    "config": {
+      "class":"foam.comics.v2.DAOControllerConfig",
+      "daoKey":"broadcastNotificationDAO",
+      "cannedQueries": []
+    }
+  },
+  "parent":"notification"
+})
+
+p({
+  "class":"foam.nanos.menu.Menu",
+  "id":"notification.send-notification",
+  "label":"Send Notification",
+  "keywords": ["notification","broadcast"],
+  "handler":{
+    "class":"foam.nanos.menu.ViewMenu",
+    "view": { "class": "foam.nanos.notification.broadcast.SendNotificationView" }
+  },
+  "parent":"notification"
+})

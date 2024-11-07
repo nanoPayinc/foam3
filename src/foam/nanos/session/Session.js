@@ -36,7 +36,7 @@ foam.CLASS({
     'java.util.Date',
     'java.util.Random',
     'java.util.UUID',
-    'javax.servlet.http.HttpServletRequest',
+    'jakarta.servlet.http.HttpServletRequest',
     'org.eclipse.jetty.server.Request',
     'static foam.mlang.MLang.*'
   ],
@@ -62,6 +62,8 @@ foam.CLASS({
       class: 'Reference',
       of: 'foam.nanos.auth.User',
       name: 'userId',
+      // user being acted as for authorization purposes, may be different than
+      // the real-user (set in agentId)
       includeInDigest: true,
       tableCellFormatter: function(value, obj) {
         this.add(value);
@@ -76,6 +78,7 @@ foam.CLASS({
       class: 'Reference',
       of: 'foam.nanos.auth.User',
       name: 'agentId',
+      // real user
       includeInDigest: true,
       tableCellFormatter: function(value, obj) {
         if ( ! value ) return;
@@ -123,7 +126,6 @@ foam.CLASS({
       tableWidth: 70,
       validationPredicates: [
         {
-          args: ['ttl'],
           query: 'ttl>=0',
           errorString: 'TTL must be 0 or greater.'
         }
@@ -210,12 +212,7 @@ List entries are of the form: 172.0.0.0/24 - this would restrict logins to the 1
     },
     {
       name: 'validateRemoteHost',
-      args: [
-        {
-          name: 'x',
-          type: 'Context'
-        }
-      ],
+      args: 'Context x',
       javaThrows: ['foam.core.ValidationException'],
       javaCode: `
       String remoteIp = foam.net.IPSupport.instance().getRemoteIp(x);
@@ -251,9 +248,7 @@ List entries are of the form: 172.0.0.0/24 - this would restrict logins to the 1
     {
       name: 'reset',
       type: 'Context',
-      args: [
-        { type: 'Context', name: 'x' }
-      ],
+      args: 'Context x',
       documentation: `
         Return a subcontext of the given context where the security-relevant
         entries have been reset to their empty default values.
@@ -273,9 +268,7 @@ List entries are of the form: 172.0.0.0/24 - this would restrict logins to the 1
     {
       name: 'applyTo',
       type: 'Context',
-      args: [
-        { type: 'Context', name: 'x' }
-      ],
+      args: 'Context x',
       documentation: `
         Returns a subcontext of the given context with the user, group, and
         other information relevant to this session filled in if it's appropriate

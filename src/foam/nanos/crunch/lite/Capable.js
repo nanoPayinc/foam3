@@ -91,10 +91,7 @@ foam.INTERFACE({
             { name: 'capabilityId', type: 'String' }
           ],
           body: `
-          var oldCapabilityPayloads = getCapablePayloads();
-
-          return Arrays.stream(oldCapabilityPayloads)
-            .map((cap) -> cap.getCapability())
+          return Arrays.stream(getCapabilityIds())
             .anyMatch(capabilityId::equals);
           `
         }));
@@ -203,6 +200,7 @@ foam.INTERFACE({
       name: 'capablePayloads',
       class: 'FObjectArray',
       of: 'CapabilityJunctionPayload',
+      autoValidate: true,
       externalTransient: true,
       createVisibility: 'HIDDEN',
       readVisibility: 'RO',

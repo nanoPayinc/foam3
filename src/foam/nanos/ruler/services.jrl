@@ -100,7 +100,9 @@ p({
         .setComparator(foam.mlang.MLang.DESC(foam.nanos.ruler.RuleHistory.CREATED))
         .setSize(100000)
         .build())
-      .build();
+      .build()
+      .addPropertyIndex(new foam.core.Indexer[] { foam.nanos.ruler.RuleHistory.CREATED })
+      .addPropertyIndex(new foam.core.Indexer[] { foam.nanos.ruler.RuleHistory.EXPIRATION_DATE, foam.nanos.ruler.RuleHistory.STATUS });
     """,
     "client":"{\"of\":\"foam.nanos.ruler.RuleHistory\"}"
 })

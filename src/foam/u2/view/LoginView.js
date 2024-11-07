@@ -38,10 +38,11 @@ foam.CLASS({
     'logAnalyticEvent',
     'loginSuccess',
     'currentMenu?',
-    'sessionID'
+    'params'
   ],
 
   requires: [
+    'foam.core.Action',
     'foam.u2.Element',
     'foam.u2.borders.SplitScreenGridBorder',
     'foam.nanos.u2.navigation.SignIn',
@@ -167,7 +168,11 @@ foam.CLASS({
     function render() {
       this.SUPER();
       var self = this;
-      this.logAnalyticEvent("VIEW_LOAD_LoginView_" + this.currentMenu?.id, '', this.sessionID, '');
+      if ( this.currentMenu ) {
+        this.logAnalyticEvent({ name: "VIEW_LOAD_LoginView_" + this.currentMenu.id });
+      } else {
+        this.logAnalyticEvent({ name: "VIEW_LOAD_LoginView" });
+      }
       // CREATE DATA VIEW
       this
         // Title txt and Data
@@ -185,6 +190,19 @@ foam.CLASS({
         .end()
         .start(this.data.LOGIN)
           .attrs({ type: 'submit', form: 'login' })
+        .end()
+        .start().style({ display: 'contents' })
+          .select(this.data.oidcProviderDAO, function(provider) {
+            let action = self.Action.create({
+              name: 'signIn',
+              label: provider.description,
+              code: async function () {
+                await self.data.signInWithOIDC(provider)
+              }
+            });
+
+            return self.E().style({ display: "contents" }).startContext({ data: self.data }).add(action).endContext();
+          })
         .end()
         .add(
           this.slot(function(data$showAction, data$disclaimer, appConfig) {
@@ -236,11 +254,11 @@ foam.CLASS({
                 this.start().add(disclaimer).end()
               }
             ).callIf(self.data.showAction, function () {
-              this.tag(self.AppBadgeView, {isReferral: self.data.referralToken})
-            }) 
+              this.tag(self.AppBadgeView, {isReferral: self.data.referralToken || self.params['utm_id']})
+            })
           })
         )
-        
+
     }
   ]
 });

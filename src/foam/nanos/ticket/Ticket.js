@@ -75,9 +75,11 @@ foam.CLASS({
 
   searchColumns: [
     'id',
+    'type',
     'status',
-    'created',
-    'title'
+    'title',
+    'createdFor',
+    'created'
   ],
 
   messages: [
@@ -156,7 +158,7 @@ foam.CLASS({
          return this.cls_.name;
       },
       javaGetter: `
-    return getClass().getSimpleName();
+      return getClass().getSimpleName();
       `,
       tableWidth: 160,
       order: 4,

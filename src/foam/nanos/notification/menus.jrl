@@ -1,14 +1,83 @@
 p({
   "class":"foam.nanos.menu.Menu",
-  "id":"admin.broadcastNotifications",
-  "label":"Broadcasted Notifications",
-  "handler": {
+  "id":"notification",
+  "label":"Notifications",
+  "handler":{
+    "class":"foam.nanos.menu.SubMenu"
+  }
+})
+
+p({
+  "class":"foam.nanos.menu.Menu",
+  "id":"notification.notificationtemplates",
+  "label":"Notification Templates",
+  "keywords": ["notification","template","pwa"],
+  "handler":{
     "class":"foam.nanos.menu.DAOMenu2",
-    "config": {
+    "config":{
       "class":"foam.comics.v2.DAOControllerConfig",
-      "daoKey":"broadcastNotificationDAO",
-      "cannedQueries": []
+      "daoKey":"notificationTemplateDAO",
+      of: "foam.nanos.notification.Notification",
+      browseTitle:"Notification Templates"
     }
   },
-  "parent":"admin"
+  "parent":"notification"
+})
+
+p({
+  class: "foam.nanos.menu.Menu",
+  id: "notification.notifications",
+  label: "Notifications",
+  handler: {
+    class: "foam.nanos.menu.DAOMenu2",
+    config: {
+      class: "foam.comics.v2.DAOControllerConfig",
+      daoKey: "notificationDAO",
+      of: "foam.nanos.notification.Notification",
+      browseTitle: "Notifications",
+      createPredicate: {class:"foam.mlang.predicate.True"},
+      editPredicate: {class:"foam.mlang.predicate.True"},
+      deletePredicate: {class:"foam.mlang.predicate.True"}
+    }
+  },
+  parent:"notification"
+})
+p({
+  class: "foam.nanos.menu.Menu",
+  id: "notification.notificationsettingdefaults",
+  label: "Default Notification Settings",
+  handler: {
+    class: "foam.nanos.menu.DAOMenu2",
+    config: {
+      class: "foam.comics.v2.DAOControllerConfig",
+      daoKey: "notificationSettingDefaultsDAO",
+      of: "foam.nanos.notification.NotificationSetting",
+      browseTitle: "Default Notification Settings",
+      createTitle: "Create Default Notification Setting",
+      createPredicate: {class:"foam.mlang.predicate.True"},
+      editPredicate: {class:"foam.mlang.predicate.True"},
+      deletePredicate: {class:"foam.mlang.predicate.True"}
+    }
+  },
+  parent:"notification"
+})
+
+p({
+  class: "foam.nanos.menu.Menu",
+  id: "notification.notificationsettingusers",
+  label: "User Notification Settings",
+  handler: {
+    class: "foam.nanos.menu.DAOMenu2",
+    config: {
+      class: "foam.comics.v2.DAOControllerConfig",
+      daoKey: "notificationSettingDAO",
+      of: "foam.nanos.notification.NotificationSetting",
+      browseTitle: "User Notification Settings",
+      createTitle: "Create User Notification Setting",
+      createPredicate: {class:"foam.mlang.predicate.True"},
+      editPredicate: {class:"foam.mlang.predicate.True"},
+      deletePredicate: {class:"foam.mlang.predicate.True"}
+    }
+  },
+  parent:"notification"
 })

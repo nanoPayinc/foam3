@@ -123,13 +123,16 @@ foam.CLASS({
 
   constants: {
     IS_EXPR_MATCH_FN: function isExprMatch(predicate, prop, model) {
+      function eq(p1, p2) {
+        if ( ( p1 === null ) != ( p2 === null ) ) return false;
+        if ( p1 === p2 ) return true;
+        return p1.toString() === p2.toString();
+      }
       var self = this.index || this;
       if ( predicate && model && prop ) {
         // util.equals catches Properties that were cloned if the predicate has
         //  been cloned.
-        if ( model.isInstance(predicate) &&
-            ( predicate.arg1 === prop || foam.util.equals(predicate.arg1, prop) )
-        ) {
+        if ( model.isInstance(predicate) && eq(predicate.arg1, prop) ) {
           var arg2 = predicate.arg2;
           predicate = undefined;
           return { arg2: arg2, predicate: predicate };
@@ -139,8 +142,7 @@ foam.CLASS({
           for ( var i = 0 ; i < predicate.args.length ; i++ ) {
             var q = predicate.args[i];
             // Util.equals to catch clones again
-            if ( model.isInstance(q) &&
-                (q.arg1 === prop || foam.util.equals(q.arg1, prop)) ) {
+            if ( model.isInstance(q) && eq(q.arg1, prop) ) {
               predicate = predicate.clone();
               predicate.args[i] = self.True.create();
               predicate = predicate.partialEval();

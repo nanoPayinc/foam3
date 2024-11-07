@@ -58,7 +58,7 @@ var [argv, X, flags] = require('./processArgs.js')(
           console.log('  ' + f.substring(0, f.length-8).padEnd(14, ' '), maker.description || '');
           ( maker.args || []).forEach(a => {
             var desc = a.description || '';
-            var def = a.value ? ( ( desc ? ', ' : '' ) + 'default: ' + a.value ) : '';
+            var def  = a.value ? ( ( desc ? ', ' : '' ) + 'default: ' + a.value ) : '';
             console.log('     ' + a.name.padEnd(12, ' ') + desc + def);
           });
         }

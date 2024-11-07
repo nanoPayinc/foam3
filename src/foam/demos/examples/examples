@@ -1,8 +1,49 @@
-## Introduction
+## Start
+## FOAM By Example
+--
 
 ##  Lib
+foam.LIB() is used to creates static libraries of constants and functions.
+--
+foam.LIB({
+  name: 'network',
+  constants: {
+    PORT: 4000
+  },
+  methods: [ function sendPacket() { log('sending packet'); }  ]
+});
+
+log(network.PORT);
+network.sendPacket();
 
 ##  Models
+foam.CLASS() is used to create a "class model", but because this is the most common
+type of model created by FOAM, it is usually just referred to as a "model".
+
+Most OO languages have build-in syntax for creating classes, but instead of using
+this support, FOAM defines classes as modelled JSON data. The FOAM Class data
+is itself modelled as a FOAM data, making it no different than user created models.
+
+There are several major advantages to this approach:
+
+1. Because the class is defined in a language-neutral data-format, rather than the specific
+class syntax of a particular language, we can generate language-specific classes for multiple
+target classes. So rather than having to write compatible Java, JavaScript and Swift classes,
+we just need to write the FOAM class and then generate all of those target classes from it.
+
+2. FOAM classes offer many higher-level features than what is typically provided by
+standard OO languages. Typically, OO languages support instance variables, methods and inheritance,
+and sometimes interface implementation and properties (C#), but FOAM also supports many higher-level
+language-like features like: actions, listeners, i18n messages, pub/sub topics, and mixins. Furthermore,
+support for new features can be added by the end user code.
+
+3. Classes generated from FOAM models contain many useful utility methods that the user does not
+need to explicitly code. Common methods like: equals(), compareTo(), hashCode(), clone(), copyFrom(), etc.
+are all provided for free.
+
+4. The FOAM model is retained at runtime as an advanced form of reflection. This is why the "AM" in "FOAM" stands for "Active Modeller", because the
+models are still available and active at runtime. The availability of rich runtime models allows for the creation of many generic features like
+table and detail views, JSON and XML adapters, and SQL support.
 
 ##   Properties
 
@@ -22,13 +63,15 @@
 
 ##   Requires
 
-##   Implements
-
 ##   Topics
 
-##   Requires
-
 ##   Extends
+
+##   Refines
+
+##   Implements
+
+##   Mixins
 
 ##  FObjects
 
@@ -58,7 +101,7 @@
 
 ## DAOs
 
-## FOAM By Example
+## Usage
 ##  Test Class
 Define a new class with foam.CLASS
 --

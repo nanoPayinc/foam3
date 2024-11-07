@@ -850,7 +850,12 @@ foam.CLASS({
       name: 'updateNow',
       code: function() {
         var newValue = this.delegate.get();
-        if ( ! foam.util.equals(this.value, newValue) ) {
+        // Just do === not equals() check for FObjects and Objects
+        if ( foam.core.FObject.isInstance(newValue) || foam.Object.isInstance(newValue) ) {
+          if ( this.value !== newValue ) {
+            this.value = newValue;
+          }
+        } else if ( ! foam.util.equals(this.value, newValue) ) {
           this.value = newValue;
         } else {
         //  console.log('avoid stale notify');

@@ -6,6 +6,8 @@
 
 /**
  * TODO:
+ * - NOT A REAL VIEW BECAUSE IT DOESN"T BIND PROPERLY TO 'DATA'. Only used by CrunchLab.
+ *   Fix before trying to use elsewhere.
  * - Add using RichChoiceView does not work, why??
  * - Improve UX when adding objects to larger 1:* relationships/larger screens using a full table view
  * - How to handle broken relationships (destroy, rebound/reassign, orphan)
@@ -26,10 +28,9 @@ foam.CLASS({
     'foam.comics.v2.DAOBrowseControllerView'
   ],
 
-  implements: ['foam.mlang.Expressions'],
+  implements: [ 'foam.mlang.Expressions' ],
 
   imports: [
-    'auth',
     'stack'
   ],
 
@@ -159,6 +160,7 @@ foam.CLASS({
       name: 'showViewMore'
     }
   ],
+
   methods: [
     function init() {
       this.data = undefined;
@@ -168,11 +170,13 @@ foam.CLASS({
       this.updateCount();
       this.updateData();
     },
+
     function fromProperty(p) {
       this.SUPER(p);
       if ( ! this.dao && p.data ) this.dao = p.data;
       if ( this.dao.of ) this.of = this.dao.of;
     },
+
     function addAction(showCreate, addView) {
       if ( showCreate )
         return this.E()
@@ -195,6 +199,7 @@ foam.CLASS({
       }
     }
   ],
+
   listeners: [
     function updateCount() {
       this.dao.select(this.Count.create()).then(s => this.DAOCount = s.value);
@@ -218,6 +223,7 @@ foam.CLASS({
       this.showCreate = false;
     }
   ],
+
   actions: [
     {
       name: 'addRow',
@@ -249,5 +255,5 @@ foam.CLASS({
           }, parent: this.__subContext__.createSubContext({ controllerMode: 'CREATE' }) }));
       }
     }
-  ],
+  ]
 });

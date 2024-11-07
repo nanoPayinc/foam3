@@ -25,9 +25,11 @@ foam.CLASS({
     ^ {
       position: relative;
       height: 100%;
+      height: -webkit-fill-available;
     }
     ^center {
       height: 100%;
+      min-height: 20rem;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -40,6 +42,8 @@ foam.CLASS({
     ^ .table-row {
       padding-left: 20px;
       padding-right: 20px;
+      border-bottom: 1px solid $grey200;
+      
     }
     ^ div.table-row:last-child > div {
       border-bottom: none;
@@ -63,7 +67,6 @@ foam.CLASS({
     }
     ^grid-container {
       display: grid;
-      grid-template-rows: repeat(6, 1fr);
       height: 100%;
     }
   `,
@@ -155,10 +158,9 @@ foam.CLASS({
           });
           return e
             .callIf(currentValues.length == 0, function() {
-              e.start().addClass(self.myClass('center'))
+              e.addClass(self.myClass('center'))
                 .start().addClass('p-semiBold').translate(self.emptyTitle, self.emptyTitle,).end()
-                .start().addClass('p').translate(self.emptySubTitle, self.emptySubTitle).end()
-              .end();
+                .start().addClass('p').translate(self.emptySubTitle, self.emptySubTitle).end();
             })
             .forEach(currentValues, function(obj) {
               e.start().addClass('table-row')

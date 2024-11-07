@@ -7,14 +7,15 @@
 foam.CLASS({
   package: 'foam.u2.layout',
   name: 'Grid',
-  extends: 'foam.u2.Element',
-  mixins: ['foam.u2.layout.ContainerWidth'],
+  extends: 'foam.u2.View',
+
+  mixins: [ 'foam.u2.layout.ContainerWidth' ],
 
   documentation: 'A grid of responsive elements',
 
-  requires: [
-    'foam.u2.layout.GUnit'
-  ],
+  requires: [ 'foam.u2.layout.GUnit' ],
+
+  imports: [ 'data? as importedData' ],
 
   css: `
     ^ {
@@ -24,11 +25,19 @@ foam.CLASS({
   `,
 
   methods: [
+    function init() {
+      // Override the behaviour of 'foam.u2.View' by exporting the __context__'s
+      // data as 'data' instead of this view's data. We do this because we don't
+      // want this view to change the context data, which child views might want to
+      // access.
+      if ( this.importedData )
+        this.data$ = this.importedData$;
+      this.SUPER();
+    },
     async function render() {
       this.SUPER();
       this.addClass();
-      this.initContainerWidth();
-      this.onDetach(this.containerWidth$.sub(this.resizeChildren));
+      this.initContainer();
       this.style(
         { 'grid-template-columns': this.containerWidth$.map(dw => {
             dw = dw || foam.u2.layout.DisplayWidth.XL;
@@ -48,32 +57,26 @@ foam.CLASS({
   listeners: [
     {
       name: 'resizeChildren',
+      on: ['this.propertyChange.containerWidth', 'this.propertyChange.mode'],
       isFramed: true,
       code: function() {
-        if ( this.state == this.OUTPUT ) return;
+        if ( ! this.U3 )
+          if ( this.state == this.OUTPUT ) return;
 
         this.shown = false;
-        var currentWidth = 0;
         this.children.forEach(ret => {
           var cols = 12, width = 12;
           if ( this.containerWidth ) {
             cols = this.containerWidth.cols;
-            width = Math.min(this.GUnit.isInstance(ret) && ret.columns &&
-              ret.columns[`${this.containerWidth.name.toLowerCase()}Columns`] ||
-              cols, cols);
+            let propCols;
+            if ( this.GUnit.isInstance(ret) ) {
+              propCols = (this.mode == 'RW' ? ret.rwColumns : ret.columns)[`${this.containerWidth.name.toLowerCase()}Columns`];
+            }
+            width = Math.min(propCols || cols, cols);
           }
-          var startCol = currentWidth + 1;
-          currentWidth += width;
-
-          if ( currentWidth > cols ) {
-            startCol = 1;
-            currentWidth = width;
-          }
-
-          var endCol = startCol + width;
 
           ret.style({
-            'grid-column': `${startCol} / ${endCol}`
+            'grid-column': `span ${width}`
           });
         });
         this.shown = true;

@@ -1,0 +1,10 @@
+// Exapmle provider
+// Create an OAuth client on Google Cloud Platform and fill in the details here to enable sign in with google support
+//p({
+//    class:"foam.nanos.auth.oidc.OIDCProvider",
+//    clientId: "459191378068-1mtto5algfu1q4b7oc33tj7ci7hm82ua.apps.googleusercontent.com",
+//    clientSecret: "GO...",
+//    description: "Sign in with Google",
+//    tokenURL: "https://oauth2.googleapis.com/token",
+//    authURL: "https://accounts.google.com/o/oauth2/v2/auth"
+//})

@@ -19,6 +19,9 @@ foam.CLASS({
   documentation: 'Notification model responsible for system and integrated messaging notifications.',
 
   javaImports: [
+    'foam.core.XLocator',
+    'foam.dao.DAO',
+    'static foam.mlang.MLang.EQ',
     'foam.nanos.auth.AuthService',
     'foam.nanos.auth.AuthorizationException',
     'foam.nanos.auth.Subject',
@@ -83,22 +86,26 @@ foam.CLASS({
       class: 'Boolean',
       name: 'read',
       documentation: 'Determines if notification has been read.',
-      visibility: 'RO'
+      createVisibility: 'HIDDEN',
+      updateVisibility: 'RO'
     },
     {
       class: 'Long',
       name: 'id',
-      visibility: 'RO'
+      createVisibility: 'HIDDEN',
+      updateVisibility: 'RO'
     },
     {
       class: 'String',
       name: 'hostname',
-      visibility: 'RO',
+      createVisibility: 'HIDDEN',
+      updteVisibility: 'RO',
       javaFactory: 'return System.getProperty("hostname", "localhost");'
     },
     {
       class: 'String',
-      name: 'template'
+      name: 'template',
+      documentation: `This is the 'id' property used to find a template.`,
     },
     {
       class: 'String',
@@ -117,7 +124,9 @@ foam.CLASS({
       class: 'Reference',
       of: 'foam.nanos.auth.User',
       name: 'createdBy',
-      documentation: 'User that created the Notification.'
+      documentation: 'User that created the Notification.',
+      createVisibility: 'HIDDEN',
+      updateVisibility: 'RO',
     },
     {
       class: 'Reference',
@@ -125,7 +134,9 @@ foam.CLASS({
       name: 'createdByAgent',
       documentation: 'Agent user that created the Notification.',
       readPermissionRequired: true,
-      writePermissionRequired: true
+      writePermissionRequired: true,
+      createVisibility: 'HIDDEN',
+      updateVisibility: 'RO',
     },
     {
       class: 'Date',
@@ -154,13 +165,16 @@ foam.CLASS({
     {
       class: 'Enum',
       name: 'toastState',
-      of: 'foam.nanos.notification.ToastState'
+      of: 'foam.nanos.notification.ToastState',
+      createVisibility: 'HIDDEN',
+      updateVisibility: 'RO',
     },
     {
       class: 'Enum',
       name: 'severity',
       of: 'foam.log.LogLevel',
-      documentation: 'Severity of notification being displayed (eg. INFO, WARNING, ERROR)'
+      documentation: 'Severity of notification being displayed (eg. INFO, WARNING, ERROR)',
+      value: 'INFO'
     },
     {
       class: 'Boolean',
@@ -174,6 +188,12 @@ foam.CLASS({
       class: 'Boolean',
       name: 'broadcasted',
       documentation: 'Determines if notification is sent to all users in a group or system.'
+    },
+    {
+      class: 'Boolean',
+      name: 'inAppEnabled',
+      documentation: 'Determines if notification is displayed in the application.',
+      value: true
     },
     {
       class: 'Reference',
@@ -198,11 +218,16 @@ foam.CLASS({
       javaFactory: 'return new java.util.HashMap<String, Object>();'
     },
     {
-      class: 'String',
       name: 'emailName',
-      label: 'Email template name',
-      value: 'notification',
-      documentation: 'Email template name.'
+      class: 'Reference',
+      of: 'foam.nanos.notification.email.EmailTemplate',
+      targetDAOKey: 'emailTemplateDAO',
+      label: 'Email Template',
+      documentation: 'Email template name.',
+      menuKeys: [
+        'emailtemplates',
+        'notification.emailtemplates'
+      ]
     },
     {
       class: 'Boolean',
@@ -259,7 +284,9 @@ foam.CLASS({
       name: 'authorizeOnCreate',
       javaCode: `
       AuthService auth = (AuthService) x.get("auth");
-      if ( ! checkOwnership(x) && ! auth.check(x, createPermission("create", true)) && ! getTransient() ) throw new AuthorizationException("You don't have permission to create this notification.");
+      if ( ! checkOwnership(x) && ! auth.check(x, createPermission("create", true)) && ! getTransient() ) {
+        throw new AuthorizationException("You don't have permission to create this notification.");
+      }
       `
     },
     {
@@ -301,6 +328,9 @@ foam.CLASS({
       name: 'resendNotification',
       label: 'Resend Notification',
       availablePermissions:['notification.notify'],
+      isAvailable: function() {
+        return this.id;
+      },
       code: function(X) {
         var self = this;
         X.resendNotificationService.resend(X, this.userId, this).then(function() {

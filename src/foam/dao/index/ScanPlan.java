@@ -6,7 +6,7 @@
 package foam.dao.index;
 
 import foam.core.FObject;
-import foam.core.PropertyInfo;
+import foam.core.Indexer;
 import foam.dao.Sink;
 import foam.mlang.order.Comparator;
 import foam.mlang.order.Desc;
@@ -29,17 +29,17 @@ public class ScanPlan
   protected boolean    reverse_ = false;
 
   // TODO: add ThenBy support for 'order'
-  public ScanPlan(Object state, Sink sink, long skip, long limit, Comparator order, Predicate predicate, PropertyInfo propertyInfo, Index tail) {
+  public ScanPlan(Object state, Sink sink, long skip, long limit, Comparator order, Predicate predicate, Indexer indexer, Index tail) {
     state_     = state;
     skip_      = skip;
     limit_     = limit;
     order_     = order;
     predicate_ = predicate;
-    cost_      = calculateCost(propertyInfo);
+    cost_      = calculateCost(indexer);
     tail_      = tail;
   }
 
-  public long calculateCost(PropertyInfo propertyInfo) {
+  public long calculateCost(Indexer indexer) {
     long cost;
 
     if ( state_ == null ) return 0;
@@ -48,10 +48,10 @@ public class ScanPlan
     boolean sortRequired = false;
     if ( order_ != null ) {
       // ???: Why do we do a toString() here?
-      if ( order_.toString().equals(propertyInfo.toString()) ) {
+      if ( order_.toString().equals(indexer.toString()) ) {
         // If the index is same with the property we would like to order, the order could be set to null. Because the order is already correct in the tree set.
         order_ = null;
-      } else if ( order_ instanceof Desc && ((Desc) order_).getArg1().toString().equals(propertyInfo.toString()) && predicate_ == null ) {
+      } else if ( order_ instanceof Desc && ((Desc) order_).getArg1().toString().equals(indexer.toString()) && predicate_ == null ) {
         reverse_ = true;
         order_   = null;
       } else {

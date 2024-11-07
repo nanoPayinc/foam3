@@ -22,7 +22,6 @@ foam.CLASS({
   messages: [
     { name: 'TITLE', message: 'Reset your password' },
     { name: 'INSTRUCTION', message: 'Create a new password for your account' },
-    { name: 'PASSWORD_LENGTH_10_ERROR', message: 'Password must be at least 10 characters' },
     { name: 'PASSWORD_NOT_MATCH', message: 'Passwords do not match' },
     { name: 'SUCCESS_MSG', message: 'Your password was successfully updated' },
     { name: 'SUCCESS_MSG_TITLE', message: 'Success' },
@@ -45,14 +44,7 @@ foam.CLASS({
         passwordIcon: true,
         autocomplete: 'new-password'
       },
-      minLength: 10,
-      validationPredicates: [
-        {
-          args: ['newPassword'],
-          query: 'newPassword.len>=10',
-          errorMessage: 'PASSWORD_LENGTH_10_ERROR'
-        }
-      ]
+      minLength: 10
     },
     {
       class: 'Password',
@@ -66,7 +58,6 @@ foam.CLASS({
       },
       validationPredicates: [
         {
-          args: ['newPassword', 'confirmationPassword'],
           query: 'newPassword==confirmationPassword',
           errorMessage: 'PASSWORD_NOT_MATCH'
         }

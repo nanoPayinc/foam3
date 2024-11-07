@@ -24,23 +24,20 @@ foam.CLASS({
 
   documentation: 'View for editing DateTime values.',
 
-  axioms: [
-    { class: 'foam.u2.TextInputCSS' }
-  ],
+  mixins: [ 'foam.u2.TextInputCSS' ],
 
   css: `
     ^ {
-      width: fit-content;
+      height: $inputHeight;
     }
   `,
 
-  methods: [
-    function render() {
-      this.SUPER();
-      this.setAttribute('type', 'datetime-local');
-      this.setAttribute('placeholder', 'yyyy/mm/dd hh:mm');
-    },
+  properties: [
+    [ 'placeholder', 'yyyy/mm/dd hh:mm' ],
+    [ 'type', 'datetime-local' ]
+  ],
 
+  methods: [
     function link() {
       if ( this.linked ) return;
       this.linked = true;
@@ -53,7 +50,10 @@ foam.CLASS({
         if ( ! date ) {
           slot.set('');
         } else {
-          slot.set(date ? date.toISOString().substring(0,16) : '');
+          if ( ! date.toISOString )
+            date = new Date(date);
+
+          slot.set(date.toISOString().substring(0,16));
         }
       }
 

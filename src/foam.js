@@ -8,6 +8,9 @@
   var scripts = '';
   var FILES = [];
   var foam = globalThis.foam = Object.assign({
+    setFlags: {}, // set of flags set in URL args or in POMs, used to ensure only first one is used
+    defaultStage: 0,
+    stages: {},
     FILES: FILES,
     CUR_FILES: FILES,
     isServer: false,
@@ -27,7 +30,6 @@
       for ( var key in defaultFlags )
         if ( ! flags.hasOwnProperty(key) )
           flags[key] = defaultFlags[key];
-
 
       if ( ! globalThis.document ) return;
 
@@ -50,7 +52,9 @@
       // set flags by url parameters
       var urlParams = new URLSearchParams(window.location.search);
       for ( var pair of urlParams.entries() ) {
-        globalThis.foam.flags[pair[0]] = (pair[1] == 'true');
+        globalThis.foam.flags[pair[0]]    = (pair[1] == 'true');
+        // Prevents from being overritten in POM's, URL takes precedence
+        globalThis.foam.setFlags[pair[0]] = true;
       }
 
       var src  = document.currentScript && document.currentScript.src;
@@ -110,17 +114,17 @@
     },
     loadJSLibs: function(libs) {
       libs && libs.forEach(f => {
-        var s = '<script type="text/javascript" src="' + f.name + '"';
-        if ( f.defer ) s += ' defer';
-        if ( f.async ) s += ' async';
-        s += '></script>\n';
-
-        document.writeln(s);
+        var head = document.getElementsByTagName('head').item(0);
+        var s    = document.createElement('script');
+        s.setAttribute('type', 'text/javascript');
+        s.setAttribute('src', f.name);
+        if ( f.defer ) s.setAttribute('defer', '');
+        if ( f.async ) s.setAttribute('async', '');
+        head.appendChild(s);
       });
     },
     flags:       {},
     loaded:      {},
-    excluded:    {},
     seen:        function(fn) {
       if ( foam.loaded[fn] ) {
         console.warn(`Duplicated load of '${fn}'`);
@@ -210,11 +214,32 @@
         });
       }
 
-      pom.exclude && pom.exclude.forEach(f => {
-        var path = foam.cwd + '/' + f + ".js";
-        console.log('**************** EXCLUDING', path);
-        foam.excluded[path] = true;
-      });
+      if ( pom.defaultStage != undefined ) {
+        foam.defaultStage = pom.defaultStage;
+      }
+
+      if ( pom.setFlags ) {
+        for ( var key in pom.setFlags ) {
+          if ( foam.setFlags[key] ) {
+            console.log('Not overriding flag:', key);
+          } else {
+            console.log('Setting flag:', key,'=', pom.setFlags[key]);
+            foam.flags[key]    = pom.setFlags[key];
+            // Indicate that this flag has been set so it can't be reset in
+            // a future POM.
+            foam.setFlags[key] = true;
+          }
+        }
+      }
+
+      if ( pom.stages ) {
+        for ( var stage in pom.stages ) {
+          pom.stages[stage].forEach(f => {
+            var path = foam.cwd + '/' + f + ".js";
+            foam.stages[path] = stage;
+          });
+        }
+      }
 
       // TODO: requireModule vs requireFile -> require
       (foam.loadModules || loadFiles)(pom.projects, true);

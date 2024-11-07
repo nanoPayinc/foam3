@@ -10,6 +10,7 @@ foam.CLASS({
   plural: 'Users',
 
   implements: [
+    'foam.mlang.Expressions',
     'foam.nanos.auth.Authorizable',
     'foam.nanos.auth.CreatedAware',
     'foam.nanos.auth.EnabledAware',
@@ -28,6 +29,8 @@ foam.CLASS({
     'foam.core.X',
     'foam.dao.DAO',
     'foam.dao.ArraySink',
+    'static foam.mlang.MLang.AND',
+    'static foam.mlang.MLang.EQ',
     'foam.nanos.auth.LifecycleAware',
     'foam.nanos.auth.LifecycleState',
     'foam.nanos.notification.NotificationSetting',
@@ -38,8 +41,7 @@ foam.CLASS({
     'java.util.HashMap',
     'java.util.HashSet',
     'java.util.List',
-    'java.util.regex.Pattern',
-    'static foam.mlang.MLang.EQ'
+    'java.util.regex.Pattern'
   ],
 
   documentation: `The User represents a person or entity with the ability
@@ -78,15 +80,22 @@ foam.CLASS({
       name: 'NAME_MATCHER',
       type: 'Regex',
       javaValue: `Pattern.compile("^[\\\\p{L}\\\\s-.']+$", Pattern.UNICODE_CASE)`
+    },
+    {
+      name: 'USER_NAME_MATCHER',
+      type: 'Regex',
+      value: /^[\w-]*$/,
+      javaValue: `Pattern.compile("^[\\\\w-]*$")`
     }
   ],
 
   messages: [
-    { name: 'USERNAME_REQUIRED', message: 'Username required' },
-    { name: 'INVALID_FIRST_NAME', message: 'Invalid characters in first name: ' },
-    { name: 'INVALID_MIDDLE_NAME', message: 'Invalid characters in middle name: ' },
-    { name: 'INVALID_LAST_NAME', message: 'Invalid characters in last name: ' },
-    { name: 'INVALID_MATCHER', message: "[^\\p{Letter}\\s\\-.']" }
+    { name: 'USERNAME_REQUIRED',    message: 'Username required' },
+    { name: 'INVALID_FIRST_NAME',   message: 'Invalid characters in first name: ' },
+    { name: 'INVALID_MIDDLE_NAME',  message: 'Invalid characters in middle name: ' },
+    { name: 'INVALID_LAST_NAME',    message: 'Invalid characters in last name: ' },
+    { name: 'INVALID_MATCHER',      message: "[^\\p{Letter}\\s\\-.']" },
+    { name: 'INVALID_USERNAME',     message: "Username can only contain alphanumeric characters, '-', and '_'" }
   ],
 
   sections: [
@@ -172,7 +181,6 @@ foam.CLASS({
       section: 'userInformation',
       validationPredicates: [
         {
-          args: ['userName', 'type'],
           query: 'type!="User"||userName!=""',
           errorMessage: 'USERNAME_REQUIRED'
         }
@@ -240,11 +248,6 @@ foam.CLASS({
       trim: true,
       tableWidth: 160,
       validateObj: function(firstName) {
-        if ( ! firstName.trim() ) {
-          if ( this.FIRST_NAME.required ) return this.FIRST_NAME.REQUIRED;
-          return;
-        }
-
         var invalidMatcher = new RegExp(foam.nanos.auth.User.INVALID_MATCHER, 'ug');
         var invalidMatch = firstName.match(invalidMatcher)
         if ( invalidMatch ) {
@@ -257,7 +260,7 @@ foam.CLASS({
         String name = (String) obj.getProperty("firstName");
         if ( name.length() == 0 || appConfig.getMode() == foam.nanos.app.Mode.TEST ) return;
 
-        if ( ! foam.nanos.auth.User.NAME_MATCHER.matcher(name).matches() ) 
+        if ( ! foam.nanos.auth.User.NAME_MATCHER.matcher(name).matches() )
           throw new IllegalStateException(foam.nanos.auth.User.INVALID_FIRST_NAME + name);
       `
     },
@@ -300,7 +303,7 @@ foam.CLASS({
         String name = (String) obj.getProperty("middleName");
         if ( name.length() == 0 || appConfig.getMode() == foam.nanos.app.Mode.TEST ) return;
 
-        if ( ! foam.nanos.auth.User.NAME_MATCHER.matcher(name).matches() ) 
+        if ( ! foam.nanos.auth.User.NAME_MATCHER.matcher(name).matches() )
           throw new IllegalStateException(foam.nanos.auth.User.INVALID_MIDDLE_NAME + name);
       `
     },
@@ -317,11 +320,6 @@ foam.CLASS({
       trim: true,
       tableWidth: 160,
       validateObj: function(lastName) {
-        if ( ! lastName.trim() ) {
-          if ( this.LAST_NAME.required ) return this.LAST_NAME.REQUIRED;
-          return;
-        }
-
         var invalidMatcher = new RegExp(foam.nanos.auth.User.INVALID_MATCHER, 'ug');
         var invalidMatch = lastName.match(invalidMatcher)
         if ( invalidMatch ) {
@@ -334,7 +332,7 @@ foam.CLASS({
         String name = (String) obj.getProperty("lastName");
         if ( name.length() == 0 || appConfig.getMode() == foam.nanos.app.Mode.TEST ) return;
 
-        if ( ! foam.nanos.auth.User.NAME_MATCHER.matcher(name).matches() ) 
+        if ( ! foam.nanos.auth.User.NAME_MATCHER.matcher(name).matches() )
           throw new IllegalStateException(foam.nanos.auth.User.INVALID_LAST_NAME + name);
       `
     },
@@ -790,6 +788,11 @@ foam.CLASS({
       externalTransient: true,
       columnPermissionRequired: true
     },
+    {
+      class: 'String',
+      name: 'trackingId',
+      documentation: 'Unique id optionally used to track a user.'
+    }
   ],
 
   methods: [
@@ -859,6 +862,11 @@ foam.CLASS({
         User        oldUser      = (User)        oldObj;
         User        user         = subject.getUser();
         User        agent        = subject.getRealUser();
+
+        if ( auth.isAnonymous(x) ) {
+          throw new AuthorizationException("You do not have permission to update this user.");
+        }
+
         boolean     updatingSelf =
           ( user  != null && SafetyUtil.equals(this.getId(), user.getId()) ) ||
           ( agent != null && SafetyUtil.equals(this.getId(), agent.getId()) );
@@ -904,9 +912,72 @@ foam.CLASS({
       javaCode: `
         HashMap<String, NotificationSetting> settingsMap = new HashMap<String, NotificationSetting>();
 
+        settingsMap = getImpliedNotificationSettings(x);
+        for ( NotificationSetting setting : settingsMap.values() ) {
+          setting.doNotify(x, this, notification);
+        }
+      `
+    },
+    {
+      name: 'getImpliedNotificationSettings',
+      args: 'Context x',
+      type: 'java.util.HashMap',
+      code: async function(x, filterDisabled = true) {
+        // filterDisabled used by NotificationSettingView to show
+        // user their settings.
+
+        x = x || this.__subContext__;
+        let map = {};
+        // System defaults
+        (await x.notificationSettingDefaultsDAO.where(
+          this.AND(
+            this.EQ(foam.nanos.notification.NotificationSetting.SPID, '*'),
+            this.EQ(foam.nanos.notification.NotificationSetting.ENABLED, true)
+          ))
+         .select())?.array?.map(a => {
+           map[a.model_.label] = a;
+        });
+
+        // Spid defaults
+        (await x.notificationSettingDefaultsDAO
+         .where(this.EQ(foam.nanos.notification.NotificationSetting.SPID, x.theme.spid))
+         .select())?.array?.map(a => {
+           if ( ! a.enabled &&
+                filterDisabled ) {
+             delete map[a.model_.label];
+           } else {
+             map[a.model_.label] = a;
+           }
+         });
+
+        // Wipe ids and spids for any defaults
+        Object.keys(map).forEach(key => {
+          map[key].id = undefined;
+          map[key].spid = undefined;
+        });
+
+        // User Preference
+        (await this.notificationSettings
+         .select())?.array?.map(a => {
+           if ( ! a.enabled &&
+                filterDisabled ) {
+             delete map[a.model_.label];
+           } else {
+             map[a.model_.label] = a;
+           }
+        });
+        return map;
+      },
+      javaCode: `
+        HashMap<String, NotificationSetting> settingsMap = new HashMap<String, NotificationSetting>();
+
         // Defaults for system
-        List<NotificationSetting> settingDefaults = ((ArraySink) ((DAO) x.get("notificationSettingDefaultsDAO"))
-          .where(EQ(foam.nanos.notification.NotificationSetting.SPID, "*"))
+        List<NotificationSetting> settingDefaults = ((ArraySink) ((DAO) x.get("notificationSettingDefaultsDAO")).inX(x)
+          .where(
+            AND(
+              EQ(foam.nanos.notification.NotificationSetting.SPID, "*"),
+              EQ(foam.nanos.notification.NotificationSetting.ENABLED, true)
+            ))
           .select(new ArraySink()))
           .getArray();
         for ( NotificationSetting setting : settingDefaults ) {
@@ -914,45 +985,53 @@ foam.CLASS({
         }
 
         // Spid specific
-        settingDefaults = ((ArraySink) ((DAO) x.get("notificationSettingDefaultsDAO"))
+        settingDefaults = ((ArraySink) ((DAO) x.get("notificationSettingDefaultsDAO")).inX(x)
           .where(EQ(foam.nanos.notification.NotificationSetting.SPID, getSpid()))
           .select(new ArraySink()))
           .getArray();
         for ( NotificationSetting setting : settingDefaults ) {
-          settingsMap.put(setting.getClassInfo().getId(), setting);
+          if ( setting.getEnabled() ) {
+            settingsMap.put(setting.getClassInfo().getId(), setting);
+          } else {
+            // use disabled to opt-out
+            settingsMap.remove(setting.getClassInfo().getId());
+          }
         }
 
         // User explicit settings
-        List<NotificationSetting> settings = ((ArraySink) getNotificationSettings(x).select(new ArraySink())).getArray();
+        List<NotificationSetting> settings = ((ArraySink) getNotificationSettings(x)
+          .select(new ArraySink())).getArray();
         for ( NotificationSetting setting : settings ) {
-          settingsMap.put(setting.getClassInfo().getId(), setting);
+          if ( setting.getEnabled() ) {
+            settingsMap.put(setting.getClassInfo().getId(), setting);
+          } else {
+            // use disabled to opt-out
+            settingsMap.remove(setting.getClassInfo().getId());
+          }
         }
 
-        for ( NotificationSetting setting : settingsMap.values() ) {
-          setting.doNotify(x, this, notification);
-        }
+        return settingsMap;
       `
     },
     {
       name: 'validateAuth',
+      documentation: `Check that the user can be signed in`,
       args: [
         { name: 'x', type: 'Context' }
       ],
       javaCode: `
-
         // check if user enabled
         if ( getLifecycleState() != foam.nanos.auth.LifecycleState.ACTIVE ) {
           throw new AuthenticationException("User disabled");
         }
-
-        // fetch context from session and check two factor success if enabled.
-        Session session = x.get(Session.class);
-        if ( session == null ) {
-          throw new AuthenticationException("No session exists.");
+        
+        // check if user login enabled
+        if ( ! getLoginEnabled() ) {
+          throw new AccessDeniedException();
         }
-
-        if ( this instanceof LifecycleAware && ((LifecycleAware) this).getLifecycleState() != LifecycleState.ACTIVE ) {
-          throw new AuthenticationException("User is not active");
+        
+        if ( ! getEmailVerified() ) {
+          throw new UnverifiedEmailException();
         }
       `
     }

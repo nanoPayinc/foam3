@@ -128,7 +128,7 @@ foam.CLASS({
             type: this.LogLevel.INFO,
             transient: true
           }));
-          if ( ! this.resetByCode ) this.pushMenu('sign-in')
+          if ( ! this.resetByCode ) this.pushMenu('sign-in');
         } catch(err) {
           var msg = this.ERROR_MSG;
           if ( this.UserNotFoundException.isInstance(err.data.exception) ) {

@@ -12,7 +12,7 @@ foam.CLASS({
   properties: [
     [ 'autoRepaint', true ],
     [ 'width', 800 ],
-    [ 'height', 700 ],
+    [ 'height', 800 ],
     [ 'color', '#f3f3f3' ]
   ]
 });
@@ -163,6 +163,7 @@ foam.CLASS({
     'com.google.flow.Ellipse',
     'com.google.flow.FLOW',
     'com.google.flow.Halo',
+    'com.google.flow.LineHalo',
     'com.google.flow.Property',
     'foam.dao.EasyDAO',
     'foam.demos.sevenguis.Cells',
@@ -182,6 +183,7 @@ foam.CLASS({
     'as data',
     'physics',
     'properties',
+    'renameProperty',
     'scope',
     'timer',
     'updateMemento'
@@ -206,14 +208,16 @@ foam.CLASS({
       ^sheet { width: 100%; overflow-y: auto; }
       ^tools thead, ^properties thead { display: none }
       ^tools tr { height: 30px }
+      .foam-u2-TableView div tr td { font-weight: bold; } // TODO: I don't think that div should be there (but is)
       .foam-u2-TableView { border-collapse: collapse; }
       .foam-u2-TableView td { padding-left: 6px; }
       .foam-u2-TableView-selected { outline: 1px solid red; }
-      ^ canvas { border: none; width: 800px; height: 700px; }
+      // ^ canvas { border: none; width: 800px; height: 700px; }
+      ^ canvas { margin-left: 12px; border: 1px solid; border-color: /*$grey400*/ #B2B6BD; box-shadow: 3px 3px 6px 0 gray; }
       ^ .foam-u2-ActionView { margin: 10px; }
       ^cmd { box-shadow: 3px 3px 6px 0 gray; width: 100%; margin-bottom: 8px; }
       ^properties { margin-right: 8px; height: auto; }
-      ^properties .foam-u2-view-TreeViewRow { position: relative; }
+      ^properties .foam-u2-view-TreeViewRow { position: relative; width: 200px; }
       ^properties .foam-u2-ActionView, ^properties .foam-u2-ActionView:hover {
         background: none;
         border: none;
@@ -228,8 +232,9 @@ foam.CLASS({
         right: 0;
         top: 12px;
       }
+      ^ .foam-u2-RangeView { width: 200px; }
       .foam-u2-Tabs { padding-top: 0 !important; margin-right: -8px; }
-      input[type="range"] { width: 60px; height: 15px; }
+//      input[type="range"] { width: 60px; }
       input[type="color"] { width: 60px; }
 `,
 
@@ -245,6 +250,7 @@ foam.CLASS({
           },
           clear: function() {
             self.updateMemento().then(function() {
+              // TODO: replace 4 with something more meaningful
               self.properties.skip(4).removeAll();
             });
           },
@@ -262,6 +268,7 @@ foam.CLASS({
           add: function(obj, opt_name, opt_parent) {
             this.addProperty(obj, opt_name, undefined, opt_parent || 'canvas1');
           }.bind(this),
+          rename: this.renameProperty.bind(this),
           hsl: function(h, s, l) {
             return 'hsl(' + (h%360) + ',' + s + '%,' + l + '%)';
           },
@@ -369,6 +376,9 @@ foam.CLASS({
         dao.put(com.google.flow.Strut.model_);
         dao.put(com.google.flow.Cursor.model_);
         dao.put(com.google.flow.Script.model_);
+        dao.put(com.google.flow.Proxy.model_);
+        dao.put(com.google.flow.KScope.model_);
+        dao.put(foam.input.Gamepad.model_);
         dao.put(foam.core.Model.model_);
         // dao.put(com.google.dxf.ui.DXFDiagram.model_);
         return dao;
@@ -404,6 +414,7 @@ foam.CLASS({
       view: function(args, x) {
         return {
           class: 'com.google.flow.TreeView',
+          draggable: true,
           relationship: com.google.flow.PropertyPropertyChildrenRelationship,
           startExpanded: true,
           formatter: function(data) {
@@ -448,6 +459,7 @@ foam.CLASS({
         this.scope.physics = this.physics;
         this.scope.timer   = this.timer;
         this.scope.cycle   = this.timer.cycle.bind(this.timer);
+        this.scope.range   = this.timer.range.bind(this.timer);
 
         return dao;
       }
@@ -497,28 +509,33 @@ foam.CLASS({
           with ( this.scope ) {
             log();
             log(eval(cmd));
-            this.cmdLine += 'flow> ';
           }
         } catch (x) {
-          log('ERROR:', x);
+          this.scope.log('ERROR:', x);
         } finally {
           this.cmdLineFeedback_ = false;
         }
+        this.cmdLine += 'flow> ';
       },
-      view: { class: 'foam.u2.tag.TextArea', rows: 3, cols: 80 }
+      view: { class: 'foam.u2.tag.TextArea', rows: 8, cols: 80 }
     }
   ],
 
   methods: [
     function render() {
+      var self = this;
+
       this.timer.start();
 
       this.properties.on.put.sub(this.onPropertyPut);
       this.properties.on.remove.sub(this.onPropertyRemove);
 
+      // TODO: A better design for custom Halos which only creates when needed.
       var halo = this.Halo.create();
-      var self = this;
       halo.selected$.linkFrom(this.selected$);
+
+      var lineHalo = this.LineHalo.create();
+      lineHalo.selected$.linkFrom(this.selected$);
 
       this.memento$.sub(this.onMemento);
 
@@ -599,6 +616,16 @@ foam.CLASS({
         value.setPrivate_('lpp_', p);
         this.properties.put(p);
         this.selected = p;
+      }
+    },
+
+    async function renameProperty(oldName, newName) {
+      console.log('***** rename', oldName, newName);
+      var p = await this.properties.find(oldName);
+      if ( p ) {
+        p.name = newName;
+        await this.properties.remove(p);
+        this.properties.put(p);
       }
     },
 
@@ -702,7 +729,8 @@ foam.CLASS({
       var x = evt.offsetX, y = evt.offsetY;
       var c = this.canvas.findFirstChildAt(x, y);
 
-      if ( this.Halo.isInstance(c) ) return;
+      if ( this.Halo.isInstance(c)     ) return;
+      if ( this.LineHalo.isInstance(c) ) return;
 
       if ( c === this.canvas ) {
         var tool = this.currentTool;

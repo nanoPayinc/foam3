@@ -24,21 +24,28 @@ foam.CLASS({
 
   properties: [
     {
-      class: 'FObjectProperty',
+      class: 'foam.util.FObjectSpec',
       of: 'foam.comics.v2.DAOControllerConfig',
       name: 'config',
       factory: function() {
-        return this.DAOControllerConfig.create();
+        return { class: 'foam.comics.v2.DAOControllerConfig' }
+      }
+    },
+    {
+      name: 'config_',
+      factory: function() {
+        return this.config$create({}, this);
       }
     }
   ],
 
   methods: [
     function createView(X) {
+      this.config_ = this.config$create({}, X);
       return {
-        ...this.config.browseController,
-        data: this.config.dao,
-        config: this.config
+        ...this.config_.browseController,
+        data: this.config_.dao,
+        config: this.config_
       };
     }
   ]

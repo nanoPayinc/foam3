@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 foam.CLASS({
   package: 'foam.demos.u2',
   name: 'VisibilityTest',
@@ -147,7 +148,8 @@ foam.CLASS({
   requires: [
     'foam.demos.u2.VisibilityTest',
     'foam.u2.ControllerMode',
-    'foam.u2.detail.SectionedDetailView',
+    'foam.u2.DetailView',
+    // 'foam.u2.detail.VerticalDetailView as DetailView',
     'foam.u2.layout.DisplayWidth',
     'foam.u2.layout.Grid',
     'foam.u2.layout.GUnit'
@@ -161,6 +163,7 @@ foam.CLASS({
   css: `
     body {
       line-height: 1.5;
+      zoom: 70%;
     }
 
     kbd {
@@ -227,26 +230,18 @@ foam.CLASS({
       }
     },
     {
-      class: 'Boolean',
-      name: 'userHasReadPermission',
-      label: 'User Has Read Permission?',
-      value: true
-    },
-    {
-      class: 'Boolean',
-      name: 'userHasReadWritePermission',
-      label: 'User Has Read/Write Permission?',
-      value: true
+      class: 'String',
+      name: 'permission',
+      view: { class: 'foam.u2.view.ChoiceView', choices: [ '--', 'RO', 'RW' ] },
+      value: 'RW'
     },
     {
       name: 'mockAuthService',
       factory: function() {
         return {
           check: async (_, permission) => {
-            if ( permission.includes('.ro.') ) {
-              return this.userHasReadPermission;
-            }
-            return this.userHasReadWritePermission;
+            if ( permission.includes('.ro.') && this.permission == 'RO' ) return true;
+            return this.permission == 'RW';
           }
         }
       }
@@ -361,36 +356,35 @@ foam.CLASS({
           .add('.')
         .end()
 
-        .add(this.slot(function(userHasReadPermission, userHasReadWritePermission) {
+        .add(this.slot(function(permission) {
           return this.E()
             .start(this.Grid)
               .start(this.GUnit, { columns: 4 })
                 .startContext({ controllerMode: this.ControllerMode.CREATE })
                   .start('h2').add('Create').end()
-                  .tag(this.SectionedDetailView, { data: this.VisibilityTest.create() })
+                  .tag(this.DetailView, { data: this.VisibilityTest.create() })
                 .endContext()
               .end()
               .start(this.GUnit, { columns: 4 })
                 .startContext({ controllerMode: this.ControllerMode.VIEW })
                   .start('h2').add('View').end()
-                  .tag(this.SectionedDetailView, { data: this.VisibilityTest.create() })
+                  .tag(this.DetailView, { data: this.VisibilityTest.create() })
                 .endContext()
               .end()
               .start(this.GUnit, { columns: 4 })
                 .startContext({ controllerMode: this.ControllerMode.EDIT })
                   .start('h2').add('Edit').end()
-                  .tag(this.SectionedDetailView, { data: this.VisibilityTest.create() })
+                  .tag(this.DetailView, { data: this.VisibilityTest.create() })
                 .endContext()
               .end()
-            .end()
+            .end();
         }))
 
         .start('h2')
           .add('Control Permissions')
         .end()
         .startContext({ data: this })
-          .start().add(this.USER_HAS_READ_PERMISSION.__).end()
-          .start().add(this.USER_HAS_READ_WRITE_PERMISSION.__).end()
+          .start().add(this.PERMISSION.__).end()
         .end();
     }
   ]

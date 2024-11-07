@@ -34,9 +34,18 @@ foam.CLASS({
 
   methods: [
     async function load({ old }) {
+      let initialData;
       const ucj = await (this.subject ? this.crunchService.getJunctionFor(
         null, this.capabilityId, this.subject.user, this.subject.realUser
       ) : this.crunchService.getJunction(null, this.capabilityId));
+
+      if ( this.delegate ) {
+        initialData = await this.delegate.load({ old });
+      }
+
+      if ( ! this.loadFromPath && foam.util.compare(initialData, ucj.data) ) {
+        return initialData ? initialData : old;
+      }
 
       return this.loadFromPath ? this.loadFromPath.f(ucj.data) : ucj.data;
     }

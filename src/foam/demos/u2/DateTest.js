@@ -12,6 +12,9 @@ foam.CLASS({
       class: 'Date',
       name: 'date'
     },
+    // TODO: MD fields don't work embedded in a regular DetailView
+    // because they show their own label
+    // Doesn't work in U2 or U3
     {
       class: 'Date',
       name: 'datePicker',
@@ -21,5 +24,4 @@ foam.CLASS({
 });
 
 var d = DateTest.create();
-foam.u2.DetailView.create({ data: d }).write();
 foam.u2.DetailView.create({ data: d }).write();

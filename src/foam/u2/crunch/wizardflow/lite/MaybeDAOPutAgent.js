@@ -16,19 +16,23 @@ foam.CLASS({
   `,
 
   imports: [
-    'intercept',
+    'intercept?',
     'submitted',
-    'capable',
+    'capable?',
   ],
 
   methods: [
     function execute() {
       var p = Promise.resolve();
-      if ( this.intercept?.daoKey && this.submitted ) {
+      let daoKey = this.intercept?.daoKey || this.capable?.DAOKey;
+      if ( daoKey && this.submitted ) {
         p = p.then(() =>
-          this.__subContext__[this.intercept.daoKey].put(this.capable)
+          this.__subContext__[daoKey].put(this.capable)
           .then(returnCapable => {
-            this.intercept.returnCapable = returnCapable;
+            if ( this.intercept )
+              this.intercept.returnCapable = returnCapable;
+          }).catch(e => {
+            console.error(e);
           })
         );
       }

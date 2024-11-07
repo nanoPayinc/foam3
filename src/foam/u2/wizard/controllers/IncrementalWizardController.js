@@ -143,7 +143,7 @@ foam.CLASS({
         });
       },
       preSet: function(o, n) {
-        if ( n?.wizardletIndex != o?.wizardletIndex )
+        if ( o && n?.wizardletIndex != o.wizardletIndex )
           this.tryWizardletLoad(this.wizardlets[n.wizardletIndex], n);
         return n;
       },
@@ -256,6 +256,9 @@ foam.CLASS({
       if ( ! this.canLandOn(this.wizardPosition) ) {
         await this.tryWizardletLoad(this.currentWizardlet, this.wizardPosition);
         await this.next();
+      } else {
+        await this.tryWizardletLoad(this.currentWizardlet, this.wizardPosition);
+        this.wizardlets[this.wizardPosition.wizardletIndex].isCurrent = true;
       }
     },
     function saveProgress() {
@@ -648,6 +651,7 @@ foam.CLASS({
           wizardlet,
           eventType: this.WizardEventType.WIZARDLET_SAVE
         }));
+        this.googleTagAgent?.pub('wizardEvent');
       } catch (e) {
         // report analytics error without interrupting flow
         console.error('analyticsAgent.put failed', e);

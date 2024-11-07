@@ -34,8 +34,8 @@ foam.CLASS({
     }
     ^ > .note {
       white-space: pre;
-      padding: 2rem 0rem;
-      padding-left: 6rem;
+      width: 100%;
+      text-align: center;
     }
   `,
 
@@ -47,7 +47,7 @@ foam.CLASS({
     function render() {
       const self = this;
       const sup = this.SUPER;
-      this.initContainerWidth();
+      this.initContainer();
       this.add(this.dynamic(function(containerWidth) {
         let isRow = containerWidth?.minWidth <= foam.u2.layout.DisplayWidth.XS.minWidth;
         this.enableClass(self.myClass('row'), ! isRow);

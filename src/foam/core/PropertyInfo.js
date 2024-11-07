@@ -6,6 +6,18 @@
 
 foam.INTERFACE({
   package: 'foam.core',
+  name: 'Indexer',
+
+  javaExtends: [ 'foam.mlang.F' ],
+
+  methods: [
+    'int comparePropertyToValue(Object key, Object value)'
+  ]
+});
+
+
+foam.INTERFACE({
+  package: 'foam.core',
   name: 'PropertyInfo',
 
   javaImports: [
@@ -27,6 +39,7 @@ foam.INTERFACE({
     'Comparator',
     'Expr',
     'Hasher',
+    'Indexer',
     'Signer',
     'SQLStatement'
   ],
@@ -100,7 +113,6 @@ foam.INTERFACE({
       set(obj, fromString(reader.getText()));
     }`,
     'int comparePropertyToObject(Object key, Object o)',
-    'int comparePropertyToValue(Object key, Object value)',
     'String getSQLType()',
     'boolean includeInID() { return false; }',
     'boolean isSet(Object obj)',

@@ -13,7 +13,7 @@ foam.CLASS({
   javaImports: [
     'foam.dao.DAO',
     'java.net.InetAddress',
-    'javax.servlet.http.HttpServletRequest'
+    'jakarta.servlet.http.HttpServletRequest'
   ],
 
   javaCode: `
@@ -38,6 +38,10 @@ foam.CLASS({
       if ( req == null ) {
         return null;
       }
+
+      // TODO: add support for Forwarded:
+      // https://www.rfc-editor.org/rfc/rfc7239
+
       String forwardedForHeader = req.getHeader("X-Forwarded-For");
       if ( ! foam.util.SafetyUtil.isEmpty(forwardedForHeader) ) {
         String[] addresses = forwardedForHeader.split(",");

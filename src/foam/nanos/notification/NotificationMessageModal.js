@@ -51,6 +51,14 @@ foam.CLASS({
       expression: function(data$created) {
         return data$created.toLocaleString([], { dateStyle: 'medium', timeStyle: 'medium' });
       }
+    },
+    {
+      name: 'description',
+      expression: function(data$body, data$toastMessage, data$toastSubMessage) {
+        return data$body ||
+          ( data$toastMessage +
+            ( data$toastSubMessage ? "<br>"+data$toastSubMessage : "" ) );
+      }
     }
   ],
 
@@ -68,7 +76,7 @@ foam.CLASS({
       .start(this.Rows)
         .addClass(this.myClass('container'))
         .start().addClass('p-bold').add(this.MESSAGE_MSG).end()
-        .start().addClass(this.myClass('message')).add(this.data.body$).end()
+        .start().addClass(this.myClass('message')).add(this.description$).end()
       .end();
     }
   ]

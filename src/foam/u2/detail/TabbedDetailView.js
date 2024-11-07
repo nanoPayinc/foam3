@@ -45,7 +45,15 @@ foam.CLASS({
       name: 'defaultSectionLabel',
       value: 'Uncategorized'
     },
-    'tabs'
+    'tabs',
+    {
+      name: 'visibilityArray_',
+      class: 'Array'
+    },
+    {
+      name: 'stableVisibilities_',
+      class: 'Array'
+    }
   ],
 
   methods: [
@@ -55,23 +63,25 @@ foam.CLASS({
       this.SUPER();
       this
         .addClass(this.myClass())
-        .add(this.slot(function(sections, data) {
-          var arraySlot = foam.core.ArraySlot.create({
+        .add(this.slot(function(sections) {
+          self.visibilityArray_$.follow(self.ArraySlot.create({
             slots: sections.map((s) => s.createIsAvailableFor(self.data$, self.__subContext__.controllerMode$))
-          });
+          }));
+          this.onDetach(self.visibilityArray_$.sub(self.updateVis));
+          self.updateVis();
 
           return self.E()
-            .add(arraySlot.map(visibilities => {
+            .add(self.stableVisibilities_$.map(visibilities => {
               var availableSections = visibilities.length == sections.length ? sections.filter((s, i) => s.title && visibilities[i]) : sections;
               var availableSectionsWithoutTitle = visibilities.length == sections.length ? sections.filter((s, i) => !s.title && visibilities[i]) : sections;
-              
+
               // Check available sections with a title
-              if ( ( !availableSections || availableSections.length == 0 ) && availableSectionsWithoutTitle && availableSectionsWithoutTitle.length > 0) {
+              if ( ( ! availableSections || availableSections.length == 0 ) && availableSectionsWithoutTitle && availableSectionsWithoutTitle.length > 0 ) {
                 availableSections = availableSectionsWithoutTitle;
               } else {
                 console.warn('No visible sections in tabbed view for entity: ', self.of ? self.of.id : 'unknown');
               }
-                
+
               var e = availableSections.length == 1 ?
                 this.E().start(self.CardBorder).addClass(self.myClass('wrapper'))
                   .tag(self.SectionView, { data$: self.data$, section: availableSections[0], showTitle: false })
@@ -90,8 +100,6 @@ foam.CLASS({
                       var tab = foam.core.SimpleSlot.create({}, self);
                       this
                         .start(self.Tab, { label$: title$ || self.defaultSectionLabel }, tab)
-                          // .call(function() {
-                            // this
                             .tag(s.view, {
                               data$: self.data$,
                               of$: self.of$,
@@ -99,7 +107,6 @@ foam.CLASS({
                               showTitle: false,
                               selected$: tab.value.selected$
                             })
-                          // })
                        .end();
                     }
                   })
@@ -107,6 +114,18 @@ foam.CLASS({
               return e;
             }));
         }));
+    }
+  ],
+  listeners: [
+    {
+      name: 'updateVis',
+      isMerged: true,
+      delay: 100,
+      code: function() {
+        if ( ! foam.util.equals(this.stableVisibilities_, this.visibilityArray_) ) {
+          this.stableVisibilities_ = this.visibilityArray_;
+        }
+      }
     }
   ]
 });

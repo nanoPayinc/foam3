@@ -42,7 +42,7 @@ foam.CLASS({
       .start(this.Rows)
         .addClass(this.myClass('container'))
         .start().addClass('p-bold').add(this.MESSAGE_MSG).end()
-        .start(this.HTMLView, { data$: this.data.body$ }).addClass(this.myClass('message')).end()
+        .start(this.HTMLView, { data$: this.description$ }).addClass(this.myClass('message')).end()
       .end();
     }
   ]

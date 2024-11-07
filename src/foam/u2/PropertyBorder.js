@@ -17,7 +17,7 @@ foam.CLASS({
       2. Display Units, if set in Property's units:
       3. Show/Hide the View based on the Property's visibility:
       4. Change the underlying View's Visibility to RO/RW/etc based on visibility:
-      5. Display error messages based on teh Property's validateObj: & validationPredicates:
+      5. Display error messages based on the Property's validateObj: & validationPredicates:
       6. Add Property's help
   `,
 
@@ -64,6 +64,10 @@ foam.CLASS({
   ],
 
   methods: [
+    function layoutView(self, prop, viewSlot) {
+      this.add(viewSlot);
+    },
+
     function render() {
       var self = this;
       var prop = this.prop = this.prop.clone(this.__subContext__).copyFrom(this.config);
@@ -83,17 +87,34 @@ foam.CLASS({
         this.ConstantSlot.create({ value: null });
       */
 
-
       var errorSlot;
-      if ( prop.validateObj && prop.validationTextVisible ) {
-        errorSlot = this.SimpleSlot.create({ value: null })
+      if ( prop.validationTextVisible && ( prop.validateObj || prop.internalValidateObj ) ) {
+        errorSlot = this.SimpleSlot.create({ value: null });
         let linkErrorSlot = () => {
-          errorSlot.follow(this.data.slot(prop.validateObj))
+          if ( ! this.data ) return;
+          var slot;
+
+          // ???: Would it make more sense to combine these in Property as validateObj_?
+          if ( prop.validateObj && prop.internalValidateObj ) {
+            slot = foam.core.ExpressionSlot.create({
+              args: [ this.data.slot(prop.validateObj), this.data.slot(prop.internalValidateObj) ],
+              // The commented out version will cause both internal and external errors to be displayed.
+              // code: function (e1, e2) { return e1 ? e1 + ' ' + ( e2 || '' ) : e2; }
+              // This version only displays internal errors or external errors if there are no internal.
+              code: function (e1, e2) { return e2 || e1; }
+            });
+          } else {
+            slot = prop.validateObj ?
+              this.data.slot(prop.validateObj) :
+              this.data.slot(prop.internalValidateObj);
+          }
+
+          errorSlot.follow(slot);
         }
         this.data$.sub(linkErrorSlot);
         linkErrorSlot();
       } else {
-        errorSlot = this.ConstantSlot.create({ value: null })
+        errorSlot = this.ConstantSlot.create({ value: null });
       }
 
       var modeSlot = this.prop.createVisibilityFor(
@@ -164,6 +185,7 @@ foam.CLASS({
         May cause weird styling outside nanos
       */
       min-height: 1.25em;
+      font-size: small;
       justify-content: flex-start;
       gap: 0.2rem;
     }
@@ -188,7 +210,11 @@ foam.CLASS({
     ^view {
       flex-grow: 1;
       max-width: 100%;
-     }
+      min-height: 34px;
+    }
+    ^helper-icon svg {
+      fill: currentColor;
+    }
   `,
 
   methods: [
@@ -203,9 +229,7 @@ foam.CLASS({
           addClass(this.myClass('propHolder')).
           start('span').
             addClass(this.myClass('propHolderInner')).
-            add(viewSlot).
-            // Not needed anymore since is now handled by TextField
-//            start('span').addClass(self.myClass('units')).add(prop.units$).end().
+            call(this.layoutView, [self, prop, viewSlot]).
           end().
           callIf(prop.help, function() {
             this.start().addClass(self.myClass('helper-icon'))

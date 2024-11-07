@@ -4,7 +4,11 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-// To run, include ?u3=true in URL
+// U3 is now the default, to use U2 instead:
+// either include ?u3=true in URL or include "setFlags: { u3: true }" in your POM.
+
+// You can determine if your code is running in U3 with:
+// foam.u2.Element.U3, which will eval to true if you are.
 
 /*
 TODO:
@@ -26,7 +30,7 @@ PORTING U2 to U3:
   - innerHTML and outerHTML have been removed
   - replace ^ in CSS (which has meaning in CSS) with <<
   - ILLEGAL_CLOSE_TAGS and OPTIONAL_CLOSE_TAGS have been removed
-  - this.addClass() is the same as this.addClass()
+  - this.addClass(this.myClass()) is the same as this.addClass()
   - automatic ID generation has been removed
   - replace use of slots that return elements with functions that add them
   - remove daoSlot() method
@@ -74,11 +78,13 @@ foam.CLASS({
 
   properties: [ 'element_' ],
 
+  constants: { U3: true },
+
   methods: [
     function toE() { return this; },
 
     function isLiteral(o) {
-      return foam.String.isInstance(o) || foam.Number.isInstance(o) || foam.Boolean.isInstance(o);
+      return foam.String.isInstance(o) || foam.Number.isInstance(o) || foam.Boolean.isInstance(o) || foam.Date.isInstance(o);
     }
   ]
 });
@@ -145,6 +151,8 @@ foam.CLASS({
         var update_ = val => {
           var n;
 
+          if ( foam.core.Slot.isInstance(val) ) { debugger; }
+
           if ( val === undefined || val === null ) {
             n = foam.u2.Text.create({}, this);
           } else if ( this.isLiteral(val) ) {
@@ -157,6 +165,10 @@ foam.CLASS({
           } else if ( val.then ) {
             val.then(n => update_(n));
             return;
+          } /* else if ( foam.core.FObject.isInstance(val) ) {
+            n = foam.u2.DetailView.create({data: val}, this);
+          } */ else if ( val.toE ) {
+            n = val.toE({}, this);
           } else {
             console.log('Unknown slot type: ', typeof val);
             debugger;
@@ -302,7 +314,7 @@ foam.CLASS({
           this.self.appendChild_ = c => {
             this.self.element_.insertBefore(c, this.element_);
           };
-          var e = this.code.call(this.self, d);
+          var e = this.code.call(this.self.startContext({data: d}), d);
           if ( e ) {
             // TODO: remove after port from U2 to U3
             console.log('Deprecated use of select({return E}). Just do self.start() instead.');
@@ -1002,7 +1014,7 @@ foam.CLASS({
 
     function setID(id) {
       /* Explicitly set Element's id. */
-      this.id = id;
+      this.id = this.element_.id = id;
       return this;
     },
 
@@ -1062,10 +1074,14 @@ foam.CLASS({
         var parts = cls.split(' ');
         for ( var i = 0 ; i < parts.length ; i++ ) {
           this.classes[parts[i]] = enabled;
-          if ( enabled ) {
-            this.element_.classList.add(parts[i]);
+          if ( ! this.element_.classList ) {
+            console.warn("Can't set class of document fragments.");
           } else {
-            this.element_.classList.remove(parts[i]);
+            if ( enabled ) {
+              this.element_.classList.add(parts[i]);
+            } else {
+              this.element_.classList.remove(parts[i]);
+            }
           }
         }
       }
@@ -1178,7 +1194,7 @@ foam.CLASS({
         return this.add(translation);
       }
 //      console.warn('Missing Translation Service in ', this.cls_.name);
-//      opt_default = opt_default || 'NO TRANSLATION SERVICE OR DEFAULT';
+      if ( opt_default === undefined ) opt_default = source;
       return this.add(opt_default);
     },
 
@@ -1193,16 +1209,20 @@ foam.CLASS({
     function addChild_(c, parentNode) {
       if ( c === null || c === undefined ) return;
 
+      if ( foam.Array.isInstance(c) ) {
+        for ( var i = 0 ; i < c.length ; i++ )
+          this.addChild_(c[i], parentNode);
+        return;
+      }
       if ( c.toE ) {
         c = c.toE(null, this.__subSubContext__);
       }
-
       if ( foam.core.DynamicFunction.isInstance(c) ) {
         this.addChild_(foam.u2.FunctionNode.create({fn: c, parentNode: this}, this), this);
-        return
+        return;
       }
       if ( foam.Function.isInstance(c) ) {
-        this.add((this.__context__.data || this).dynamic(c));
+        this.addChild_((this.__subContext__.data || this).dynamic(c), parentNode);
         return;
       }
       if ( foam.core.Slot.isInstance(c) ) {
@@ -1231,6 +1251,9 @@ foam.CLASS({
         c.parentNode = parentNode;
         this.appendChild_(c.element_);
         c.load && c.load();
+      } else if ( foam.core.FObject.isInstance(c) ) {
+        this.addChild_(this);
+        this.addChild_(foam.u2.DetailView.create({data: c}, this), this);
       }
     },
 
@@ -1470,68 +1493,6 @@ foam.CLASS({
 
 foam.CLASS({
   package: 'foam.u2',
-  name: 'U2Context',
-
-  documentation: 'Context which includes U2 functionality. Replaces foam.__context__.',
-
-  exports: [
-    'E',
-    'registerElement',
-    'elementForName'
-  ],
-
-  properties: [
-    {
-      name: 'elementMap',
-      documentation: 'Map of registered Elements.',
-      factory: function() { return {}; }
-    }
-  ],
-
-  methods: [
-    {
-      // A Method which has the call-site context added as the first arg
-      // when exported.
-      class: 'foam.core.ContextMethod',
-      name: 'E',
-      code: function E(ctx, opt_nodeName) {
-        var nodeName = (opt_nodeName || 'div').toLowerCase();
-
-        // Check if a class has been registered for the specified nodeName
-        return (ctx.elementForName(nodeName) || foam.u2.Element).
-          create({nodeName: nodeName}, ctx);
-      }
-    },
-
-    function registerElement(elClass, opt_elName) {
-      /* Register a View class against an abstract node name. */
-      var key = opt_elName || elClass.name;
-      this.elementMap[key.toUpperCase()] = elClass;
-    },
-
-    function elementForName(nodeName) {
-      /* Find an Element Class for the specified node name. */
-      return this.elementMap[nodeName];
-    }
-  ]
-});
-
-
-foam.SCRIPT({
-  package: 'foam.u2',
-  name: 'U2ContextScript',
-
-  requires: [ 'foam.u2.U2Context' ],
-  flags: ['web'],
-
-  code: function() {
-    foam.__context__ = foam.u2.U2Context.create().__subContext__;
-  }
-});
-
-/*
-foam.CLASS({
-  package: 'foam.u2',
   name: 'FObjectToERefinement',
   refines: 'foam.core.FObject',
   methods: [
@@ -1542,7 +1503,6 @@ foam.CLASS({
     }
   ]
 });
-*/
 
 
 foam.CLASS({
@@ -2381,7 +2341,7 @@ foam.CLASS({
       name: 'update',
       code: function() {
         // TODO: add validation
-        this.element_.innerHTML = this.data;
+        this.element_.innerHTML = this.data || '';
       }
     }
   ]

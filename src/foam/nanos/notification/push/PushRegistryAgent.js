@@ -10,16 +10,44 @@ foam.CLASS({
 
   documentation: 'Client-side NSpec which calls PushRegistry with subscription information.',
 
-  imports: [ 'pushRegistry', 'window' ],
+  imports: [ 'pushRegistry', 'window', 'client' ],
+
+  requires: ['foam.core.Latch'],
 
   properties: [
     {
       name: 'subObj'
-    }
+    },
+    {
+      name: 'currentState',
+      factory: function() {
+        return this.Latch.create();
+      }
+    },
+    {
+      class: 'Boolean',
+      name: 'supportsNotifications',
+      factory: function() {
+        if ( globalThis.isIOSApp ) {
+          // Any ios client using WKWebView as a wrapper for a foam app needs to use this handler to return
+          // the endpoint to push to.
+          return this.window.webkit.messageHandlers['push-token'];
+        }
+        return 'Notification' in this.window;
+      }
+    },
   ],
 
   methods: [
     function init() {
+      if ( ! globalThis.swPromise ) {
+        console.log("PushRegistryAgent run without ServiceWorker creating globalThis.swPromise.");
+        this.currentState.resolve('')
+        return;
+      }
+      // If there is no subject yet, this agent is useless
+      // On subject change, this will be rebuilt anyway
+      if ( ! this.client?.initSubject?.user ) return;
       this.safeRegisterSub();
       // This isnt actually needed since on client reload ^ will be called anyway
       // this.__subContext__.loginSuccess$.sub(() => { this.register(); })
@@ -27,8 +55,16 @@ foam.CLASS({
         this.subObj = { token: event.detail.token };
         this.register();
       });
+      this.updateState();
     },
-    function register(sub) {
+    function updateState() {
+      this.currentState.then(v => {
+        // If granted the register() will update the status anyway so we dont need to do this
+        if ( v == 'GRANTED' ) return;
+        this.pushRegistry.updatePermissionState(null, v);
+      })
+    },
+    async function register(sub) {
       sub = this.subObj;
       if ( ! sub ) return;
 
@@ -41,8 +77,8 @@ foam.CLASS({
       } else {
         console.warn('Invalid push registry');
       }
-
-      this.pushRegistry.subscribe(null, endpoint, key, auth, token);
+      let state = await this.currentState;
+      this.pushRegistry.subscribe(null, endpoint, key, auth, token, state);
     },
     function subWhenReady() {
       let self = this;
@@ -65,7 +101,7 @@ foam.CLASS({
           console.warn('Service worker push subscription failed:', error);
         });
       }
-    
+
       return globalThis.swPromise.then(
         reg => subWhenReady_(reg),
         err => console.warn('Error waiting for service worker to become ready:', err)
@@ -75,15 +111,23 @@ foam.CLASS({
       return 'Notification' in window && Notification.permission !== 'granted';
     },
     async function requestNotificationPermission() {
+      // Reset latch when asking for permission
+      this.currentState = this.Latch.create();
+      this.updateState();
       if ( globalThis.isIOSApp ) {
         // Ask ios app to ask for permission
         // Returned by the app listener event;
-        return this.window.webkit.messageHandlers['push-permission-request'].postMessage('');
+        let ret = await this.window.webkit.messageHandlers['push-permission-request'].postMessage('');
+        ret = this.MapIOSState(ret);
+        this.currentState.resolve(ret.toUpperCase());
+        return;
       }
-      if ( ! this.shouldRequestWebNotificationPermission() ) return;
+      if ( ! this.shouldRequestWebNotificationPermission() )
+        return this.currentState.resolve('GRANTED');
       let ret = await Notification.requestPermission();
-      if ( ret.status == 'granted' ) {
-        return subWhenReady();
+      this.currentState.resolve(ret.toUpperCase());
+      if ( ret == 'granted' ) {
+        return this.subWhenReady();
       }
     },
     async function safeRegisterSub() {
@@ -92,29 +136,34 @@ foam.CLASS({
       if ( globalThis.isIOSApp ) {
         try {
           let state = await this.window.webkit.messageHandlers['push-permission-state'].postMessage('');
-          if ( this.MapiOSState(state) == 'granted' ) {
-            this.window.webkit.messageHandlers['push-token'].postMessage('');
+          state = this.MapIOSState(state);
+          this.currentState.resolve(state);
+          if ( state == 'GRANTED' ) {
+            return this.window.webkit.messageHandlers['push-token'].postMessage('');
           }
-        } catch (e) { 
-          console.error(e); 
+        } catch (e) {
+          this.currentState.resolve('');
+          console.error(e);
         }
       } else {
-        if ( 'Notification' in window && Notification.permission === 'granted' ) {
+        if ( ! this.supportsNotifications ) return this.currentState.resolve('');
+        this.currentState.resolve(Notification.permission.toUpperCase());
+        if ( Notification.permission === 'granted' ) {
           await this.subWhenReady();
         }
       }
     },
-    function MapiOSState(state) {
+    function MapIOSState(state) {
       // Maps ios notification states to equivalent webPush states
       switch ( state ) {
         case 'notDetermined':
-          return 'default';
+          return 'DEFAULT';
         case 'denied':
-          return 'denied';
+          return 'DENIED';
         case 'authorized':
         case 'ephemeral':
         case 'provisional':
-          return 'granted';
+          return 'GRANTED';
         case 'unknown':
         default:
           break;

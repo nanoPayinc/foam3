@@ -10,7 +10,7 @@ foam.CLASS({
 
   tableColumns: [ 'endpoint', 'user' ],
 
-  ids: [ 'endpoint' ],
+  ids: [ 'session' ],
 
   properties: [
     {
@@ -25,6 +25,14 @@ foam.CLASS({
     {
       class: 'String',
       name: 'auth'
+    },
+    {
+      class: 'String',
+      name: 'lastKnownState'
+    },
+    {
+      class: 'String',
+      name: 'session'
     }
   ]
 });

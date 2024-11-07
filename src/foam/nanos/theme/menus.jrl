@@ -40,14 +40,3 @@ p({
   },
   "parent":"admin"
 })
-
-p({
-  "class":"foam.nanos.menu.Menu",
-  "id":"admin.send-notification",
-  "label":"Send Notification",
-  "handler":{
-    "class":"foam.nanos.menu.ViewMenu",
-    "view": { "class": "foam.nanos.notification.broadcast.SendNotificationView" }
-  },
-  "parent":"admin"
-})

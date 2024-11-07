@@ -91,6 +91,7 @@ var
   EXPLICIT_JOURNALS         = '',
   FS                        = 'rw',
   GEN_JAVA                  = true,
+  STAGE_JS                  = true,
   HOST_NAME                 = 'localhost',
   INSTANCE                  = 'localhost',
   JOURNAL_CONFIG            = '',
@@ -120,9 +121,12 @@ var PROJECT;
 
 // Short-form of PROJECT.version
 var VERSION;
+var TIMESTAMP;
+var TIMESTAMP_VERSION;
 
 // Root POM tasks and exports
 var TASKS, EXPORTS;
+var JAVA_RELEASE = '17';
 
 var BUILD_DIR  = './build';
 
@@ -130,8 +134,11 @@ globalThis.foam = {
   POM: function (pom) {
     // console.log('POM:', pom);
     PROJECT = pom;
+    TIMESTAMP = Date.now();
     VERSION = pom.version;
+    TIMESTAMP_VERSION = `${VERSION}-${TIMESTAMP}`;
     TASKS   = pom.tasks;
+    JAVA_RELEASE = pom.java || JAVA_RELEASE;
   }
 };
 
@@ -236,9 +243,9 @@ Manifest-Version: 1.0
 Main-Class: foam.nanos.boot.Boot
 Class-Path: ${jars}
 Implementation-Title: ${PROJECT.name}
-Implementation-Version: ${VERSION}
+Implementation-Version: ${TIMESTAMP_VERSION}
 Specification-Version: ${PROJECT_REVISION}
-Implementation-Timestamp: ${new Date()}
+Implementation-Timestamp: ${TIMESTAMP}
 ${PROJECT.name}-Revision: ${PROJECT_REVISION}
 FOAM-Revision: ${FOAM_REVISION}
 Implementation-Vendor: ${PROJECT.name}
@@ -279,8 +286,9 @@ task('Build web root directory for inclusion in JAR.', [], function jarWebroot()
 
   execSync(__dirname + `/pmake.js -makers=Webroot -pom=${pom()} -builddir=${BUILD_DIR}`, {stdio: 'inherit'});
 
-  var foambin = `foam-bin-${VERSION}.js`;
-  copyFile('./' + foambin, webroot + '/' + foambin);
+  if ( PACKAGE || RUN_JAR ) {
+    execSync(`cp foam-bin-* ${webroot + '/'}`, {stdio: 'inherit'});
+  }
 });
 
 
@@ -342,10 +350,10 @@ task('Deploy journal files from JOURNAL_OUT to JOURNAL_HOME.', [], function depl
   copyDir(JOURNAL_OUT, JOURNAL_HOME);
 });
 
-// task('Deploy documents, journals.', [ 'deployDocuments','deployJournals'], function deploy() {
-task('Deploy journals.', [ 'deployJournals'], function deploy() {
+task('Deploy documents, journals.', [ 'deployDocuments','deployJournals'], function deploy() {
   if ( ! RUN_JAR && ! TEST && ! BENCHMARK ) {
     deployJournals();
+    deployDocuments();
   }
 });
 
@@ -385,9 +393,6 @@ task('Remove generated files.', [], function clean() {
       if ( f.isFile()      ) rmfile(fn);
     });
   }
-
-  // TODO: convert to Node to make Windows compatible
-  execSync('rm -f foam-bin*.js');
 });
 
 
@@ -397,13 +402,22 @@ task('Copy Java libraries from BUILD_DIR/lib to APP_HOME/lib.', [], function cop
 
 
 task("Call pmake with JS Maker to build 'foam-bin.js'.", [], function genJS() {
-  execSync(__dirname + `/pmake.js -flags=web,-java -makers=JS -pom=${pom()}`, { stdio: 'inherit' });
+  execSync('rm -f foam-bin-* >/dev/null 2>&1');
+  if ( STAGE_JS ) {
+    execSync(__dirname + `/pmake.js -flags=web,-java -makers=JS -version=${TIMESTAMP_VERSION} -pom=${pom()} -stage=0`, { stdio: 'inherit' });
+    execSync(__dirname + `/pmake.js -flags=web,-java -makers=JS -version=${TIMESTAMP_VERSION} -pom=${pom()} -stage=1`, { stdio: 'inherit' });
+    execSync(__dirname + `/pmake.js -flags=web,-java -makers=JS -version=${TIMESTAMP_VERSION} -pom=${pom()} -stage=2`, { stdio: 'inherit' });
+  } else {
+    execSync(__dirname + `/pmake.js -flags=web,-java -makers=JS -version=${TIMESTAMP_VERSION} -pom=${pom()}`, { stdio: 'inherit' });
+  }
 });
 
 
 task('Generate Java and JS packages.', [ 'genJava', 'genJS' ], function packageFOAM() {
   genJava();
-  genJS();
+  if ( RUN_JAR ) {
+    genJS();
+  }
 });
 
 
@@ -413,17 +427,35 @@ task('Call pmake to generate & compile java, collect journals, call Maven and co
   makers += GEN_JAVA ? 'Java,Maven,Javac' : 'Maven' ;
   makers += ',Journal,Doc';
   makers += ',Resource'; // TODO: get rid of ResourceMaker and move to custom task in NP pom
-  execSync(__dirname + `/pmake.js -makers=${makers} ${VERBOSE} -d=${BUILD_DIR}/classes/java/main -builddir=${BUILD_DIR} -outdir=${BUILD_DIR}/src/java -javacParams='--release 11' -pom=${pom()}`, { stdio: 'inherit' });
+  execSync(__dirname + `/pmake.js -makers=${makers} ${VERBOSE} -d=${BUILD_DIR}/classes/java/main -builddir=${BUILD_DIR} -outdir=${BUILD_DIR}/src/java -javacParams='--release ${JAVA_RELEASE} -proc:none' -pom=${pom()}`, { stdio: 'inherit' });
 });
 
 task('Call pmake to collect journals.', [], function genJournals() {
-  execSync(__dirname + `/pmake.js -makers=Journal ${VERBOSE} -d=${BUILD_DIR}/classes/java/main -builddir=${BUILD_DIR} -outdir=${BUILD_DIR}/src/java -javacParams='--release 11' -pom=${pom()}`, { stdio: 'inherit' });
+  execSync(__dirname + `/pmake.js -makers=Journal ${VERBOSE} -d=${BUILD_DIR}/classes/java/main -builddir=${BUILD_DIR} -outdir=${BUILD_DIR}/src/java -pom=${pom()}`, { stdio: 'inherit' });
 });
 
 task('Check dependencies for known vulnerabilities.', [], function checkDeps(score) {
   execSync(`node foam3/tools/pmake.js -makers=Maven -pom=${pom()}`, { stdio: 'inherit' });
   try {
     execSync(`mvn dependency-check:check -DfailBuildOnCVSS=${score || VULNERABILITY_CHECK_SCORE}`, { stdio: 'inherit' });
+  } catch (_) {
+    // maven build error will be output to the console, no need to throw
+  }
+});
+
+task('Show JAR structure.', [], function showJARStructure(value) {
+  execSync(`node foam3/tools/pmake.js -makers=Maven -pom=${pom()}`, { stdio: 'inherit' });
+  try {
+    execSync(`mvn dependency:tree `, { stdio: 'inherit' });
+  } catch (_) {
+    // maven build error will be output to the console, no need to throw
+  }
+});
+
+task('Get Maven java sources.', [], function mavenGetSources(value) {
+  execSync(`node foam3/tools/pmake.js -makers=Maven -pom=${pom()}`, { stdio: 'inherit' });
+  try {
+    execSync(`mvn dependency:sources -DincludeArtifactIds=${value} `, { stdio: 'inherit' });
   } catch (_) {
     // maven build error will be output to the console, no need to throw
   }
@@ -436,12 +468,15 @@ task('Generate and compile java source.', [ 'genJava', 'copyLib' ], function bui
 
 
 task('Build Java JAR file.', [ 'versions', 'jarWebroot', 'jarImages' ], function buildJar() {
+  // remove any previous timestamped versions
+  execSync(`rm -f ${JAR_LIB_DIR}/${PROJECT.name}-*.jar >/dev/null 2>&1`);
+  execSync(`rm -f ${BUILD_DIR}/lib/${PROJECT.name}-*.jar >/dev/null 2>&1`);
+
   versions();
   jarWebroot();
   jarImages();
   jarJournals();
 
-  rmfile(JAR_OUT);
   fs.writeFileSync(BUILD_DIR + '/MANIFEST.MF', manifest());
   execSync(`jar cfm ${JAR_OUT} ${BUILD_DIR}/MANIFEST.MF -C ${BUILD_DIR} documents ${JAR_INCLUDES} -C ${BUILD_DIR}/classes/java/main .`);
 });
@@ -481,18 +516,21 @@ task('Start NANOS application server.', [ 'setenv' ], function startNanos() {
 
     if ( RUN_USER ) OPT_ARGS += ` -U${RUN_USER}`;
     if ( WEB_PORT ) OPT_ARGS += ` -W${WEB_PORT}`;
-    exec(`${APP_HOME}/bin/run.sh -Z${DAEMONIZE ? 1 : 0} -D${DEBUG ? 1 : 0} -S${DEBUG_SUSPEND ? 'y' : 'n'} -P${DEBUG_PORT} -n${PROJECT.name} -N${APP_HOME} -C${CLUSTER} -H${HOST_NAME} -j${PROFILER ? 1 : 0} -J${PROFILER_PORT} -F${FS} -V${VERSION} ${OPT_ARGS}`);
+    exec(`${APP_HOME}/bin/run.sh -Z${DAEMONIZE ? 1 : 0} -D${DEBUG ? 1 : 0} -S${DEBUG_SUSPEND ? 'y' : 'n'} -P${DEBUG_PORT} -n${PROJECT.name} -N${APP_HOME} -C${CLUSTER} -H${HOST_NAME} -j${PROFILER ? 1 : 0} -J${PROFILER_PORT} -F${FS} -V${TIMESTAMP_VERSION} ${OPT_ARGS}`);
   } else {
     MESSAGE = `Starting NANOS ${INSTANCE}`;
 
     // process.chdir(PROJECT_HOME);
 
-    JAVA_OPTS += ` -Dhostname=${HOST_NAME}`;
+    if ( HOST_NAME ) {
+      info('HOST_NAME=${HOST_NAME}');
+      JAVA_OPTS += ` -Dhostname=${HOST_NAME} ${JAVA_OPTS}`;
+    }
 
     if ( PROFILER ) {
 
     } else if ( DEBUG ) {
-      JAVA_OPTS = `-agentlib:jdwp=transport=dt_socket,server=y,suspend=${DEBUG_SUSPEND ? 'y' : 'n'},address=*:${DEBUG_PORT} ${JAVA_OPTS}`
+      JAVA_OPTS = `-agentlib:jdwp=transport=dt_socket,server=y,suspend=${DEBUG_SUSPEND ? 'y' : 'n'},address=*:${DEBUG_PORT} ${JAVA_OPTS}`;
     }
 
     if ( WEB_PORT ) {
@@ -503,11 +541,14 @@ task('Start NANOS application server.', [ 'setenv' ], function startNanos() {
 
     CLASSPATH = `${BUILD_DIR}/lib/\*:${BUILD_DIR}/classes/java/main`;
 
-    if ( TEST || BENCHMARK ) {
-      if ( LOG_LEVEL ) {
-        JAVA_OPTS = ` -Dlog.level=${LOG_LEVEL} ${JAVA_OPTS}`;
-      }
+    logLevelLower = 'info';
+    if ( LOG_LEVEL ) {
+      JAVA_OPTS = ` -Dlog.level=${LOG_LEVEL} ${JAVA_OPTS}`;
+      logLevelLower = `${LOG_LEVEL}`.toLowerCase();
+    }
+    JAVA_OPTS = ` -Dorg.slf4j.simpleLogger.defaultLogLevel=${logLevelLower} ${JAVA_OPTS}`;
 
+    if ( TEST || BENCHMARK ) {
       JAVA_OPTS += ' -Dresource.journals.dir=journals';
       JAVA_OPTS += ' -DRES_JAR_HOME=' + JAR_OUT;
 
@@ -583,7 +624,6 @@ task('Show version information.', [ 'getProjectGitHash', 'getFOAMGitHash'], func
 
 task('Create empty build and deployment directory structures if required.', [], function setupDirs() {
   try {
-    // ensureDir(`${PROJECT_HOME}/.foam`); // Only used by foamlink?
     ensureDir(APP_HOME);
     if ( ensureDir(BUILD_DIR + '/lib') ) {
       // Remove stale pom.xml if the /lib dir needed to be created
@@ -626,7 +666,8 @@ buildEnv({
   DOCUMENT_HOME:     () => `${APP_HOME}/documents`,
   LOG_HOME:          () => `${APP_HOME}/logs`,
 
-  JAR_OUT:           () => ( PACKAGE ? `${PROJECT_HOME}/${BUILD_DIR}` : `${APP_HOME}` ) + `/lib/${PROJECT.name}-${VERSION}.jar`,
+  JAR_LIB_DIR:       () => ( PACKAGE ? `${PROJECT_HOME}/${BUILD_DIR}` : `${APP_HOME}` ) + `/lib/`,
+  JAR_OUT:           () => `${JAR_LIB_DIR}/${PROJECT.name}-${TIMESTAMP_VERSION}.jar`,
 
   // Project resources path
   PROJECT_HOME:      PWD,
@@ -775,6 +816,10 @@ const ARGS = {
       VERSION = args;
       info('VERSION=' + VERSION);
     } ],
+  w: [ 'Without stages. Only generate a single foam-bin file.',
+      () => {
+        STAGE_JS = false;
+      } ],
   W: [ 'PORT : HTTP Port. NOTE: WebSocketServer will use PORT+1',
     args => { WEB_PORT = args; info('WEB_PORT=' + WEB_PORT); } ],
   x: [ 'Check dependencies for known vulnerabilities.',
@@ -910,4 +955,4 @@ quit(0);
 
 // IS_AWS, IS_MAC, IS_LINUX are no longer used
 // a note on 'c' clean on the current build.
-// if you issue 'c', and compilation fails, you need clean again to get a succesful deployment.
+// if you issue 'c', and compilation fails, you need clean again to get a succesful deployment

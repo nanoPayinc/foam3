@@ -3,7 +3,7 @@
  * Copyright 2021 The FOAM Authors. All Rights Reserved.
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-
+/*
 foam.CLASS({
   package: 'foam.parse',
   name: 'Test',
@@ -16,7 +16,6 @@ foam.CLASS({
   ]
 });
 
-
 foam.CLASS({
   package: 'foam.parse',
   name: 'Address',
@@ -25,6 +24,8 @@ foam.CLASS({
   ]
 });
 
+*/
+
 
 foam.CLASS({
   package: 'foam.parse',
@@ -32,6 +33,7 @@ foam.CLASS({
 
   documentation: 'A simple scripting language.',
 
+/*
   static: [
     function test__() {
       var fs = foam.parse.FScriptParser.create({of: foam.parse.Test});
@@ -108,6 +110,7 @@ foam.CLASS({
       testOutput('1==1 ||2==2' , m.OR (m.EQ(1, 1), m.EQ(2, 2)));
       testOutput('1==1|| 2==2' , m.OR (m.EQ(1, 1), m.EQ(2, 2)));
       testOutput('1==1 || 2==2', m.OR (m.EQ(1, 1), m.EQ(2, 2)));
+      testOutput('"K":firstName', m.IN('K', foam.parse.Test.FIRST_NAME));
     },
 
     function test2__() {
@@ -131,6 +134,7 @@ foam.CLASS({
       test('firstName=="Kevin"||id==42');
     }
   ],
+  */
 
   mixins: [ 'foam.mlang.Expressions' ],
 
@@ -152,6 +156,10 @@ foam.CLASS({
     {
       class: 'Class',
       name: 'of'
+    },
+    {
+      name: 'argSet',
+      factory: function() { return {}; }
     },
     {
       // The core query parser. Needs a fieldname symbol added to function
@@ -194,7 +202,8 @@ foam.CLASS({
               literal('>=', this.GTE),
               literal('<',  this.LT),
               literal('>',  this.GT),
-              literal('~',  this.REG_EXP)
+              literal('~',  this.REG_EXP),
+              literal(':',  this.IN)
             ),
             optional(' '),
             sym('value')),
@@ -351,6 +360,11 @@ foam.CLASS({
             value: prop
           }));
         }
+
+        // CONSTANTS are regarded as fields that resolve to the constant value
+        // so it can be used directly in FScript query.
+        // Eg. query: 'accountNumber~ACC_NUM_REGEX' to match the accountNumber
+        // with ACC_NUM_REGEX constant defined in the same model.
         for ( var i = 0 ; i < constants.length ; i++ ) {
           var con = constants[i];
           fields.push(this.Literal.create({
@@ -410,9 +424,10 @@ foam.CLASS({
           unary: function(v) {
             var lhs = v[0];
             var op  = v[2];
+            /*
             if ( foam.mlang.predicate.Not.isInstance(op) ) {
 
-            }
+            }*/
             return op.call(self, lhs);
           },
 
@@ -426,6 +441,11 @@ foam.CLASS({
 
           field: function(v) {
             var expr = v[0];
+
+            // CONSTANT field is not a property and does not have a name so
+            // no need to be added to the validation predicate argSet
+            if ( expr.name ) self.argSet[expr.name] = true;
+
             if ( v[1] ) {
               var parts = v[1];
               for ( var i = 0 ; i < parts.length ; i++ ) {

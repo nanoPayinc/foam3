@@ -58,9 +58,10 @@ foam.CLASS({
     {
       class: 'String',
       name: 'address1',
-      label: 'Address Line 1',
+      label: 'Address',
       width: 70,
       displayWidth: 50,
+      gridColumns: 6,
       documentation: 'An unstructured field for the main postal address.',
       validationPredicates: [
         {
@@ -69,16 +70,21 @@ foam.CLASS({
           errorMessage: 'INVALID_ADDRESS_1_REQUIRED'
         }
       ],
-      hidden: true
+      expression: function(streetNumber, streetName) {
+        return [streetNumber, streetName].filter(Boolean).join(' ');
+      }
     },
     {
       class: 'String',
       name: 'address2',
-      label: 'Address Line 2',
+      label: 'Address Line 2 (Apt, suite, etc.)',
       width: 70,
       displayWidth: 50,
+      gridColumns: 6,
       documentation: 'An unstructured field for the sub postal address.',
-      hidden: true
+      expression: function(suite) {
+        return suite || '';
+      }
     },
     {
       class: 'Reference',
@@ -132,7 +138,7 @@ foam.CLASS({
       of: 'foam.nanos.auth.Region',
       documentation: `A foreign key into the RegionDAO which represents
         the region of the country.`,
-      gridColumns: 6,
+      gridColumns: { columns: 4, xsColumns: 6, xxsColumns: 6 },
       view: function(_, X) {
         var choices = X.data.slot(function(countryId) {
           return X.regionDAO.where(X.data.EQ(X.data.Region.COUNTRY_ID, countryId || ""));
@@ -168,7 +174,7 @@ foam.CLASS({
           if ( ! regionError ) {
             regionError = this.translationService.getTranslation(foam.locale, `*.foam.nanos.auth.Address.REGION.error`);
           }
-          return regionError ? regionError : this.REGION_REQUIRED;
+          return regionError;
         }
       }
     },
@@ -176,7 +182,7 @@ foam.CLASS({
       class: 'String',
       name: 'suite',
       documentation: 'The structured field for the suite number of the postal address.',
-      gridColumns: 3,
+      gridColumns: { columns: 3, xsColumns: 6, xxsColumns: 6 },
       width: 16
     },
     {
@@ -187,12 +193,7 @@ foam.CLASS({
       label: 'Street #',
       width: 16,
       documentation: 'The structured field for the street number of the postal address.',
-      gridColumns: 3,
-      postSet: function(_, n) {
-        if ( this.structured ) {
-          this.address1 = `${n} ${this.streetName}`
-        }
-      },
+      gridColumns: { columns: 3, xsColumns: 6, xxsColumns: 6 },
       validationPredicates: [
         {
           args: ['structured', 'streetNumber'],
@@ -208,11 +209,6 @@ foam.CLASS({
       width: 70,
       documentation: 'The structured field for the street name of the postal address.',
       gridColumns: 6,
-      postSet: function(_, n) {
-        if ( this.structured ) {
-          this.address1 = `${this.streetNumber} ${n}`
-        }
-      },
       validationPredicates: [
         {
           args: ['structured', 'streetName'],
@@ -226,7 +222,7 @@ foam.CLASS({
       name: 'city',
       documentation: 'The city of the postal address.',
       required: true,
-      gridColumns: 6
+      gridColumns: { columns: 4, xsColumns: 6, xxsColumns: 6 }
     },
     {
       class: 'String',
@@ -235,7 +231,7 @@ foam.CLASS({
       preSet: function(oldValue, newValue) {
         return newValue.toUpperCase();
       },
-      gridColumns: 6,
+      gridColumns: { columns: 4, xsColumns: 6, xxsColumns: 6 },
       validationPredicates: [
         // Requirement for PK is postalCode is optional
         // real country distictions to come with NP-8818-facade Address
@@ -246,7 +242,7 @@ foam.CLASS({
         },
         {
           args: ['postalCode', 'countryId'],
-          query: 'countryId!="CA"||postalCode~/^[ABCEGHJ-NPRSTVXY]\\d[ABCEGHJ-NPRSTV-Z][ -]?\\d[ABCEGHJ-NPRSTV-Z]\\d$/i',
+          query: 'countryId!="CA"||postalCode==""||postalCode~/^[ABCEGHJ-NPRSTVXY]\\d[ABCEGHJ-NPRSTV-Z][ -]?\\d[ABCEGHJ-NPRSTV-Z]\\d$/i',
           errorMessage: 'INVALID_POSTAL_CODE',
           jsErr: function(X) {
             let postalCodeError = X.translationService.getTranslation(foam.locale, `${X.countryId.toLowerCase()}.foam.nanos.auth.Address.POSTAL_CODE.error`);

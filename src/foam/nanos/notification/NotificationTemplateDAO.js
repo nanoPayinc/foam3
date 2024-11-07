@@ -26,6 +26,7 @@ the notification will be handled. `,
     'foam.dao.ArraySink',
     'foam.dao.DAO',
     'foam.dao.Sink',
+    'static foam.mlang.MLang.EQ',
     'foam.nanos.auth.User',
     'foam.nanos.logger.Logger',
     'foam.nanos.logger.Loggers',
@@ -62,7 +63,7 @@ the notification will be handled. `,
         if ( ! foam.util.SafetyUtil.isEmpty(notification.getTemplate()) ) {
           List templates = ((ArraySink) ((DAO) x.get("notificationTemplateDAO"))
             .limit(2)
-            .where(foam.mlang.MLang.EQ(Notification.TEMPLATE, notification.getTemplate()))
+            .where(EQ(Notification.TEMPLATE, notification.getTemplate()))
             .select(new ArraySink()))
             .getArray();
 
@@ -78,11 +79,17 @@ the notification will be handled. `,
 
             // Can't use copyFrom which tests isSet, as we don't
             // want all properties copied.
-            if ( Notification.BODY.isSet(notification) ) {
+            if ( Notification.IN_APP_ENABLED.isSet(notification) ) {
+              template.setInAppEnabled(notification.getInAppEnabled());
+            }
+            if ( Notification.BODY.isSet(notification) && ! SafetyUtil.isEmpty(notification.getBody()) ) {
               template.setBody(notification.getBody());
             }
             if ( Notification.CLUSTERABLE.isSet(notification) ) {
               template.setClusterable(notification.getClusterable());
+            }
+            if ( Notification.EMAIL_NAME.isSet(notification) && ! SafetyUtil.isEmpty(notification.getEmailName())) {
+              template.setEmailName(notification.getEmailName());
             }
             if ( Notification.READ.isSet(notification) ) {
               template.setRead(notification.getRead());
@@ -90,10 +97,10 @@ the notification will be handled. `,
             if ( Notification.SPID.isSet(notification) ) {
               template.setSpid(notification.getSpid());
             }
-            if ( Notification.TOAST_MESSAGE.isSet(notification) ) {
+            if ( Notification.TOAST_MESSAGE.isSet(notification) && ! SafetyUtil.isEmpty(notification.getToastMessage()) ) {
               template.setToastMessage(notification.getToastMessage());
             }
-            if ( Notification.TOAST_SUB_MESSAGE.isSet(notification) ) {
+            if ( Notification.TOAST_SUB_MESSAGE.isSet(notification) && ! SafetyUtil.isEmpty(notification.getToastSubMessage()) ) {
               template.setToastSubMessage(notification.getToastSubMessage());
             }
             if ( Notification.EMAIL_ARGS.isSet(notification) &&
@@ -112,6 +119,14 @@ the notification will be handled. `,
             if ( Notification.USER_ID.isSet(notification) &&
                  ! Notification.USER_ID.isSet(template) ) {
               template.setUserId(notification.getUserId());
+            }
+            if ( Notification.GROUP_ID.isSet(notification) &&
+                 ! Notification.GROUP_ID.isSet(template) && ! SafetyUtil.isEmpty(notification.getGroupId()) ) {
+              template.setGroupId(notification.getGroupId());
+            }
+            if ( Notification.BROADCASTED.isSet(notification) &&
+                 ! Notification.BROADCASTED.isSet(template) ) {
+              template.setBroadcasted(notification.getBroadcasted());
             }
           } else {
             // NOTE: do not generate an error or warning log as this

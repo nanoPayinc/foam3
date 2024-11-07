@@ -8,12 +8,27 @@ foam.CLASS({
   package: 'foam.nanos.notification.push',
   name: 'APNSPushService',
 
-  documentation: `Not called directly, called through WebPushService 
+  documentation: `Not called directly, called through WebPushService
   TODO: not very msp friendly at the moment, there is no way for WebPushService to find the right apnsPushService for a given app`,
 
   implements: [
     'foam.nanos.notification.push.PushService',
     'foam.nanos.auth.ServiceProviderAware'
+  ],
+
+  javaCode: `
+    public void send(iOSNativePushRegistration sub, HashMap msg) {
+      send(sub, msg, 0);
+    }
+  `,
+
+  constants: [
+    {
+      type: 'int',
+      name: 'MAX_RETRY_ATTEMPTS',
+      documentation: 'Number of times service will try to deliver a notification if an exception is thrown',
+      value: 3
+    }
   ],
 
   javaImports: [
@@ -91,14 +106,20 @@ foam.CLASS({
       throws: 'IOException',
       javaCode:
       `
+      return null;
         // Implement in a refinement, based on certificate and pub priv key location
       `
     },
     {
       name: 'send',
-      args: 'iOSNativePushRegistration sub, HashMap msg',
+      args: 'iOSNativePushRegistration sub, HashMap msg, int attempt',
       type: 'Void',
       javaCode: `
+          // Dont send notifications to subs that are in denied state
+          if ( SafetyUtil.equals(sub.getLastKnownState(), "DENIED") ) {
+            return;
+          } 
+
           APNSCredential cred = (APNSCredential) getApnsCredential();
           if ( getApnsClient() == null || cred == null) {
             // TODO: replace with alarm
@@ -111,20 +132,20 @@ foam.CLASS({
           String payload = payloadBuilder.build();
           // Add a ttl for notifications on the payload
           String token = TokenUtil.sanitizeTokenString(sub.getEndpoint());
-          
+
           // TTL for notification delivery, after this time apns will stop trying to deliver this notification
-          // Currently hardcoded to 7 days 
-          Instant instant = Instant.now(); 
-          instant = instant.plus(7, ChronoUnit.DAYS); 
+          // Currently hardcoded to 7 days
+          Instant instant = Instant.now();
+          instant = instant.plus(7, ChronoUnit.DAYS);
           SimpleApnsPushNotification pushNotification = new SimpleApnsPushNotification(token, cred.getAppBundleId(), payload, instant);
 
          try {
-            // Asking the APNs client to send the notification 
-            // and creating the future that will return the status 
-            // of the push after it's sent.  
-            final PushNotificationFuture<SimpleApnsPushNotification, PushNotificationResponse<SimpleApnsPushNotification>> sendNotificationFuture = ((com.eatthepath.pushy.apns.ApnsClient) getApnsClient()).sendNotification(pushNotification);  
+            // Asking the APNs client to send the notification
+            // and creating the future that will return the status
+            // of the push after it's sent.
+            final PushNotificationFuture<SimpleApnsPushNotification, PushNotificationResponse<SimpleApnsPushNotification>> sendNotificationFuture = ((com.eatthepath.pushy.apns.ApnsClient) getApnsClient()).sendNotification(pushNotification);
 
-            // getting the response from APNs 
+            // getting the response from APNs
             final PushNotificationResponse<SimpleApnsPushNotification> pushNotificationResponse = sendNotificationFuture.get();
             if (pushNotificationResponse.isAccepted()) {
                 // TODO: Replace with log
@@ -137,13 +158,20 @@ foam.CLASS({
                 if (pushNotificationResponse.getTokenInvalidationTimestamp() != null) {
                     System.out.println("\t…and the token is invalid as of " +
                         pushNotificationResponse.getTokenInvalidationTimestamp());
+
+                    // If notification is rejected with invalidation timestamp, change it's status
+                    sub.setLastKnownState("DENIED");
+                    ((DAO) getX().get("pushRegistrationDAO")).put(sub);
                 }
             }
           } catch (final ExecutionException e) {
-           // Should retry if it fails without explanation i.e. we never get a response from apple's servers however a rejection from the apple server should be considered permanent and no retry should be attempted
+            // Should retry if it fails without explanation i.e. we never get a response from apple's servers however a rejection from the apple server should be considered permanent and no retry should be attempted
             System.err.println("Failed to send push notification.");
             e.printStackTrace();
-            send(sub, msg);
+            if ( attempt < MAX_RETRY_ATTEMPTS ) {
+              attempt++;
+              send(sub, msg, attempt);
+            } 
           } catch (final Exception e) {
             // TODO: Replace with loggers
             System.err.println("Failed to send push notification.");

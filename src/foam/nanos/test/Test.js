@@ -97,12 +97,7 @@ foam.CLASS({
       code: function(x) {
         return eval('(async () => {' + this.code + '})()');
       },
-      args: [
-        {
-          name: 'x',
-          type: 'Context'
-        }
-      ],
+      args: 'Context x',
       javaCode: '/* NOOP */'
     },
     {

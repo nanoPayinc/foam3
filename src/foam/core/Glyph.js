@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.core',
   name: 'Glyph',
 
-  imports: ['theme?'],
+  imports: [ 'theme?' ],
 
   documentation: `
     A glyph is a vector that can be passed colour parameters
@@ -16,16 +16,18 @@ foam.CLASS({
 
   properties: [
     {
-      name: 'template',
       class: 'String',
+      name: 'template',
+      shortName: 't',
       expression: function(themeName) {
         if ( ! this.theme ) return '';
         return this.theme.glyphs[themeName] ? this.theme.glyphs[themeName].template : '';
       }
     },
     {
+      class: 'String',
       name: 'themeName',
-      class: 'String'
+      shortName: 'h'
     }
   ],
 

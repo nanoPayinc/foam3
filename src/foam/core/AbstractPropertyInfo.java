@@ -89,11 +89,6 @@ public abstract class AbstractPropertyInfo
     this.set(o, resultSet.getObject(index));
   }
 
-  public String toString() {
-    // TODO: generate static string in generated instances instead to avoid creating garbage.
-    return parent.getId() + "." + getName();
-  }
-
   @Override
   public boolean includeInDigest() {
     if ( getStorageTransient() || getClusterTransient() )

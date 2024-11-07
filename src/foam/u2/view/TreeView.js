@@ -20,6 +20,7 @@ foam.CLASS({
 
   imports: [
     'dblclick?',
+    'draggable',
     'onObjDrop',
     'returnExpandedCSS?',
     'selection',
@@ -30,9 +31,9 @@ foam.CLASS({
 
   css: `
     ^ {
-      white-space: nowrap;
-      inset: none;
       cursor: pointer;
+      inset: none;
+      white-space: nowrap;
     }
 
     ^label-container {
@@ -44,15 +45,15 @@ foam.CLASS({
       min-height: 40px;
       display: flex;
       align-items: center;
-      // padding: 0 8px;
     }
 
-    button^button{
+    button^button {
       padding: 8px;
       width: 100%;
       justify-content: flex-start;
     }
 
+    ^button svg { fill: currentColor; }
   `,
 
   classes: [
@@ -84,9 +85,19 @@ foam.CLASS({
           transition: 0.2s linear;
         }
 
-        ^toggle-icon svg{
+        ^toggle-icon svg {
           width: 0.75em;
           height: 0.75em;
+        }
+
+        /* copied from foam.nanos.controller.Fonts so that it works without NANOS */
+        .p-semiBold {
+          line-height: 1.78;
+          font-size: 1.4rem;
+          font-style: normal;
+          font-weight: 600;
+          line-height: 1.71;
+          margin: 0;
         }
       `,
 
@@ -147,11 +158,6 @@ foam.CLASS({
     {
       class: 'Function',
       name: 'formatter'
-    },
-    {
-      class: 'Boolean',
-      name: 'draggable',
-      documentation: 'Enable to allow drag&drop editing.'
     },
     {
       class: 'Boolean',
@@ -268,7 +274,7 @@ foam.CLASS({
         start().
           addClass(self.myClass('heading')).
           style({
-            'padding-left': ((( self.level - 1) * 16 ) + 'px')
+            'padding-left': (((self.level - 1) * 16 ) + 'px')
           }).
           startContext({ data: self }).
             start(self.ON_CLICK_FUNCTIONS, {
@@ -344,7 +350,7 @@ foam.CLASS({
         // We currently have to because the FLOW editor is not updating properly
         // on a put event for an object that it already has.
         dao.remove(obj).then(function() {
-          self.data[self.relationship.forwardName].dao.put(obj).then(function(obj) {
+          self.data[self.relationship.forwardName].put(obj).then(function(obj) {
             self.onObjDrop(obj, id);
           });
         });
@@ -395,6 +401,7 @@ foam.CLASS({
   ],
 
   exports: [
+    'draggable',
     'onObjDrop',
     'selection',
     'startExpanded',
@@ -441,6 +448,11 @@ foam.CLASS({
       Format: { menuId: viewSpec }
       ex: { notifications: {class: 'NotificationMenuItem' } }
       `
+    },
+    {
+      class: 'Boolean',
+      name: 'draggable',
+      documentation: 'Enable to allow drag&drop editing.'
     },
     [ 'defaultRoot', '' ]
   ],

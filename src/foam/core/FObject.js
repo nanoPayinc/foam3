@@ -864,7 +864,8 @@ foam.CLASS({
       // FUTURE: order properties
       var ps = this.cls_.getAxiomsByClass(foam.core.Property).filter(p => {
         return ! foam.dao.DAOProperty.isInstance(p)
-          && ! foam.dao.ManyToManyRelationshipProperty.isInstance(p);
+          && ! foam.dao.ManyToManyRelationshipProperty.isInstance(p)
+          && ! p.expression;
       });
       for ( var i = 0 ; i < ps.length ; i++ ) {
         var r = ps[i].compare(this, other);
@@ -1027,9 +1028,6 @@ foam.CLASS({
           var name = props[i].name;
           var otherProp = o.cls_.getAxiomByName(name);
           if ( otherProp && foam.core.Property.isInstance(otherProp) ) {
-            // Don't copy the value if the property expressions are same
-            if ( props[i].expression && props[i].expression === otherProp.expression ) continue;
-
             // Don't copy the value if the property default values are the same
             if ( o.hasDefaultValue(name) && props[i].value === otherProp.value && ! otherProp.expression ) continue;
 

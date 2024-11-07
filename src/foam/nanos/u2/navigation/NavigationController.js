@@ -13,8 +13,8 @@ foam.CLASS({
 
   cssTokens: [
     {
-      name: 'boxShadowSize',
-      value: '0px',
+      name: 'sidebarBoxShadow',
+      value: '1px 1px 7px 0px rgba(209, 217, 230, 0.60)',
     },
     {
       name: 'borderColor',
@@ -70,8 +70,7 @@ foam.CLASS({
     ^sidebar^sideNav{
       transition: 0.2s ease;
       width: var(--sidebar-width);
-      box-shadow: $boxShadowSize;
-      border-right: 1px solid $borderColor;
+      box-shadow: $sidebarBoxShadow;
     }
 
     ^sidebarClosed^sideNav{
@@ -179,7 +178,7 @@ foam.CLASS({
             .enableClass(this.myClass('sidebar'), this.isMenuOpen$)
             .addClass(this.myClass('sideNav'));
         }))
-        .add(this.slot( async function(mainView) {
+        .add(this.slot(function(mainView) {
           return this.E()
             .add(mainView)
             .addClass(this.myClass('stack-view'));

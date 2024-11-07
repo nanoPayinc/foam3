@@ -3,6 +3,7 @@
  * Copyright 2022 The FOAM Authors. All Rights Reserved.
  * http://www.apache.org/licenses/LICENSE-2.0
  */
+
  foam.CLASS({
   package: 'foam.u2.view',
   name: 'SuggestedTextField',
@@ -13,7 +14,8 @@
   requires: [
     'foam.u2.Autocompleter',
     'foam.u2.CitationView',
-    'foam.u2.TextField'
+    'foam.u2.TextField',
+    'foam.u2.LoadingSpinner'
   ],
 
   implements: [
@@ -37,27 +39,25 @@
       flex-direction: column;
       height: auto;
       margin-top: 2px;
-      max-height: 14em;
       overflow: auto;
-      padding: 6px;
+      padding: 12px;
+      gap: 8px;
       position: absolute;
       width: 100%;
       z-index: 100;
     }
-    ^suggestions > * + * {
-      margin-top: 4px;
-    }
     ^row {
-      color: $grey700;
+      color: $black;
       cursor: pointer;
-      padding: 4px 8px;
+      padding: 8px;
+      border-radius: 4px;
     }
   `,
 
   messages: [
-    { name: 'SUGGESTIONS_MSG', message: 'Suggestions' },
+    { name: 'SUGGESTIONS_MSG',    message: 'Suggestions' },
     { name: 'NO_SUGGESTIONS_MSG', message: 'No Suggestions' },
-    { name: 'MORE_SUGGESTIONS', message: 'Refine search to see more results' }
+    { name: 'MORE_SUGGESTIONS',   message: 'Refine search to see more results' }
   ],
 
   properties: [
@@ -124,6 +124,15 @@
       class: 'Boolean',
       name: 'refineInput'
     },
+    {
+      class: 'Boolean',
+      name: 'loading',
+    },
+    {
+      class: 'String',
+      name: 'error',
+      documentation: 'When populated and autocompleter is done loading, displays the error'
+    },
     'inputFocused'
   ],
 
@@ -136,6 +145,11 @@
       };
       if ( this.autocompleter )
         this.autocompleter.partial$ = this.data$;
+
+      this.onDetach(this.data$.sub(function() {
+        if ( self.data )
+          self.inputFocused = true;
+      }));
 
       this.onDetach(this.onload.sub(this.loaded));
       this
@@ -156,24 +170,30 @@
       .end()
       .add(this.slot(this.populate));
     },
-    function populate(filteredValues, data, inputFocused, suggestOnFocus) {
+    function populate(filteredValues, data, inputFocused, suggestOnFocus, loading, error) {
       const self = this;
       if ( ( ! data && ! suggestOnFocus ) || ! inputFocused ) return this.E();
-      if ( ! filteredValues.length ) return this.E().addClass(this.myClass('suggestions')).add(this.emptyTitle);
-      return this.E().addClass(this.myClass('suggestions')).add(this.title).forEach(this.filteredValues, function(obj) {
-        this
-          .start(self.rowView, { data: obj })
-            .addClass(self.myClass('row'))
-            .on('mousedown', function(e) {
-             // using mousedown not click since mousedown is fired before blur is fired so we can intercept rowClick
-             // otherwise when using click the blur gets fired first and the row listener is never called
-               self.onRowSelect ? self.onRowSelect(obj) : self.onSelect.call(self, obj);
-               self.inputFocused = false;
-               
-               e.preventDefault();
-             })
-          .end();
-      }).add(this.refineInput$.map(v => v ? self.MORE_SUGGESTIONS : ""));
+      if ( loading ) return this.E().addClass(this.myClass('suggestions')).tag(self.LoadingSpinner, {size: '32px'})
+      if ( error ) return this.E().addClass(this.myClass('suggestions')).add(this.error);
+      return this.E().addClass(this.myClass('suggestions'))
+        .start().addClass('p-semiBold').add(this.title).end()
+        .forEach(filteredValues, function(obj) {
+          this
+            .start(self.rowView, { data: obj })
+              .addClass(self.myClass('row'))
+              .on('mousedown', function(e) {
+              // using mousedown not click since mousedown is fired before blur is fired so we can intercept rowClick
+              // otherwise when using click the blur gets fired first and the row listener is never called
+                let fn = self.onRowSelect ? self.onRowSelect(obj) : self.onSelect.call(self, obj);
+                fn.then(() => {
+                  self.inputFocused = false;
+                });
+
+                e.preventDefault();
+              })
+            .end();
+        })
+        .add(this.refineInput$.map(v => v ? self.MORE_SUGGESTIONS : this.E().style({ display: 'contents' })));
     },
     function fromProperty(prop) {
       this.prop = prop;
@@ -185,20 +205,24 @@
       name: 'onUpdate',
       isFramed: true,
       code: function() {
+        this.filteredValues = [];
+        this.error = '';
+        this.loading = true;
         const self = this;
+        let dao = this.autocompleter.filteredDAO;
         if ( this.suggestionsLimit > 0 ) {
-          this.autocompleter.filteredDAO.limit(this.suggestionsLimit).select()
-          .then((sink) => {
+          dao = dao.limit(this.suggestionsLimit);
+        }
+        dao.select()
+          .then(sink => {
             this.filteredValues = sink.array;
+            if ( ! this.filteredValues.length ) this.error = this.NO_SUGGESTIONS_MSG;
+            this.loading = false;
           });
+        if ( this.suggestionsLimit > 0 ) {
           // required to check if more elements are available to render
           this.autocompleter.filteredDAO.limit(this.suggestionsLimit+1).select(this.Count.create()).then( count => {
             self.refineInput = count.value > self.suggestionsLimit;
-          });
-        } else {
-          this.autocompleter.filteredDAO.select()
-          .then((sink) => {
-            this.filteredValues = sink.array;
           });
         }
       }

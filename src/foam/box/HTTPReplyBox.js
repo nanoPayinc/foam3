@@ -38,6 +38,7 @@ foam.CLASS({
         // Needed because JS JSON parser doesn't support unquoted keys.
         formatter.setQuoteKeys(true);
         formatter.setOutputShortNames(true);
+        formatter.setOutputDefaultValues(false);
         formatter.setPropertyPredicate(new foam.lib.AndPropertyPredicate(new foam.lib.PropertyPredicate[] {new foam.lib.NetworkPropertyPredicate(), new foam.lib.PermissionedPropertyPredicate()}));
         return formatter;
       }
@@ -60,7 +61,7 @@ foam.CLASS({
       swiftCode: 'throw FoamError("unimplemented")',
       javaCode: `
 try {
-  javax.servlet.http.HttpServletResponse resp = (javax.servlet.http.HttpServletResponse) getX().get("httpResponse");
+  jakarta.servlet.http.HttpServletResponse resp = (jakarta.servlet.http.HttpServletResponse) getX().get("httpResponse");
   resp.setContentType("application/json");
 
   java.io.PrintWriter                 writer    = resp.getWriter();
