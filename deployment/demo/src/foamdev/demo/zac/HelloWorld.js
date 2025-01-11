@@ -27,19 +27,20 @@ foam.CLASS({
       this.SUPER();
 
       try {
-        if ( foam.nanos.zac.Client.isInstance(this.ctrl) )
-        this.ctrl.add(this);
+        if ( foam.nanos.zac.Client.isInstance(this.ctrl) ) {
+          this.ctrl.add(this);
+        }
       } catch (x) {}
     },
 
-    async function render() {
+    function render() {
       this.SUPER();
 
 //      await this.auth.authorizeAnonymous();
    // No need to log in as anon, since it is done automatically
    // var user = await this.auth.login(null, 'anon', '');
    // this.subject.user = this.subject.realUser = user;
-      this.add(this.VerticalMenu.create());
+      // this.add(this.VerticalMenu.create());
       this.add('Hello World!');
     }
   ]

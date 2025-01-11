@@ -22,7 +22,17 @@ foam.CLASS({
 
   requires: [
     'foam.nanos.auth.Address',
-    'foam.nanos.auth.PriorPassword'
+    'foam.nanos.auth.LifecycleState',
+    'foam.nanos.auth.PriorPassword',
+    'foam.nanos.auth.UserLifecycleTicket',
+    'foam.nanos.ticket.Ticket'
+  ],
+
+  imports: [
+    'auth',
+    'notify',
+    'routeTo',
+    'ticketDAO?'
   ],
 
   javaImports: [
@@ -31,6 +41,7 @@ foam.CLASS({
     'foam.dao.ArraySink',
     'static foam.mlang.MLang.AND',
     'static foam.mlang.MLang.EQ',
+    'foam.nanos.auth.Group',
     'foam.nanos.auth.LifecycleAware',
     'foam.nanos.auth.LifecycleState',
     'foam.nanos.notification.NotificationSetting',
@@ -41,6 +52,7 @@ foam.CLASS({
     'java.util.HashMap',
     'java.util.HashSet',
     'java.util.List',
+    'foam.nanos.logger.Loggers',
     'java.util.regex.Pattern'
   ],
 
@@ -54,8 +66,11 @@ foam.CLASS({
   tableColumns: [
     'id',
     'type',
+    'lifecycleState',
+    'userName',
     'group.id',
-    'email'
+    'email',
+    'lifecycleState'
   ],
 
   searchColumns: [
@@ -63,7 +78,8 @@ foam.CLASS({
     'type',
     'spid',
     'group',
-    'enabled',
+    'lifecycleState',
+    'userName',
     'firstName',
     'preferredName',
     'lastName',
@@ -645,8 +661,9 @@ foam.CLASS({
       section: 'systemInformation',
       order: 40,
       gridColumns: 6,
-      value: foam.nanos.auth.LifecycleState.PENDING,
-      writePermissionRequired: true
+      value: foam.nanos.auth.LifecycleState.ACTIVE,
+      writePermissionRequired: false,
+      help: 'Recommend using state change actions'
     },
     {
       class: 'Reference',
@@ -672,14 +689,15 @@ foam.CLASS({
       columnPermissionRequired: true
     },
     {
+      // deprecated; use lifecycleState instead
       class: 'Boolean',
       name: 'enabled',
       documentation: 'Determines whether the User is permitted certain actions.',
-      value: true,
-      includeInDigest: true,
-      section: 'systemInformation',
-      order: 90,
-      gridColumns: 6
+      hidden: true,
+      transient: true,
+      javaGetter: `
+        return getLifecycleState() == foam.nanos.auth.LifecycleState.ACTIVE;
+      `
     },
     {
       class: 'String',
@@ -709,13 +727,6 @@ foam.CLASS({
       displayWidth: 30,
       width: 100,
       storageTransient: true,
-      validateObj: function (password) {
-        var re = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9]).{7,32}$/;
-
-        if ( password.length > 0 && ! re.test(password) ) {
-          return 'Password must contain one lowercase letter, one uppercase letter, one digit, and be between 7 and 32 characters in length.';
-        }
-      },
       createVisibility: 'RW',
       updateVisibility: 'RW',
       readVisibility: 'HIDDEN',
@@ -792,6 +803,14 @@ foam.CLASS({
       class: 'String',
       name: 'trackingId',
       documentation: 'Unique id optionally used to track a user.'
+    },
+    {
+      class: 'String',
+      name: 'ticketMenu',
+      documentation: 'Menu id for UserLifecycleTicket creation. Meant to be refined by applications',
+      value: 'admin.tickets',
+      hidden: true,
+      transient: true
     }
   ],
 
@@ -1024,16 +1043,178 @@ foam.CLASS({
         if ( getLifecycleState() != foam.nanos.auth.LifecycleState.ACTIVE ) {
           throw new AuthenticationException("User disabled");
         }
-        
+
         // check if user login enabled
         if ( ! getLoginEnabled() ) {
           throw new AccessDeniedException();
         }
-        
-        if ( ! getEmailVerified() ) {
+
+        Group group = null;
+        try {
+          group = (Group) ((DAO) foam.core.XLocator.get().get("groupDAO")).find(getGroup());
+        } catch (Throwable e) {
+          foam.nanos.logger.StdoutLogger.instance().error(e);
+          throw new AuthenticationException("Group not found");
+        }
+        if ( group != null &&
+             group.getEmailRequired() && ! getEmailVerified() ) {
           throw new UnverifiedEmailException();
         }
       `
+    }
+  ],
+
+  actions: [
+    {
+      name: 'deleteUser',
+      label: 'Delete',
+      toolTip:'Open ticket to delete a user and all associated entities',
+      availablePermissions: ['user.action.delete'],
+      isAvailable: async function(id, type, spid, lifecycleState) {
+        // NOTE: testing spid as hack so action only available from detail view
+        return id && type == 'User' && spid &&
+          lifecycleState != this.LifecycleState.DELETED;
+      },
+      code: function(X) {
+        var self = this;
+        var ticket = this.ticketDAO.find(
+          this.AND(
+            this.EQ(this.Ticket.CREATED_FOR, this.id),
+            this.EQ(this.Ticket.SPID, this.spid),
+            this.EQ(this.Ticket.STATUS, "OPEN"),
+            this.OR(
+              this.EQ(this.UserLifecycleTicket.REQUESTED_LIFECYCLE_STATE, this.LifecycleState.DELETED),
+              this.EQ(this.UserLifecycleTicket.REQUESTED_LIFECYCLE_STATE, this.LifecycleState.DISABLED)
+            )
+          )
+        ).then(t => {
+          if ( t ) {
+            if ( t.status == "CLOSED" ) {
+              t.comment = "Re-open. "+t.title;
+              t.status = "OPEN";
+            }
+            t.requestedLifecycleState = this.LifecycleState.DELETED;
+            self.ticketDAO.put(t).then(function(t) {
+              self.routeTo(self.ticketMenu+"/"+t.id);
+            });
+          } else {
+            var ticket = self.UserLifecycleTicket.create({
+              title: 'Delete user',
+              createdFor: self.id,
+              spid: self.spid,
+              requestedLifecycleState: self.LifecycleState.DELETED
+            });
+            self.ticketDAO.put(ticket).then(function(t) {
+              self.routeTo(self.ticketMenu+"/"+t.id);
+            });
+          }
+        }, e => {
+          self.notify(e, '', this.LogLevel.ERROR);
+        });
+      }
+    },
+    {
+      name: 'disableUser',
+      label: 'Disable',
+      toolTip: 'Open ticket to disable a user and all associated entities',
+      availablePermissions: ['user.action.disable'],
+      isAvailable: async function(id, type, spid, lifecycleState) {
+        // NOTE: testing spid as hack so action only available from detail view
+        return id && type == 'User' && spid &&
+          ( lifecycleState != this.LifecycleState.DISABLED &&
+            lifecycleState != this.LifecycleState.DELETED );
+      },
+      code: function(X) {
+        var self = this;
+        var ticket = this.ticketDAO.find(
+          this.AND(
+            this.EQ(this.Ticket.CREATED_FOR, this.id),
+            this.EQ(this.Ticket.SPID, this.spid),
+            this.EQ(this.Ticket.STATUS, "OPEN"),
+            this.OR(
+              this.EQ(this.UserLifecycleTicket.REQUESTED_LIFECYCLE_STATE, this.LifecycleState.DELETED),
+              this.EQ(this.UserLifecycleTicket.REQUESTED_LIFECYCLE_STATE, this.LifecycleState.DISABLED)
+            )
+          )
+        ).then(t => {
+          if ( t ) {
+            t.requestedLifecycleState = this.LifecycleState.DISABLED;
+            if ( t.status == "CLOSED" ) {
+              t.comment = "Re-open. "+t.title;
+              t.status = "OPEN";
+            }
+            self.ticketDAO.put(t).then(function(t) {
+              self.routeTo(self.ticketMenu+"/"+t.id);
+            });
+          } else {
+            var ticket = self.UserLifecycleTicket.create({
+              title: 'Disable user',
+              createdFor: self.id,
+              spid: self.spid,
+              requestedLifecycleState: self.LifecycleState.DISABLED
+            });
+            self.ticketDAO.put(ticket).then(function(t) {
+              self.routeTo(self.ticketMenu+"/"+t.id);
+            });
+          }
+        }, e => {
+          self.notify(e, '', this.LogLevel.ERROR);
+        });
+      }
+    },
+    {
+      name: 'activateUser',
+      label: 'Activate',
+      toolTip: 'Open a ticket to activate a new user or re-activate a previously disabled or deleted user',
+      availablePermissions: ['user.action.activate'],
+      isAvailable: async function(id, type, spid, lifecycleState) {
+        // NOTE: testing spid as hack so action only available from detail view
+        return id && type == 'User' && spid &&
+          ( lifecycleState == this.LifecycleState.DISABLED ||
+            lifecycleState == this.LifecycleState.DELETED ||
+            lifecycleState == this.LifecycleState.PENDING );
+      },
+      code: function(X) {
+        var self = this;
+        // find existing ticket
+        var ticket = this.ticketDAO.find(
+          this.AND(
+            this.EQ(this.Ticket.CREATED_FOR, this.id),
+            this.EQ(this.Ticket.SPID, this.spid)
+          )
+        ).then(t => {
+          if ( t ) {
+            if ( t.status == "CLOSED" ) {
+              t.comment = "Re-open. "+t.title;
+              t.status = "OPEN";
+            }
+            if ( t.requestedLifecycleState == this.LifecycleState.DELETED ||
+                 t.requestedLifecycleState == this.LifecycleState.DISABLED ) {
+              t.revertRelationships = t.includeRelationships && t.updated && t.updated.length > 0;
+              t.includeRelationships = t.revertRelationships;
+              t.requestedLifecycleState = self.LifecycleState.ACTIVE;
+              t.title = "Re-activate user";
+            }
+            self.ticketDAO.put(t).then(function(t) {
+              self.routeTo(self.ticketMenu+"/"+t.id);
+            });
+          } else {
+            var ticket = self.UserLifecycleTicket.create({
+              title: 'Activate user',
+              createdFor: self.id,
+              spid: self.spid,
+              requestedLifecycleState: self.LifecycleState.ACTIVE,
+              includeRelationships: false,
+              revertRelationships: false
+            });
+            self.ticketDAO.put(ticket).then(function(t) {
+              self.routeTo(self.ticketMenu+"/"+t.id);
+            });
+          }
+        }, e => {
+          self.notify(e, '', this.LogLevel.ERROR);
+        });
+      }
     }
   ]
 });

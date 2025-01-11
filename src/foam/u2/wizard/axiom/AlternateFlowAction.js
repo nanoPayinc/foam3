@@ -40,7 +40,7 @@ foam.CLASS({
         // only set inaltflow if using altflowwao since it is the only place where this boolean is used
         if ( wizardController.currentWizardlet.useAltFlowWAO ) wizardController.currentWizardlet.isInAltFlow = true;
         action.alternateFlow.execute((wizardController.data || wizardController).__subContext__);
-        action.alternateFlow.handleNext(wizardController);
+        return action.alternateFlow.handleNext(wizardController);
       }
     },
     {

@@ -82,6 +82,12 @@ foam.CLASS({
       tableWidth: 85
     },
     {
+      class: 'Boolean',
+      name: 'onlyReportFailed',
+      documentation: 'when true, only output results for failures.  When a suite has hundreds of tests, the max output is reached before, potentially, displaying all the failed tests.',
+      value: false
+    },
+    {
       class: 'String',
       name: 'eventDaoKey',
       value: 'testEventDAO'
@@ -103,32 +109,23 @@ foam.CLASS({
     {
       name: 'test',
       type: 'Void',
-      args: [
-        {
-          name: 'exp', type: 'Boolean'
-        },
-        {
-          name: 'message', type: 'String'
-        }
-      ],
+      args: 'Boolean exp, String message',
       // javascript code defined in runScript()
       javaCode: `
         if ( exp ) {
           setPassed(getPassed()+1);
+          if ( ! getOnlyReportFailed() )
+            print("SUCCESS: " + message);
         } else {
           setFailed(getFailed()+1);
+          print("FAILURE: " + message);
         }
-        print((exp ? "SUCCESS: " : "FAILURE: ") + message);
       `
     },
     {
       name: 'fail',
       type: 'Void',
-      args: [
-        {
-          name: 'message', type: 'String'
-        }
-      ],
+      args: 'String message',
       documentation: `
       Logs a test failure with the given message.
       Equivalent to test(false, message).
@@ -140,11 +137,7 @@ foam.CLASS({
     {
       name: 'pass',
       type: 'Void',
-      args: [
-        {
-          name: 'message', type: 'String'
-        }
-      ],
+      args: 'String message',
       documentation: `
       Logs a test success with the given message.
       Equivalent to test(true, message).
@@ -177,9 +170,9 @@ foam.CLASS({
       Otherwise, a failure will be noted, and test execution will continue.
       `,
       javaCode: `
-      boolean   threw                   = false;
-      String    returnedMessage         = "";
-      Throwable throwable               = null;
+      boolean   threw           = false;
+      String    returnedMessage = "";
+      Throwable throwable       = null;
 
       try {
         fn.run();
@@ -194,7 +187,7 @@ foam.CLASS({
       }
 
       if ( ! threw ) {
-        fail(message+" (expected exception to be thrown, but exception never was thrown)");
+        fail(message + " (expected exception to be thrown, but exception never was thrown)");
         return;
       }
 
@@ -207,12 +200,12 @@ foam.CLASS({
         System.out.println("ACTUAL  : '" + throwable.getClass().getName() + "'");
         throwable.printStackTrace();
 
-        fail(message+
-             " (exception type mismatch, expected "+
-             expectedExceptionType.getName()+
-             ", actual was: "+
-             throwable.getClass().getName()+
-             ")");
+        fail(message +
+          " (exception type mismatch, expected " +
+          expectedExceptionType.getName() +
+          ", actual was: " +
+          throwable.getClass().getName() +
+          ")");
         return;
       }
 
@@ -238,35 +231,21 @@ foam.CLASS({
     {
       name: 'expect',
       type: 'Void',
-      args: [
-        {
-          name: 'value', type: 'Object'
-        },
-        {
-          name: 'expectedValue', type: 'Object'
-        },
-        {
-          name: 'message', type: 'String'
-        }
-      ],
+      args: 'Object value, Object expectedValue, String message',
       javaCode: `
         if ( foam.util.SafetyUtil.equals(value, expectedValue) ) {
           setPassed(getPassed()+1);
-          print("SUCCESS: "+message);
+          print("SUCCESS: " + message);
         } else {
           setFailed(getFailed()+1);
-          print("FAILURE: "+message+" (expected '"+expectedValue+"', actual result: '"+value+"')");
+          print("FAILURE: " + message + " (expected '"+expectedValue+"', actual result: '"+value+"')");
         }
       `
     },
     {
       name: 'print',
       type: 'Void',
-      args: [
-        {
-          name: 'message', type: 'String'
-        }
-      ],
+      args: 'String message',
       javaCode: `
         setOutput(getOutput() + "\\n" + message);
       `
@@ -350,7 +329,12 @@ foam.CLASS({
             Interpreter shell = (Interpreter) createInterpreter(x, null);
             setOutput("");
             shell.setOut(ps);
+
             shell.eval("test(boolean exp, String message) { if ( exp ) { currentScript.setPassed(currentScript.getPassed()+1); } else { currentScript.setFailed(currentScript.getFailed()+1); } print((exp ? \\"SUCCESS: \\" : \\"FAILURE: \\")+message);}");
+            shell.eval("pass(String message) { test(true, message);}");
+            shell.eval("fail(String message) { test(false, message);}");
+            shell.eval("expect(Object value, Object expectedValue, String message) { currentScript.expect(value, expectedValue, message); }");
+
             shell.eval(getCode());
           } else if ( l == foam.nanos.script.Language.JSHELL ) {
             String print = null;
@@ -361,7 +345,9 @@ foam.CLASS({
             throw new RuntimeException("Script language not supported");
           }
           runTest(x);
+          setStatus(ScriptStatus.UNSCHEDULED);
         } catch (Throwable t) {
+          setStatus(ScriptStatus.ERROR);
           setFailed(getFailed() + 1);
           ps.println("FAILURE: " + t.getMessage());
           t.printStackTrace(ps);

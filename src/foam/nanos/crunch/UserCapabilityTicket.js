@@ -21,12 +21,6 @@ foam.CLASS({
 
   properties: [
     {
-      name: 'spid',
-      section: 'infoSection',
-      required: true,
-      order: 2
-    },
-    {
       name: 'capability',
       class: 'Reference',
       of: 'foam.nanos.crunch.Capability',
@@ -59,7 +53,7 @@ foam.CLASS({
               }
             ]
           }
-        }
+        };
       }
     },
     {
@@ -86,10 +80,6 @@ foam.CLASS({
     },
     {
       name: 'externalComment',
-      hidden: true
-    },
-    {
-      name: 'type',
       hidden: true
     }
   ]

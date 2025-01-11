@@ -22,6 +22,7 @@ foam.CLASS({
     { class: 'Simple', name: 'i' },
     {
       name: 'inverse_',
+      transient: true,
       factory: function() { return this.cls_.create(); },
       // Exclude from compareTo()
       compare: function() { return 0; }
@@ -380,6 +381,30 @@ foam.CLASS({
 
 foam.CLASS({
   package: 'foam.graphics',
+  name: 'Radians',
+  extends: 'foam.core.Float',
+
+  properties: [
+    [ 'preSet', function(_, r) {
+        var P2 = Math.PI * 2;
+        while ( r >  Math.PI ) r -= P2;
+        while ( r < -Math.PI ) r += P2;
+        return r;
+      }
+    ],
+    [ 'units', 'radians' ],
+    [ 'view', {
+        class: 'foam.u2.view.DualView',
+        viewa: { class: 'foam.u2.FloatView', precision: 4, onKey: true },
+        viewb: { class: 'foam.u2.RangeView', step: 0.00001, minValue: -Math.PI, maxValue: Math.PI, onKey: true }
+      }
+    ]
+  ]
+});
+
+
+foam.CLASS({
+  package: 'foam.graphics',
   name: 'CView',
 
   documentation: 'A Canvas-View; base-class for all graphical view components.',
@@ -397,25 +422,17 @@ foam.CLASS({
   properties: [
     {
       class: 'Float',
-      name: 'width'
+      name: 'width',
+      shortName: 'w',
     },
     {
       class: 'Float',
-      name: 'height'
+      name: 'height',
+      shortName: 'h'
     },
     {
-      class: 'Float',
-      name: 'rotation',
-      preSet: function(_, r) {
-        if ( r > 2 * Math.PI  ) return r - 2 * Math.PI;
-        if ( r < -2 * Math.PI ) return r + 2 * Math.PI;
-        return r;
-      },
-      view: {
-        class: 'foam.u2.view.DualView',
-        viewa: { class: 'foam.u2.FloatView', precision: 4, onKey: true },
-        viewb: { class: 'foam.u2.RangeView', step: 0.00001, minValue: -Math.PI*2, maxValue: Math.PI*2, onKey: true }
-      }
+      class: 'foam.graphics.Radians',
+      name: 'rotation'
     },
     {
       name: 'originX',
@@ -469,7 +486,7 @@ foam.CLASS({
     }
   },
   {
-    class: 'Float',
+    class: 'foam.graphics.Radians',
     name: 'theta',
     precision: 4,
     getter: function() {
@@ -479,16 +496,12 @@ foam.CLASS({
       var r = this.r;
       this.x = r * Math.cos(t);
       this.y = r * Math.sin(t);
-    },
-    view: {
-      class: 'foam.u2.view.DualView',
-      viewa: { class: 'foam.u2.FloatView', precision: 4, onKey: true },
-      viewb: { class: 'foam.u2.RangeView', step: 0.00001, minValue: -Math.PI*2, maxValue: Math.PI*2, onKey: true }
     }
   },
     {
-      name: 'alpha',
       class: 'Float',
+      name: 'alpha',
+      label: 'Alpha (opacity)',
       view: {
         class: 'foam.u2.view.DualView',
         viewa: { class: 'foam.u2.FloatView', precision: 4, onKey: true },
@@ -549,6 +562,7 @@ foam.CLASS({
     },
     {
       name: 'transform',
+      transient: true,
       hidden: 'true',
       expression: function getTransform(x, originX, y, originY, rotation, skewX, skewY, scaleX, scaleY) {
         var t = this.transform_.reset();
@@ -592,6 +606,7 @@ foam.CLASS({
   ],
 
   methods: [
+    // A template method which is called when a CView is first painted
     function initCView() {
       this.invalidate_ && this.propertyChange.sub(this.invalidate_);
     },
@@ -669,40 +684,44 @@ foam.CLASS({
 
       x.save();
 
-      var
-        alpha       = this.alpha,
-        border      = this.border,
-        color       = this.color,
-        shadowColor = this.shadowColor,
-        shadowBlur  = this.shadowBlur;
+      try {
+        var
+          alpha       = this.alpha,
+          border      = this.border,
+          color       = this.color,
+          shadowColor = this.shadowColor,
+          shadowBlur  = this.shadowBlur;
 
-      if ( alpha !== 1 ) {
-        x.globalAlpha *= alpha;
+        if ( alpha !== 1 ) {
+          x.globalAlpha *= alpha;
+        }
+
+        if ( border ) {
+          x.strokeStyle = border.toCanvasStyle ?
+            border.toCanvasStyle(x) :
+            border ;
+        }
+
+        if ( color ) {
+          x.fillStyle = color.toCanvasStyle ?
+            color.toCanvasStyle(x) :
+            color ;
+        }
+
+        this.doTransform(x);
+
+        if ( shadowColor && shadowBlur ) {
+          x.shadowColor = shadowColor;
+          x.shadowBlur  = shadowBlur;
+        }
+
+        x.save();
+          this.paintSelf(x);
+        x.restore();
+        this.paintChildren(x);
+      } finally {
+        x.restore();
       }
-
-      if ( border ) {
-        x.strokeStyle = border.toCanvasStyle ?
-          border.toCanvasStyle(x) :
-          border ;
-      }
-
-      if ( color ) {
-        x.fillStyle = color.toCanvasStyle ?
-          color.toCanvasStyle(x) :
-          color ;
-      }
-
-      this.doTransform(x);
-
-      if ( shadowColor && shadowBlur ) {
-        x.shadowColor = shadowColor;
-        x.shadowBlur  = shadowBlur;
-      }
-
-      this.paintSelf(x);
-      this.paintChildren(x);
-
-      x.restore();
     },
 
     function doTransform(x) {
@@ -890,21 +909,21 @@ foam.CLASS({
     {
       class: 'Int',
       name: 'cornerRadius'
-    }
+    },
+    { class: 'IntegerArray', name: 'lineDash', documentation: 'An Array of numbers which specify distances to alternately draw lines and gaps. Full line if not set.' }
   ],
 
   methods: [
     function paintSelf(x) {
       x.beginPath();
-
       if ( this.cornerRadius ){
         this.roundRect(x, 0, 0, this.width, this.height, this.cornerRadius)
       } else {
         x.rect(0, 0, this.width, this.height);
       }
 
-
       if ( this.border && this.borderWidth ) {
+        if ( this.lineDash ) x.setLineDash(this.lineDash);
         x.lineWidth = this.borderWidth;
         x.stroke();
       }
@@ -979,11 +998,11 @@ foam.CLASS({
       getter: function() { return this.y; },
       setter: function(v) { this.y = v; }
     },
-    { class: 'Float',  name: 'endX' },
-    { class: 'Float',  name: 'endY' },
-    { class: 'Float',  name: 'lineWidth', value: 1 },
-    { class: 'foam.core.Color', name: 'color',     value: '#000000' },
-    { name: 'lineDash', documentation: 'An Array of numbers which specify distances to alternately draw lines and gaps. Full line if not set.' },
+    { class: 'Float',    name: 'endX' },
+    { class: 'Float',    name: 'endY' },
+    { class: 'Float',    name: 'lineWidth', value: 1 },
+    { class: 'Color',    name: 'color',     value: '#000000' },
+    { class: 'IntegerArray', name: 'lineDash', documentation: 'An Array of numbers which specify distances to alternately draw lines and gaps. Full line if not set.' },
   ],
 
   methods: [
@@ -1045,12 +1064,14 @@ foam.CLASS({
     { class: 'Array', of: 'Float', name: 'xCoordinates' }, // 'of' not used
     { class: 'Array', of: 'Float', name: 'yCoordinates' }, // 'of' not used
     { class: 'foam.core.Color', name: 'color', value: '#000' },
-    { class: 'Float', name: 'lineWidth', value: 1 }
+    { class: 'Float', name: 'lineWidth', value: 1 },
+    { class: 'IntegerArray', name: 'lineDash', documentation: 'An Array of numbers which specify distances to alternately draw lines and gaps. Full line if not set.' },
   ],
 
   methods: [
     function paintSelf(x) {
       x.beginPath();
+      if ( this.lineDash ) x.setLineDash(this.lineDash);
       x.moveTo(this.xCoordinates[0], this.yCoordinates[0]);
       for ( var i = 1 ; i < this.xCoordinates.length ; i++ ) {
         x.lineTo(this.xCoordinates[i], this.yCoordinates[i]);
@@ -1093,6 +1114,7 @@ foam.CLASS({
       name: 'border',
       value: '#000000'
     },
+    { class: 'IntegerArray', name: 'lineDash', documentation: 'An Array of numbers which specify distances to alternately draw lines and gaps. Full line if not set.' },
     { name: 'x_',      hidden: true, transient: true, getter: function() { return this.x; } },
     { name: 'y_',      hidden: true, transient: true, getter: function() { return this.y; } },
     { name: 'top_',    hidden: true, transient: true, getter: function() { return this.y-this.radius-this.arcWidth; } },
@@ -1104,6 +1126,7 @@ foam.CLASS({
   methods: [
     function paintSelf(x) {
       x.beginPath();
+      if ( this.lineDash ) x.setLineDash(this.lineDash);
       x.arc(0, 0, this.radius, this.start, this.end);
 
       if ( this.color ) x.fill();
@@ -1201,6 +1224,7 @@ foam.CLASS({
   methods: [
     function paintSelf(x) {
       x.beginPath();
+      if ( this.lineDash ) x.setLineDash(this.lineDash);
       x.arc(0, 0, this.radius, this.start, this.end);
 
       if ( this.start != 0 || Math.abs(this.end-Math.PI*2)>0.01 ) {
@@ -1278,6 +1302,7 @@ foam.CLASS({
       getter: function() { return 2 * this.radiusY; },
       setter: function(h) { this.radiusY = h / 2; }
     },
+    { class: 'IntegerArray', name: 'lineDash', documentation: 'An Array of numbers which specify distances to alternately draw lines and gaps. Full line if not set.' },
     { name: 'x_',      hidden: true, transient: true, getter: function() { return this.x; } },
     { name: 'y_',      hidden: true, transient: true, getter: function() { return this.y; } },
     { name: 'top_',    hidden: true, transient: true, getter: function() { return this.y; } },
@@ -1289,6 +1314,7 @@ foam.CLASS({
   methods: [
     function paintSelf(x) {
       x.beginPath();
+      if ( this.lineDash ) x.setLineDash(this.lineDash);
       x.ellipse(this.radiusX, this.radiusY, this.radiusX, this.radiusY, 0, this.start, this.end);
 
       if ( this.color ) x.fill();
@@ -1501,11 +1527,6 @@ foam.CLASS({
       value: '#000000'
     },
     {
-      class: 'Color',
-      name: 'border',
-      label: 'Border Color'
-    },
-    {
       class: 'Float',
       name:  'maxWidth',
       label: 'Maximum Width',
@@ -1526,6 +1547,58 @@ foam.CLASS({
           this.align === 'center' ? this.width/2 :
           this.width,
         this.height/2+10);
+
+      if ( this.border ) {
+        c.strokeStyle = this.border;
+        c.strokeRect(0, 0, this.width-1, this.height-1);
+      }
+    }
+  ]
+});
+
+
+foam.CLASS({
+  package: 'foam.graphics',
+  name:  'Image',
+  extends: 'foam.graphics.CView',
+
+  documentation: 'A CView which draws an image.',
+
+  properties: [
+    {
+//      class: 'URL',
+      class: 'String',
+      name:  'src',
+      postSet: function(o, n) {
+        console.log('Image:', n);
+        var self = this;
+        var image = new Image(n);
+        image.onload = function() {
+          self.width  = this.naturalWidth;
+          self.height = this.naturalHeight;
+          self.image_ = this;
+          self.invalidate();
+        };
+        image.src = n;
+      },
+      displayWidth: 80
+    },
+    {
+      name: 'image_',
+      hidden: true,
+      transient: true
+    }
+  ],
+
+  methods: [
+    function initCView() {
+      this.SUPER();
+      this.src = this.src;
+    },
+    function paintSelf(c) {
+      if ( this.image_ ) {
+        c.drawImage(this.image_, 0, 0, this.width, this.height);
+      }
 
       if ( this.border ) {
         c.strokeStyle = this.border;

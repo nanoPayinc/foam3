@@ -14,11 +14,11 @@ foam.CLASS({
   ],
 
   imports: [
-    'auth',
+    'auth?',
     'ctrl',
     'group',
-    'loginSuccess',
-    'requestLogin',
+    'loginSuccess?',
+    'requestLogin?',
     'sessionTimer',
     'subject',
     'window'
@@ -53,6 +53,9 @@ foam.CLASS({
           this.RPCErrorMessage.isInstance(msg.object) &&
           msg.object.data.id === 'foam.nanos.auth.AuthenticationException'
         ) {
+          if (!this.auth$) {
+            return;
+          }
           // If the user is already logged in when this happens, then we know
           // that something occurred on the backend to destroy this user's
           // session. Therefore we reset the client state and ask them to log

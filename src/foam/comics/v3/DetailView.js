@@ -23,7 +23,8 @@ foam.CLASS({
     'foam.u2.ControllerMode',
     'foam.u2.dialog.Popup',
     'foam.u2.stack.BreadcrumbView',
-    'foam.u2.stack.StackBlock'
+    'foam.u2.stack.StackBlock',
+    'foam.u2.ActionReference',
   ],
 
   imports: [
@@ -103,6 +104,13 @@ foam.CLASS({
       }
     },
     {
+      class: 'Class',
+      name: 'of',
+      expression: function(currentData_, config$of) {
+        return currentData_?.cls_ ?? config$of;
+      }
+    },
+    {
       class: 'FObjectProperty',
       of: 'foam.comics.v2.DAOControllerConfig',
       name: 'config',
@@ -160,35 +168,39 @@ foam.CLASS({
       factory: function() {
         return this.__context__.translationService || foam.i18n.NullTranslationService.create({}, this);
       }
+    },
+    {
+      name: 'currentData_',
+      documentation: 'Active data property that stores current working data for the current view mode'
+    },
+    {
+      class: 'Map',
+      name: 'actionsOverrides'
     }
   ],
 
   methods: [
     function init() {
       // This is needed to ensure data is available for the viewTitle
+      let self = this;
       this.SUPER();
       this.addCrumb();
       this.loadData();
+      this.getActionsOverrides();
+      this.dynamic(function(controllerMode, data, workingData) {
+        if ( controllerMode == 'EDIT' ) {
+          self.currentData_ = workingData;
+        } else {
+          self.currentData_ = data;
+        }
+      });
     },
     function render() {
       var self = this;
       this.stack?.setTitle(this.viewTitle$, this);
       this.SUPER();
       let d;
-      let comicsActions = this.config.of.getAxiomsByClass(foam.comics.v3.ComicsAction);
-      let actionsOverrides = {};
-      if ( comicsActions.length ) {
-        comicsActions?.forEach(v => {actionsOverrides[v.name] = v});
-      }
-      ['edit', 'delete', 'copy'].forEach(v => {
-        let defaultAction = this[v.toUpperCase()];
-        if ( ! actionsOverrides[v] ) {
-          actionsOverrides[v] = defaultAction;
-          return;
-        }
-        actionsOverrides[v] = defaultAction.clone(self).copyFrom(actionsOverrides[v]);
-      })
-      this.onDetach(this.dynamic(function(data){
+      this.onDetach(this.dynamic(function(currentData_, actionsOverrides){
         d?.detach?.();
         d = self.stack.setTrailingContainer(
           this.E().style({ display: 'contents' }).start(foam.u2.ButtonGroup, { 
@@ -197,22 +209,23 @@ foam.CLASS({
             }, this.buttonGroup_$)
             .addClass(this.myClass('buttonGroup'))
             .add(self.slot(function(primary) {
+              if ( ! primary ) return;
               return this.E()
-                .hide(self.controllerMode$.map(c => c == 'EDIT' ))
-                .startContext({ data: self.data })
+                // .hide(self.controllerMode$.map(c => c == 'EDIT' ))
+                .startContext({ data: self.currentData_$ })
                   .tag(primary, { buttonStyle: 'PRIMARY', size: 'SMALL' })
                 .endContext();
             }))
             .startContext({ data: self })
               .tag(actionsOverrides.edit)
+              .tag(actionsOverrides.save, { buttonStyle: 'PRIMARY'})
               .tag(self.CANCEL_EDIT)
-              .tag(self.SAVE, { buttonStyle: 'PRIMARY'})
             .endContext()
             .startOverlay()
               .tag(actionsOverrides.copy)
               .tag(actionsOverrides.delete)
             .endOverlay()
-            .callIf(data, function() { self.populatePrimaryAction(self.config.of, self.data) })
+            .callIf(currentData_, function() { self.populatePrimaryAction() })
           .end()
         )
         self.onDetach(d);
@@ -239,15 +252,43 @@ foam.CLASS({
       self
         .start(this.config.viewBorder)
           .start(this.viewView, {
-            data$: self.slot(function(controllerMode, data, workingData) { return controllerMode == 'EDIT' ? workingData : data }),
+            data$: self.currentData_$
           })
             .addClass(self.myClass('view-container'))
           .end()
         .end();
+    }
+  ],
+  
+  listeners: [
+    {
+      name: 'getActionsOverrides',
+      on: ['this.propertyChange.of'],
+      code: function() {
+        let actionsOverrides = {};
+        let comicsActions = this.of.getAxiomsByClass(foam.comics.v3.ComicsAction);
+        if ( comicsActions.length ) {
+          comicsActions?.forEach(v => {actionsOverrides[v.name] = v});
+        }
+        ['edit', 'delete', 'copy', 'save'].forEach(v => {
+          let defaultAction = this[v.toUpperCase()];
+          if ( ! actionsOverrides[v] ) {
+            actionsOverrides[v] = defaultAction;
+            return;
+          }
+          let newAction = defaultAction.clone(self).copyFrom(actionsOverrides[v]);
+          if ( actionsOverrides[v].hasOwnProperty('code') )
+            newAction.overrideCodeData$ = this.currentData_$;
+          actionsOverrides[v] = newAction;
+        })
+        this.actionsOverrides = actionsOverrides;
+      }
     },
-    async function populatePrimaryAction(of, data) {
+    async function populatePrimaryAction() {
+      if ( ! this.currentData_ ) return;
+      let data = this.currentData_;
       var self = this;
-      var allActions = of.getAxiomsByClass(foam.core.Action).filter(v => ! foam.comics.v3.ComicsAction.isInstance(v));
+      var allActions = this.of.getAxiomsByClass(foam.core.Action).filter(v => ! foam.comics.v3.ComicsAction.isInstance(v));
       var defaultAction = allActions.filter((a) => a.isDefault);
       var acArray = [...defaultAction, ...allActions];
       this.actionArray = allActions;
@@ -269,14 +310,11 @@ foam.CLASS({
         this.buttonGroup_
           .startOverlay()
           .forEach(this.actionArray, function(v) {
-            this.addActionReference(v, self.data$)
+            this.addActionReference(v, self.currentData_$)
           })
           .endOverlay()
       }
-    }
-  ],
-  
-  listeners: [
+    },
     {
       name: 'loadData',
       isIdled: true,
@@ -292,7 +330,7 @@ foam.CLASS({
           self.data = d;
           self.data.setPrivate_('__context__', self.data.__context__.createSubContext({ controllerMode: this.controllerMode$ }));
           if ( this.controllerMode == 'EDIT' ) this.edit();
-          this.populatePrimaryAction(self.config.of, self.data);
+          this.populatePrimaryAction();
         });
       }
     }
@@ -363,17 +401,18 @@ foam.CLASS({
             class: 'foam.comics.v2.DAOCreateView',
             data: newRecord,
             config: this.config,
-            of: this.config.of
+            of: this.of
           }, parent: this }));
       }
     },
     {
+      class: 'foam.comics.v3.ComicsAction',
       name: 'save',
       size: 'SMALL',
-      isEnabled: function(workingData$errors_) {
+      internalIsEnabled: function(workingData$errors_) {
         return ! workingData$errors_;
       },
-      isAvailable: function(controllerMode) {
+      internalIsAvailable: function(controllerMode) {
         return controllerMode == 'EDIT';
       },
       code: function() {
@@ -389,7 +428,7 @@ foam.CLASS({
                 currentFeedback = currentFeedback.next;
               }
             } else {
-              var menuId = this.currentMenu ? this.currentMenu.id : this.config.of.id;
+              var menuId = this.currentMenu ? this.currentMenu.id : this.of.id;
               var title = this.translationService.getTranslation(foam.locale, menuId + '.browseTitle', this.config.browseTitle);
 
               this.notify(title + " " + this.UPDATED, '', this.LogLevel.INFO, true);

@@ -32,7 +32,6 @@ foam.CLASS({
       if ( this.currentMenu.id === this.ctrl.route ) {
         if ( window.history.length > 1 ) {
           window.history.back();
-          window.onpopstate();
         } else 
           this.pushDefaultMenu('');
  

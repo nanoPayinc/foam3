@@ -26,11 +26,14 @@ foam.CLASS({
     { name: 'DATE_FORMAT', message: 'yyyy-mm-dd' }
   ],
 
+  properties: [
+    [ 'placeholder', this.DATE_FORMAT ],
+    [ 'type', 'date' ]
+  ],
+
   methods: [
     function render() {
-      this.setAttribute('type', 'date');
       this.setAttribute('max', '9999-12-31');
-      this.setAttribute('placeholder', this.DATE_FORMAT);
 
       this.SUPER();
 
@@ -55,13 +58,13 @@ foam.CLASS({
       var slot    = this.attrSlot(); //null, this.onKey ? 'input' : null);
 
       function updateSlot() {
-        var date = self.data;
         if ( focused ) return;
+        var date = self.data;
         if ( foam.Number.isInstance(date) ) date = new Date(date);
         if ( ! date ) {
           slot.set('');
         } else {
-          slot.set(date ? date.toISOString().substring(0,10) : '');
+          slot.set(foam.Date.toInputCompatibleDateString(date));
         }
       }
 

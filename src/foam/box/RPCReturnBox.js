@@ -30,10 +30,10 @@ foam.CLASS({
     {
       name: 'promise',
       factory: function() {
-        return new Promise(function(resolve, reject) {
+        return new Promise((resolve, reject) => {
           this.resolve_ = resolve;
-          this.reject_ = reject;
-        }.bind(this));
+          this.reject_  = reject;
+        });
       },
       swiftType: 'Future<Any?>',
       swiftFactory: 'return Future()'

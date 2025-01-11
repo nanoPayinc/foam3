@@ -78,7 +78,7 @@ public class RuleEngine extends ContextAwareSupport {
         if ( stops_.get()                  ) break;
         if ( ! isRuleActive(rule)          ) continue;
         if ( ! checkPermission(rule, obj)  ) continue;
-        if ( ! rule.f(userX_, obj, oldObj) ) continue;
+        if ( ! rule.ruleF(userX_, oldObj, obj) ) continue;
 
         if ( ! locked && lock_ != null && rule.getRequiresLock() ) {
           locked = true;
@@ -143,7 +143,7 @@ public class RuleEngine extends ContextAwareSupport {
       for ( Rule rule : rules ) {
         if ( ! isRuleActive(rule)                   ) continue;
         if ( ! checkPermission(rule, obj)           ) continue;
-        if ( ! rule.f(userX_, obj, oldObj)          ) continue;
+        if ( ! rule.ruleF(userX_, oldObj, obj)      ) continue;
 
         TestedRule agent = new TestedRule();
         agent.setRule(rule.getId());
@@ -218,7 +218,7 @@ public class RuleEngine extends ContextAwareSupport {
           // is called that the rule engine honors and should commit to, not the
           // future version of the same rule.
           var nu = rule.getOperation() != Operation.REMOVE ? reloadObject(obj) : obj;
-          if ( ! rule.f(x, nu, oldObj) ) return;
+          if ( ! rule.ruleF(x, oldObj, nu) ) return;
 
           PM pm = PM.create(getX(), RulerDAO.getOwnClassInfo(), "ASYNC", rule.getDaoKey(), rule.getId());
           var before = rule.getOperation() != Operation.REMOVE ? nu.fclone() : obj;

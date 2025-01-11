@@ -35,8 +35,8 @@ foam.CLASS({
     async function execute() {
       this.wizardlets = foam.Array.filter(
         this.unfilteredWizardlets,
-        this.AND(
-          this.INSTANCE_OF(this.CapabilityWizardlet),
+        this.OR(
+          this.NOT(this.INSTANCE_OF(this.CapabilityWizardlet)),
           this.IN(
             this.DOT(
               this.CapabilityWizardlet.CAPABILITY,

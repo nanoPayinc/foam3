@@ -25,6 +25,7 @@ foam.CLASS({
 
   imports: [
     'notificationDAO',
+    'setTimeout',
     'scriptDAO',
     'scriptEventDAO',
     'subject'
@@ -142,6 +143,7 @@ foam.CLASS({
       name: 'description',
       includeInDigest: false,
       documentation: 'Description of the script.',
+      width: 100,
       tableWidth: 300
     },
     {
@@ -298,7 +300,7 @@ foam.CLASS({
       value: 'scriptDAO',
       transient: true,
       visibility: 'HIDDEN',
-      documentation: 'Name of dao to store script itself. To set from inheritor just change property value'
+      documentation: 'Name of dao to store script itself. To set from inheritor just change property value. Used by client for polling.'
     },
     {
       class: 'String',
@@ -392,11 +394,11 @@ foam.CLASS({
       },
       args: 'Context x',
       javaCode: `
-        RuntimeException thrown    = null;
-        Language         l         = getLanguage();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PrintStream            ps  = new PrintStream(baos);
-        PM                     pm  = new PM(this.getClass(), getId());
+        RuntimeException      thrown = null;
+        Language              l      = getLanguage();
+        ByteArrayOutputStream baos   = new ByteArrayOutputStream();
+        PrintStream           ps     = new PrintStream(baos);
+        PM                    pm     = new PM(this.getClass(), getId());
 
         try {
           Thread.currentThread().setPriority(getPriority());
@@ -454,12 +456,15 @@ foam.CLASS({
     {
       name: 'poll',
       code: function() {
-        var self = this;
-        var interval = setInterval(function() {
-          self.__context__[self.daoKey].find(self.id).then(function(script) {
+        var delay = Math.min(4000, Math.max(40, this.lastDuration));
+        var self  = this;
+        function check() {
+          var dao = self.__context__[self.daoKey];
+          dao.cmd(foam.dao.DAO.PURGE_CMD); // In case DAO is decorated with a TTLCachingDAO (which it is)
+          dao.find(self.id).then(function(script) {
+            // console.log('***************** POLL', script.status, delay);
             if ( script.status === self.ScriptStatus.UNSCHEDULED || script.status === self.ScriptStatus.ERROR ) {
               self.copyFrom(script);
-              clearInterval(interval);
 
               if ( self.notify ) {
                 // create notification
@@ -489,11 +494,14 @@ foam.CLASS({
               notification.toastState = self.ToastState.REQUESTED;
               notification.transient = true;
               self.__subContext__.myNotificationDAO.put(notification);
+            } else {
+              delay = Math.min(4000, delay * 1.5);
+              self.setTimeout(check, delay);
             }
-          }).catch(function() {
-            clearInterval(interval);
           });
-        }, 2000);
+        }
+
+        self.setTimeout(check, delay);
       }
     }
   ],
@@ -506,7 +514,8 @@ foam.CLASS({
         return true;
       },
       isAvailable: function(enabled, status) {
-        return enabled &&
+        return enabled
+         &&
           ( status == this.ScriptStatus.UNSCHEDULED ||
             status == this.ScriptStatus.ERROR );
       },
@@ -514,8 +523,7 @@ foam.CLASS({
         var self = this;
         this.output = '';
         this.status = this.ScriptStatus.SCHEDULED;
-        if ( this.language == this.Language.BEANSHELL ||
-             this.language == this.Language.JSHELL ) {
+        if ( this.language == this.Language.BEANSHELL || this.language == this.Language.JSHELL ) {
           var notification = self.Notification.create();
           notification.userId = self.subject && self.subject.realUser ?
             self.subject.realUser.id : self.user.id;

@@ -32,11 +32,6 @@ foam.CLASS({
         A grouping of places to which you would like to restrict your results
         Client can pass in a preferred country to narrow down to but that country must be present here otherwise it is ignored
         See: https://developers.google.com/maps/documentation/places/web-service/autocomplete#components
-      `,
-      javaFactory: `
-        return new String[]{
-          "ca", "pk"
-        };
       `
     },
     {

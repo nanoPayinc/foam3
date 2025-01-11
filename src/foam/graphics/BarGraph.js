@@ -17,8 +17,7 @@ foam.CLASS({
   ],
 
   methods: [
-    function initCView( x, y, dataSource, graphColors, columnWidth, columnGap, w, h, columnMaxLength ) {
-
+    function initCView(x, y, dataSource, graphColors, columnWidth, columnGap, w, h, columnMaxLength) {
       var legendBox, legendLabel;
       var dataSourceN = this.dataSource.normalized();
       this.columnGap = this.columnGap * this.dataSource.LegendEntries.length;

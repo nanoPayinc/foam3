@@ -13,15 +13,15 @@ foam.CLASS({
   documentation: 'Predicate which checks if the class of object is a specified class.',
 
   javaCode: `
-  public IsClassOf(foam.core.ClassInfo targetClass) {
-    setTargetClass(targetClass);
+  public IsClassOf(foam.core.ClassInfo of) {
+    setOf(of);
   }
   `,
 
   properties: [
     {
       class: 'Class',
-      name: 'targetClass',
+      name: 'of',
       view: {
         class: 'foam.u2.view.StrategizerChoiceView',
         desiredModelId: 'foam.Class'
@@ -38,15 +38,22 @@ foam.CLASS({
     {
       name: 'f',
       code: function(obj) {
-        return this.propExpr == null || this.propExpr == undefined ? this.targetClass.id == obj.cls_.id : this.targetClass.id == this.propExpr.f(obj).cls_.id;
+        return this.propExpr == null || this.propExpr == undefined ? this.of.id == obj.cls_.id : this.of.id == this.propExpr.f(obj).cls_.id;
       },
       javaCode: `
-      return getPropExpr() == null ? getTargetClass().getObjClass() == obj.getClass() : getTargetClass().getObjClass() == getPropExpr().f(obj).getClass();
+      return getPropExpr() == null ? getOf().getObjClass() == obj.getClass() : getOf().getObjClass() == getPropExpr().f(obj).getClass();
       `
+    },
+    {
+      name: 'ruleF',
+      type: 'Boolean',
+      args: 'Context x, foam.core.FObject o, foam.core.FObject n',
+      code: 'return this.f(n);',
+      javaCode: 'return f(n);'
     },
     function toString() {
       return foam.String.constantize(this.cls_.name) +
-          '(' + this.targetClass.id + ')';
+          '(' + this.of.id + ')';
     }
   ]
 });

@@ -7,6 +7,9 @@
 foam.POM({
     name: 'foam-full',
     version: 3,
+    envVars: [
+      { name: 'NAME', value: 'foam'}
+    ],
     excludes: [ 'node_modules' ],
     projects: [
       { name: 'src/pom' },
@@ -47,9 +50,9 @@ foam.POM({
       'org.bouncycastle:bcpkix-jdk18on:1.76',
       'org.bouncycastle:bcprov-jdk18on:1.76',
       'org.bouncycastle:bcutil-jdk18on:1.76',
-      'org.eclipse.angus:angus-activation:2.0.1',
-      'org.eclipse.angus:angus-mail:2.0.2',
-      'org.eclipse.angus:imap:2.0.2',
+      'org.eclipse.angus:angus-activation:2.0.2',
+      'org.eclipse.angus:angus-mail:2.0.3',
+      'org.eclipse.angus:imap:2.0.3',
       'org.eclipse.jetty:jetty-proxy:11.0.23',
       'org.eclipse.jetty:jetty-alpn-java-server:11.0.23',
       'org.eclipse.jetty:jetty-http:11.0.23',

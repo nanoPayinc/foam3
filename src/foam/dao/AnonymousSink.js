@@ -8,7 +8,6 @@ foam.CLASS({
   package: 'foam.dao',
   name: 'AnonymousSink',
   implements: [ 'foam.dao.Sink' ],
-  flags: [],
 
   axioms: [
     {
@@ -35,6 +34,9 @@ foam.CLASS({
     function reset(sub) {
       var s = this.sink;
       s && s.reset && s.reset(sub);
+    },
+    function toE() {
+      return '';
     }
   ]
 });

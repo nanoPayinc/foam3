@@ -29,7 +29,7 @@ p({
   "action":{"class":"foam.nanos.crunch.ruler.AuthorizeUCJStatusOnPut"},
   "lifecycleState":1,
   "documentation":"""
-    On every ucjDAO put where the ucj is in a status above ACION_REQUIRED, 
+    On every ucjDAO put where the ucj is in a status above ACION_REQUIRED,
     check that the context user has the permission to set the unsafe status,
     otherwise, set the status to ACTION_REQUIRED, or fallback to the previous status,
     if applicable
@@ -53,7 +53,7 @@ p({
   predicate: {
     class: 'foam.mlang.predicate.And',
     args: [
-      { class: 'foam.nanos.crunch.predicate.DataChanged' },
+      { class: "foam.nanos.crunch.UserCapabilityJunction.DataChanged" },
       {
         class: 'foam.nanos.ruler.predicate.FScriptRulePredicate',
         query: 'n.status==foam.nanos.crunch.CapabilityJunctionStatus.GRANTED'
@@ -76,7 +76,7 @@ p({
   "lifecycleState":1,
   "documentation":"""
     On put of a new UCJ, validate the data of the ucj and set the ucj
-    to ACTION_REQUIRED if the data is invalid, or PENDING if the data is valid, so that 
+    to ACTION_REQUIRED if the data is invalid, or PENDING if the data is valid, so that
     subsequent rules can set the ucj to an appropiate status, or send out an approvalrequest if required
   """
 })
@@ -96,7 +96,7 @@ p({
   "predicate":{
     "class":"foam.mlang.predicate.Or",
     "args":[
-      { 
+      {
         "class":"foam.nanos.ruler.predicate.PropertyEQValue",
         "propName":"status",
         "propValue":{"class":"foam.nanos.crunch.CapabilityJunctionStatus","ordinal":3},
@@ -105,7 +105,7 @@ p({
           into pending status so that subsequent rules may try to grant it.
         """
       },
-      { 
+      {
         "class":"foam.mlang.predicate.And",
         "args":[
           {
@@ -151,7 +151,7 @@ p({
       {
         "class":"foam.mlang.predicate.And",
         "args":[
-          { 
+          {
             "class": "foam.nanos.ruler.predicate.PropertyChangePredicate",
             "propName":"data",
             "documentation":"Only perform data validation when the data has been updated"
@@ -161,7 +161,7 @@ p({
             "propName":"status",
             "propValue":{"class":"foam.nanos.crunch.CapabilityJunctionStatus","ordinal":0},
             "documentation":"""
-              When the ucj is PENDING, it implies that there is an approval request pending action. 
+              When the ucj is PENDING, it implies that there is an approval request pending action.
               Thus the ucj becomes uneditable until the request is acted on by agent to avoid inconsistencies between
               the approvable obj and the ucj.
             """
@@ -171,7 +171,7 @@ p({
             "propName":"status",
             "propValue":{"class":"foam.nanos.crunch.CapabilityJunctionStatus","ordinal":6},
             "documentation":"""
-              When the ucj is PENDING, it implies that there is an approval request pending action. 
+              When the ucj is PENDING, it implies that there is an approval request pending action.
               Thus the ucj becomes uneditable until the request is acted on by agent to avoid inconsistencies between
               the approvable obj and the ucj.
             """
@@ -199,7 +199,7 @@ p({
   "action":{"class":"foam.nanos.crunch.ruler.SetUCJStatusOnPut"},
   "lifecycleState":1,
   "documentation":"""
-    On every ucjDAO put, set the appropriate status based on the capability, 
+    On every ucjDAO put, set the appropriate status based on the capability,
     current state of the ucj, as well as the state of its prerequisites.
     Note: this rule is only ran if ucj is GRANTED, APPROVED, and PENDING
   """

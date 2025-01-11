@@ -24,7 +24,47 @@ public class SafetyUtil {
   }
 
   public static boolean equals(Object o1, Object o2) {
-    return compare(o1, o2) == 0;
+    if ( o1 == o2 ) return  true;
+    if ( o1 == null || o2 == null ) return false;
+
+    // Number subtypes (Long, Integer, etc.) are type-specific comparable and
+    // can only be compareTo the same type eg., Long can only compareTo Long.
+    //
+    // Converting o1 and o2 to double then comparing allows FOAM property types
+    // that are java.lang.Number compatible such as Long, Int, Short, Byte,
+    // Float and Double to be able to compareTo one another.
+    //
+    // Ex. The generated `isDefaultValue` of a Long property compares its value
+    // to 0, which is an integer.
+    //
+    // This also allows predicates such as EQ, GT, LT and friends comparison
+    // without explicit casting.
+    //
+    // Ex. EQ(User.ID, 1L) is the same as EQ(User.ID, 1).
+    if ( o1 instanceof Number && o2 instanceof Number ) {
+      double d1 = ((Number) o1).doubleValue();
+      double d2 = ((Number) o2).doubleValue();
+
+      return d1 == d2;
+    }
+
+    // Compare classes if the classes are different
+    if ( o1.getClass() != o2.getClass() ) return false;
+
+    // Handle array comparison
+    if ( o1.getClass().isArray() ) {
+      if ( o1.getClass() == boolean[].class ) return 0 == compare((boolean[]) o1, (boolean[]) o2);
+      if ( o1.getClass() == byte[].class    ) return 0 == compare((byte[])    o1, (byte[]) o2);
+      if ( o1.getClass() == char[].class    ) return 0 == compare((char[])    o1, (char[]) o2);
+      if ( o1.getClass() == double[].class  ) return 0 == compare((double[])  o1, (double[]) o2);
+      if ( o1.getClass() == float[].class   ) return 0 == compare((float[])   o1, (float[]) o2);
+      if ( o1.getClass() == int[].class     ) return 0 == compare((int[])     o1, (int[]) o2);
+      if ( o1.getClass() == long[].class    ) return 0 == compare((long[])    o1, (long[]) o2);
+      if ( o1.getClass() == short[].class   ) return 0 == compare((short[])   o1, (short[]) o2);
+      return 0 == compare((Object[]) o1, (Object[]) o2);
+    }
+
+    return o1.equals(o2);
   }
 
   public static boolean equalsIgnoreCase(String o1, String o2) {
@@ -37,11 +77,6 @@ public class SafetyUtil {
     if ( o1 == o2   ) return  0;
     if ( o2 == null ) return  1;
     if ( o1 == null ) return -1;
-
-    // Compare classes if the classes are different
-    if ( o1.getClass() != o2.getClass() ) {
-      compare(o1.getClass().getName(), o2.getClass().getName());
-    }
 
     // Number subtypes (Long, Integer, etc.) are type-specific comparable and
     // can only be compareTo the same type eg., Long can only compareTo Long.
@@ -66,6 +101,11 @@ public class SafetyUtil {
       return -1;
     }
 
+    // Compare classes if the classes are different
+    if ( o1.getClass() != o2.getClass() ) {
+      compare(o1.getClass().getName(), o2.getClass().getName());
+    }
+
     // Handle array comparison
     if ( o1.getClass().isArray() ) {
       if ( o1.getClass() == boolean[].class ) return compare((boolean[]) o1, (boolean[]) o2);
@@ -79,10 +119,14 @@ public class SafetyUtil {
       return compare((Object[]) o1, (Object[]) o2);
     }
 
-    if ( o1.equals(o2) ||
-      ! ( o1 instanceof Comparable || o2 instanceof Comparable ) ) return 0;
-    if ( ! (o2 instanceof Comparable) ) return  1;
-    if ( ! (o1 instanceof Comparable) ) return -1;
+    if ( ! ( o1 instanceof Comparable ) ) {
+      // System.err.println("********************************************** NOT COMPARABLE " + o1.getClass() + " " + o2.getClass() + " " + o1.equals(o2));
+      // Thread.dumpStack();
+
+      if ( o1.equals(o2) ) return 0;
+
+      return o1.hashCode() > o2.hashCode() ? 1 : -1;
+    }
 
     return ((Comparable) o1).compareTo(o2);
   }

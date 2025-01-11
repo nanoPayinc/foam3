@@ -112,7 +112,7 @@ foam.CLASS({
             if ( ( p.name === 'route' || p.shortName === 'route' ) && this.obj[p.name] !== value && this.tail ) {
               this.detachTail();
             }
-                        // Even if value doesn't exist, then still set, to revert to default value
+            // Even if value doesn't exist, then still set, to revert to default value
             this.obj[p.name] = value && decodeURIComponent(value);
           });
 

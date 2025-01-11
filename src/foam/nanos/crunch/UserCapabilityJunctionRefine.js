@@ -109,6 +109,11 @@ foam.CLASS({
         );
       }
     },
+    {
+      class: 'foam.nanos.ruler.RulePredicateAxiom',
+      name: 'DataChanged',
+      javaCode: 'return ! SafetyUtil.equals(o == null ? null : o.getData(), n.getData());'
+    }
   ],
 
   properties: [

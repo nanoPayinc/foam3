@@ -47,7 +47,7 @@ p({"class":"foam.strategy.StrategyReference","id":"b0d7bed9-a82e-478b-a0f8-a2d1d
 p({"class":"foam.strategy.StrategyReference","id":"20c2262d-4d0b-47a4-9389-b7e6867d894b","desiredModelId":"foam.Class","strategy":"foam.nanos.auth.Group"})
 
 // ruler
-p({"class":"foam.strategy.StrategyReference","id":"f6a04c4d-0c1d-ca3e-9945-1e531bc1a3b4","desiredModelId":"foam.mlang.predicate.Predicate","strategy":"foam.nanos.ruler.predicate.IsInstancePredicate"})
+p({"class":"foam.strategy.StrategyReference","id":"f6a04c4d-0c1d-ca3e-9945-1e531bc1a3b4","desiredModelId":"foam.mlang.predicate.Predicate","strategy":"foam.mlang.predicate.IsInstanceOf"})
 p({"class":"foam.strategy.StrategyReference","id":"a1f3c02c-00b6-54d3-d749-e2ec7e8aced0","desiredModelId":"foam.mlang.predicate.Predicate","strategy":"foam.nanos.ruler.predicate.PropertyChangePredicate"})
 p({"class":"foam.strategy.StrategyReference","id":"fb203bdd-6ef7-aa56-ddc2-0a8ae09f938e","desiredModelId":"foam.mlang.predicate.Predicate","strategy":"foam.nanos.ruler.predicate.PropertyEQProperty"})
 p({"class":"foam.strategy.StrategyReference","id":"84862e1d-e28b-5d61-4105-e737a97b3897","desiredModelId":"foam.mlang.predicate.Predicate","strategy":"foam.nanos.ruler.predicate.PropertyEQValue"})

@@ -10,7 +10,7 @@ foam.CLASS({
   extends: 'foam.mlang.AbstractExpr',
   implements: [ 'foam.core.Serializable' ],
 
-  documentation: `Stores propName as a property and returns property when f() is called.`,
+  documentation: 'Stores propName as a property and returns property when f() is called.',
 
   javaImports: [
     'foam.core.ClassInfo',
@@ -67,15 +67,18 @@ foam.CLASS({
         return this.specialization(o.model_).f(o);
       },
       javaCode: `
-        if ( ! ( obj instanceof FObject ) )
-          return false;
+        if ( obj instanceof foam.core.X )
+          return foam.mlang.ContextObject.create(getPropName());
 
-        return specialization(((FObject)obj).getClassInfo()).f(obj);
+        if ( obj instanceof FObject )
+          return specialization(((FObject) obj).getClassInfo()).f(obj);
+
+        return false;
       `
     },
     {
       name: 'specialization',
-      args: [ { name: 'model', type: 'ClassInfo' } ],
+      args: 'ClassInfo model',
       type: 'Expr',
       code: function(model) {
         return this.specializations_[model.name] ||
@@ -91,7 +94,7 @@ foam.CLASS({
     },
     {
       name: 'specialize',
-      args: [ { name: 'model', type: 'ClassInfo' } ],
+      args: 'ClassInfo model',
       type: 'Expr',
       code: function(model) {
         for ( var i = 0; i < model.properties.length; i++  ) {

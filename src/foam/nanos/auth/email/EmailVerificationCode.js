@@ -30,7 +30,9 @@ foam.CLASS({
     'ctrl',
     'emailVerificationService',
     'loginSuccess',
-    'pushMenu'
+    'notify',
+    'pushMenu',
+    'wizardController?'
   ],
 
   messages: [
@@ -198,17 +200,10 @@ foam.CLASS({
             this.loginSuccess = true;
           }
 
-          this.ctrl.add(this.NotificationMessage.create({
-            message: this.SUCCESS_MSG,
-            type: this.LogLevel.INFO
-          }));
+          this.notify(this.SUCCESS_MSG,'', this.LogLevel.INFO);
           this.emailVerificationService.pub('emailVerified');
         } else {
-          this.ctrl.add(this.NotificationMessage.create({
-            message: this.ERROR_MSG,
-            type: this.LogLevel.ERROR,
-            err: err?.data
-          }));
+          this.notify(err?.data || this.ERROR_MSG,'', this.LogLevel.ERROR);
           throw err;
         }
       }

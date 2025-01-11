@@ -1,0 +1,6 @@
+p({
+  "class":"foam.strategy.StrategyReference",
+  "id":"foam_nanos_auth_UserLifecycleTicket",
+  "desiredModelId":"foam.nanos.ticket.Ticket",
+  "strategy":"foam.nanos.auth.UserLifecycleTicket"
+})

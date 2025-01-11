@@ -14,7 +14,8 @@ foam.CLASS({
     {
       class: 'FObjectProperty',
       of: 'foam.nanos.notification.email.EmailConfig',
-      name: 'emailConfig'
+      name: 'emailConfig',
+      view: 'foam.u2.view.OptionalFObjectView'
     },
     {
       class: 'String',

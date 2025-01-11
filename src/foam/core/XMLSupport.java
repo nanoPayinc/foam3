@@ -85,7 +85,8 @@ public class XMLSupport {
       Logger logger = (Logger) x.get("logger");
       logger.error("Error while reading file");
     } catch (Throwable t) {
-      // noop
+      Logger logger = (Logger) x.get("logger");
+      logger.error("XML parsing error", t);
     }
     return (FObject) clsInstance;
   }
@@ -154,8 +155,8 @@ public class XMLSupport {
       transformer = tf.newTransformer();
       transformer.setOutputProperty(OutputKeys.INDENT, "yes");
       transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-    } catch (TransformerConfigurationException ex) {
-    }
+    } catch (TransformerConfigurationException ex) {}
+
     return transformer;
   }
 }

@@ -75,7 +75,7 @@ foam.CLASS({
           policy.setPriorPasswordsToCheckCount(0);
 
           // validate should return immediately on a disabled policy
-          policy.validate(null, password);
+          policy.validate(x, null, password);
           test(true, message);
         } catch ( Throwable t ) {
           test(false, message + " - " + t.getMessage());
@@ -95,12 +95,11 @@ foam.CLASS({
           // default password policy
           PasswordPolicy policy = new PasswordPolicy();
           policy.setEnabled(true);
-          policy.setX(x);
           policy.setMinLength(6);
           policy.setPriorPasswordsToCheckCount(0);
 
           // validate
-          policy.validate(null, password);
+          policy.validate(x, null, password);
           test(succeeds, succeeds ? message : "PasswordPolicy validation should throw a RuntimeException - " + message);
         } catch ( Throwable t ) {
           if ( ! succeeds ) {
@@ -126,7 +125,6 @@ foam.CLASS({
           // default password policy
           PasswordPolicy policy = new PasswordPolicy();
           policy.setEnabled(true);
-          policy.setX(x);
           policy.setMinLength(6);
           policy.setPriorPasswordsToCheckCount(historyCount);
 
@@ -138,7 +136,7 @@ foam.CLASS({
           }
 
           // validate
-          policy.validate(user, password);
+          policy.validate(x, user, password);
           test(succeeds, succeeds ? message : "PasswordPolicy validation should throw a RuntimeException - " + message);
         } catch ( Throwable t ) {
           if ( ! succeeds ) {
@@ -163,12 +161,11 @@ foam.CLASS({
           // default password policy
           PasswordPolicy policy = new PasswordPolicy();
           policy.setEnabled(true);
-          policy.setX(x);
           policy.setMinLength(minLength);
           policy.setPriorPasswordsToCheckCount(0);
 
           // validate
-          policy.validate(null, password);
+          policy.validate(x, null, password);
           test(succeeds, succeeds ? message : "PasswordPolicy validation should throw a RuntimeException - " + message);
         } catch ( Throwable t ) {
           if ( ! succeeds ) {

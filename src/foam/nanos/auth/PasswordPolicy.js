@@ -23,10 +23,6 @@ foam.CLASS({
     'foam.dao.ArraySink'
   ],
 
-  imports: [
-    'commonPasswordDAO'
-  ],
-
   constants: [
     {
       name: 'MIN_PASSWORD_LENGTH',
@@ -71,6 +67,10 @@ foam.CLASS({
       name: 'validate',
       args: [
         {
+          name: 'x',
+          type: 'Context'
+        },
+        {
           name: 'user',
           type: 'User'
         },
@@ -79,8 +79,8 @@ foam.CLASS({
           javaType: 'String'
         }
       ],
-      code: function(potentialPassword) {
-        return this.commonPasswordDAO.find(potentialPassword.toLowerCase());
+      code: function(x, potentialPassword) {
+        return x.commonPasswordDAO.find(potentialPassword.toLowerCase());
       },
       javaCode: `
         // check if this policy is enabled
@@ -96,7 +96,7 @@ foam.CLASS({
         }
 
         // check weak password
-        DAO commonPasswordDAO = (DAO) getX().get("commonPasswordDAO");
+        DAO commonPasswordDAO = (DAO) x.get("commonPasswordDAO");
         if ( commonPasswordDAO.find(potentialPassword.toLowerCase()) != null ) {
           throw new RuntimeException("Password is weak.");
         }

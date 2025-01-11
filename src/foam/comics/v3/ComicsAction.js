@@ -55,6 +55,11 @@ foam.CLASS({
       required: false
     },
     {
+      class: 'FObjectProperty',
+      name: 'overrideCodeData',
+      documentation: 'When set, the data obj for action call will be set to this value, useful for setting the right data when Models override default code implementation for CRUD operations'
+    },
+    {
       class: 'Function',
       generateJava: false,
       name: 'internalIsEnabled'
@@ -89,6 +94,13 @@ foam.CLASS({
            ( this.internalIsEnabled   && ! foam.Function.withArgs(this.internalIsEnabled, data) ) ||
            ( this.isEnabled   && ! foam.Function.withArgs(this.isEnabled, data.data) ) )
       return true;
+    },
+
+    function call(x, data) {
+      if ( this.overrideCodeData ) {
+        data = this.overrideCodeData;
+      }
+      return this.SUPER(x, data);
     },
 
     function toE(args, X) {

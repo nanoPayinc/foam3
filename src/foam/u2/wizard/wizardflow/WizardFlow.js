@@ -21,6 +21,7 @@ foam.CLASS({
     'foam.u2.wizard.wizardflow.AddCapabilityHierarchy',
     'foam.u2.wizard.wizardflow.Export',
     'foam.u2.wizard.wizardflow.AddWizardlet',
+    'foam.u2.wizard.wizardflow.AddFacadeWizardlet',
     'foam.u2.wizard.wizardflow.EditWizardlet',
     'foam.u2.wizard.wizardflow.RemoveWizardlets',
     'foam.u2.wizard.wizardflow.Predicated',

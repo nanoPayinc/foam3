@@ -160,6 +160,7 @@ List entries are of the form: 172.0.0.0/24 - this would restrict logins to the 1
       name: 'applyContext',
       type: 'Context',
       visibility: 'HIDDEN',
+      javaCompare: 'return 0;',
       transient: true,
       networkTransient: true,
       clusterTransient: true
@@ -170,6 +171,7 @@ List entries are of the form: 172.0.0.0/24 - this would restrict logins to the 1
       type: 'Context',
       javaFactory: 'return reset(getX());',
       visibility: 'HIDDEN',
+      javaCompare: 'return 0;',
       transient: true,
       networkTransient: true,
       clusterTransient: true

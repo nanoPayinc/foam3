@@ -1,0 +1,54 @@
+p({
+  "class":"foam.nanos.boot.NSpec",
+  "name":"localTokenDAO",
+  "authenticate": false,
+  "serviceScript":
+  """
+  return new foam.dao.EasyDAO.Builder(x)
+    .setAuthorize(false)
+    .setCapable(false)
+    .setPm(true)
+    .setGuid(true)
+    .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+    .setJournalName("token")
+    .setOf(foam.nanos.auth.token.Token.getOwnClassInfo())
+    .build();
+  """
+})
+
+p({
+  "class":"foam.nanos.boot.NSpec",
+  "name":"tokenDAO",
+  "serve":true,
+  "authenticate": false,
+  "serviceScript":
+  """
+  return new foam.dao.EasyDAO.Builder(x)
+    .setAuthorizer(new foam.nanos.auth.GlobalFindAuthorizer("token"))
+    .setCapable(true)
+    .setAllowActionRequiredPuts(true)
+    .setInnerDAO(x.get("localTokenDAO"))
+    .setOf(foam.nanos.auth.token.Token.getOwnClassInfo())
+    .build();
+  """,
+  "client":
+  """
+  {
+    "of":"foam.nanos.auth.token.Token"
+  }
+  """
+})
+
+p({
+  "class":"foam.nanos.boot.NSpec",
+  "name":"setPasswordToken",
+  "serve":true,
+  "authenticate":false,
+  "serviceClass":"foam.nanos.auth.resetPassword.ResetPasswordTokenService",
+  "boxClass":"foam.nanos.auth.token.TokenServiceSkeleton",
+  "client":"""
+    {
+      "class":"foam.nanos.auth.token.ClientTokenService"
+    }
+  """
+})

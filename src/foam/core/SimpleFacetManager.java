@@ -78,7 +78,6 @@ public class SimpleFacetManager
 
       return obj;
     } catch (Throwable e) {
-      e.printStackTrace();
       throw new RuntimeException(e);
     }
   }
@@ -94,16 +93,17 @@ public class SimpleFacetManager
 
     try {
       Object obj;
-      try { 
+      try {
         Object f = x.get(clsName + "_Factory");
         obj = ((XArgsFactory<?>) f).getInstance(args, x);
       } catch (NullPointerException e) {
+        e.printStackTrace();
         ((Logger) x.get("logger")).error(this.getClass().getSimpleName(), "Unable to create " + clsName);
         throw e;
       }
-  
+
       if ( obj instanceof ContextAware ) ((ContextAware) obj).setX(x);
-  
+
       if ( obj instanceof FObject ) {
         for ( Map.Entry<String, Object> entry : args.entrySet() )
           ((FObject) obj).setProperty(entry.getKey(), entry.getValue());

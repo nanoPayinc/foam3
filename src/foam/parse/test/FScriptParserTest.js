@@ -49,7 +49,7 @@ foam.CLASS({
     PStream ps = sps;
     ParserContext px = new ParserContextImpl();
 
-    var parser = new FScriptParser(FScriptParserTestUser.FIRST_NAME);
+    var parser = FScriptParser.create(FScriptParserTestUser.FIRST_NAME);
     sps.setString("address==null");
     test(((Predicate) parser.parse(sps, px).value()).f(user), "address==null");
     user.setAddress(addr);
@@ -401,7 +401,7 @@ foam.CLASS({
     var theme = new foam.nanos.theme.Theme();
     sprtCnfg.setSupportAddress(addr);
     theme.setSupportConfig(sprtCnfg);
-    parser = new FScriptParser(foam.nanos.theme.Theme.SUPPORT_CONFIG);
+    parser = FScriptParser.create(foam.nanos.theme.Theme.SUPPORT_CONFIG);
 
     sps.setString("supportConfig.supportAddress.regionId!=supportConfig.supportAddress.countryId");
     test(((Predicate) parser.parse(sps, px).value()).f(theme), "supportConfig.supportAddress.regionId!=supportConfig.supportAddress.countryId");
@@ -412,14 +412,13 @@ foam.CLASS({
     test(((Predicate) parser.parse(sps, px).value()).f(theme), "supportConfig.supportAddress instanceof oam.nanos.auth.Address");
 
     var rule = new Rule();
-    parser = new FScriptParser(foam.nanos.ruler.Rule.OPERATION);
+    parser = FScriptParser.create(foam.nanos.ruler.Rule.OPERATION);
     rule.setOperation(foam.nanos.dao.Operation.CREATE);
     sps.setString("thisValue==foam.nanos.dao.Operation.CREATE");
     test(((Predicate) parser.parse(sps, px).value()).f(rule), "thisValue==foam.nanos.dao.Operation.CREATE");
     sps.setString("instanceof foam.nanos.ruler.Rule");
     test(((Predicate) parser.parse(sps, px).value()).f(rule), "thisValue instanceof foam.nanos.ruler.Rule");
 
-    parser = new FScriptParser(foam.parse.test.FScriptParserTestUser.getOwnClassInfo());
     List<LiteralIC> expressions = new ArrayList();
     expressions.add(new LiteralIC("lit_int_10", new Constant(10)));
     expressions.add(new LiteralIC("lit_int_20", new Constant(20)));
@@ -428,7 +427,7 @@ foam.CLASS({
     expressions.add(new LiteralIC("lit_float_222", new Constant(222.0)));
     expressions.add(new LiteralIC("lit_float_333", new Constant(333.0)));
     expressions.add(new LiteralIC("region", new Constant("CA-ON")));
-    parser.addExpressions(expressions);
+    parser = FScriptParser.create(foam.parse.test.FScriptParserTestUser.getOwnClassInfo(), expressions);
 
     sps.setString("if (address.regionId==region) {firstName} else {null}");
     result = (String) ((Expr)parser.parse(sps, px).value()).f(user);

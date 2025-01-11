@@ -27,11 +27,15 @@ public class TreeIndex
   protected boolean  isPrimary_;
 
   public TreeIndex(Indexer indexer) {
-    this(indexer, ValueIndex.instance(), true);
+    this(indexer, ValueIndex.instance(), false);
+  }
+
+  public TreeIndex(Indexer indexer, boolean isPrimary) {
+    this(indexer, ValueIndex.instance(), isPrimary);
   }
 
   public TreeIndex(Indexer indexer, Index tail) {
-    this(indexer, tail, true);
+    this(indexer, tail, false);
   }
 
   public TreeIndex(Indexer indexer, Index tail, boolean isPrimary) {
@@ -48,9 +52,9 @@ public class TreeIndex
 
   /**
    * This fuction helps to create a smaller state by applying predicates.
-   * @param state: When we could deal with predicate efficiently by index, the returned sate will be smaller than original state
-   * @param predicate: If the state is kind of Binary state, when we deal with it it will become null. If it is kind of N-arry state, the part of their predicate will become True or null.
-   * @return Return an Object[] which contains two elements, first one is update state and second one is update predicate.
+   * @param state: When we could deal with predicate efficiently by index, the returned state will be smaller than original state
+   * @param predicate: If the state is kind of Binary state, when we deal with it and it will become null. If it is kind of N-arry state, the part of their predicate will become True or null.
+   * @return Return an Object[] which contains two elements, first one is updated state and second one is updated predicate.
    */
   protected Object[] simplifyPredicate(Object state, Predicate predicate) {
     Predicate p = predicate;
@@ -122,39 +126,46 @@ public class TreeIndex
   public Object put(Object state, FObject value) {
     if ( state == null ) state = TreeNode.getNullNode();
     Object key = returnKeyForValue(value);
+    // key could be null for values like Date fields, but that works
     return ((TreeNode) state).putKeyValue((TreeNode) state, indexer_, key, value, tail_);
   }
 
   public Object remove(Object state, FObject value) {
     Object key = returnKeyForValue(value);
+    // key could be null for values like Date fields, but that works
     return ((TreeNode) state).removeKeyValue((TreeNode) state, indexer_, key, value, tail_);
   }
 
   public Object returnKeyForValue(FObject value) {
-    Object key;
     try {
-      key = indexer_.f(value);
+      return indexer_.f(value);
     } catch (ClassCastException e) {
+// System.err.println("*** ClassCastException " + this);
       // Can happen when the Indexer is a PropertyInfo for a sub-class
-      key = null;
     } catch (NullPointerException e) {
-      // Can happen when the Indexer is Dot(x, y) when x is null
-      key = null;
+// System.err.println("*** NullPointerException " + this);
+      // Can happen when the Indexer is Dot(x, y) when x is nullf
     }
 
-    return key;
+    return null;
   }
 
   public Object removeAll() {
     return TreeNode.getNullNode();
   }
 
-  //TODO
-  @Override
-  public FindPlan planFind(Object state, Object key) {
-    return new TreeLookupFindPlan(indexer_, (state != null ? ((TreeNode) state).size : 0) );
-  }
+  public FObject find(Object state, Object key) {
+    if ( state instanceof TreeNode ) {
+      TreeNode stateNode = (TreeNode) state;
+      TreeNode valueNode = stateNode.get(stateNode, key, indexer_);
 
+      // If the object being searched for isn't in the tree, then valueNode will
+      // be null.
+      return valueNode == null ? null : (FObject) valueNode.value;
+    }
+
+    return null;
+  }
 
   /**
    * This function tries to return an optimal plan based on its arguments.
@@ -162,8 +173,7 @@ public class TreeIndex
   @Override
   public SelectPlan planSelect(Object state, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {
     if ( state == null || predicate instanceof False ) return NotFoundPlan.instance();
-
-    Object   originalState = state;
+    Object   originalState  = state;
     Object[] statePredicate = simplifyPredicate(state, predicate);
     state     = statePredicate[0];
     predicate = (Predicate) statePredicate[1];
@@ -181,14 +191,26 @@ public class TreeIndex
 
       // We return a groupByPlan only if no order, no limit, no skip, no predicate
       if ( sink instanceof GroupBy
-          && ((GroupBy) sink).getArg1().toString().equals(indexer_.toString())
-          && order == null && skip == 0 && limit == AbstractDAO.MAX_SAFE_INTEGER )
+        && ((GroupBy) sink).getArg1().toString().equals(indexer_.toString())
+        && order == null && skip == 0 && limit == AbstractDAO.MAX_SAFE_INTEGER )
       {
         return new GroupByPlan(state, sink, predicate, indexer_, tail_);
       }
     }
 
-    return new ScanPlan(state, sink, skip, limit, order, predicate, indexer_, tail_);
+    if ( state == null ) {
+      // System.err.println("***** NOT FOUND IN TREE " + predicate + " " + indexer_);
+      return NotFoundPlan.instance();
+    }
+
+    TreeNode tn = (TreeNode) state;
+    // if ( tn.isSingular() ) System.err.println("***** SUBSCAN " + tn.size + " " + tn.key);
+
+    // If the resulting tree contains only one node, then create a sub-plan
+    // on the sub-tree, allowing for use of multi-part indices.
+    return tn.isSingular() ?
+      tail_.planSelect(tn.value, sink, skip, limit, order, predicate).restate(tn.value) :
+      new ScanPlan(state, skip, limit, order, predicate, indexer_, tail_) ;
   }
 
   public long size(Object state) {

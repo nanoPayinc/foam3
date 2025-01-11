@@ -7,6 +7,7 @@
 foam.CLASS({
   package: 'foam.comics.v2',
   name: 'CannedQuery',
+
   documentation: `
     A common query that can be stored in a model
   `,
@@ -30,7 +31,7 @@ foam.CLASS({
       name: 'predicate',
       expression: function(predicateFactory) {
         return predicateFactory ?
-          predicateFactory(foam.mlang.ExpressionsSingleton.create()) :
+          predicateFactory(foam.mlang.ExpressionsSingleton.create(), this.sourceCls_) :
           null;
       }
     },
@@ -39,4 +40,4 @@ foam.CLASS({
       hidden: true
     }
   ]
-}); 
+});

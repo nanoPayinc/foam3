@@ -20,11 +20,12 @@ foam.CLASS({
   javaImports: [
     'foam.core.PropertyInfo',
     'foam.core.XLocator',
-    'static foam.i18n.TranslationService.t',
+    'foam.nanos.notification.email.EmailTemplateEngine',
     'foam.util.SafetyUtil',
     'java.util.HashMap',
     'java.util.List',
-    'java.util.Map'
+    'java.util.Map',
+    'static foam.i18n.TranslationService.t'
   ],
 
   javaCode: `
@@ -149,8 +150,7 @@ foam.CLASS({
         return msg;
       }
       try {
-        // REVIEW: temporary - default/simple java template support not yet split out from EmailTemplateEngine.
-        foam.nanos.notification.email.EmailTemplateEngine template = new foam.nanos.notification.email.EmailTemplateEngine();
+        EmailTemplateEngine template = (EmailTemplateEngine) foam.core.XLocator.get().get("templateEngine");
         return template.renderTemplate(foam.core.XLocator.get(), msg, getTemplateValues()).toString().trim();
       } catch (NullPointerException e) {
         // noop - Expected when not yet logged in, as XLocator is not setup.

@@ -14,7 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.logging.*;
 
 public class StdoutLogger
-  extends  DAOLogger
+  extends DAOLogger
 {
   protected java.util.logging.Logger logger_;
   private final static StdoutLogger instance__ = new StdoutLogger();
@@ -27,13 +27,13 @@ public class StdoutLogger
   public StdoutLogger(X x) {
     setX(x);
     setDelegate(
-                new foam.nanos.logger.RepeatLogMessageDAO.Builder(x)
-                .setDelegate(new foam.nanos.logger.LogMessageDAO.Builder(x)
-                             .setDelegate(new foam.nanos.logger.StdoutLoggerDAO.Builder(x)
-                                          .setDelegate(new foam.dao.NullDAO(x, foam.nanos.logger.LogMessage.getOwnClassInfo()))
-                                          .build())
-                             .build())
-                .build());
+      new foam.nanos.logger.RepeatLogMessageDAO.Builder(x)
+      .setDelegate(new foam.nanos.logger.LogMessageDAO.Builder(x)
+        .setDelegate(new foam.nanos.logger.StdoutLoggerDAO.Builder(x)
+          .setDelegate(new foam.dao.NullDAO(x, foam.nanos.logger.LogMessage.getOwnClassInfo()))
+          .build())
+        .build())
+      .build());
 
     // Add Java logging handler
     logger_ = java.util.logging.Logger.getAnonymousLogger();

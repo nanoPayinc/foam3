@@ -86,7 +86,7 @@ foam.CLASS({
           if ( this.embedSVG && data?.endsWith('svg') ) {
             var e = this.E();
             this.requestWithCache(data).then(data => {
-              if ( this.state == this.OUTPUT ) return;
+              if ( !this.U3 && this.state == this.OUTPUT ) return;
 
               e.start(this.HTMLView, { data: data })
                 .attrs({ role: this.role })

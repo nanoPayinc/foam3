@@ -75,7 +75,7 @@ foam.CLASS({
           .start('div', null, this.container$)
             .style({
               height: this.config$.dot('height').map(h => h + 'px'),
-              width: this.config$.dot('width').map(h => h + 'px')
+              width:  this.config$.dot('width').map(h => h + 'px')
             })
           .end()
           .start('span')
@@ -92,6 +92,17 @@ foam.CLASS({
 
       this.container.el().then(e => {
         self.renderEditor();
+      });
+    },
+
+    function fromProperty(p) {
+      var storageKey = 'CodeView:' + p.forClass_ + '.' + p.name;
+      var config = localStorage[storageKey];
+      if ( config ) {
+        this.config.copyFrom(foam.json.parseString(config));
+      }
+      this.config.sub('propertyChange', () => {
+        localStorage[storageKey] = foam.json.Compact.stringify(this.config);
       });
     }
   ],

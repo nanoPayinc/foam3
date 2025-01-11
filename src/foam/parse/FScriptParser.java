@@ -7,6 +7,8 @@
 package foam.parse;
 
 import foam.core.*;
+import foam.lib.json.BooleanParser;
+import foam.lib.json.NullParser;
 import foam.lib.json.Whitespace;
 import foam.lib.parse.*;
 import foam.lib.parse.Action;
@@ -18,27 +20,91 @@ import foam.mlang.predicate.Not;
 import foam.util.SafetyUtil;
 import java.lang.Exception;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 import static foam.mlang.MLang.*;
 
 
-public class FScriptParser
-{
-  ClassInfo classInfo_;
-  protected List expressions;
+public class FScriptParser {
+  private final static Parser ESCAPED_QUOTE_PARSER = new Literal("\\\"", "\"");
 
-  public FScriptParser(PropertyInfo property) {
+  private final static Map map__ = new ConcurrentHashMap();
+
+  /**
+   * Implement the multiton pattern so we don't create the same
+   * parser more than once.
+   **/
+  public static FScriptParser create(PropertyInfo prop) {
+    FScriptParser p = (FScriptParser) map__.get(prop);
+
+    if ( p == null ) {
+      p = new FScriptParser(prop);
+      map__.put(prop, p);
+    }
+
+    return p;
+  }
+
+  public static FScriptParser create(ClassInfo cls) {
+    FScriptParser p = (FScriptParser) map__.get(cls.getId());
+
+    if ( p == null ) {
+      p = new FScriptParser(cls);
+      map__.put(cls.getId(), p);
+    }
+
+    return p;
+  }
+
+  public static FScriptParser create(ClassInfo classInfo, List expressions) {
+    if ( expressions == null ||
+         expressions.size() == 0 ) {
+      return FScriptParser.create(classInfo);
+    }
+
+    StringBuilder sb = new StringBuilder();
+    sb.append(classInfo.getId());
+    for ( Object exp : expressions ) {
+      sb.append(exp.toString());
+    }
+    String key = sb.toString();
+
+    FScriptParser p = (FScriptParser) map__.get(key);
+
+    if ( p == null ) {
+      p = new FScriptParser(classInfo, expressions);
+      map__.put(key, p);
+    }
+
+    return p;
+  }
+
+  protected ClassInfo classInfo_;
+  protected List      expressions;
+  protected Grammar   grammar_;
+
+  private FScriptParser(PropertyInfo property) {
     Map<String, PropertyInfo> props = new HashMap();
     props.put("thisValue", property);
     setup(property.getClassInfo(), props);
+    grammar_ = getGrammar();
   }
 
-  public FScriptParser(ClassInfo classInfo) {
+  private FScriptParser(ClassInfo classInfo) {
     Map props = new HashMap<String, PropertyInfo>();
     setup(classInfo, props);
+    grammar_ = getGrammar();
   }
 
-  public void addExpressions(List expressions) {
+  private FScriptParser(ClassInfo classInfo, List expressions) {
+    Map props = new HashMap<String, PropertyInfo>();
+    setup(classInfo, props);
+    addExpressions(expressions);
+    grammar_ = getGrammar();
+  }
+
+  private void addExpressions(List expressions) {
     this.expressions.addAll(expressions);
     this.expressions.sort(Comparator.comparing(LiteralIC::getString).reversed());
     // foam.nanos.logger.StdoutLogger.instance().info(this.getClass().getSimpleName(), "expressions", this.expressions.stream().map(Object::toString).collect(java.util.stream.Collectors.joining(",")));
@@ -52,7 +118,7 @@ public class FScriptParser
   }
 
   public void setup(ClassInfo classInfo, Map<String, PropertyInfo> props) {
-    classInfo_ = classInfo;
+    classInfo_  = classInfo;
     expressions = new ArrayList();
     List<PropertyInfo> properties = classInfo_.getAxiomsByClass(PropertyInfo.class);
 
@@ -69,6 +135,7 @@ public class FScriptParser
         }
       }
     }
+
     ArrayList<String> sortedKeys = new ArrayList<String>(props.keySet());
 
     Collections.sort(sortedKeys, Collections.reverseOrder());
@@ -87,13 +154,13 @@ public class FScriptParser
   }
 
   public PStream parse(PStream ps, ParserContext x) {
-    return getGrammar().parse(ps, x, "");
+    return grammar_.parse(ps, x, "");
   }
 
   protected Grammar getGrammar() {
     Grammar grammar = new Grammar();
-    grammar.addSymbol("FIELD_NAME", new Alt(new Alt(expressions)));
-    grammar.addSymbol("START", new Seq1(1,new Optional(grammar.sym("LET")), grammar.sym("START_VALUES"), EOF.instance()));
+    grammar.addSymbol("FIELD_NAME",   new Alt(new Alt(expressions)));
+    grammar.addSymbol("START",        new Seq1(1,new Optional(grammar.sym("LET")), grammar.sym("START_VALUES"), EOF.instance()));
     grammar.addSymbol("START_VALUES", new Alt(grammar.sym("OR"), grammar.sym("TEMPLATE_STRING"), grammar.sym("FORMULA"), grammar.sym("IF_ELSE")));
 
     grammar.addSymbol(
@@ -214,7 +281,7 @@ public class FScriptParser
       Whitespace.instance(),
       new Alt(
         grammar.sym("VALUE"),
-        new Literal("null", null)
+        NullParser.instance()
       ))
     );
 
@@ -462,7 +529,7 @@ public class FScriptParser
       Object[] vals = (Object[]) val;
       ClassInfo cls = (ClassInfo) vals[1];
       IsInstanceOf pred = new IsInstanceOf();
-      pred.setTargetClass(cls);
+      pred.setOf(cls);
       if ( vals[0] != null ) {
         pred.setPropExpr((Expr) vals[0]);
       }
@@ -479,7 +546,7 @@ public class FScriptParser
       Object[] vals = (Object[]) val;
       ClassInfo cls = (ClassInfo) vals[1];
       IsClassOf pred = new IsClassOf();
-      pred.setTargetClass(cls);
+      pred.setOf(cls);
       if ( vals[0] != null ) {
         pred.setPropExpr((Expr) vals[0]);
       }
@@ -496,9 +563,8 @@ public class FScriptParser
       grammar.sym("DATE"),
       grammar.sym("VAR"),
       grammar.sym("STRING"),
-      new Literal("true", true),
-      new Literal("false", false),
-      new Literal("null", null),
+      BooleanParser.instance(),
+      NullParser.instance(),
       grammar.sym("FORMULA"),
       grammar.sym("NUMBER"),
       grammar.sym("FIELD_LEN"),
@@ -600,7 +666,7 @@ public class FScriptParser
       new Seq1(1,
         Literal.create("\""),
         new Repeat(new Alt(
-          new Literal("\\\"", "\""),
+          ESCAPED_QUOTE_PARSER,
           new NotChars("\"")
         )),
         Literal.create("\"")
@@ -609,7 +675,7 @@ public class FScriptParser
     grammar.addAction("STRING", (val, x) -> compactToString(val));
     var stringParser = new Repeat(new NotChars("{{"));
     var stringParser2 = new Repeat(new Alt(
-      new Literal("\\\"", "\""),
+      ESCAPED_QUOTE_PARSER,
       new NotChars("}}")
     ));
 
@@ -886,14 +952,14 @@ public class FScriptParser
 
     grammar.addSymbol("FIELD", new Seq(grammar.sym("FIELD_NAME"), new Optional(
       new Seq1(1, Literal.create("."), new Repeat(new foam.lib.parse.Not(Literal.create("len"),
-        grammar.sym("WORD")), Literal.create("."),1)))));
+        grammar.sym("WORD")), Literal.create("."), 1)))));
     grammar.addAction("FIELD", (val, x) -> {
       Object[] values = (Object[]) val;
       var expr = (Expr) values[0];
       if (values.length > 1 && values[1] != null) {
         Object[] values2 = (Object[]) values[1];
 //        var parts = (String[]) values2[1];
-        for (var i = 0; i < values2.length; i++) {
+        for ( var i = 0 ; i < values2.length ; i++ ) {
           expr = new Dot(expr, NamedProperty.create((String) values2[i]));
         }
       }

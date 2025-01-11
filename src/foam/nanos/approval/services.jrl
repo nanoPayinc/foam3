@@ -60,6 +60,7 @@ p({
     dao = new foam.nanos.approval.PopulateApprovalRequestSummariesDAO(x);
     dao = new foam.dao.MaterializedDAO.Builder(x)
           .setOf(of)
+          .setAutoStart(true)
           .setAdapter(new foam.nanos.approval.PopulateApprovalRequestSummariesAdapter(x, of, dao))
           .setSourceDAO(x.get("approvalRequestDAO"))
           .build()

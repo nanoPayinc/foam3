@@ -18,7 +18,7 @@ foam.CLASS({
   requires: [
     'foam.mlang.predicate.True'
   ],
-  
+
   javaImports: [
     'foam.nanos.logger.Logger'
   ],
@@ -47,7 +47,7 @@ foam.CLASS({
       of: 'foam.mlang.predicate.Predicate',
       name: 'predicate',
       documentation: 'predicate is checked against an object; if returns true, the action is executed. Defaults to return true.',
-      factory: function () { 
+      factory: function () {
         return this.True.create();
       },
       javaFactory: `
@@ -79,7 +79,7 @@ foam.CLASS({
         var obj = x.get("OBJ");
         try {
           return getPredicate().f(obj != null ? obj : x);
-        } catch ( Throwable t ) {
+        } catch (Throwable t) {
           ((Logger) x.get("logger")).error("Failed to evaluate predicate on",
             "class: " + getClass().getName(),
             "id: " + String.valueOf(getProperty("id")), t);

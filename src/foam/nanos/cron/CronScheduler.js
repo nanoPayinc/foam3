@@ -33,6 +33,7 @@ foam.CLASS({
     'foam.nanos.alarming.Alarm',
     'foam.nanos.alarming.AlarmReason',
     'foam.nanos.auth.EnabledAware',
+    'foam.nanos.cron.SimpleIntervalSchedule',
     'foam.nanos.logger.Logger',
     'foam.nanos.logger.Loggers',
     'foam.nanos.NanoService',
@@ -142,7 +143,16 @@ foam.CLASS({
         select(new Sink() {
           public void put(Object obj, Detachable sub) {
             Schedulable schedulable = (Schedulable) ((FObject) obj).fclone();
-            schedulable.setScheduledTime(schedulable.getNextScheduledTime(getX()));
+            Date from = schedulable.getLastRun();
+            if ( from == null ) from = new Date();
+            schedulable.setScheduledTime(
+              ((SimpleIntervalSchedule) schedulable.getSchedule()).
+                calculateNextDate(
+                  foam.core.XLocator.get(),
+                  from,
+                  true
+                )
+            );
             cronJobDAO.put(schedulable);
           }
           public void remove(Object obj, Detachable sub) {}

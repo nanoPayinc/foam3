@@ -88,7 +88,7 @@ exports.end = function() {
       mangle:   false,
       output:   {
         semicolons: false,
-        preamble: `// Generated: ${new Date()}\n\n${license}\n` + ((X.stage === undefined || X.stage === '0') ? `var foam = { main: function() { /* prevent POM loading since code is in-lined below */ } };\n` : '')
+        preamble: `// Generated: ${new Date()}\n\n${license}\n` + ((X.stage === undefined || X.stage === '0') ? `globalThis.foam = { main: function() { /* prevent POM loading since code is in-lined below */ } };\n` : '')
       }
     }).code;
 
@@ -131,12 +131,16 @@ exports.end = function() {
     return version ? `foam-bin-${version}${stage}` : `foam-bin{$stage}`;
   }
 
+  // We record that we've loaded stage1 in localstorage so that we can be safe
+  // and load it synchronously if we know that we've loaded it already.
+  var name = `'/${fn('1')}.js'`;
+
   if ( X.stage === '0' ) {
     code += `
 if ( ! foam.flags.skipStage1 ) {
-  var next = () => foam.loadJSLibs([{name:'/${fn('1')}.js'}]);
+  var next = () => foam.loadJSLibs([{name: ${name}}]);
 
-  if ( window.location.hash || window.location.search.indexOf('otltoken') != -1 ) {
+  if ( window.location.hash || window.location.search.indexOf('otltoken') != -1 || localStorage.stage1version == ${name} ) {
     next();
   } else if ( globalThis.requestIdleCallback ) {
     window.setTimeout(() =>
@@ -149,6 +153,7 @@ if ( ! foam.flags.skipStage1 ) {
 `;
   } else if ( X.stage === '1' ) {
     code += `
+localStorage.stage1version = ${name};
 if ( ! foam.flags.skipStage2 ) {
   foam.loadJSLibs([{name:'/${fn('2')}.js'}]);
 }

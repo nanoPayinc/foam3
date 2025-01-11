@@ -3,14 +3,12 @@
  * Copyright 2020 The FOAM Authors. All Rights Reserved.
  * http://www.apache.org/licenses/LICENSE-2.0
  */
-foam.CLASS({
+
+foam.RULE_PREDICATE({
   package: 'foam.nanos.crunch.predicate',
   name: 'CapabilityIsStatus',
-  extends: 'foam.mlang.predicate.AbstractPredicate',
-  implements: ['foam.core.Serializable'],
 
   javaImports: [
-    'foam.core.X',
     'foam.dao.DAO',
     'foam.nanos.crunch.Capability',
     'foam.nanos.crunch.CrunchService',
@@ -52,34 +50,26 @@ foam.CLASS({
     }
   ],
 
-  methods: [
-    {
-      name: 'f',
-      javaCode: `
-        if ( ! ( obj instanceof X ) ) return false;
-        var x = (X) obj;
-
-        if ( getSubjectFromUCJ() ) {
-          var newUCJ = (UserCapabilityJunction) x.get("NEW");
-          if ( newUCJ != null ) {
-            x = x.put("subject", newUCJ.getSubject(x));
-          }
-        }
-
-        // Context requirements
-        var crunchService = (CrunchService) x.get("crunchService");
-        var capabilityDAO = (DAO) x.get("capabilityDAO");
-
-        // Verify that the capability exists
-        Capability cap = (Capability) capabilityDAO.inX(x).find(getCapabilityId());
-        if ( cap == null || cap.getLifecycleState() != foam.nanos.auth.LifecycleState.ACTIVE ) return false;
-
-        var ucj = crunchService.getJunction(x, getCapabilityId());
-        if ( ucj == null || ucj.getStatus() != getStatus() ) return false;
-        // if status being checked is GRANTED, check if we should include ucjs that are renewable
-        if ( getStatus() == GRANTED && crunchService.isRenewable(x, ucj.getTargetId()) ) return getIncludeRenewable();
-        return true;
-      `
+  ruleF: `
+    if ( getSubjectFromUCJ() ) {
+      var newUCJ = (UserCapabilityJunction) n;
+      if ( newUCJ != null ) {
+        x = x.put("subject", newUCJ.getSubject(x));
+      }
     }
-  ]
+
+    // Context requirements
+    var crunchService = (CrunchService) x.get("crunchService");
+    var capabilityDAO = (DAO)           x.get("capabilityDAO");
+
+    // Verify that the capability exists
+    Capability cap = (Capability) capabilityDAO.inX(x).find(getCapabilityId());
+    if ( cap == null || cap.getLifecycleState() != foam.nanos.auth.LifecycleState.ACTIVE ) return false;
+
+    var ucj = crunchService.getJunction(x, getCapabilityId());
+    if ( ucj == null || ucj.getStatus() != getStatus() ) return false;
+    // if status being checked is GRANTED, check if we should include ucjs that are renewable
+    if ( getStatus() == GRANTED && crunchService.isRenewable(x, ucj.getTargetId()) ) return getIncludeRenewable();
+    return true;
+  `
 });

@@ -1,0 +1,4 @@
+p({"class":"foam.nanos.auth.Permission","id":"prevent-duplicate-email","description":"Dissallow duplicate emails"})
+p({"class":"foam.nanos.auth.Permission","id":"userlifecycleticket.read.*","description":"Permission to view"})
+p({"class":"foam.nanos.auth.Permission","id":"userlifecycleticket.crate","description":"Permission to create"})
+p({"class":"foam.nanos.auth.Permission","id":"userlifecycleticket.update.*","description":"Permission to modify"})

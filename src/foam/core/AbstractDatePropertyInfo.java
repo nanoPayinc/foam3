@@ -98,11 +98,11 @@ public abstract class AbstractDatePropertyInfo
   }
 
   public foam.lib.parse.Parser queryParser() {
-    return foam.lib.query.DuringExpressionParser.instance() == null ? foam.lib.query.DuringExpressionParser.instance(): null;
+    return foam.lib.query.DuringExpressionParser.instance();
   }
 
   public foam.lib.parse.Parser csvParser() {
-    return foam.lib.json.DateParser.instance() == null ? foam.lib.json.DateParser.instance() : null;
+    return foam.lib.json.DateParser.instance();
   }
 
   public Class getValueClass() {

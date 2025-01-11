@@ -3,9 +3,11 @@
  * Copyright 2019 The FOAM Authors. All Rights Reserved.
  * http://www.apache.org/licenses/LICENSE-2.0
  */
+
 foam.ENUM({
   package: 'foam.nanos.crunch',
   name: 'CapabilityJunctionStatus',
+
   values: [
     {
       name: 'PENDING',
@@ -70,8 +72,8 @@ foam.ENUM({
     {
       name: 'REJECTED',
       label: { en: 'rejected', pt: 'rejeitada'},
-      documentation: `- not seen by users - Denoting a junction requiring review has been rejected. Meant to mark items in a FINAL rejected state where it is not 
-      expected to go to EXPIRED and have the user fill out more info. Used in the 
+      documentation: `- not seen by users - Denoting a junction requiring review has been rejected. Meant to mark items in a FINAL rejected state where it is not
+      expected to go to EXPIRED and have the user fill out more info. Used in the
       Capable object junctions.`,
       background: '#FFFFFF',
       color: '$destructive500',

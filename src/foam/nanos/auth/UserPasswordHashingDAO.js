@@ -9,6 +9,8 @@ foam.CLASS({
   name: 'UserPasswordHashingDAO',
   extends: 'foam.dao.ProxyDAO',
 
+  documentation: `Hash user's desired (human readable) password and update real password property with encoded value.`,
+
   javaImports: [
     'foam.core.FObject',
     'foam.core.X',
@@ -45,26 +47,6 @@ foam.CLASS({
           // erase desired password after hashing
           user.setDesiredPassword(null);
           return super.put_(x, obj);
-        }
-
-        // if user not found, continue
-        if ( stored == null ) {
-          return super.put_(x, obj);
-        }
-
-        // set password if not empty
-        if ( ! SafetyUtil.isEmpty(stored.getPassword()) ) {
-          user.setPassword(stored.getPassword());
-        }
-
-        // set previous password if not empty
-        if ( ! SafetyUtil.isEmpty(stored.getPreviousPassword()) ) {
-          user.setPreviousPassword(stored.getPreviousPassword());
-        }
-
-        // set password last modified if not null
-        if ( stored.getPasswordLastModified() != null ) {
-          user.setPasswordLastModified(stored.getPasswordLastModified());
         }
 
         return super.put_(x, obj);

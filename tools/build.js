@@ -73,25 +73,23 @@ const fs       = require('fs');
 const { join } = require('path');
 const { buildEnv, comma, copyDir, copyFile, emptyDir, ensureDir, exec, execSync, processSingleCharArgs, rmdir, rmfile, spawn } = require('./buildlib');
 
-
 // Build configs
 var
-  PWD                       = process.cwd(),
+  APP_ROOT                  = '/opt',
   BENCHMARK                 = false,
   BENCHMARKS                = '',
   BUILD_ONLY                = false,
   CLEAN_BUILD               = false,
   CLUSTER                   = false,
   DAEMONIZE                 = false,
+  DEBUG                     = false,
   DEBUG_PORT                = 8000,
   DEBUG_SUSPEND             = false,
-  DEBUG                     = false,
   DELETE_RUNTIME_JOURNALS   = false,
   DELETE_RUNTIME_LOGS       = false,
-  EXPLICIT_JOURNALS         = '',
   FS                        = 'rw',
+  FOAM_REVISION,
   GEN_JAVA                  = true,
-  STAGE_JS                  = true,
   HOST_NAME                 = 'localhost',
   INSTANCE                  = 'localhost',
   JOURNAL_CONFIG            = '',
@@ -101,19 +99,20 @@ var
   POM                       = 'pom',
   PROFILER                  = false,
   PROFILER_PORT             = 8849,
+  PROJECT_REVISION,
+  PWD                       = process.cwd(),
   RESTART_ONLY              = false,
   RESTART                   = false,
   RUN_JAR                   = false,
   RUN_USER                  = '',
+  STAGE_JS                  = true,
   STOP_ONLY                 = false,
   TEST                      = false,
   TESTS                     = '',
   WEB_PORT                  = null,
   VERBOSE                   = '',
   VULNERABILITY_CHECK       = false,
-  VULNERABILITY_CHECK_SCORE = 9, // CVSS score (LOW:0..5 , MEDIUM:5..7 , HIGH:7..9 , CRITICAL:9..10, IGNORE:11) to fail the build
-  FOAM_REVISION,
-  PROJECT_REVISION
+  VULNERABILITY_CHECK_SCORE = 9 // CVSS score (LOW:0..5 , MEDIUM:5..7 , HIGH:7..9 , CRITICAL:9..10, IGNORE:11) to fail the build
 ;
 
 // Top-Level Loaded POM Object, not be be confused with POM, which is the name of POM(s) to be loaded
@@ -129,6 +128,7 @@ var TASKS, EXPORTS;
 var JAVA_RELEASE = '17';
 
 var BUILD_DIR  = './build';
+
 
 globalThis.foam = {
   POM: function (pom) {
@@ -258,7 +258,6 @@ Implementation-Vendor: ${PROJECT.name}
   return m;
 };
 
-
 function pom() {
   var pom    = {};
   var addPom = fn => {
@@ -350,10 +349,12 @@ task('Deploy journal files from JOURNAL_OUT to JOURNAL_HOME.', [], function depl
   copyDir(JOURNAL_OUT, JOURNAL_HOME);
 });
 
+
 task('Deploy documents, journals.', [ 'deployDocuments','deployJournals'], function deploy() {
   if ( ! RUN_JAR && ! TEST && ! BENCHMARK ) {
     deployJournals();
     deployDocuments();
+    envVars();
   }
 });
 
@@ -486,9 +487,12 @@ task('Package files into a TAR archive', [], function buildTar() {
   // Notice that the argument to the second -C is relative to the directory from the first -C, since -C
   // switches the current directory.
   ensureDir(BUILD_DIR + '/package');
-  execSync(`tar -a -cf ${BUILD_DIR}/package/${PROJECT.name}-deploy-${VERSION}.tar.gz -C ./deploy bin etc -C ../ -C${BUILD_DIR} lib`);
+  execSync(`tar -a -cf ${BUILD_DIR}/package/${PROJECT.name}-deploy-${VERSION}.tar.gz -C ./foam3/tools/deploy bin etc -C ../../../ -C${BUILD_DIR} lib`);
 });
 
+task('Generate deploy details bash script.', [], function envVars() {
+  execSync(`node foam3/tools/pmake.js -makers=EnvVar -pom=${pom()}`, { stdio: 'inherit' });
+});
 
 task('Delete runtime journals.', [], function deleteRuntimeJournals() {
   info('Runtime journals deleted.');
@@ -496,15 +500,11 @@ task('Delete runtime journals.', [], function deleteRuntimeJournals() {
 });
 
 
-task('Delete runtime logs.', [], function deleteRuntimeLogs() {
-  info('Runtime logs deleted.');
-  emptyDir(LOG_HOME);
-});
-
-
 task('Copy required files to APP_HOME deployment directory.', [], function deployToHome() {
   copyDir('./foam3/tools/deploy/bin', join(APP_HOME, 'bin'));
+  copyDir('./foam3/tools/deploy/etc', join(APP_HOME, 'etc'));
   copyDir(BUILD_DIR + '/lib', join(APP_HOME, 'lib'));
+  envVars();
 });
 
 
@@ -514,17 +514,17 @@ task('Start NANOS application server.', [ 'setenv' ], function startNanos() {
   if ( RUN_JAR ) {
     var OPT_ARGS = ``;
 
+    var SYSTEM_NAME = ( INSTANCE !== 'localhost' ) ? `/${PROJECT.name}_` + INSTANCE : `/${PROJECT.name}`;
     if ( RUN_USER ) OPT_ARGS += ` -U${RUN_USER}`;
     if ( WEB_PORT ) OPT_ARGS += ` -W${WEB_PORT}`;
-    exec(`${APP_HOME}/bin/run.sh -Z${DAEMONIZE ? 1 : 0} -D${DEBUG ? 1 : 0} -S${DEBUG_SUSPEND ? 'y' : 'n'} -P${DEBUG_PORT} -n${PROJECT.name} -N${APP_HOME} -C${CLUSTER} -H${HOST_NAME} -j${PROFILER ? 1 : 0} -J${PROFILER_PORT} -F${FS} -V${TIMESTAMP_VERSION} ${OPT_ARGS}`);
+    exec(`${APP_HOME}/bin/run.sh -Z${DAEMONIZE ? 1 : 0} -D${DEBUG ? 1 : 0} -Y${DEBUG_SUSPEND ? 'y' : 'n'} -E${DEBUG_PORT} -A${PROJECT.name} -S${SYSTEM_NAME} -C${CLUSTER} -H${HOST_NAME} -J${PROFILER ? 1 : 0} -P${PROFILER_PORT} -F${FS} ${OPT_ARGS}`);
   } else {
     MESSAGE = `Starting NANOS ${INSTANCE}`;
 
     // process.chdir(PROJECT_HOME);
 
     if ( HOST_NAME ) {
-      info('HOST_NAME=${HOST_NAME}');
-      JAVA_OPTS += ` -Dhostname=${HOST_NAME} ${JAVA_OPTS}`;
+      JAVA_OPTS = ` -Dhostname=${HOST_NAME} ${JAVA_OPTS}`;
     }
 
     if ( PROFILER ) {
@@ -594,13 +594,9 @@ task('Extract project git hash.', [], function getProjectGitHash() {
   var out = 'Unversioned';
 
   try {
-    out = execSync('git describe --exact-match HEAD');
+    out = execSync('git rev-parse --short HEAD');
   } catch (x) {
-    try {
-      out = execSync('git rev-parse --short HEAD');
-    } catch (_) {
-      warning('Cannot determine project revision, no commit yet');
-    }
+    warning('Cannot determine project revision, no commit yet');
   }
 
   PROJECT_REVISION = out.toString().trim();
@@ -611,7 +607,6 @@ task('Extract FOAM git hash.', [], function getFOAMGitHash() {
   FOAM_REVISION = execSync('git -C foam3 rev-parse --short HEAD').toString().trim();
 });
 
-
 task('Show version information.', [ 'getProjectGitHash', 'getFOAMGitHash'], function versions() {
   getProjectGitHash();
   getFOAMGitHash();
@@ -619,6 +614,11 @@ task('Show version information.', [ 'getProjectGitHash', 'getFOAMGitHash'], func
   console.log(`Application Version: ${VERSION}`);
   console.log(`${PROJECT.name} revision:    ${PROJECT_REVISION}`);
   console.log(`FOAM revision:       ${FOAM_REVISION}`);
+});
+
+task('Show application information.', [], function appName() {
+  console.log(`Application Name: ${PROJECT.name}`);
+  console.log(`Application VendorId: ${PROJECT.vendorId}`);
 });
 
 
@@ -660,14 +660,13 @@ function readFromPidFile() {
 // Environment Variables which are exported when updated
 buildEnv({
   // App resources path
-  APP_ROOT:          () => ( TEST || BENCHMARK ) ? '/tmp' : '/opt',
   APP_HOME:          () => APP_ROOT + ( ( INSTANCE !== 'localhost' ) ? `/${PROJECT.name}_` + INSTANCE : `/${PROJECT.name}`),
   JOURNAL_HOME:      () => `${APP_HOME}/journals`,
   DOCUMENT_HOME:     () => `${APP_HOME}/documents`,
   LOG_HOME:          () => `${APP_HOME}/logs`,
 
-  JAR_LIB_DIR:       () => ( PACKAGE ? `${PROJECT_HOME}/${BUILD_DIR}` : `${APP_HOME}` ) + `/lib/`,
-  JAR_OUT:           () => `${JAR_LIB_DIR}/${PROJECT.name}-${TIMESTAMP_VERSION}.jar`,
+  JAR_LIB_DIR:       () => ( PACKAGE ? `${PROJECT_HOME}/${BUILD_DIR}` : APP_HOME ) + '/lib',
+  JAR_OUT:           () => `${JAR_LIB_DIR}/${PROJECT.name}-${VERSION}.jar`,
 
   // Project resources path
   PROJECT_HOME:      PWD,
@@ -724,13 +723,14 @@ function moreUsage() {
 }
 
 const ARGS = {
-  a: [ 'Delete runtime logs.',
-    () => DELETE_RUNTIME_LOGS = true ],
+  a: [ 'Run/launch from Java jar file.',
+    () => RUN_JAR = true ],
   b: [ 'run all benchmarks.',
     () => {
       BENCHMARK = true;
       MODE = 'BENCHMARK';
       DELETE_RUNTIME_JOURNALS = true;
+      APP_ROOT = '/tmp';
     } ],
   B: [ 'benchmarkId1,benchmarkId2,... : Run listed benchmarks.',
     args => { ARGS.b[1](); BENCHMARKS = args; } ],
@@ -747,8 +747,6 @@ const ARGS = {
       warning('Skipping genJava task');
       GEN_JAVA = false;
     } ],
-  E: [ 'EXPLICIT_JOURNALS :',
-    args => EXPLICIT_JOURNALS = '-E' + args ],
   F: [ '<rw | ro> : File System Read-Write (default) or Read-Only',
     args => FS = args ],
   g: [ 'Output running/notrunning status of daemonized nanos.',
@@ -757,11 +755,8 @@ const ARGS = {
     () => { install(); quit(0); } ],
   j: [ 'Delete runtime journals, build, and run app as usual.',
     () => DELETE_RUNTIME_JOURNALS = true ],
-  J: [ 'JOURNAL_CONFIG : additional journal configuration. See find.sh - deployment/CONFIG i.e. deployment/staging',
-    args => {
-//      POM = POM ? POM + ',' args : args;
-      JOURNAL_CONFIG = comma(JOURNAL_CONFIG, args) ;
-    } ],
+  J: [ 'JOURNALS_CONFIG : additional journals.',
+    args => { JOURNAL_CONFIG = comma(JOURNAL_CONFIG, args); } ],
   k: [ 'Package up a deployment tarball.',
     () => { BUILD_ONLY = PACKAGE = true; } ],
   l: [ 'turn on build logging/verbose mode', () => VERBOSE = '-flags=verbose' ],
@@ -771,14 +766,14 @@ const ARGS = {
   m: [ "Enable Medusa clustering. Not required for 'nodes'. Same as -Ctrue",
     () => CLUSTER = true ],
   N: [ `NAME : start another instance with given instance name. Deployed to /opt/${PROJECT.name}_NAME.`,
-    args => { INSTANCE = HOST_NAME = args; NANOS_PIDFILE=`/tmp/nanos_${INSTANCE}.pid`; info('INSTANCE=' + args); } ],
+       args => { INSTANCE = HOST_NAME = args; NANOS_PIDFILE=`/tmp/nanos_${INSTANCE}.pid`; info('INSTANCE=' + args); } ],
   o: [ "Build only - don't start nanos.",
     () => BUILD_ONLY = true ],
   p: [ 'Enable profiling on default port',
     () => PROFILER = true ],
   P: [ "pom file : name and path of the root pom file. Defaults to 'pom' at the root of the project.",
     args => { POM = args; info('POM=' + POM); } ],
-  r: [ 'Start nanos with whatever was last built.',
+  r: [ 'Run NANOS with whatever was last built.',
     () => RESTART_ONLY = true ],
   R: [ 'Set app deployment root directory',
         args => { APP_ROOT = args } ],
@@ -793,6 +788,7 @@ const ARGS = {
       DELETE_RUNTIME_JOURNALS = true;
       JOURNAL_CONFIG = comma(JOURNAL_CONFIG, 'test');
       JOURNAL_CONFIG = comma(JOURNAL_CONFIG, '../foam3/deployment/test');
+      APP_ROOT='/tmp';
     } ],
   T: [ 'testId1,testId2,... : Run listed tests.',
     args => {
@@ -802,7 +798,9 @@ const ARGS = {
   u: [ 'Run from jar. Intented for Production deployments. Connect to https://localhost:8443/',
     () => {
       RUN_JAR = true;
-      JOURNAL_CONFIG = comma(JOURNAL_CONFIG, 'u');
+      JOURNAL_CONFIG = comma(JOURNAL_CONFIG, '../foam3/deployment/u');
+      if ( fs.existsSync('deployment/u') )
+        JOURNAL_CONFIG = comma(JOURNAL_CONFIG, 'u');
     } ],
   U: [ 'User to run as',
     args => RUN_USER = args ],
@@ -898,8 +896,6 @@ function all() {
   stopNanos();
 
   if ( DELETE_RUNTIME_JOURNALS ) deleteRuntimeJournals();
-
-  if ( DELETE_RUNTIME_LOGS     ) deleteRuntimeLogs();
 
   if ( STOP_ONLY ) quit(0);
 

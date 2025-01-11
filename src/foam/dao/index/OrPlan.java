@@ -8,11 +8,10 @@ import foam.dao.AbstractDAO;
 import foam.dao.Sink;
 import foam.mlang.order.Comparator;
 import foam.mlang.predicate.Predicate;
-
+import java.util.List;
 import static foam.dao.AbstractDAO.decorateDedupSink_;
 import static foam.dao.AbstractDAO.decorateSink;
 
-import java.util.List;
 
 public class OrPlan implements SelectPlan {
   protected Predicate        predicate_;
@@ -33,12 +32,14 @@ public class OrPlan implements SelectPlan {
     if ( planList_ == null || planList_.size() == 0 )
       return;
     sink = decorateSink(null, sink, skip, limit, order, null);
-    sink = decorateDedupSink_(sink);
+    sink = decorateDedupSink_(sink); // Comes second so that duplicates aren't counted for skip and limit
     for ( SelectPlan plan : planList_ ) {
       plan.select(state, sink, 0, AbstractDAO.MAX_SAFE_INTEGER, null, null);
     }
     sink.eof();
   }
+
+  public SelectPlan restate(Object state) { return new RestatedPlan(state, this); }
 
   @Override
   public String toString() {

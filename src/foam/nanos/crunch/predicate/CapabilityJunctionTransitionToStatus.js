@@ -4,20 +4,16 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-foam.CLASS({
+foam.RULE_PREDICATE({
   package: 'foam.nanos.crunch.predicate',
   name: 'CapabilityJunctionTransitionToStatus',
-  extends: 'foam.mlang.predicate.AbstractPredicate',
-  implements: ['foam.core.Serializable'],
-  
-  documentation: `Returns true if the capability of the ucj submitted is transitioning to status defined.`,
-  
+
+  documentation: 'Returns true if the capability of the ucj submitted is transitioning to status defined.',
+
   javaImports: [
-    'foam.core.X',
     'foam.dao.DAO',
     'foam.nanos.crunch.CapabilityJunctionStatus',
-    'foam.nanos.crunch.UserCapabilityJunction',
-    'static foam.mlang.MLang.*'
+    'foam.nanos.crunch.UserCapabilityJunction'
   ],
 
   properties: [
@@ -39,18 +35,12 @@ foam.CLASS({
     }
   ],
 
-  methods: [
-    {
-      name: 'f',
-      javaCode: `
-        X x = (X) obj;
-        UserCapabilityJunction old = (UserCapabilityJunction) x.get("OLD");
-        UserCapabilityJunction ucj = (UserCapabilityJunction) x.get("NEW");
+  ruleF: `
+    UserCapabilityJunction old = (UserCapabilityJunction) o;
+    UserCapabilityJunction ucj = (UserCapabilityJunction) n;
 
-        return ( old == null || old != null && old.getStatus() != ucj.getStatus() ) &&
-            ucj.getStatus() == getStatus() &&
-            ucj.getTargetId().equals(getCapabilityId());
-      `
-    }
-  ]
+    return ( old == null || old != null && old.getStatus() != ucj.getStatus() ) &&
+      ucj.getStatus() == getStatus() &&
+      ucj.getTargetId().equals(getCapabilityId());
+  `
 });

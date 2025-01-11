@@ -136,7 +136,7 @@ foam.CLASS({
           throw clientE;
         }
       }
-      ((foam.nanos.logger.Logger) getMessageX(message).get("logger")).debug("returning skeleton exception", t.toString());
+      foam.nanos.logger.Loggers.logger(getMessageX(message), this).warning(((foam.nanos.boot.NSpecFactory)getDelegateFactory()).getNSpecName(), rpc.getName(), "returning exception", t.toString()); //, t);
       // NOTE: this is required for SocketClientReplyBox to find the socket that this request arrived on.  The localAttributes 'x' does not have access to the socket.
       message.setX(getX());
       message.replyWithException(t);
@@ -147,6 +147,7 @@ foam.CLASS({
     if ( replyBox != null ) {
       foam.box.RPCReturnMessage reply = (foam.box.RPCReturnMessage)getX().create(foam.box.RPCReturnMessage.class);
       <% if ( anyHasReturn ) { %>if ( result != null ) {
+        // foam.nanos.logger.Loggers.logger(getMessageX(message), this).debug(((foam.nanos.boot.NSpecFactory)getDelegateFactory()).getNSpecName(), rpc.getName(), result);
         reply.setData(result);
       }<% } %>
 

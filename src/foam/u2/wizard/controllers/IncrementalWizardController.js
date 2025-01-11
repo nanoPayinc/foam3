@@ -401,6 +401,8 @@ foam.CLASS({
 
         await this.tryWizardletLoad(nextWizardlet, nextPosition);
 
+        await nextWizardlet.willRender(this);
+
         if ( this.canLandOn(nextPosition) ) {
           console.debug(`%clanding: %c${nextPosition && nextPosition.toSummary()}`,
             "font-weight: bold",

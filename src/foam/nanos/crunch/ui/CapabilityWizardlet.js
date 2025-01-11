@@ -29,7 +29,11 @@ foam.CLASS({
         return capability ? capability.id : '';
       }
     },
-
+    {
+      class: 'Boolean',
+      name: 'goNextOnGranted',
+      documentation: 'When set to true, wizard will automatically move to the next wizardlet as soon as this is granted'
+    },
     // Properties for WizardSection interface
     {
       name: 'of',
@@ -79,12 +83,7 @@ foam.CLASS({
     },
     {
       name: 'isCurrent',
-      class: 'Boolean',
-      postSet: function (_, n) {
-        if ( n && this.saveOnCurrent ) {
-          this.save();
-        }
-      }
+      class: 'Boolean'
     },
     {
       name: 'wao',
@@ -113,5 +112,21 @@ foam.CLASS({
         True if CapabilityJunctionData is loaded - currently used only in Capable
       `
     }
+  ],
+  methods: [
+    async function willRender() {
+      if ( this.saveOnCurrent ) {
+        await this.save();
+      }
+    },
+    async function save(options) {
+      let ret = await this.SUPER(options);
+      if ( this.goNextOnGranted && this.status == 'GRANTED' ) {
+        this.__context__.wizardController?.goNext();
+        // Make itself invisible when granted in this case so that back actions work as expected in the wizard
+        this.isVisible = false;
+      }
+      return ret;
+    },
   ]
 });

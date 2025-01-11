@@ -15,7 +15,7 @@ foam.CLASS({
     The rule is run after the object is put/created.
 
     The predicate of EnsurePropertyOnCreateRule will check for
-    1. NEW_OBJ is an instance of the "targetClass"
+    1. NEW_OBJ is an instance of the "of"
     2. The "propName" property on NEW_OBJ is not set
 
     Then EnsurePropertyOnCreateRuleAction will set the object "propName"
@@ -25,7 +25,6 @@ foam.CLASS({
   javaImports: [
     'foam.core.ContextAgent',
     'foam.core.X',
-    'foam.nanos.ruler.predicate.IsInstancePredicate',
     'foam.nanos.ruler.predicate.PropertyEQValue',
     'foam.nanos.ruler.predicate.PropertyIsSetPredicate',
     'foam.util.SafetyUtil',
@@ -42,7 +41,7 @@ foam.CLASS({
     'ruleGroup',
     {
       class: 'Class',
-      name: 'targetClass',
+      name: 'of',
       section: 'basicInfo',
       required: true
     },
@@ -67,14 +66,11 @@ foam.CLASS({
       transient: true,
       visibility: 'HIDDEN',
       javaGetter: `
-        var isInstanceOfPredicate = new IsInstancePredicate();
-        isInstanceOfPredicate.setOf(getTargetClass());
-
         var propertyIsSetPredicate = new PropertyIsSetPredicate();
         propertyIsSetPredicate.setPropName(getPropName());
 
         return AND(
-          isInstanceOfPredicate,
+          INSTANCE_OF(getOf()),
           NOT(propertyIsSetPredicate)
         );
       `
@@ -137,7 +133,7 @@ foam.CLASS({
                 }
                 ruler.getDelegate().put(clone);
               }
-            }, "Update " + propertyRule.getTargetClass().getId() + " property:" + propertyRule.getPropName());
+            }, "Update " + propertyRule.getOf().getId() + " property:" + propertyRule.getPropName());
 
             ruler.stop();
           `

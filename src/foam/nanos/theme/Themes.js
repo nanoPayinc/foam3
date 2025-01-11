@@ -171,8 +171,9 @@ Later themes:
       }
 
       // Find theme from user via SPID
-      if ( user != null
-        && ( theme == null || ! td.getId().equals(domain) || ! user.getSpid().equals(theme.getSpid()) )
+      if ( user != null &&
+           user.getId() != User.SYSTEM_USER_ID &&
+           ( theme == null || ! td.getId().equals(domain) || ! user.getSpid().equals(theme.getSpid()) )
       ) {
         var spid = user.getSpid();
         while ( ! SafetyUtil.isEmpty(spid) ) {

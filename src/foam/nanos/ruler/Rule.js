@@ -12,13 +12,14 @@ foam.CLASS({
   documentation: 'Rule model represents rules(actions) that need to be applied in case passed object satisfies provided predicate.',
 
   implements: [
+    'foam.nanos.approval.ApprovableAware',
     'foam.nanos.auth.Authorizable',
     'foam.nanos.auth.CreatedAware',
     'foam.nanos.auth.CreatedByAware',
     'foam.nanos.auth.LastModifiedAware',
     'foam.nanos.auth.LastModifiedByAware',
-    'foam.nanos.approval.ApprovableAware',
-    'foam.nanos.auth.ServiceProviderAware'
+    'foam.nanos.auth.ServiceProviderAware',
+    'foam.nanos.ruler.RulePredicate'
   ],
 
   imports: [
@@ -339,41 +340,27 @@ foam.CLASS({
 
   methods: [
     {
-      name: 'f',
-      type: 'Boolean',
-      args: [
-        {
-          name: 'x',
-          type: 'Context'
-        },
-        {
-          name: 'obj',
-          type: 'FObject'
-        },
-        {
-          name: 'oldObj',
-          type: 'FObject'
-        }
-      ],
+      name: 'ruleF',
       javaCode: `
         ((OMLogger) x.get("OMLogger")).log("Rule", (SafetyUtil.isEmpty(getName()) ? getId() : getName()));
         try {
           if ( getPredicate() instanceof MQLExpr || getPredicate() instanceof FScriptPredicate ) {
             RulerData data = new RulerData();
             Subject subject = (Subject) x.get("subject");
-            data.setN(obj);
-            data.setO(oldObj);
+            data.setN(n);
+            data.setO(o);
             data.setUser(subject.getUser());
             data.setRealUser(subject.getRealUser());
             data.setSpid(subject.getUser().getSpid());
             data.setDateTime(new Date());
             return getPredicate().f(data);
           } else {
-            return getPredicate().f(x.put("NEW", obj).put("OLD", oldObj));
+            return getPredicate().ruleF(x, o, n);
           }
-        } catch ( Throwable t ) {
+        } catch (Throwable t) {
           try {
-            return getPredicate().f(obj);
+          //  System.err.println("**************************** UNEXPECTED NON RulePredicate " + getPredicate());
+            return getPredicate().f(n);
           } catch ( Throwable th ) { }
           // ((Logger) x.get("logger")).debug(this.getClass().getSimpleName(), "id", getId(), "\\nrule", this, "\\nobj", obj, "\\nold", oldObj, "\\n", t);
           ((Logger) x.get("logger")).error("Failed to evaluate predicate of rule: " + getId(), t);

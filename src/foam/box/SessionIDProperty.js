@@ -10,8 +10,6 @@ foam.CLASS({
   name: 'SessionIDProperty',
   extends: 'foam.core.String',
 
-  documentation: 'StringProperties coerce their arguments into Strings.',
-
   properties: [
     {
       name: 'getter',

@@ -85,6 +85,11 @@ foam.CLASS({
 
     function isLiteral(o) {
       return foam.String.isInstance(o) || foam.Number.isInstance(o) || foam.Boolean.isInstance(o) || foam.Date.isInstance(o);
+    },
+
+    function remove() {
+      this.element_.remove();
+      this.detach();
     }
   ]
 });
@@ -151,7 +156,7 @@ foam.CLASS({
         var update_ = val => {
           var n;
 
-          if ( foam.core.Slot.isInstance(val) ) { debugger; }
+          if ( foam.core.Slot.isInstance(val) ) { console.warn('Unexpected Slot in update.'); }
 
           if ( val === undefined || val === null ) {
             n = foam.u2.Text.create({}, this);
@@ -194,43 +199,55 @@ foam.CLASS({
   name: 'FunctionNode',
   extends: 'foam.u2.Element',
 
+  // Creates a fake element between two comments containing 'dynamic' and '/dynamic'.
+  // appendChild_() inserts the child before the 'end' tag.
+  // This lets dynamic content to be inserted without adding an extra wrapping
+  // element which would interfere in some circumstances (ie. table/tr, selection/option).
+
   properties: [
     'fn', // a foam.core.DynamicFunction
     {
       name: 'element_',
-      factory: function() { return this.document.createDocumentFragment(); }
+      factory: function() { return this.document.createComment('dynamic'); }
+    },
+    {
+      name: 'endElement_',
+      factory: function() { return this.document.createComment('/dynamic'); }
     }
   ],
 
   methods: [
-    function init() {
-      this.add(''); // needed to preserve proper location in DOM
-
+    function render() {
+      if ( ! this.parentNode ) { this.detach(); return; }
+      this.parentNode.appendChild_(this.endElement_);
       this.fn.self = this;
 
-      var nextSibling;
-
+      // Before rendering, remove all children between dynamic and /dynamic
       this.fn.pre = () => {
-        nextSibling = undefined;
-        this.childNodes.forEach(n => {
-          nextSibling = n.element_.nextSibling;
-          n.element_.remove();
-        });
-        this.childNodes = [];
-        this.element_   = undefined;
-        this.add(''); // needed to preserve proper location in DOM
-      };
+        var endElement_ = this.endElement_;
 
-      this.fn.post = () => {
-        if ( nextSibling ) {
-          this.parentNode.element_.insertBefore(this.element_, nextSibling);
-        } else if ( this.childNodes.length ) {
-          this.parentNode.element_.appendChild(this.element_);
-        } else {
-          // Add empty Text node to mark space in DOM in case no output was generated
-          this.add('');
+        for ( var i = 0 ; i < this.childNodes.length ; i++ ) {
+          this.childNodes[i].detach();
         }
+        this.childNodes = [];
+
+        function rm(n) {
+          if ( ! n || n === endElement_ ) return;
+          rm(n.nextSibling);
+          try { n.remove(); } catch (x) { debugger; }
+        }
+
+        rm(this.element_.nextSibling);
+
+        return this;
       };
+      this.onDetach(this.fn);
+    },
+
+    // Append 'children' before /dynamic comment
+    function appendChild_(c) {
+      if ( ! this.endElement_.parentNode ) { this.detach(); return; }
+      this.endElement_.parentNode.insertBefore(c, this.endElement_);
     }
   ]
 });
@@ -239,7 +256,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'DAOSelectNode',
-  extends: 'foam.u2.Element',
+  extends: 'foam.u2.FunctionNode',
   implements: [ 'foam.dao.Sink' ],
 
   axioms: [
@@ -250,82 +267,57 @@ foam.CLASS({
   ],
 
   properties: [
-    'self',
     'dao',
     'code',
     {
       class: 'Int',
       name: 'batch',
-      documentation: `Used to check whether a paint should be performed or not.`
-    },
-    {
-      name: 'element_',
-      factory: function() { return this.document.createTextNode(''); }
+      documentation: 'Used to check whether a paint should be performed or not.'
     },
     {
       class: 'Array',
-      name: 'children'
+      name: 'data_'
+    },
+    {
+      name: 'fn',
+      factory: function() {
+        return this.dynamic(function(data_) {
+          data_.forEach(d => {
+            this.startContext({ data: d });
+
+            var e = this.code.call(this.startContext({ data: d }), d);
+            if ( e ) {
+              // TODO: remove after port from U2 to U3
+              console.log('Deprecated use of select({return E}). Just do self.start() instead in DAOSelectNode.', this.code);
+              this.tag(e);
+            }
+
+            this.endContext()
+          })
+        });
+      }
     }
   ],
 
   methods: [
-    function load() {
+    function render() {
       this.SUPER();
       this.onDetach(this.dao.listen(this));
-
-      this.update();
     },
-
-    function put(obj, s) {
-      this.update();
-    },
-
-    function remove(obj, s) {
-      this.update();
-    },
-
-    function reset() {
-      this.update();
-    },
-
-    function removeAllChildren() {
-      for ( var i = 0 ; i < this.children.length ; i++ ) {
-        this.children[i].remove();
-      }
-      this.children = [];
-    }
+    function put()    { this.update(); },
+    function remove() { this.update(); },
+    function reset()  { this.update(); }
   ],
 
   listeners: [
     {
       name: 'update',
-      isMerged: true,
-      mergeDelay: 160,
+      isFramed: true,
       code: function() {
-        this.removeAllChildren();
         var batch = ++this.batch;
-        this.dao.select(d => {
-          if ( this.isDetached() || this.batch !== batch ) {
-            debugger;
-            return;
-          }
-          var oldSize = this.self.childNodes.length;
-
-          this.self.appendChild_ = c => {
-            this.self.element_.insertBefore(c, this.element_);
-          };
-          var e = this.code.call(this.self.startContext({data: d}), d);
-          if ( e ) {
-            // TODO: remove after port from U2 to U3
-            console.log('Deprecated use of select({return E}). Just do self.start() instead.');
-            this.self.tag(e);
-          }
-          this.self.appendChild_ = foam.u2.Element.prototype.appendChild_;
-
-          var newSize = this.self.childNodes.length;
-          for ( var i = oldSize ; i < newSize ; i++ ) {
-            this.children.push(this.self.childNodes[i]);
-          }
+        this.dao.select().then(data => {
+          if ( this.isDetached() || this.batch !== batch ) return;
+          this.data_ = data.array;
         });
       }
     }
@@ -451,11 +443,14 @@ foam.CLASS({
     {
       name: 'NAMED_CODES',
       value: {
-        '13': 'enter',
-        '37': 'left',
-        '38': 'up',
-        '39': 'right',
-        '40': 'down'
+        '8':   'backspace',
+        '13':  'enter',
+        '27':  'esc',
+        '37':  'left',
+        '38':  'up',
+        '39':  'right',
+        '40':  'down',
+        '127': 'del'
       }
     }
   ],
@@ -509,9 +504,7 @@ foam.CLASS({
     {
       name: 'parentNode',
       transient: true,
-      postSet: function(o, n) {
-        n.onDetach(this);
-      }
+      postSet: function(o, n) { n.onDetach(this); }
     },
     {
       class: 'Boolean',
@@ -657,8 +650,7 @@ foam.CLASS({
         // parent will remove from DOM and detach
         this.parentNode.removeChild(this);
       } else {
-        this.element_.remove();
-        this.detach();
+        this.SUPER();
       }
     },
 
@@ -760,8 +752,8 @@ foam.CLASS({
         // and keypress events.
         target.tabIndex = target.tabIndex || 1;
 
-        target.on('keydown',  this.onKeyboardShortcut);
-        target.on('keypress', this.onKeyboardShortcut);
+        target.on('keydown',  this.onKeyboardShortcut, true);
+        target.on('keypress', this.onKeyboardShortcut, true);
       }
     },
 
@@ -1209,6 +1201,14 @@ foam.CLASS({
     function addChild_(c, parentNode) {
       if ( c === null || c === undefined ) return;
 
+      if ( parentNode.isDetached() ) {
+        console.warn('Attempt to add child to detached parent');
+        if ( c.element_ ) {
+          c.detach();
+        }
+        return;
+      }
+
       if ( foam.Array.isInstance(c) ) {
         for ( var i = 0 ; i < c.length ; i++ )
           this.addChild_(c[i], parentNode);
@@ -1370,12 +1370,11 @@ foam.CLASS({
      * @param {Boolean} update True if you'd like changes to each record to be put to
      * the DAO
      */
-    function select(dao, f, update, opt_comparator) {
+    function select(dao, f, update) {
       this.add(foam.u2.DAOSelectNode.create({
-        self: this,
-        dao: dao,
+        dao:  dao,
         code: f
-      }));
+      }, this));
       return this;
     },
 

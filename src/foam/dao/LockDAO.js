@@ -41,21 +41,21 @@ foam.CLASS({
     },
 
     function remove_(x, obj) {
-      return new Promise(resolve => {
+      return new Promise((resolve, reject) => {
         this.lock.then(() => {
           return this.delegate.remove_(x, obj).then((o) => {
             resolve(o);
-          });
+          }, reject);
         });
       });
     },
 
     function removeAll_(x, sink, skip, limit, order, predicate) {
-      return new Promise(resolve => {
+      return new Promise((resolve, reject) => {
         this.lock.then(() => {
           return this.delegate.removeAll_(x, sink, skip, limit, order, predicate).then((o) => {
             resolve(o);
-          });
+          }, reject);
         });
       });
     },

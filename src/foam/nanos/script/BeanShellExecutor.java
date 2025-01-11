@@ -24,6 +24,7 @@ public class BeanShellExecutor {
 
   public Object execute(X x, PrintStream ps, String serviceScript ) throws IOException  {
     Interpreter shell = new Interpreter();
+
     try {
       shell.set("x", x);
       return shell.eval(serviceScript);

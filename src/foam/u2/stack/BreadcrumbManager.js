@@ -26,7 +26,7 @@ foam.CLASS({
         }
       ],
       listeners: [
-        function detach() {
+        function remove() {
           if ( this.parent.pos >= this.position )
             this.parent.pos = this.position - 1;
         }
@@ -56,7 +56,7 @@ foam.CLASS({
       pos++;
       if ( this.crumbs[pos] )
           this.crumbs.splice(pos);
-      view.onDetach(c.detach);
+      view.onDetach(c.remove);
       this.crumbs[pos] = c;
       this.pos = c.position = pos;
       view.setPrivate_('crumb', c);

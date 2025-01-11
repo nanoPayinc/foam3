@@ -29,13 +29,11 @@ foam.CLASS({
   properties: [
     { name: 'group',            value: '' /*getter: function() { debugger; } */},
     { name: 'sessionTimer',     getter: function() { debugger; } },
-    { name: 'crunchController', getter: function() { debugger; } }
+    { name: 'crunchController', getter: function() { debugger; } },
+    { class: 'Boolean', name: 'loginSuccess' }
   ],
 
   methods: [
-    function loginSuccess() {
-      debugger;
-    },
     function requestLogin() {
       debugger;
     }
@@ -113,6 +111,11 @@ foam.CLASS({
       factory: function() { return this.Subject.create(); }
     },
     {
+      class: 'String',
+      name: 'bootServices',
+      documentation: 'List of services to load on startup'
+    },
+    {
       name: 'client',
       postSet: function(o, n) { globalThis.x = n; }
     }
@@ -128,10 +131,14 @@ foam.CLASS({
         showActions: false
       });
 
-      var cls = await this.ClientBuilder.create({authenticate: false}, this).promise;
-      this.client = cls.create(null, this);
+      this.client = await this.ClientBuilder.create({authenticate: false}, this).promise;
 
-      if ( ! globalThis.client ) globalThis.client = this.client;
+      if ( ! globalThis.client ) {
+        globalThis.client = this.client;
+        globalThis.x = this.client.__subContext__;
+      }
+
+      this.bootServices.split(',').forEach(s => { this.client.__subContext__[s]; });
     },
     function pushMenu(menu) {
       menu && menu.launch && menu.launch(this.__subContext__);

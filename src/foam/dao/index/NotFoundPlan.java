@@ -11,7 +11,8 @@ import foam.mlang.order.Comparator;
 import foam.mlang.predicate.Predicate;
 
 /** Found that no data exists for the query. **/
-public class NotFoundPlan implements FindPlan, SelectPlan
+public class NotFoundPlan
+  implements SelectPlan
 {
   protected final static NotFoundPlan instance_ = new NotFoundPlan();
 
@@ -21,13 +22,10 @@ public class NotFoundPlan implements FindPlan, SelectPlan
 
   public long cost() { return 0; }
 
-  public FObject find(Object state, Object key) {
-    return null;
+  public void select(Object state, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {
   }
 
-  public void select(Object state, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {
-    return;
-  }
+  public SelectPlan restate(Object state) { return this; }
 
   @Override
   public String toString() {

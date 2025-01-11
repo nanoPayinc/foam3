@@ -70,16 +70,7 @@ foam.CLASS({
     {
       name: 'isAdmin',
       javaType: 'Boolean',
-      args: [
-        {
-          name: 'x',
-          type: 'Context'
-        },
-        {
-          name: 'group',
-          type: 'foam.nanos.auth.Group'
-        }
-      ],
+      args: 'Context x, foam.nanos.auth.Group group',
       javaCode: `
         if ( group == null ) return false;
 

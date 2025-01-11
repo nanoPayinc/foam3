@@ -363,12 +363,12 @@ foam.CLASS({
           this.start('<objects>\n');
           var cls = this.getCls(opt_cls);
           for ( var i = 0 ; i < o.length ; i++ ) {
-            this.start('<object>\n');
+            this.start('<object>');
               this.output(o[i], cls);
-            this.end('\n</object>');
+            this.end('</object>');
             if ( i < o.length-1 ) this.out('\n').nl().indent();
           }
-          this.end('\n</objects>');
+          this.end('</objects>');
         },
         Object:        function(o) {
           if ( o.outputXML ) {

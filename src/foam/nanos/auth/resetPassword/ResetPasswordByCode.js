@@ -18,13 +18,13 @@ foam.CLASS({
   imports: [
     'ctrl',
     'emailVerificationService',
-    'resetPasswordService'
+    'resetPasswordService',
+    'notify'
   ],
 
   requires: [
     'foam.log.LogLevel',
     'foam.nanos.auth.email.VerificationCodeException',
-    'foam.u2.dialog.NotificationMessage',
     'foam.u2.FragmentedTextField',
     'foam.u2.FragmentedTextFieldFragment'
   ],
@@ -184,22 +184,11 @@ foam.CLASS({
           await this.resetPasswordService.resetPassword(null, this);
         } catch (err) {
           this.error('^reset-failure', err);
-          this.ctrl.add(this.NotificationMessage.create({
-            err: err.data,
-            message: this.ERROR_MSG,
-            type: this.LogLevel.ERROR,
-            transient: true
-          }));
-          throw err;
+          this.notify(err.data, this.ERROR_MSG, this.LogLevel.ERROR, true);
         }
 
         this.report('^reset-success');
-        this.ctrl.add(this.NotificationMessage.create({
-          message: this.SUCCESS_MSG_TITLE,
-          description: this.SUCCESS_MSG,
-          type: this.LogLevel.INFO,
-          transient: true
-        }));
+        this.notify(this.SUCCESS_MSG_TITLE, this.SUCCESS_MSG, this.LogLevel.INFO, true);
       }
     },
     {
@@ -213,29 +202,16 @@ foam.CLASS({
       code: async function() {
         this.report('^resend-verification');
         try {
-          await this.resetPasswordService.resetPasswordByCode(null, this.email, this.username);
+          await this.resetPasswordService.resetPasswordByCode(null, this.email, this.userName);
 
-          this.ctrl.add(this.NotificationMessage.create({
-            message: this.INSTRUC_TITLE,
-            description: this.INSTRUC,
-            type: this.LogLevel.INFO,
-            transient: true
-          }));
+          this.notify(this.INSTRUC_TITLE, this.INSTRUC, this.LogLevel.INFO, true);
         } catch(err) {
           this.assert('false', 'exception when resending verification', err.message);
           if ( this.UserNotFoundException.isInstance(err.data.exception) ) {
-              this.ctrl.add(this.NotificationMessage.create({
-                err: err.data,
-                type: this.LogLevel.ERROR,
-                transient: true
-              }));
-              return;
+            this.notify(err.data, '', this.LogLevel.ERROR, true);
+            return;
           }
-          this.ctrl.add(this.NotificationMessage.create({
-            message: this.RESEND_ERROR_MSG,
-            type: this.LogLevel.ERROR,
-            transient: true
-          }));
+          this.notify(this.RESEND_ERROR_MSG, '', this.LogLevel.ERROR, true);
           throw err;
         }
       }

@@ -41,16 +41,6 @@ p({
       })
       .setDecorator(dao)
       .setServiceProviderAware(true)
-      .setServiceProviderAwarePropertyInfos(
-        new java.util.HashMap() {{
-          put(
-            foam.nanos.ticket.Ticket.class.getName(),
-            new foam.core.PropertyInfo[] {
-              foam.nanos.ticket.Ticket.OWNER
-            }
-          );
-        }}
-      )
       .build()
       .addPropertyIndex(new foam.core.PropertyInfo[] {foam.nanos.ticket.Ticket.ASSIGNED_TO_SUMMARY})
       .addPropertyIndex(new foam.core.PropertyInfo[] {foam.nanos.ticket.Ticket.CREATED_BY})

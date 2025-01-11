@@ -14,10 +14,8 @@ foam.CLASS({
   mixins: [ 'foam.u2.TextInputCSS' ],
 
   css: `
-    ^ {
-      height: $inputHeight;
-      min-width: 116px;
-    }
+    ^:read-only:not(:disabled) { border: none; background: rgba(0,0,0,0); margin-left: -8px; }
+    ^:not(:read-only) { height: $inputHeight;  min-width: 130px; }
   `,
 
   properties: [ ['type', 'time'] ]

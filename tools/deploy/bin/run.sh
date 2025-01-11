@@ -3,7 +3,7 @@
 
 HOST_NAME=`hostname -s`
 APP_NAME=foam
-APP_HOME=/opt/foam
+SYSTEM_NAME=foam
 WEB_PORT=
 DEBUG_PORT=*:5005
 DEBUG_SUSPEND=n
@@ -16,6 +16,11 @@ VERSION=
 RUN_USER=
 FS=rw
 #CLUSTER=false
+
+# local development -u deployment
+if [ -f "build/env.sh" ]; then
+    source build/env.sh
+fi
 
 MACOS='darwin*'
 LINUXOS='linux-gnu'
@@ -33,50 +38,50 @@ function usage {
     echo "Usage: $0 [OPTIONS]"
     echo ""
     echo "Options are:"
+    echo "  -A <app_name>       : Application nmae and also prefix of jar file"
     echo "  -C <true>           : enable clustering"
     echo "  -D 0 or 1           : Debug mode."
+    echo "  -E <debug port>     : Port to run debugger on."
     echo "  -F <rw | ro>        : File System mode"
     echo "  -H <hostname>       : hostname "
-    echo "  -h                  : Display help."
-    echo "  -j 0 or 1           : JProfiler enabled"
-    echo "  -J PORT             : JProfiler PORT"
-    echo "  -n <app_name>       : App name."
-    echo "  -N <app_home>       : App home directory."
-    echo "  -P <debug port>     : Port to run debugger on."
-    echo "  -S <y/n>            : Suspend on debug launch."
+    echo "  -J 0 or 1           : JProfiler enabled"
+    echo "  -P PORT             : JProfiler PORT"
+    echo "  -S <system_name>    : System name."
     echo "  -U <user>           : User to run script as"
     echo "  -V <version>        : Version."
     echo "  -W <web_port>       : HTTP Port."
+    echo "  -Y <y/n>            : Suspend on debug launch."
     echo "  -Z <0/1>            : Daemonize."
 }
 
-while getopts "C:D:F:H:hj:J:n:N:P:S:U:V:W:Z:" opt ; do
+while getopts "A:C:D:E:F:H:J:P:S:U:V:W:Y:Z:" opt ; do
     case $opt in
+        A) APP_NAME=$OPTARG;;
         C) CLUSTER=$OPTARG;;
         D) DEBUG_DEV=$OPTARG;;
+        E) DEBUG_PORT=$OPTARG;;
         F) FS=$OPTARG;;
         H) HOST_NAME=$OPTARG;;
-        h) usage; exit 0;;
-        j) PROFILER=$OPTARG;;
-        J) PROFILER_PORT=$OPTARG;;
-        n) APP_NAME=$OPTARG;;
-        N) APP_HOME=$OPTARG;;
-        P) DEBUG_PORT=$OPTARG;;
-        S) DEBUG_SUSPEND=$OPTARG;;
+        J) PROFILER=$OPTARG;;
+        P) PROFILER_PORT=$OPTARG;;
+        S) SYSTEM_NAME=$OPTARG;;
         U) RUN_USER=$OPTARG;;
         V) VERSION=$OPTARG;;
         W) WEB_PORT=$OPTARG;;
+        Y) DEBUG_SUSPEND=$OPTARG;;
         Z) DAEMONIZE=$OPTARG;;
         ?) usage ; exit 0 ;;
    esac
 done
 
-echo "run.sh HOST_NAME=$HOST_NAME"
+echo "run.sh $APP_NAME($SYSTEM_NAME) @ $HOST_NAME:$WEB_PORT"
+
 
 if [ ! -z ${RUN_USER} ] && [ "$(uname -s)" == "Linux" ] && [ "$(whoami)" != "${RUN_USER}" ]; then
     exec sudo -u "${RUN_USER}" -- "$0" "$@"
 fi
 
+APP_HOME=/opt/${SYSTEM_NAME}
 JAVA_OPTS=""
 export JOURNAL_HOME="${APP_HOME}/journals"
 export DOCUMENT_HOME="${APP_HOME}/documents"
@@ -87,6 +92,7 @@ if [ -f "${APP_HOME}/etc/shrc.local" ]; then
     . "${APP_HOME}/etc/shrc.local"
 fi
 
+JAVA_OPTS="${JAVA_OPTS} -DAPP_HOME=${APP_HOME}"
 JAVA_OPTS="${JAVA_OPTS} -Dresource.journals.dir=journals"
 JAVA_OPTS="${JAVA_OPTS} -Dhostname=${HOST_NAME}"
 if [ -z "`echo "${JAVA_OPTS}" | grep "http.port"`" ] && [ ! -z ${WEB_PORT} ]; then

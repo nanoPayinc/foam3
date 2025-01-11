@@ -24,9 +24,9 @@ foam.CLASS({
     'foam.nanos.auth.Subject'
   ],
 
-  imports: [ 'error', 'params', 'window'],
+  imports: [ 'error', 'params', 'window' ],
 
-  exports: ['sessionID'],
+  exports: [ 'sessionID' ],
 
   properties: [
     {
@@ -90,7 +90,7 @@ foam.CLASS({
             name:       'Client',
             imports:    ['params', 'window'],
             exports:    ['as client', 'theme',  'sessionID'],
-            constants:  { eagerClients_: [] },
+            constants:  { eagerClients: [] },
             properties: [
               {
                 __copyFrom__: 'foam.nanos.client.ClientBuilder.SESSION_NAME',
@@ -122,7 +122,7 @@ foam.CLASS({
             methods: [
               function init() {
                 // Wake up any eager clients
-                this.EAGER_CLIENTS_.forEach(c => this[c]);
+                this.EAGER_CLIENTS.forEach(c => this[c]);
               }
             ]
           };
@@ -144,8 +144,8 @@ foam.CLASS({
                 Not Throttled: 52, 51, 53, 52, 56
           */
           let subjectPromise = self.clientBuilderService.getSubject();
-          let themePromise = self.clientBuilderService.getTheme();
-          let nSpecsPromise = self.clientBuilderService.getClient(this, self.PROJECTION(nspec.NAME, nspec.CLIENT, nspec.LAZY_CLIENT));
+          let themePromise   = self.clientBuilderService.getTheme();
+          let nSpecsPromise  = self.clientBuilderService.getClient(this, self.PROJECTION(nspec.NAME, nspec.CLIENT, nspec.LAZY_CLIENT));
 
           // Force hard reload when app version updates
           var appConfigPromise = self.clientBuilderService.getAppConfig(this).then(function(appConfig) {
@@ -186,7 +186,7 @@ foam.CLASS({
                     }
 
                     if ( ! spec.lazyClient )
-                      client.constants.eagerClients_.push(spec.name);
+                      client.constants.eagerClients.push(spec.name);
 
                     //references = references.concat(foam.json.references(self.__context__, json));
 
@@ -227,6 +227,9 @@ foam.CLASS({
                       initSubject: subject || self.Subject.create({}),
                       sessionID: self.sessionID
                     }, self.__context__);
+                    client.EAGER_CLIENTS.forEach(c => {
+                      client.__subContext__[c];
+                    });
                     // console.timeEnd('clientBuild');
                     // Preload menuDAO, remove when we have pre-cached daos from the server
                     client.menuDAO.select();
@@ -239,6 +242,7 @@ foam.CLASS({
       }
     }
   ],
+
   methods: [
     function init() {
       // Wake up and find/create a sessionID for building the client

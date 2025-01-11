@@ -76,6 +76,7 @@ foam.CLASS({
         var parent = this.parentNode;
         var self   = this;
 
+        // TODO: remove then() when fully switched to U3
         this.el().then(e => {
           var span = parent.start('span').style({display: 'inline-block', position: 'relative', 'font-weight': '300'}).add(self.units, ' ');
           span.el().then(e => {

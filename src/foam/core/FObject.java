@@ -469,6 +469,16 @@ public interface FObject
     return this;
   }
 
+  default Object resetProperty(String prop) {
+    /** Like clearProperty(), but also causes the value to be reset to its default value or be generated from its factory or expresssion. **/
+    PropertyInfo property = (PropertyInfo) getClassInfo().getAxiomByName(prop);
+    if ( property != null ) {
+      property.clear(this);
+      property.get(this); // force regeneration
+    }
+    return this;
+  }
+
   default boolean hasDefaultValue(String prop) {
     if ( ! this.isPropertySet(prop) ) return true;
     PropertyInfo property = (PropertyInfo) getClassInfo().getAxiomByName(prop);

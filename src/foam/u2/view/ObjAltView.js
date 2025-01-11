@@ -8,6 +8,7 @@ foam.CLASS({
   package: 'foam.u2.view',
   name: 'ObjAltView',
   extends: 'foam.u2.View',
+
   mixins: ['foam.u2.memento.Memorable'],
 
   requires: [ 'foam.u2.view.RadioView' ],

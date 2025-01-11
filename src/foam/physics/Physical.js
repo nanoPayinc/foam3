@@ -18,11 +18,12 @@ foam.CLASS({
   properties: [
     { class: 'Float', name: 'friction' },
     { class: 'Float', name: 'gravity', value: 1 },
-    { class: 'Float', name: 'vx', value: 0 },
-    { class: 'Float', name: 'vy', value: 0 },
+    { class: 'Float', name: 'vx', value: 0, precision: 3 },
+    { class: 'Float', name: 'vy', value: 0, precision: 3 },
     {
       class: 'Float',
       name: 'velocity',
+      precision: 3,
       getter: function() { return this.distance(this.vx, this.vy); },
       setter: function(v) { this.setVelocityAndAngle(v, this.angleOfVelocity); }
     },

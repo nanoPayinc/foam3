@@ -10,6 +10,21 @@ p({
   "action":{ "class":"foam.nanos.cron.ScheduleSchedulableRuleAction" },
   "after":true,
   "enabled":true,
+  "lifecycleState":1
+})
+
+p({
+  "class":"foam.nanos.ruler.Rule",
+  "id":"remove-deleted-schedulable-from-cronJobDAO",
+  "name":"Remove Deleted Schedulable from cronJobDAO",
+  "priority":100,
+  "ruleGroup":"schedulable",
+  "documentation":"put schedulable to cronjobDAO on create",
+  "daoKey":"schedulableDAO",
+  "operation": 2,
+  "action":{ "class":"foam.nanos.cron.UnscheduleSchedulableRuleAction" },
+  "after":true,
+  "enabled":true,
   "lifecycleState":1,
-  "spid":"nbp"
+  "documentation":"When a user deletes a schedulable, also remove the schedulable from cronjobdao"
 })

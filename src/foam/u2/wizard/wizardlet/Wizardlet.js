@@ -99,6 +99,17 @@ foam.INTERFACE({
           name: 'data'
         }
       ]
+    },
+    {
+      flags: ['web'],
+      name: 'willRender',
+      documentation: 'Called by wizardController before wizardlet is rendered. Useful for performing checks that allow wizardlet skipping',
+      args: [
+        {
+          name: 'wizardController'
+        }
+      ],
+      type: 'Void'
     }
   ]
 });

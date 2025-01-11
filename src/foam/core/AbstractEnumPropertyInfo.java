@@ -7,6 +7,7 @@
 package foam.core;
 
 import foam.core.FEnum;
+import foam.lib.parse.*;
 import foam.nanos.logger.Logger;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
@@ -18,9 +19,12 @@ import javax.xml.stream.XMLStreamReader;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+
 public abstract class AbstractEnumPropertyInfo
   extends AbstractObjectPropertyInfo
 {
+  protected static final Parser parser__ = new foam.lib.parse.Alt(foam.lib.json.IntParser.instance(), foam.lib.json.StringParser.instance());
+
   protected static final ThreadLocal<ByteBuffer> bb = new ThreadLocal<ByteBuffer>() {
     @Override
     protected ByteBuffer initialValue() {
@@ -87,4 +91,8 @@ public abstract class AbstractEnumPropertyInfo
   public void format(foam.lib.formatter.FObjectFormatter formatter, foam.core.FObject obj) {
     formatter.outputEnum((FEnum) get_(obj));
   }
+
+  public Parser jsonParser() { return parser__; }
+
+  public Parser csvParser() { return parser__; }
 }

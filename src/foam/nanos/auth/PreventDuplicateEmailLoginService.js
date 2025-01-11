@@ -28,10 +28,16 @@ foam.CLASS({
     {
       name: 'getUser',
       javaCode: `
+
+        // see nspec uniqueUserService which also adds predicate NEQ LifecycleState.DELETED.
         DAO userDAO = ((DAO) getX().get("localUserUserDAO")).where(
           OR(
             EQ(User.EMAIL, identifier.toLowerCase()),
-            EQ(User.USER_NAME, identifier)));
+            EQ(User.USER_NAME, identifier)
+          )
+        );
+
+        // TODO: this needs to be predicate on the capability which imposes unique emails.
 
         // Here, we check to see if there exists one and only one user under the given identifier
         // under the theme spid. If so, simply return the user.
@@ -45,7 +51,7 @@ foam.CLASS({
           throw duplicateEmailException;
         }
         if ( userCount == 1 ) return (User) userDAO.find(spidPredicate);
-        
+
         // Here, we check if there is a user under the given identifier under the superspid since the
         // localuseruserdao given here should be filtered by spid == themeSpid || spid == superspid and we did not
         // find a user under the theme spid.

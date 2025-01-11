@@ -2,7 +2,7 @@ p({
   "class":"foam.nanos.ruler.RuleGroup",
   "id":"Ticket",
   "predicate":{
-    "class":"foam.nanos.ruler.predicate.IsInstancePredicate",
+    "class":"foam.mlang.predicate.IsInstanceOf",
     "of":"foam.nanos.ticket.Ticket"
   }
 })

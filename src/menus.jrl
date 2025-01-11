@@ -226,7 +226,7 @@ p({
       "createTitle": "Create a New Webhook",
       "predicate": {
         "class": "foam.mlang.predicate.IsInstanceOf",
-        "targetClass": "foam.nanos.dig.DUGRule"
+        "of": "foam.nanos.dig.DUGRule"
       },
       "of": "foam.nanos.dig.DUGRule"
     }
@@ -251,8 +251,36 @@ p({
 p({"class":"foam.nanos.menu.Menu","id":"integration.model-doc","label":"UML API Models","handler":{"class":"foam.nanos.menu.ViewMenu","view":{"class":"foam.doc.ModelBrowser"}},"parent":"integration"})
 
 // settings
-p({"class":"foam.nanos.menu.Menu","id":"set-password","label":"Change Password","handler":{"class":"foam.nanos.menu.ViewMenu","view":{"class":"foam.nanos.auth.ChangePasswordView"}},"order":100,"parent":"settings"})
-p({"class":"foam.nanos.menu.Menu","id":"sign-out","label":"Sign Out","handler":{"class":"foam.nanos.menu.ViewMenu","view":{"class":"foam.nanos.auth.SignOutView"}},"order":10000,"parent":"settings"})
+p({
+  "class":"foam.nanos.menu.Menu",
+  "id":"set-password",
+  "label":"Change Password",
+  "handler":{
+    "class":"foam.nanos.menu.ViewMenu",
+    "view":{
+      class: 'foam.nanos.auth.ChangePasswordView',
+      modelOf: 'foam.nanos.auth.UpdatePassword',
+      showHeader: false,
+      isHorizontal: true,
+      popup: false
+    }
+  },
+  "order":3,
+  "parent":"settings"
+})
+
+p({
+  "class":"foam.nanos.menu.Menu",
+  "id":"sign-out",
+  "label":"Sign Out",
+  "handler":{
+    "class":"foam.nanos.menu.ViewMenu","view":{
+      "class":"foam.nanos.auth.SignOutView"
+    }
+  },
+  "order":10000,
+  "parent":"settings"
+})
 
 // hidden
 p({"class":"foam.nanos.menu.Menu","id":"dashboard-demo","handler":{"class":"foam.nanos.menu.ViewMenu","view":{"class":"foam.nanos.dashboard.Demo"}},"parent":"hidden"})
@@ -321,7 +349,7 @@ p({
     "class":"foam.nanos.menu.ViewMenu",
     "view":{
       class: "foam.u2.borders.BaseUnAuthBorder",
-      children: [ {"class":"foam.u2.view.LoginView", "mode_":"SignIn"} ]
+      children: [ {"class":"foam.nanos.auth.login.LoginView", "mode_":0} ]
     }
   },
   "parent":"hidden"
@@ -335,7 +363,7 @@ p({
     "class":"foam.nanos.menu.ViewMenu",
     "view":{
       class: "foam.u2.borders.BaseUnAuthBorder",
-      children: [ {"class":"foam.u2.view.LoginView", "mode_":"SignUp"} ]
+      children: [ {"class":"foam.nanos.auth.login.LoginView", "mode_":1} ]
     }
   },
   "parent":"hidden"

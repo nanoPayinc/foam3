@@ -22,7 +22,7 @@ foam.CLASS({
       name: 'f',
       code: function f(o) {
         for ( var i = 0 ; i < this.args.length ; i++ ) {
-          if ( this.args[i].f(o) ) return true;
+          try { if ( this.args[i].f(o) ) return true; } catch (x) {}
         }
         return false;
       },
@@ -32,10 +32,14 @@ for arg in args {
 }
 return false
 `,
-      javaCode: `for ( int i = 0 ; i < getArgs().length ; i++ ) {
+      javaCode: `
+      for ( int i = 0 ; i < getArgs().length ; i++ ) {
+        try {
           if ( getArgs()[i].f(obj) ) return true;
+        } catch (Throwable t) {
         }
-        return false;
+      }
+      return false;
     `
   },
     {
@@ -103,7 +107,7 @@ for ( int i = 0 ; i < this.args_.length ; i++ ) {
   if ( newArg == foam.mlang.MLang.TRUE ) return foam.mlang.MLang.TRUE;
   if ( newArg instanceof Or ) {
     for ( int j = 0; j < ( ( (Or) newArg ).args_.length ); j++ ) {
-      args.add(( (Or) newArg ).args_[j]);
+      args.add(((Or) newArg).args_[j]);
     }
     update = true;
   } else {

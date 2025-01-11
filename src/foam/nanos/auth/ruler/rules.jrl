@@ -32,7 +32,7 @@ p({
   "lifecycleState":1
 })
 p({
-  "class":"foam.nanos.ruler.Rule",
+  "class":"foam.nanos.ruler.PermissionedUserRule",
   "id":"user-prevent-duplicate-email-rule",
   "name":"Prevent Duplicate Email Rule",
   "priority": 100,
@@ -58,4 +58,46 @@ p({
   "after": false,
   "action":{ "class":"foam.nanos.auth.ruler.PreventInvalidUsernameAction" },
   "lifecycleState":1
+})
+
+p({
+  "class":"foam.nanos.ruler.Rule",
+  "id":"foam-nanos-auth-UserLifecycleTicketRule",
+  "name":"UserLifecycleTicketRule",
+  "documentation":"Manipulate User Lifecycle based on ticket request",
+  "enabled":true,
+  "saveHistory":false,
+  "ruleGroup": "auth",
+  "daoKey": "localTicketDAO",
+  "operation": 1,
+  "lifecycleState": 1,
+  "predicate": {
+    class: "foam.nanos.ruler.predicate.FScriptRulePredicate",
+    query: 'n instanceof foam.nanos.auth.UserLifecycleTicket && (o.status != n.status) && n.status == "CLOSED"'
+  },
+  action: {
+    "class": "foam.nanos.auth.UserLifecycleTicketRuleAction"
+  }
+})
+
+p({
+  "class":"foam.nanos.ruler.Rule",
+  "id":"foam-nanos-auth-UserLifecycleDeletedRule",
+  "name":"UserLifecycleDeletedRule",
+  "documentation":"When user removes themselves, generate a UserLifecycleTicket to manage the operation",
+  "enabled":true,
+  "saveHistory":false,
+  "ruleGroup": "auth",
+  "daoKey": "userDAO",
+  "operation": 2,
+  "after": true,
+  "lifecycleState": 1,
+  "predicate": {
+    class: "foam.nanos.ruler.predicate.FScriptRulePredicate",
+    query: 'o.lifecycleState == foam.nanos.auth.LifecycleState.ACTIVE && n.lifecycleState == foam.nanos.auth.LifecycleState.DELETED && n.loginEnabled == true && n.type == "User"',
+  },
+  action: {
+    "class": "foam.nanos.auth.UserLifecycleDeletedRuleAction"
+  },
+  "generateTicket": false
 })

@@ -28,7 +28,7 @@ foam.CLASS({
 
         ticket = (Ticket) ((DAO) x.get("localTicketDAO")).put(ticket);
       }
-      
+
       return ticket;
     }
 

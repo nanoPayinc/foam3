@@ -8,11 +8,13 @@ foam.CLASS({
   package: 'foam.u2.mlang',
   name: 'Sequence',
   extends: 'foam.dao.AbstractSink',
+
   properties: [
     {
       name: 'data',
     },
   ],
+
   methods: [
     function put(o, s) {
       this.data.forEach(function(d) {

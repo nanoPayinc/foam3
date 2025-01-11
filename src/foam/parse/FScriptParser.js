@@ -541,11 +541,11 @@ foam.CLASS({
           },
 
           instance_of: function(v) {
-            return foam.mlang.predicate.IsInstanceOf.create({targetClass: v[4], propExpr: v[0]});
+            return foam.mlang.predicate.IsInstanceOf.create({of: v[4], propExpr: v[0]});
           },
 
           class_of: function(v) {
-            return foam.mlang.predicate.IsClassOf.create({targetClass: v[4], propExpr: v[0]});
+            return foam.mlang.predicate.IsClassOf.create({of: v[4], propExpr: v[0]});
           },
 
           class_info: function(v) {

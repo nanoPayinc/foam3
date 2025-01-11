@@ -111,8 +111,7 @@ foam.CLASS({
     },
     function handleNext(wizardController) {
       if ( ! this.wizardletId ) {
-        wizardController.goNext();
-        return;
+        return wizardController.goNext();
       }
 
       if  ( this.saveCurrent ) wizardController.currentWizardlet.save();
@@ -129,7 +128,7 @@ foam.CLASS({
 
       if ( ! wizardController.currentWizardlet.isVisible || 
            ! wizardController.currentSection?.isAvailable ) {
-        wizardController.next();
+        return wizardController.next();
       }
     }
   ]

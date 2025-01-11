@@ -58,6 +58,9 @@ foam.CLASS({
       name: 'runTest',
       args: 'X x',
       javaCode: `
+      // pull http from context to ensure it's started.
+      test ( x.get("http") != null, "http initialized" );
+
       DIG client = new DIG.Builder(x)
         .setServiceName(getPathSpec())
         .setConnectionTimeout(getConnectionTimeout())

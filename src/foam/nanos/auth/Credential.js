@@ -29,20 +29,49 @@ foam.CLASS({
     'foam.nanos.auth.ServiceProviderAware'
   ],
 
+  searchColumns: [
+    'id',
+    'type',
+    'spid',
+    'serviceName'
+  ],
+
   tableColumns: [
     'id',
+    'type',
     'spid',
+    'serviceName',
+    'useMock',
     'created'
   ],
 
   properties: [
     {
       class: 'String',
-      name: 'id'
+      name: 'id',
+      order: 1,
+      createVisibility: 'RW',
+      readVisibility: 'RO',
+      updateVisibility: 'RO',
+    },
+    {
+      class: 'String',
+      name: 'type',
+      order: 2,
+      visibility: 'RO',
+      storageTransient: true,
+      clusterTransient: true,
+      getter: function() {
+        return this.cls_.name;
+      },
+      javaGetter: `
+        return getClass().getSimpleName();
+      `
     },
     {
       class: 'Boolean',
       name: 'enabled',
+      order: 3,
       value: true
     },
     {
@@ -55,15 +84,17 @@ foam.CLASS({
     },
     {
       class: 'String',
-      name: 'username'
+      name: 'username',
+      includeInDigest: true
     },
     {
       class: 'String',
-      name: 'password'
+      name: 'password',
+      includeInDigest: true
     },
     {
       class: 'Boolean',
-      name: 'mock'
+      name: 'useMock'
     }
   ]
 });

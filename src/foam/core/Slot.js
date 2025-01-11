@@ -650,7 +650,8 @@ foam.CLASS({
   methods: [
     function init() {
       this.SUPER();
-      window.requestAnimationFrame(() => this.value);
+      var i = window.requestAnimationFrame(() => this.value);
+      this.onDetach(() => window.cancelAnimationFrame(i));
     },
     function subToArgs_(args) {
       // Overrides implementation in ExpressionSlot

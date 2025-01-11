@@ -48,7 +48,7 @@ public class WebAgentQueryParser {
       sps.setString(q);
       try {
         ps = parser_.parse(ps, px);
-      } catch ( RuntimeException e ) {
+      } catch (RuntimeException e) {
         logger.error(this.getClass().getSimpleName(), "failed to parse q", q, e);
         throw new IllegalArgumentException("failed to parse [" + q + "]: " + e.getMessage(), e);
       }

@@ -8,9 +8,8 @@ foam.CLASS({
   package: 'foam.dao',
   name: 'CSVSink',
   extends: 'foam.dao.AbstractSink',
-  implements: [
-    'foam.core.Serializable'
-  ],
+  implements: [ 'foam.core.Serializable' ],
+
   javaImports: [
     'foam.core.PropertyInfo',
     'java.util.List'
@@ -107,10 +106,12 @@ foam.CLASS({
   ]
 });
 
+
 foam.CLASS({
   package: 'foam.dao',
   name: 'PropertyCSVRefinement',
   refines: 'foam.core.Property',
+
   properties: [
     {
       class: 'Function',
@@ -129,17 +130,20 @@ foam.CLASS({
   ]
 });
 
+
 foam.CLASS({
   package: 'foam.dao',
   name: 'FObjectPropertyCSVRefinement',
+  refines: 'foam.core.FObjectProperty',
+  requires: [
+    'foam.lib.csv.PrefixedCSVOutputter'
+  ],
+
   documentation: `
     Provides FObjectProperties with the behavior to output to multiple columns
     with the property name as a prefix.
   `,
-  requires: [
-    'foam.lib.csv.PrefixedCSVOutputter'
-  ],
-  refines: 'foam.core.FObjectProperty',
+
   properties: [
     {
       name: 'toCSV',

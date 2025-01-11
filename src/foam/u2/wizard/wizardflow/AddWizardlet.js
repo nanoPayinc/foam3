@@ -86,4 +86,4 @@ foam.CLASS({
       return this.wizardlet_ = newWizardlet;
     }
   ]
-})
+});

@@ -108,9 +108,7 @@ return __context__.lookup("foam.swift.net.SocketService")!.create(args: [
       swiftFactory:
           'return "/com/foamdev/anonymous/" + UUID().uuidString',
       factory: function() {
-        return foam.isServer ?
-          '/proc/' + require('process').pid + '/' + foam.uuid.randomGUID() :
-          '/com/foamdev/anonymous/' + foam.uuid.randomGUID();
+        return '/com/foamdev/anonymous/' + foam.uuid.randomGUID();
       }
     },
     {

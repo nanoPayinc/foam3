@@ -12,7 +12,7 @@
 Crons have two scheduling behaviours.
 <ol>
   <li>Regular Scheduling</li>
-  <li>Reattempt Shceduling</li>
+  <li>Re-attempt Scheduling</li>
 </ol>
 <h2>Regular Scheduling</h2>
 The schedule used for normal script execution.

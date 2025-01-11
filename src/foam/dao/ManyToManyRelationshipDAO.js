@@ -50,7 +50,7 @@ foam.CLASS({
       name: 'find_',
       code: function find_(x, id) {
         var self = this;
-        var junction = this.relationship.createJunction(id)
+        var junction = this.relationship.createJunction(id);
 
         return this.relationship.junctionDAO.find(junction.id).then(function(a) {
           return a && self.delegate.find_(x, id);

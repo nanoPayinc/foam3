@@ -110,6 +110,7 @@ foam.CLASS({
                       .tag(wizardlet.IS_VISIBLE)
                       .add('isVisible')
                       .tag(self.STORE_GLOBAL, { size: 'SMALL' })
+                      .tag(self.LOG_DATA_UPDATE, { size: 'SMALL' })
                     .end()
                   .endContext()
                 .end()
@@ -139,6 +140,13 @@ foam.CLASS({
           );
           break;
         }
+      }
+    },
+    {
+      name: 'logDataUpdate',
+      label: 'Log on data update',
+      code: function() {
+        this.getDataUpdateSub().sub(() => { console.log(this.id, this.data) })
       }
     }
   ]

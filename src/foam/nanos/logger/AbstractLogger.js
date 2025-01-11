@@ -67,8 +67,7 @@ return String.valueOf(obj);`
       javaCode:
       `
   StringBuilder str = sb.get();
-  if ( args.length == 1 &&
-       args[0] instanceof Throwable ) {
+  if ( args.length == 1 && args[0] instanceof Throwable ) {
     str.append(((Throwable) args[0]).getMessage());
     str.append(formatArg(args[0]));
     return str.toString();

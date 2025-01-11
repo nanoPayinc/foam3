@@ -8,6 +8,7 @@ foam.POM({
   files: [
     { name: "GeolocationSupport",                       flags: "js|java" },
     { name: "IPGeolocationInfo",                        flags: "js|java" },
-    { name: "UpdateIPGeolocationInfoAgent",             flags: "js|java" }
+    { name: "UpdateIPGeolocationInfoAgent",             flags: "js|java" },
+    { name: "MaxmindConfig",                            flags: "js|java" }
   ]
 });

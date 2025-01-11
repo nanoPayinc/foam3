@@ -4,7 +4,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-foam.CLASS({
+foam.RULE_PREDICATE({
   package: 'foam.nanos.ruler.predicate',
   name: 'PropertyNEQValue',
 
@@ -13,13 +13,6 @@ foam.CLASS({
 
    An example of usage: When a pizza object is updated, and the status property is equal to pizzaStatus.COOKED evaluate false.`,
 
-  extends: 'foam.mlang.predicate.AbstractPredicate',
-  implements: ['foam.core.Serializable'],
-
-  javaImports: [
-    'foam.core.FObject',
-    'static foam.mlang.MLang.*'
-  ],
   properties: [
     {
       class: 'String',
@@ -36,20 +29,11 @@ foam.CLASS({
     }
   ],
 
-  methods: [
-    {
-      name: 'f',
-      javaCode: `
-        if ( getIsNew() ) {
-          FObject nu  = (FObject) NEW_OBJ.f(obj);
-          return NEQ(nu.getClassInfo().getAxiomByName(getPropName()), getPropValue()).f(nu);
-        }
-        FObject old = (FObject) OLD_OBJ.f(obj);
-        if ( old != null ) {
-          return NEQ(old.getClassInfo().getAxiomByName(getPropName()), getPropValue()).f(old);
-        }
-        return false;
-      `
-    }
-  ]
+  ruleF: `
+    if ( getIsNew() )
+      return ! SafetyUtil.equals(n.getProperty(getPropName()), getPropValue());
+
+    return ( o != null ) &&
+      ! SafetyUtil.equals(o.getProperty(getPropName()), getPropValue());
+  `
 });

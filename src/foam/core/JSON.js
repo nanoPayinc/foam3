@@ -812,6 +812,8 @@ foam.LIB({
               console.error(`Error creating object of class ${c.id} from ${json}:`, x);
 //              console.error(`Error creating object of class ${c.id} from ${JSON.stringify(json)}:`, x);
             }
+          } else if ( json.class ) {
+            console.error('Unknown class:', json.class || opt_class);
           }
 
           for ( var key in json ) {

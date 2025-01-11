@@ -13,15 +13,15 @@ foam.CLASS({
   documentation: 'Predicate which checks if objects are instances of the specified class.',
 
   javaCode: `
-    public IsInstanceOf(foam.core.ClassInfo targetClass) {
-      setTargetClass(targetClass);
+    public IsInstanceOf(foam.core.ClassInfo of) {
+      setOf(of);
     }
   `,
 
   properties: [
     {
       class: 'Class',
-      name: 'targetClass',
+      name: 'of',
       javaType: 'foam.core.ClassInfo',
       view: {
         class: 'foam.u2.view.StrategizerChoiceView',
@@ -43,17 +43,24 @@ foam.CLASS({
     },
     {
       name: 'f',
-      code: function f(obj) { return this.propExpr == null || this.propExpr == undefined ? this.targetClass.isInstance(obj) : this.targetClass.isInstance(this.propExpr.f(obj)); },
-      javaCode: 'return getPropExpr() == null ? getTargetClass().isInstance(obj) : getTargetClass().isInstance(getPropExpr().f(obj));'
+      code: function f(obj) { return this.propExpr == null || this.propExpr == undefined ? this.of.isInstance(obj) : this.of.isInstance(this.propExpr.f(obj)); },
+      javaCode: 'return getPropExpr() == null ? getOf().isInstance(obj) : getOf().isInstance(getPropExpr().f(obj));'
+    },
+    {
+      name: 'ruleF',
+      type: 'Boolean',
+      args: 'Context x, foam.core.FObject o, foam.core.FObject n',
+      code: 'return this.f(n);',
+      javaCode: 'return f(n);'
     },
     {
       name: 'toString',
       code: function toString() {
         return foam.String.constantize(this.cls_.name) +
-            '(' + this.targetClass.id + ')';
+            '(' + this.of.id + ')';
       },
       javaCode: `
-        return getClass().getSimpleName() + "(" + getTargetClass().getId() + ")";
+        return getClass().getSimpleName() + "(" + getOf().getId() + ")";
       `
     }
   ]

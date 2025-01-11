@@ -79,8 +79,22 @@ public class OIDCWebAgent implements WebAgent {
 
             foam.nanos.auth.User user = ((foam.nanos.auth.UniqueUserService)x.get("uniqueUserService")).getUser(x, email);
 
+            if ( user == null && state.getSignUp() ) {
+                // TODO: Should this be the session context?
+                user = new foam.nanos.auth.User.Builder(x)
+                        .setUserName(state.getSignUpUsername())
+                        .setEmail(email)
+                        .setEmailVerified(true)
+                        .build();
+
+                foam.dao.DAO userRegistrationDAO = (foam.dao.DAO)(x.get("userRegistrationDAO"));
+                userRegistrationDAO.put(user);
+
+                user = ((foam.nanos.auth.UniqueUserService)x.get("uniqueUserService")).getUser(x, email);
+            }
+
             if ( user == null ) {
-                throw new foam.nanos.auth.UserNotFoundException();
+                throw new RuntimeException("user not found");
             }
 
             foam.nanos.session.Session session = (foam.nanos.session.Session)((foam.dao.DAO)x.get("sessionDAO")).find(state.getSessionId());
@@ -92,7 +106,7 @@ public class OIDCWebAgent implements WebAgent {
             login.login(session.getContext(), user);
 
             if (state.getReturnToApp()) {
-                resp.sendRedirect(req.getContextPath() + "/");
+                resp.sendRedirect(state.getReturnToUrl());
             } else {
                 resp.setStatus(HttpServletResponse.SC_OK);
                 resp.setContentType("text/html");

@@ -67,7 +67,7 @@ foam.CLASS({
         }
 
         if ( list.size() > 1 ) {
-          ((Logger) x.get("logger")).warning(this.getClass().getSimpleName(), "verifyByCode", "multiple valid users found for", identifier);
+          ((Logger) x.get("logger")).warning(this.getClass().getSimpleName(), "verifyByCode", "multiple valid users found for identifier: ", identifier, ", userName: ", userName);
 
           if ( SafetyUtil.isEmpty(userName) ) throw new DuplicateEmailException();
 

@@ -4,17 +4,13 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-foam.CLASS({
+foam.RULE_PREDICATE({
   package: 'foam.nanos.crunch.predicate',
   name: 'IsCapabilityJunctionOf',
 
-  extends: 'foam.mlang.predicate.AbstractPredicate',
-  implements: ['foam.core.Serializable'],
-
-  documentation: `Returns true if the ucj object of a specific capability and user class`,
+  documentation: 'Returns true if the ucj object of a specific capability and user class',
 
   javaImports: [
-    'foam.core.X',
     'foam.nanos.crunch.UserCapabilityJunction'
   ],
 
@@ -30,15 +26,9 @@ foam.CLASS({
     }
   ],
 
-  methods: [
-    {
-      name: 'f',
-      javaCode: `
-        X x = (X) obj;
-        var ucj = (UserCapabilityJunction) x.get("NEW");
-        return ucj.getTargetId().equals(getCapabilityId())
-            && ucj.findSourceId(x).getClass() == getOf().getObjClass();
-      `
-    }
-  ]
+  ruleF: `
+    var ucj = (UserCapabilityJunction) n;
+    return ucj.getTargetId().equals(getCapabilityId())
+      && ucj.findSourceId(x).getClass() == getOf().getObjClass();
+  `
 });

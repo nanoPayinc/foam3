@@ -41,7 +41,7 @@ public class CSVSupport
       PropertyInfo[] propertyInfos = new PropertyInfo[column];
       //get propertyInfo from ClassInfo
       for ( int i = 0 ; i < column ; i++ ) {
-        propertyInfos[i] = (PropertyInfo) classInfo.getAxiomByName((String) propNames[i]);
+        propertyInfos[i] = (PropertyInfo) classInfo.getAxiomByNameOrShortName((String) propNames[i]);
         Parser p = propertyInfos[i].csvParser();
 
         if ( i < column - 1) {

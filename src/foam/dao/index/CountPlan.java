@@ -18,8 +18,13 @@ public class CountPlan implements SelectPlan
 
   public long cost() { return 0; }
 
-  public void select(Object state, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {
+  public void select(Object unused, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {
     ((Count) sink).setValue(count_);
+  }
+
+  public SelectPlan restate(Object state) {
+    // Doesn't use state.
+    return this;
   }
 
   public String toString() { return "short-circuit-count(" + count_ + ")"; }

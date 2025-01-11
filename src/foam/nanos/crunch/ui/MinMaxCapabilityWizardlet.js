@@ -192,7 +192,7 @@ foam.CLASS({
               ...this.choiceSelectionView,
               choices$: this.slot(function(choices) { return choices.sort(); }),
               showValidNumberOfChoicesHelper: false,
-              data$: this.data.selectedData$,
+              data$: this.data$.dot('selectedData'),
               minSelected$: this.min$,
               maxSelected$: this.max$,
               choiceView: {

@@ -30,7 +30,10 @@ foam.CLASS({
         this.array.push(obj);
       },
       swiftCode: 'array.append(obj)',
-      javaCode: 'if ( getArray() == null ) setArray(new java.util.ArrayList());\ngetArray().add(obj);'
+      javaCode: `
+        if ( getArray() == null ) setArray(new java.util.ArrayList());
+        getArray().add(obj);
+      `
     },
     {
       name: 'eof',
@@ -60,7 +63,9 @@ for obj in array {
 }`,
       javaCode: `
       if ( getArray() == null ) setArray(new java.util.ArrayList());
+
       java.util.Collections.sort(getArray(), getComparator());
+
       foam.dao.Subscription sub = new foam.dao.Subscription();
       for ( Object o : getArray() ) {
         if ( sub.getDetached() ) break;

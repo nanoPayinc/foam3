@@ -48,6 +48,10 @@ public abstract class AbstractLiteral
     string_ = s;
   }
 
+  public String getString() {
+    return string_;
+  }
+
   public PStream parse(PStream ps, ParserContext x) {
     if ( string_ == null ) return null;
 

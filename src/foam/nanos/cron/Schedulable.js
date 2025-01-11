@@ -21,6 +21,7 @@ foam.CLASS({
   ],
 
   javaImports: [
+    'foam.core.X',
     'foam.core.Agency',
     'foam.core.ContextAgent',
     'foam.dao.DAO',
@@ -174,7 +175,9 @@ foam.CLASS({
       gridColumns: 4,
       order: 2,
       javaFactory: `
-        Date d = getSchedule().getNextScheduledTime(foam.core.XLocator.get(), new Date());
+        Date from = getLastRun();
+        if ( from == null ) from = new Date();
+        Date d = getSchedule().getNextScheduledTime(foam.core.XLocator.get(), from);
         return d != null ? d : null;
       `
     },
@@ -200,7 +203,8 @@ foam.CLASS({
     {
       name: 'lastRun',
       label: 'Last Occurrence',
-      storageTransient: false
+      storageTransient: false,
+      storageOptional: false
     },
     {
       class: 'Enum',
@@ -240,6 +244,18 @@ foam.CLASS({
   ],
 
   methods: [
+    {
+      name: 'getNextScheduledTime',
+      javaCode: `
+      Date from = getLastRun();
+      if ( from == null ) from = new Date();
+      if ( getReattemptRequested() &&
+           getReattempts() < getMaxReattempts() ) {
+        return ((SimpleIntervalSchedule) getReattemptSchedule()).calculateNextDate(x, from, true);
+      }
+      return ((SimpleIntervalSchedule) getSchedule()).calculateNextDate(x, from, true);
+      `
+    },
     {
       name: 'runScript',
       javaCode: `
@@ -343,6 +359,17 @@ foam.CLASS({
         }
 
       `
+    }
+  ],
+
+  actions: [
+    {
+      name: 'disable',
+      availablePermissions: ['foam.nanos.cron.Schedule.disable']
+    },
+    {
+      name: 'run',
+      availablePermissions: ['foam.nanos.cron.Schedule.run']
     }
   ]
 });

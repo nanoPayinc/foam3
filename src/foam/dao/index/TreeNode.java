@@ -59,6 +59,12 @@ public class TreeNode {
     return NULL_NODE;
   }
 
+  // A Tree is Singular if contains only one node.
+  // Singular Trees can be better planned/searched using sub-indices.
+  public boolean isSingular() {
+    return left == null && right == null;
+  }
+
   public Object bulkLoad(Index tail, Indexer indexer, int start, int end, FObject[] a) {
     if ( end < start ) return null;
 
@@ -451,4 +457,7 @@ public class TreeNode {
     return predicate != null && predicate.partialEval() != null && ! ( predicate instanceof True );
   }
 
+  public String toString() {
+    return "TreeNode(" + key + ", " + value + ", " + size + ")";
+  }
 }

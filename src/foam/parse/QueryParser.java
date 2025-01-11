@@ -208,7 +208,7 @@ public class QueryParser
         Class cls = Class.forName((String) val);
         FObject clsInstance = (FObject) cls.newInstance();
         IsInstanceOf instanceOf = new IsInstanceOf();
-        instanceOf.setTargetClass(clsInstance.getClassInfo());
+        instanceOf.setOf(clsInstance.getClassInfo());
         return instanceOf;
       } catch (Exception e) {
         foam.nanos.logger.Logger logger = (foam.nanos.logger.Logger) x.get("logger");

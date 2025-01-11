@@ -199,7 +199,7 @@ if ( ret != null ) {
   }
 
   // Test for changes during 'after' rule
-  if ( before.diff(ret).size() > 0 ) {
+  if ( ! before.equals(ret) ) {
     ret = getDelegate().put_(x, ret);
   }
 }
@@ -231,7 +231,7 @@ var     ruleGroups = getRuleGroups().get(pred);
 var     sink       = getRulesList().get(pred);
 boolean locked     = false;
 for ( var rg : ruleGroups ) {
-  if ( rg.f(x, obj, oldObj) ) {
+  if ( rg.ruleF(x, oldObj, obj) ) {
     var rules = ((ArraySink) sink.getGroups().get(rg.getId())).getArray();
     if ( ! rules.isEmpty() ) {
       locked |= new RuleEngine(x, getX(), getDelegate(), getLock()).execute(rules, obj, oldObj);

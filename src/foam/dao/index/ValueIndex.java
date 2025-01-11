@@ -16,9 +16,6 @@ public class ValueIndex
 
   protected static ValueIndex instance_ = new ValueIndex();
 
-  protected Plan plan = ValuePlan.instance();
-
-
   public static ValueIndex instance() {
     return instance_;
   }
@@ -38,12 +35,12 @@ public class ValueIndex
     return null;
   }
 
-  public FindPlan planFind(Object state, Object key) {
-    return (FindPlan) plan;
+  public FObject find(Object state, Object key) {
+    return null; // Why doesn't this return state?
   }
 
   public SelectPlan planSelect(Object state, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {
-    return (SelectPlan) plan;
+    return ValuePlan.instance();
   }
 
   public long size(Object state) {
@@ -58,4 +55,5 @@ public class ValueIndex
     sink.put(state, null);
   }
 
+  public String toString() { return "ValueIndex()"; }
 }

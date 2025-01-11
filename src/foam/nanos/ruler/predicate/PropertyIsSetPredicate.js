@@ -4,18 +4,11 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-foam.CLASS({
+foam.RULE_PREDICATE({
   package: 'foam.nanos.ruler.predicate',
   name: 'PropertyIsSetPredicate',
-  extends: 'foam.mlang.predicate.AbstractPredicate',
-  implements: ['foam.core.Serializable'],
 
   documentation: 'A predicate that returns true when a specific property is set.',
-
-  javaImports: [
-    'foam.core.FObject',
-    'static foam.mlang.MLang.*'
-  ],
 
   properties: [
     {
@@ -30,18 +23,5 @@ foam.CLASS({
     }
   ],
 
-  methods: [
-    {
-      name: 'f',
-      javaCode: `
-        if ( getIsNew() ) {
-          var nu  = (FObject) NEW_OBJ.f(obj);
-          return nu.isPropertySet(getPropName());
-        }
-
-        var old  = (FObject) OLD_OBJ.f(obj);
-        return old.isPropertySet(getPropName());
-      `
-    }
-  ]
+  ruleF: 'return getIsNew() ? n.isPropertySet(getPropName()) : o.isPropertySet(getPropName());'
 });

@@ -3,6 +3,7 @@
  * Copyright 2017 The FOAM Authors. All Rights Reserved.
  * http://www.apache.org/licenses/LICENSE-2.0
  */
+
 foam.CLASS({
   package: 'foam.nanos.boot',
   name: 'NSpec',
@@ -43,6 +44,41 @@ foam.CLASS({
     'foam.nanos.script.BeanShellExecutor',
     'foam.nanos.script.JShellExecutor',
     'foam.nanos.script.Language'
+  ],
+
+  axioms: [
+    {
+      class: 'foam.comics.v2.CannedQuery',
+      label: 'DAOs',
+      predicateFactory: function(e, cls) {
+        return e.ENDS_WITH(cls.NAME, 'DAO');
+      }
+    },
+    {
+      class: 'foam.comics.v2.CannedQuery',
+      label: 'Served DAOs',
+      predicateFactory: function(e, cls) {
+        return e.AND(
+          e.EQ(cls.SERVE, e.True),
+          e.ENDS_WITH(cls.NAME, 'DAO'));
+      }
+    },
+    {
+      class: 'foam.comics.v2.CannedQuery',
+      label: 'Servcies',
+      predicateFactory: function(e, cls) {
+        return e.NOT(e.ENDS_WITH(cls.NAME, 'DAO'));
+      }
+    },
+    {
+      class: 'foam.comics.v2.CannedQuery',
+      label: 'Served Servcies',
+      predicateFactory: function(e, cls) {
+        return e.AND(
+          e.EQ(cls.SERVE, e.True),
+          e.NOT(e.ENDS_WITH(cls.NAME, 'DAO')));
+      }
+    }
   ],
 
   ids: [ 'name' ],
@@ -197,10 +233,7 @@ foam.CLASS({
   methods: [
     {
       name: 'createService',
-      args: [
-        { name: 'x',  type: 'Context' },
-        { name: 'ps', type: 'PrintStream' }
-      ],
+      args: 'Context x, PrintStream ps',
       javaType: 'java.lang.Object',
       javaCode: `
         if ( getService() != null ) return getService();
@@ -264,9 +297,7 @@ foam.CLASS({
     },
     {
       name: 'authorizeOnRead',
-      args: [
-        { name: 'x', type: 'Context' },
-      ],
+      args: 'Context x',
       type: 'Void',
       javaThrows: ['AuthorizationException'],
       javaCode: 'checkAuthorization(x);'
@@ -292,9 +323,7 @@ foam.CLASS({
     },
     {
       name: 'authorizeOnDelete',
-      args: [
-        { name: 'x', type: 'Context' }
-      ],
+      args: 'Context x',
       type: 'Void',
       javaThrows: ['AuthorizationException'],
       javaCode: `

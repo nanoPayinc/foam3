@@ -152,6 +152,12 @@ List entries are of the form: 172.0.0.0/24 - this would restrict logins to the 1
       name: 'generalCapability',
       documentation: `Capability that needs to be granted to proceed to the app.
       Checked for status in ApplicationController.`
+    },
+    {
+      class: 'Boolean',
+      name: 'emailRequired',
+      documentation: `When set to true, emails are required on sign up and must be verified before users can sign in`,
+      writePermissionRequired: true
     }
   ],
 

@@ -285,7 +285,7 @@ foam.CLASS({
   label: 'Time',
 
   properties: [
-    [ 'type', 'Time' ]
+    [ 'type', 'time' ]
   ]
 });
 
@@ -571,6 +571,69 @@ foam.CLASS({
 
 foam.CLASS({
   package: 'foam.core',
+  name: 'IntegerArray',
+  extends: 'Property',
+
+  // Not named IntArray because 'Array' is faceted so a class: 'Array', of 'Int' will be broken.
+  documentation: 'An array of Int values.',
+
+  label: 'List of integers',
+
+  properties: [
+    {
+      name: 'of',
+      value: 'Int'
+    },
+    [ 'type', 'int[]' ],
+    [
+      'factory',
+      function() { return []; }
+    ],
+    [
+      'adapt',
+      function(_, v, prop) {
+        if ( v == '' ) return [];
+        if ( foam.String.isInstance(v) ) v = v.split(',');
+
+        if ( ! Array.isArray(v) ) return [];
+
+        var copy;
+        for ( var i = 0 ; i < v.length ; i++ ) {
+          if ( typeof v[i] !== 'number' ) {
+            if ( ! copy ) copy = v.slice();
+            copy[i] = prop.adaptArrayElement.call(this, v[i], prop);
+          }
+        }
+
+        return copy || v;
+      }
+    ],
+    [
+      'adaptArrayElement',
+      function(o, prop) {
+        return (o).valueOf();
+      }
+    ],
+    [
+      'assertValue',
+      function(v, prop) {
+        if ( v === null ) return;
+
+        foam.assert(Array.isArray(v),
+          prop.name, 'Tried to set IntArray to non-array type.');
+        for ( var i = 0 ; i < v.length ; i++ ) {
+          foam.assert(
+            typeof v[i] === 'number',
+            prop.name, 'Element', i, 'is not a number', v[i]);
+        }
+      }
+    ]
+  ]
+});
+
+
+foam.CLASS({
+  package: 'foam.core',
   name: 'Class',
   extends: 'Property',
 
@@ -664,6 +727,27 @@ foam.CLASS({
   // FUTURE: verify
   label: 'Web link (URL or internet address)',
   properties: [ [ 'displayWidth', 80 ] ]
+});
+
+foam.CLASS({
+  package: 'foam.core',
+  name: 'InternalLink',
+  extends: 'URL',
+  label: 'Link to nano service (eg. /service/serviceA) or menu (eg. #menu_1) in the app.',
+  help: 'Do not inclulde domain name in the link as it will be resolved on the client.',
+  properties: [ [ 'displayWidth', 80 ] ],
+  methods: [
+    function installInProto(proto) {
+      this.SUPER(proto);
+      var self = this;
+      Object.defineProperty(proto, self.name + '$completeURL', {
+        get: function completeURL() {
+          return this.__context__.window.location.origin + this[self.name];
+        },
+        configurable: true
+      });
+    }
+  ]
 });
 
 foam.CLASS({
@@ -861,7 +945,17 @@ foam.CLASS({
       value: function(value, cloneMap, opt_X) {
         cloneMap[this.name] = value && value.clone ? value.clone(opt_X) : value;
       }
-    }
+    },
+    // Override copyFrom behaviour
+    ['copyValueFrom', function copyValueFrom(targetObj, sourceObj) {
+        var name = this.name;
+        if ( targetObj[name] && sourceObj[name] ) {
+          targetObj[name].copyFrom(sourceObj[name]);
+          return true;
+        }
+        return false;
+      }
+    ],
   ],
 
   methods: [
@@ -900,15 +994,6 @@ foam.CLASS({
 
       // TODO: Only hook up the subscription when somebody listens to us.
       if ( obj[name] ) attach(obj[name]);
-    },
-    // Override copyFrom behaviour
-    function copyValueFrom(targetObj, sourceObj) {
-      var name = this.name;
-      if ( targetObj[name] && sourceObj[name] ) {
-        targetObj[name].copyFrom(sourceObj[name]);
-        return true;
-      }
-      return false;
     }
   ]
 });

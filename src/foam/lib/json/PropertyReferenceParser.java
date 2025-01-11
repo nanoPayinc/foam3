@@ -67,7 +67,7 @@ public class PropertyReferenceParser
     ps = super.parse(ps, x);
 
     if ( ps != null ) {
-      String classId = (String) x.get("forClass_");
+      String classId  = (String) x.get("forClass_");
       String propName = (String) x.get("name");
 
       try {

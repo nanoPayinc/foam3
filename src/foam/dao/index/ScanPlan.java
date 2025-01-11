@@ -17,11 +17,9 @@ import foam.mlang.predicate.Predicate;
  * the search more faster.
  */
 public class ScanPlan
-  implements FindPlan, SelectPlan
+  implements SelectPlan
 {
   protected Object     state_;
-  protected long       skip_;
-  protected long       limit_;
   protected Comparator order_;
   protected Predicate  predicate_;
   protected long       cost_;
@@ -29,17 +27,15 @@ public class ScanPlan
   protected boolean    reverse_ = false;
 
   // TODO: add ThenBy support for 'order'
-  public ScanPlan(Object state, Sink sink, long skip, long limit, Comparator order, Predicate predicate, Indexer indexer, Index tail) {
+  public ScanPlan(Object state, long skip, long limit, Comparator order, Predicate predicate, Indexer indexer, Index tail) {
     state_     = state;
-    skip_      = skip;
-    limit_     = limit;
     order_     = order;
     predicate_ = predicate;
-    cost_      = calculateCost(indexer);
+    cost_      = calculateCost(indexer, skip, limit);
     tail_      = tail;
   }
 
-  public long calculateCost(Indexer indexer) {
+  public long calculateCost(Indexer indexer, long skip, long limit) {
     long cost;
 
     if ( state_ == null ) return 0;
@@ -60,29 +56,29 @@ public class ScanPlan
       }
     }
 
-    if ( ! sortRequired && skip_ != 0 ) cost = Math.max(cost - skip_, 0);
+    if ( ! sortRequired && skip != 0 ) cost = Math.max(cost - skip, 0);
 
     return cost;
   }
 
   public long cost() { return cost_; }
 
-  public FObject find(Object state, Object key) {
-    return null;
+  @Override
+  public void select(Object unused, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {
+    if ( state_ == null ) return;
+    // Use the state_, order_, predicate_... which we have already pre-processed.
+    ((TreeNode) state_).select((TreeNode) state_, sink, skip, limit, order_, predicate_, tail_, reverse_);
   }
 
-  @Override
-  public void select(Object state, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {
-    if ( state_ == null ) return;
-    // Use the state_, skip_, limit_, order_, predicate_... which we have already pre-processed.
-    ((TreeNode) state).select((TreeNode) state_, sink, skip_, limit_, order_, predicate_, tail_, reverse_);
+  public SelectPlan restate(Object state) {
+    // Not needed because ScanPlan stores its state in state_
+    return this;
   }
 
   @Override
   public String toString() {
     var sortRequired = order_ != null;
-    var size = state_ == null ? 0
-                : state_ instanceof TreeNode ? ((TreeNode) state_).size : 1;
+    var size = state_ == null ? 0 : state_ instanceof TreeNode ? ((TreeNode) state_).size : 1;
     return "scan(size:" + size + ", cost:" + cost() + ", sortRequired:" + sortRequired + ")";
   }
 }

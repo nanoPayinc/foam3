@@ -142,6 +142,7 @@ foam.CLASS({
           .startContext({ stack: this.subStack })
           .tag(this.OverlayActionListView, {
             data: Object.values(actions),
+            lazy: true,
             obj: obj,
             dao: self.actionDAO,
             showDropdownIcon: false,
@@ -163,7 +164,7 @@ foam.CLASS({
   imports: [
     'colWidthUpdated',
     'props',
-    'selectedColumnsWidth'
+    'selectedColumnsWidth?'
   ],
 
   properties: [

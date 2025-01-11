@@ -6,7 +6,7 @@ p({
   "enabled": true,
   "ruleGroup": "DUG",
   "daoKey": "localRuleDAO",
-  "targetClass": "foam.nanos.dig.DUGRule",
+  "of": "foam.nanos.dig.DUGRule",
   "propName": "actingUser",
   "propValueFrom": "createdBy",
   "lifecycleState": 1

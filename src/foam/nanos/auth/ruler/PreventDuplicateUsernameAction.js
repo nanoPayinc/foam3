@@ -56,7 +56,7 @@ foam.CLASS({
               NEQ(User.ID,  user.getId())
             )).limit(1).select(count);
 
-        if ( count.getValue() == 1 ) {
+        if ( count.getValue() >= 1 ) {
           throw new DuplicateUserNameException();
         }
       `

@@ -51,8 +51,8 @@ p({
       .setRulerDaoKey("localRuleDAO")
       .setAuthorize(false)
       .build()
-      .addPropertyIndex(new foam.core.PropertyInfo[] { foam.nanos.ruler.Rule.NAME })
       .addPropertyIndex(new foam.core.PropertyInfo[] { foam.nanos.ruler.Rule.DAO_KEY })
+      .addPropertyIndex(new foam.core.PropertyInfo[] { foam.nanos.ruler.Rule.NAME })
       .addPropertyIndex(new foam.core.PropertyInfo[] { foam.nanos.ruler.Rule.ENABLED });
 
     return dao;

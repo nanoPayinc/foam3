@@ -14,12 +14,8 @@ foam.INTERFACE({
     {
       name: 'f',
       type: 'Any',
-      args: [
-        {
-          name: 'obj',
-          type: 'Any'
-        }
-      ]
+      args: 'Any obj',
+      throws: 'UnsupportedOperationException'
     }
   ]
 });

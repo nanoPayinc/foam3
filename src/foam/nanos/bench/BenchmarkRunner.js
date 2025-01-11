@@ -308,12 +308,23 @@ foam.CLASS({
           final BenchmarkResult finalBr = br;
 
           if ( getOneTimeSetup() && ! setup ) {
-            // set up the benchmark
-            logger.info("setup");
             PM pm = new PM("BenchmarkRunner", benchmark.getId(), "setup");
-            benchmark.setup(x, br);
-            pm.log(x);
-            setup = true;
+            try {
+              // set up the benchmark
+              logger.info("setup");
+              benchmark.setup(x, br);
+              pm.log(x);
+              setup = true;
+            } catch (Throwable t) {
+              pm.error(x, t.getMessage());
+              Throwable e = t;
+              if ( t instanceof RuntimeException && t.getCause() != null ) {
+                e = t.getCause();
+              }
+              logger.error("oneTimeSetup", e.getMessage());
+              logger.debug(e);
+              break;
+            }
           }
 
           // clear timing pms associated with this benchmark runner
@@ -330,11 +341,24 @@ foam.CLASS({
                 public void run() {
                   pmInfoIds.add(benchmark.getId()+":execute:"+Thread.currentThread().getId());
                   if ( ! getOneTimeSetup() ) {
-                    // set up the benchmark
-                    logger.info("setup");
                     PM pm = new PM(getId(), benchmark.getId(), "setup", Thread.currentThread().getId());
-                    benchmark.setup(x, finalBr);
-                    pm.log(x);
+                    try {
+                      // set up the benchmark
+                      logger.info("setup");
+                      benchmark.setup(x, finalBr);
+                      pm.log(x);
+                    } catch (Throwable t) {
+                      pm.error(x, t.getMessage());
+                      Throwable e = t;
+                      if ( t instanceof RuntimeException && t.getCause() != null ) {
+                        e = t.getCause();
+                      }
+                      logger.error("thread", tno, "setup", e.getMessage());
+                      logger.debug(e);
+                      fail.incrementAndGet();
+                      latch.countDown();
+                      return;
+                    }
                   }
 
                   long passed = 0;

@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+// TODO: Java and JS designs have diverged. Java is probably better and if
+// JS version becomes used extensively, then should look to adapt Java
+// design back to JS.
 foam.CLASS({
   package: 'foam.dao.index',
   name: 'PropertyToIndexRefinement',

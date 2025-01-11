@@ -1,0 +1,12 @@
+p({
+  "class":"foam.nanos.auth.Permission",
+  "id":"foam.nanos.cron.Schedule.disable",
+  "description":"permission to make available DISABLE action on a schedulable"
+})
+
+
+p({
+  "class":"foam.nanos.auth.Permission",
+  "id":"foam.nanos.cron.Schedule.run",
+  "description":"permission to make available RUN action on a schedulable"
+})

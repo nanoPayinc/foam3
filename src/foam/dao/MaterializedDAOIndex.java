@@ -23,7 +23,13 @@ public class MaterializedDAOIndex
   }
 
   public Object put(Object state, FObject value) {
-    return dao_.indexPut(state, value);
+    foam.nanos.logger.StdoutLogger.instance().info("MaterializedDAOIndex.put",value);
+    try {
+      return dao_.indexPut(state, value);
+    } catch (Throwable t) {
+      foam.nanos.logger.StdoutLogger.instance().info("MaterializedDAOIndex.put",value, t);
+      throw new RuntimeException(t);
+    }
   }
 
   // Remove an object
@@ -36,9 +42,8 @@ public class MaterializedDAOIndex
     return dao_.indexRemoveAll();
   }
 
-  // Create a Plan for a find()
-  public FindPlan planFind(Object state, Object key) {
-    return NoPlan.instance();
+  public FObject find(Object state, Object key) {
+    return null;
   }
 
   // Create a Plan for a select()

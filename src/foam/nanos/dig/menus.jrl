@@ -36,7 +36,7 @@ p({
       "createTitle": "Create a New Webhook",
       "predicate": {
         "class": "foam.mlang.predicate.IsInstanceOf",
-        "targetClass": "foam.nanos.dig.DUGRule"
+        "of": "foam.nanos.dig.DUGRule"
       },
       "of": "foam.nanos.dig.DUGRule"
     }

@@ -1,6 +1,6 @@
 p({
   class:"foam.nanos.cron.Cron",
-  id:"Update IPGeolocationInfoDAO Cron",
+  id:"UpdateIPGeolocationInfoDAO",
   description:"Update ipgeolocationinfodao with new db info every tuesday and friday",
   "schedule":{
     "class":"foam.nanos.cron.CronSchedule",
@@ -11,6 +11,30 @@ p({
   },
   code:"""
     new foam.net.ipgeo.UpdateIPGeolocationInfoAgent().execute(x);
+  """,
+  enabled: false
+})
+
+p({
+  class:"foam.nanos.cron.Cron",
+  id:"DownloadMaxMindGeoliteDB",
+  description:"Download maxmind geolite database",
+  "schedule":{
+    "class":"foam.nanos.cron.CronSchedule",
+    "daysOfMonth":[1]
+  },
+  code:"""
+    config = x.get("maxmindConfig");
+    path = x.get(foam.nanos.fs.FileSystemStorage.class).get(config.getPath());
+    print(path);
+    script = config.getScriptPath() + " " + config.getAccountId() + " " + config.getLicenseKey() + " " + path;
+    try {
+      process = Runtime.getRuntime().exec(script);
+      print("done");
+    } catch (Throwable e) {
+      print("e:" + e.getMessage());
+      throw e;
+    } 
   """,
   enabled: false
 })

@@ -87,8 +87,8 @@ foam.CLASS({
       type: 'java.util.Map',
       async: true,
       javaCode: `
-        Subject sub          = getSubject(x);
-        Session session      = x.get(Session.class);
+        Subject sub     = getSubject(x);
+        Session session = x.get(Session.class);
 
         // Use session context going forward as the user might have been assigned a new session
         foam.core.X newX = session.getContext();
@@ -141,7 +141,7 @@ foam.CLASS({
       type: 'foam.nanos.app.AppConfig',
       async: true,
       javaCode: `
-        Logger logger       = Loggers.logger(x, this);
+        Logger logger = Loggers.logger(x, this);
         return (foam.nanos.app.AppConfig) x.get("appConfig");
       `
     },
@@ -151,7 +151,7 @@ foam.CLASS({
       type: 'foam.nanos.theme.Theme',
       async: true,
       javaCode: `
-        Session session      = x.get(Session.class);
+        Session session = x.get(Session.class);
         return (Theme) ((Themes) x.get("themes")).findTheme(session.getContext());
       `
     },
@@ -161,7 +161,7 @@ foam.CLASS({
       type: 'foam.nanos.auth.Subject',
       async: true,
       javaCode: `
-        AuthService auth     = (AuthService) x.get("auth");
+        AuthService auth = (AuthService) x.get("auth");
         try {
           return (Subject) auth.getCurrentSubject(x);
         } catch ( AuthenticationException e ) {

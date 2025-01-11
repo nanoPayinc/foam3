@@ -89,7 +89,7 @@ public class HTTPSink
       conn.connect();
 
       try (OutputStream os = conn.getOutputStream()) {
-        try(BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8))) {
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8))) {
           String data = outputter.stringify((FObject)obj);
           if ( loopback_ ) {
             Loggers.logger(getX(), this).info("sending", url_, data);

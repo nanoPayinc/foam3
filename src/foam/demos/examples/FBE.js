@@ -330,6 +330,10 @@ foam.CLASS({
     'selected'
   ],
 
+  constants: {
+    MODULES: 'views,u2all,u2,faq,validation,examples,dao'
+  },
+
   properties: [
     { class: 'Int',    name: 'count' },
     { class: 'Int',    name: 'exampleCount' },
@@ -361,14 +365,14 @@ foam.CLASS({
   methods: [
     async function render() {
       this.SUPER();
-
       var self = this;
 
       async function load(section) {
         self.testData += await fetch(section).then(response => response.text()).catch(x => { debugger; });
       }
 
-      var modules = (this.params?.modules || 'views,u2all,u2,faq,validation,examples,dao').split(',');
+      // Note that you can specify modules (like 'scratch') not listed in the module with the 'modules' URL parameter
+      var modules = (this.params?.modules || this.MODULES).split(',');
 
       for ( const m of modules ) await load(m);
 
@@ -386,8 +390,8 @@ foam.CLASS({
             select(this.data, function(e) {
               self.count++;
               if ( e.error ) self.errorCount++;
-              if ( e.code ) self.exampleCount++;
-              return this.E('a')
+              if ( e.code  ) self.exampleCount++;
+              this.start('a')
                 .attrs({href: '#' + e.id})
                 .enableClass('error', e.error$)
                 .show(self.query$.map(function(q) {

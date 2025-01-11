@@ -4,14 +4,11 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-foam.CLASS({
+foam.RULE_PREDICATE({
   package: 'foam.nanos.crunch.lite.predicate',
   name: 'ContainsGranted',
-  extends: 'foam.mlang.predicate.AbstractPredicate',
-  implements: ['foam.core.Serializable'],
 
   javaImports: [
-    'foam.core.X',
     'foam.nanos.crunch.lite.Capable',
     'static foam.nanos.crunch.CapabilityJunctionStatus.*',
   ],
@@ -23,21 +20,15 @@ foam.CLASS({
     }
   ],
 
-  methods: [
-    {
-      name: 'f',
-      javaCode: `
-        var x = (X) obj;
-        var capableObj = (Capable) x.get("NEW");
+  ruleF: `
+    var capableObj = (Capable) n;
 
-        for ( var payload : capableObj.getCapablePayloads() ) {
-          if ( ! payload.getCapability().equals(getCapability()) ) continue;
-          if ( payload.getStatus() == GRANTED ) return true;
-          break;
-        }
-
-        return false;
-      `
+    for ( var payload : capableObj.getCapablePayloads() ) {
+      if ( ! payload.getCapability().equals(getCapability()) ) continue;
+      if ( payload.getStatus() == GRANTED ) return true;
+      break;
     }
-  ],
+
+    return false;
+  `
 });

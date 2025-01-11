@@ -725,7 +725,6 @@ foam.CLASS({
      */
     function genModel(m, modelType) {
       modelType = modelType || 'CLASS';
-if ( m.package === 'net.nanopay.partner.scotiabank.api' ) console.log('***** XSD genModel', modelType, m.package, m.name, m);
       return foam[modelType](m);
     },
 
@@ -770,7 +769,7 @@ if ( m.package === 'net.nanopay.partner.scotiabank.api' ) console.log('***** XSD
       this.xmlns = '';
 
       this.files.forEach(file => {
-        console.log('*************************** XSD FILE:', file);
+//        console.log('*************************** XSD FILE:', file);
         this.fetch(this.xsdPath + '/' + file).then(content => {
           this.xsd = content || '';
           this.compile();

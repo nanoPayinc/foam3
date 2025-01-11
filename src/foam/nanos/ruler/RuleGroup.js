@@ -18,7 +18,8 @@
   ],
 
   implements: [
-    'foam.nanos.auth.Authorizable'
+    'foam.nanos.auth.Authorizable',
+    'foam.nanos.ruler.RulePredicate'
   ],
 
   properties: [
@@ -66,31 +67,14 @@
 
   methods: [
     {
-      name: 'f',
-      type: 'Boolean',
-      args: [
-        {
-          name: 'x',
-          type: 'Context'
-        },
-        {
-          name: 'obj',
-          type: 'FObject'
-        },
-        {
-          name: 'oldObj',
-          type: 'FObject'
-        }
-      ],
+      name: 'ruleF',
       javaCode: `
         try {
-          return getEnabled()
-            && getPredicate().f(
-              x.put("NEW", obj).put("OLD", oldObj)
-            );
-        } catch ( Throwable t ) {
+          return getEnabled() && getPredicate().ruleF(x, o, n);
+        } catch (Throwable t) {
           try {
-            return getPredicate().f(obj);
+            // System.err.println("*********************** UNEXPECTED Predicate in RuleGroup");
+            return getPredicate().f(n);
           } catch ( Throwable th ) { }
 
           ((Logger) x.get("logger")).error(

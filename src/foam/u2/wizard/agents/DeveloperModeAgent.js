@@ -31,6 +31,7 @@ foam.CLASS({
 
   methods: [
     async function execute() {
+      if ( ! this.subject?.user?.id ) return false;
       const e = foam.mlang.Expressions.create();
       const developerCapability = await this.userCapabilityJunctionDAO.find(
         e.AND(

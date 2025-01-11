@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.net.ipgeo',
   name: 'UpdateIPGeolocationInfoAgent',
   implements: [ 'foam.core.ContextAgent' ],
-  documentation: 'Update DAO with new data from Maxmind every Tuesday and Friday.',
+  documentation: 'Update DAO with new data from Maxmind',
 
   javaImports: [
     'com.maxmind.geoip2.DatabaseReader',
@@ -41,7 +41,7 @@ foam.CLASS({
             CityResponse response = dbReader.city(ip);
 
             if ( response == null ) {
-              Loggers.logger(x).warning("GeolocationSupport", "Cannot find location for", ip, "removing entry from dao");
+              Loggers.logger(x, this).warning("GeolocationSupport", "Cannot find location for", ip, "removing entry from dao");
               infoDAO.remove_(x, info);
             }
             info.setCity(response.getCity().getNames().get("en"));
@@ -49,12 +49,11 @@ foam.CLASS({
             info.setCountry(response.getCountry().getIsoCode());
             infoDAO.put_(x, info);
           } catch (IOException e) {
-            Loggers.logger(x).error("UpdateIPGeolocationInfoAgent", "Failed reading location db for", info.getIp(), e);
+            Loggers.logger(x, this).error("UpdateIPGeolocationInfoAgent", "Failed reading location db for", info.getIp(), e);
           } catch (GeoIp2Exception e) {
-            Loggers.logger(x).error("UpdateIPGeolocationInfoAgent", "Failed getting location response for", info.getIp(), "GeoIp2Exception", e.getMessage());
+            Loggers.logger(x, this).error("UpdateIPGeolocationInfoAgent", "Failed getting location response for", info.getIp(), "GeoIp2Exception", e.getMessage());
           }
         }
-        
       `
     }
   ]

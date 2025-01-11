@@ -104,7 +104,7 @@ public class MDAO
 
   public MDAO(ClassInfo of) {
     setOf(of);
-    index_ = new AltIndex(new TreeIndex((Indexer) this.of_.getAxiomByName("id")));
+    index_ = new AltIndex(new TreeIndex((Indexer) this.of_.getAxiomByName("id"), true));
   }
 
   public void addIndex(Index index) {
@@ -116,7 +116,7 @@ public class MDAO
   /** Add an Index which is for a unique value. Use addIndex() if the index is not unique. **/
   public void addUniqueIndex(Indexer... props) {
     Index idx = ValueIndex.instance();
-    for ( var i = props.length-1 ; i >= 0 ; i-- ) idx = new TreeIndex(props[i], idx);
+    for ( var i = props.length-1 ; i >= 0 ; i-- ) idx = new TreeIndex(props[i], idx, i != 0);
     addIndex(idx);
   }
 
@@ -124,8 +124,8 @@ public class MDAO
    * appended to property list to make it unique.
    **/
   public void addIndex(Indexer... props) {
-    Index idx = new TreeIndex((Indexer) this.of_.getAxiomByName("id"));
-    for ( var i = props.length-1 ; i >= 0 ; i-- ) idx = new TreeIndex(props[i], idx);
+    Index idx = new TreeIndex((Indexer) this.of_.getAxiomByName("id"), true);
+    for ( var i = props.length-1 ; i >= 0 ; i-- ) idx = new TreeIndex(props[i], idx, i != 0);
     addIndex(idx);
   }
 
@@ -191,16 +191,16 @@ public class MDAO
 
     if ( o == null ) return null;
 
-    // TODO: PM unindexed plans
-    return objOut(
-      getOf().isInstance(o)
-        ? (FObject) index_.planFind(state, getPrimaryKey().get(o)).find(state, getPrimaryKey().get(o))
-        : (FObject) index_.planFind(state, o).find(state, o)
-    );
+    // Convert full FObjects to just the primary key
+    if ( getOf().isInstance(o) ) {
+      o = getPrimaryKey().get(o);
+    }
+
+    return objOut((FObject) index_.find(state, o));
+//    return objOut((FObject) index_.planFind(state, o).find(state, o));
   }
 
   public Sink select_(X x, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {
-    Logger     logger = (Logger) x.get("logger");
     SelectPlan plan;
     Predicate  simplePredicate = null;
     PM         pm = null;
@@ -212,14 +212,13 @@ public class MDAO
 
     // We handle OR logic by seperate request from MDAO. We return different plan for each parameter of OR logic.
     if ( simplePredicate instanceof Or ) {
-      Sink dependSink = new ArraySink();
-      // When we have groupBy, order, skip, limit such requirement, we can't do it separately so I replace a array sink to temporarily holde the whole data
-      // Then after the plan wa slelect we change it to the origin sink
+      // When we have groupBy, order, skip, limit such requirement, we can't do it separately so I replace a array sink to temporarily hold the whole data
+      // Then after the plan we change it to the origin sink
       int length = ((Or) simplePredicate).getArgs().length;
-      List<Plan> planList = new ArrayList<>();
+      List<SelectPlan> planList = new ArrayList<>();
       for ( int i = 0 ; i < length ; i++ ) {
-        Predicate arg = ((Or) simplePredicate).getArgs()[i];
-        planList.add(index_.planSelect(state, dependSink, 0, AbstractDAO.MAX_SAFE_INTEGER, null, arg));
+        Predicate p = ((Or) simplePredicate).getArgs()[i];
+        planList.add(index_.planSelect(state, NullSink.instance(), 0, AbstractDAO.MAX_SAFE_INTEGER, null, p));
       }
       plan = new OrPlan(simplePredicate, planList);
     } else {
@@ -229,6 +228,7 @@ public class MDAO
     if ( state != null && simplePredicate != null && simplePredicate != MLang.TRUE && plan.cost() > 10 && plan.cost() >= index_.size(state) ) {
       pm = new PM(this.getClass(), "MDAO:UnindexedSelect:" + getOf().getId());
       if ( ! unindexed_.contains(getOf().getId()) ) {
+        Logger logger = (Logger) x.get("logger");
         if ( ! predicate.equals(simplePredicate) && logger != null ) {
           logger.warning(String.format("The original predicate was %s but it was simplified to %s.", predicate.toString(), simplePredicate.toString()));
         }

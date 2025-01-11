@@ -19,6 +19,7 @@ foam.CLASS({
   ],
 
   imports: [
+    'collapsed',
     'dblclick?',
     'draggable',
     'onObjDrop',
@@ -116,6 +117,7 @@ foam.CLASS({
           });
           this.
           addClass(this.myClass('select-level')).
+          enableClass(this.myClass('select-level-selected'), row.selected_$).
           callIfElse(row.rowConfig?.[row.data.id],
             function() {
               this.tag(row.rowConfig?.[row.data.id])
@@ -153,7 +155,13 @@ foam.CLASS({
     {
       class: 'Boolean',
       name: 'expanded',
-      value: false
+      postSet: function(o, n) {
+        if ( n ) {
+          delete this.collapsed[this.data.id];
+        } else if ( this.hasChildren ) {
+          this.collapsed[this.data.id] = true;
+        }
+      }
     },
     {
       class: 'Function',
@@ -195,10 +203,7 @@ foam.CLASS({
       class: 'Boolean',
       name: 'selected_',
       expression: function(selection, data$id) {
-        if ( selection && foam.util.equals(selection.id, this.data.id) ) {
-          return true;
-        }
-        return false;
+        return selection && foam.util.equals(selection.id, this.data.id);
       }
     }
   ],
@@ -207,9 +212,10 @@ foam.CLASS({
     function render() {
       this.SUPER();
       var self = this;
-      var controlledSearchSlot = foam.core.SimpleSlot.create();
+      var controlledSearchSlot;
 
       if ( this.query ) {
+        controlledSearchSlot = foam.core.SimpleSlot.create();
         this.query.sub(function() {
           self.updateThisRoot = true;
           self.showThisRootOnSearch = false;
@@ -240,7 +246,7 @@ foam.CLASS({
             self.doesThisIncludeSearch = self.query.get() ? self.data.label.toLowerCase().includes(self.query.get().toLowerCase()) : true;
 
             if ( self.query.get() && !self.doesThisIncludeSearch && self.data.keywords ) {
-              for ( var i = 0; i < self.data.keywords.length; i++ ) {
+              for ( var i = 0 ; i < self.data.keywords.length ; i++ ) {
                 if ( self.data.keywords[i].toLowerCase().includes(self.query.get().toLowerCase()) ) {
                   self.doesThisIncludeSearch = true;
                   break;
@@ -273,9 +279,6 @@ foam.CLASS({
         }).
         start().
           addClass(self.myClass('heading')).
-          style({
-            'padding-left': (((self.level - 1) * 16 ) + 'px')
-          }).
           startContext({ data: self }).
             start(self.ON_CLICK_FUNCTIONS, {
               buttonStyle: 'UNSTYLED',
@@ -285,6 +288,9 @@ foam.CLASS({
               themeIcon: self.level === 1 ? self.data.themeIcon : '',
               icon: self.level === 1 ? self.data.icon : ''
             }).
+              style({
+                'padding-left': (((self.level - 0.5) * 16 ) + 'px')
+              }).
               enableClass('selected', this.selected_$).
               // make not be a button so that other buttons can be nested
               addClass(this.myClass('button')).
@@ -299,7 +305,7 @@ foam.CLASS({
                 data:             obj,
                 formatter:        self.formatter,
                 relationship:     self.relationship,
-                expanded:         true, //self.startExpanded,
+                expanded:         ! self.collapsed[obj.id],
                 showRootOnSearch: self.showThisRootOnSearch$,
                 query:            controlledSearchSlot,
                 onClickAddOn:     self.onClickAddOn,
@@ -401,11 +407,12 @@ foam.CLASS({
   ],
 
   exports: [
+    'collapsed',
     'draggable',
     'onObjDrop',
+    'rowConfig',
     'selection',
-    'startExpanded',
-    'rowConfig'
+    'startExpanded'
   ],
 
   css: `
@@ -454,7 +461,12 @@ foam.CLASS({
       name: 'draggable',
       documentation: 'Enable to allow drag&drop editing.'
     },
-    [ 'defaultRoot', '' ]
+    [ 'defaultRoot', '' ],
+    {
+      // Set of collapsed TreeRows
+      name: 'collapsed',
+      factory: function() { return {}; }
+    }
   ],
 
   methods: [
@@ -473,7 +485,7 @@ foam.CLASS({
             self.selection = obj;
             isFirstSet = true;
           }
-          return this.E().tag({
+          this.tag({
             class:        foam.u2.view.TreeViewRow,
             data:         obj,
             relationship: self.relationship,

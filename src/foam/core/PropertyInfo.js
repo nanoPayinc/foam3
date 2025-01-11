@@ -104,13 +104,18 @@ foam.INTERFACE({
     'void setFromString(Object obj, String value) { this.set(obj, fromString(value));}',
     `void copyFromXML(X x, FObject obj, javax.xml.stream.XMLStreamReader reader) {
       // Moves reader to characters state in order for value reading for various data types (date, boolean, short ...)
+      int eventType = javax.xml.stream.XMLStreamConstants.END_ELEMENT;
       try {
-        reader.next();
+        eventType = reader.next();
       } catch (javax.xml.stream.XMLStreamException ex) {
         foam.nanos.logger.Logger logger = (foam.nanos.logger.Logger) x.get("logger");
         logger.error("Premature end of XML file");
       }
-      set(obj, fromString(reader.getText()));
+
+      // Ignore empty. (eg. <foo></foo>)
+      if ( eventType != javax.xml.stream.XMLStreamConstants.END_ELEMENT ) {
+        set(obj, fromString(reader.getText()));
+      }
     }`,
     'int comparePropertyToObject(Object key, Object o)',
     'String getSQLType()',

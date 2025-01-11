@@ -289,39 +289,40 @@ If empty then no permissions are required.`
       return true;
     },
 
-    function maybeCall(x, data) {
+    async function call(x, data) {
       var self = this;
-      async function call() {
-        var running = self.getRunning$(data);
-        // If action is in progress do not call again. Problem with this is that if action returns a
-        // promise that never resolves then the action is stuck in a running state. Not returning does not solves
-        // this problem either since there is no guarantee that such promise would resolve on a second run.
-        if ( running.get() ) {
-          x.warn("Attempted to call action that is in progress.");
-          return;
-        }
-        var ret = self.code.call(data, x, self);
-        if ( ret && ret.then ) {
-          running.set(true);
-          try {
-            ret = await ret;
-            running.set(false);
-          } catch (err) {
-            running.set(false);
-            throw err;
-          }
-        }
-        // primitive types won't have a pub method
-        // Why are we publishing this event anyway? KGR
-        data && data.pub && data.pub('action', self.name, self);
-        return ret;
+      var running = self.getRunning$(data);
+      // If action is in progress do not call again. Problem with this is that if action returns a
+      // promise that never resolves then the action is stuck in a running state. Not returning does not solves
+      // this problem either since there is no guarantee that such promise would resolve on a second run.
+      if ( running.get() ) {
+        x.warn("Attempted to call action that is in progress.");
+        return;
       }
+      var ret = self.code.call(data, x, self);
+      if ( ret && ret.then ) {
+        running.set(true);
+        try {
+          ret = await ret;
+          running.set(false);
+        } catch (err) {
+          running.set(false);
+          throw err;
+        }
+      }
+      // primitive types won't have a pub method
+      // Why are we publishing this event anyway? KGR
+      data && data.pub && data.pub('action', self.name, self);
+      return ret;
+    },
 
+    function maybeCall(x, data) {
+      let self = this;
       if ( this.checkIsEnabledIsAvailable(data) ) return;
       // No permission check if no auth service or no permissions to check.
       if ( ! x.auth ||
            ! ( this.availablePermissions.length || this.enabledPermissions.length ) ) {
-        return call();
+        return this.call(x, data);
       }
 
       var permissions = this.availablePermissions.concat(this.enabledPermissions);
@@ -329,7 +330,7 @@ If empty then no permissions are required.`
       permissions = foam.Array.unique(permissions);
       return Promise.all(permissions.map(p => x.auth.check(null, p))).
         then(function(args) {
-          if ( args.every(b => b) ) return call();
+          if ( args.every(b => b) ) return self.call(x, data);
         });
     },
 

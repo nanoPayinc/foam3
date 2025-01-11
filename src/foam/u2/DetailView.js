@@ -331,7 +331,9 @@ foam.CLASS({
 
         var tabs;
 
-        return this.start('table').
+        // TODO: The extra start is because dynamic() can only add a single child
+        // This is probably a bug and should be fixed.
+        this.start().start('table').
           enableClass(self.myClass('collapsePropertyViews'), self.expandPropertyViews$, true).
           attrs({'cellpadding': 2}).
           addClass(self.myClass()).

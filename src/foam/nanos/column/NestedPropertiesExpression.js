@@ -41,16 +41,7 @@ foam.CLASS({
   methods: [
     {
       name: 'set',
-      args: [
-        {
-          name: 'o',
-          type: 'Object'
-        },
-        {
-          name: 'value',
-          type: 'Object'
-        }
-      ],
+      args: 'Object o, Object value',
       code: function(o, val) {
         if ( this.nestedProperty.includes('.') ) return;
         o.cls_.getAxiomByName(this.nestedProperty).set(o, val);
@@ -63,7 +54,7 @@ foam.CLASS({
           ClassInfo ci = (ClassInfo)cls.getField("classInfo_").get(o);
           PropertyInfo pi = (PropertyInfo)ci.getAxiomByName(getNestedProperty());
           pi.set(o, value);
-        } catch ( Throwable t ) {
+        } catch (Throwable t ) {
           Logger logger = (Logger) getX().get("logger");
           logger.error(t);
         }
@@ -283,7 +274,7 @@ foam.CLASS({
           var expr = objClass.getAxiomByName(propName) || foam.nanos.column.NestedPropertiesExpression.create({ objClass: objClass, nestedProperty: propName });
           if ( foam.dao.DAOProperty.isInstance(expr) ||
                foam.dao.OneToManyRelationshipProperty.isInstance(expr) ||
-               foam.dao.ManyToManyRelationshipProperty.isInstance(expr) ) 
+               foam.dao.ManyToManyRelationshipProperty.isInstance(expr) )
             continue
           if ( expr )
             exprArray.push(expr);

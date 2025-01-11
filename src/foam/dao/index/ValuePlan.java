@@ -10,7 +10,9 @@ import foam.dao.Sink;
 import foam.mlang.order.Comparator;
 import foam.mlang.predicate.Predicate;
 
-public class ValuePlan implements FindPlan, SelectPlan {
+public class ValuePlan
+  implements SelectPlan
+{
   protected final static ValuePlan instance_ = new ValuePlan();
 
   public static ValuePlan instance() { return instance_; }
@@ -19,19 +21,27 @@ public class ValuePlan implements FindPlan, SelectPlan {
 
   public long cost() { return 1; }
 
-  public FObject find(Object state, Object key) {
-    return null;
-  }
-
   public void select(Object state, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {
-    if ( predicate != null && ! predicate.f((FObject) state) ) return;
+    try {
+      if ( predicate != null && ! predicate.f((FObject) state) ) return;
+    } catch (ClassCastException e) {
+      // Can happen when the Indexer is a PropertyInfo for a sub-class
+      return;
+    } catch (NullPointerException e) {
+      // Can happen when the Indexer is Dot(x, y) when x is nullf
+      return;
+    }
     if ( skip > 0 ) return;
     if ( limit <= 0 ) return;
-   sink.put(state, MDAO.DetachSelect.instance());
+    sink.put(state, MDAO.DetachSelect.instance());
+  }
+
+  public SelectPlan restate(Object state) {
+    return new RestatedPlan(state, this);
   }
 
   @Override
   public String toString() {
-    return "value(cost:" + cost() + ")";
+    return "value(cost:1)";
   }
 }

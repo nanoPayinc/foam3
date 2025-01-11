@@ -100,3 +100,11 @@ foam.RELATIONSHIP({
     tableCellFormatter: { class: 'foam.u2.view.ReferenceToSummaryCellFormatter' }
   }
 });
+
+foam.RELATIONSHIP({
+  sourceModel: 'foam.nanos.auth.User',
+  targetModel: 'foam.nanos.auth.Credential',
+  forwardName: 'credentials',
+  inverseName: 'owner',
+  cardinality: '1:*'
+});

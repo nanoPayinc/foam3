@@ -8,6 +8,7 @@ foam.CLASS({
   package: 'foam.u2.view',
   name: 'AltView',
   extends: 'foam.u2.View',
+
   mixins: ['foam.u2.memento.Memorable'],
 
   documentation: `Provides the ability to switch between multiple views for a data set.
@@ -17,19 +18,20 @@ foam.CLASS({
   requires: [ 'foam.u2.view.RadioView' ],
 
   css: `
-    ^ { 
-      margin: auto; width: 100%; 
+    ^ {
+      margin: auto; width: 100%;
       display: flex;
       height: 100%;
       flex-direction: column;
     }
     ^ > div:last-child {
       flex: 1;
-      // This min-height: 0 is required as it sets the base height for the height of the contents rendered by 
+      // This min-height: 0 is required as it sets the base height for the height of the contents rendered by
       // altview. This means the above flex: 1 doesnt make the content overflow this div
       // I love CSS :)
       min-height: 0;
     }
+    ^ .property-selectedView { margin-bottom: 6px; }
   `,
 
   properties: [
@@ -54,25 +56,24 @@ foam.CLASS({
         a number to load the view by index.
 
         For example:
-
-            {
-              class: 'foam.u2.view.AltView',
-              views: [
-                [
-                  {
-                    // view 1 spec
-                  },
-                  'View 1'
-                ],
-                [
-                  {
-                    // view 2 spec
-                  },
-                  'View 2'
-                ]
-              ],
-              selectedView: 'View 2' // select view by name
-            }
+        {
+          class: 'foam.u2.view.AltView',
+          views: [
+            [
+              {
+                // view 1 spec
+              },
+              'View 1'
+            ],
+            [
+              {
+                // view 2 spec
+              },
+              'View 2'
+            ]
+          ],
+          selectedViewLabel: 'View 2' // select view by name
+        }
       `,
       factory: function() {
         return this.views[0][0];
@@ -89,10 +90,6 @@ foam.CLASS({
         }
         return nu;
       }
-    },
-    {
-      class: 'foam.dao.DAOProperty',
-      name: 'data'
     },
     {
       class: 'String',
@@ -115,8 +112,6 @@ foam.CLASS({
         }
       }
 
-//     var data = self.data$proxy;
-
       this.addClass()
       this.startContext({data: this})
         this.start()
@@ -125,7 +120,8 @@ foam.CLASS({
       .endContext()
       .start('div')
         .add(this.selectedView$.map(function(v) {
-          return self.E().tag(v, {data: self.data});
+          if ( foam.String.isInstance(v) ) v = { class: v };
+          return self.E().tag(v, {data$: self.data$});
         }))
       .end();
 

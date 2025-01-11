@@ -7,22 +7,15 @@
 package foam.lib.parse;
 
 public class LiteralIC
-  implements Parser
+  extends Literal
 {
-  protected String string_;
-  protected Object value_;
-
   public LiteralIC(String s) {
     this(s, s);
   }
 
   public LiteralIC(String s, Object v) {
-    string_ = s.toUpperCase();
-    value_  = v;
+    super(s.toUpperCase(), v);
   }
-
-  public String getString() { return string_; }
-  public void setString(String s) { string_ = s; }
 
   public PStream parse(PStream ps, ParserContext x) {
     for ( int i = 0 ; i < string_.length() ; i++ ) {

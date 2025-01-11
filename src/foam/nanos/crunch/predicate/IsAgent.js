@@ -4,12 +4,9 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-foam.CLASS({
+foam.RULE_PREDICATE({
   package: 'foam.nanos.crunch.predicate',
   name: 'IsAgent',
-
-  extends: 'foam.mlang.predicate.AbstractPredicate',
-  implements: ['foam.core.Serializable'],
 
   documentation: `
     Returns true if user and realUser are different.
@@ -17,19 +14,8 @@ foam.CLASS({
   `,
 
   javaImports: [
-    'foam.core.X',
     'foam.nanos.auth.Subject'
   ],
 
-  methods: [
-    {
-      name:'f',
-      javaCode: `
-        if ( ! ( obj instanceof X ) ) return false;
-        X x = (X) obj;
-        return ((Subject) x.get("subject")).isAgent();
-      `
-    }
-  ]
+  ruleF: 'return ((Subject) x.get("subject")).isAgent();'
 });
-

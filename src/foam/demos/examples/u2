@@ -1048,7 +1048,7 @@ var dao = foam.dao.EasyDAO.create({
 
 // Gives untranslated values:
 add(E().select(dao, function(d) {
-  return this.E().add(d.id, ' ', d.label);
+  this.E().add(d.id, ' ', d.label);
 }));
 
 add(E('hr'));
@@ -1060,7 +1060,7 @@ var mockTranslationService = {
 
 // Gives translated values:
 add(E().startContext({translationService: mockTranslationService}).select(dao, function(d) {
-  return this.E().add(d.id, ' ').translate('SampleTranslationData.' + d.id + '.label', d.label);
+  this.add(d.id, ' ').translate('SampleTranslationData.' + d.id + '.label', d.label);
 }));
 
 ##   write()

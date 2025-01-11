@@ -142,7 +142,7 @@ p({
       {
         "class": "foam.mlang.predicate.Not",
         "arg1": {
-          "class": "foam.nanos.ruler.predicate.IsInstancePredicate",
+          "class": "foam.mlang.predicate.IsInstanceOf",
           "of": "foam.nanos.approval.CompositeApprovable"
         }
       },
@@ -172,7 +172,7 @@ p({
     "class":"foam.mlang.predicate.And",
     "args":[
       {
-        "class": "foam.nanos.ruler.predicate.IsInstancePredicate",
+        "class": "foam.mlang.predicate.IsInstanceOf",
         "of": "foam.nanos.approval.CompositeApprovable"
       },
       {

@@ -4,14 +4,11 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-foam.CLASS({
+foam.RULE_PREDICATE({
   package: 'foam.nanos.crunch.predicate',
   name: 'StatusChangedTo',
-  extends: 'foam.mlang.predicate.AbstractPredicate',
-  implements: ['foam.core.Serializable'],
 
   javaImports: [
-    'foam.core.X',
     'foam.dao.DAO',
     'foam.nanos.crunch.CrunchService',
     'foam.nanos.crunch.UserCapabilityJunction',
@@ -31,22 +28,14 @@ foam.CLASS({
     }
   ],
 
-  methods: [
-    {
-      name: 'f',
-      javaCode: `
-        if ( ! ( obj instanceof X ) ) return false;
-        var x = (X) obj;
+  ruleF: `
+    UserCapabilityJunction oldUCJ = (UserCapabilityJunction) o;
+    UserCapabilityJunction newUCJ = (UserCapabilityJunction) n;
 
-        UserCapabilityJunction oldUCJ = (UserCapabilityJunction) x.get("OLD");
-        UserCapabilityJunction newUCJ = (UserCapabilityJunction) x.get("NEW");
-
-        if ( getCheckInequality() && oldUCJ != null ) {
-          if ( oldUCJ.getStatus() == newUCJ.getStatus() ) return false;
-        }
-
-        return newUCJ.getStatus() == getStatus();
-      `
+    if ( getCheckInequality() && oldUCJ != null ) {
+      if ( oldUCJ.getStatus() == newUCJ.getStatus() ) return false;
     }
-  ],
+
+    return newUCJ.getStatus() == getStatus();
+  `
 });

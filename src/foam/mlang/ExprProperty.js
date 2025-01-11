@@ -18,7 +18,7 @@ foam.CLASS({
       value: function(_, o, p) { return p.adaptValue(o); }
     },
     {
-      name: 'type',
+      name: 'of',
       value: 'foam.mlang.Expr'
     },
     ['javaJSONParser', 'foam.lib.json.ExprParser.instance()'],

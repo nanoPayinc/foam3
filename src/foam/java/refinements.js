@@ -16,6 +16,7 @@ foam.INTERFACE({
   package: 'foam.lib.csv',
   name: 'FromCSVSetter',
   flags: [ 'genjava', 'java' ],
+
   methods: [
     {
       name: 'set',
@@ -129,7 +130,7 @@ foam.CLASS({
   refines: 'foam.core.Argument',
   // flags: ['java'],
   properties: [
-    { class: 'foam.java.JavaType' }
+    { class: 'foam.java.JavaType' } // JavaType defines 'name' and other properties
   ]
 });
 
@@ -149,10 +150,11 @@ foam.CLASS({
         return foam.util.flagFilter(['java'])(this);
       }
     },
-    { class: 'foam.java.JavaType' },
+    { class: 'foam.java.JavaType' }, // JavaType defines 'name' and other properties
     {
       class: 'String',
       name: 'javaJSONParser',
+      // Set to the String literal 'null' if no JSONParser desired
       value: 'foam.lib.json.AnyParser.instance()'
     },
     {
@@ -250,7 +252,7 @@ foam.CLASS({
 
         return validationPredicates.length == 0 ? '' : (required ? 'super.validateObj(x, obj);' : '') + `
 var sps    = new foam.lib.parse.StringPStream();
-var parser = new foam.parse.FScriptParser(this);
+var parser = foam.parse.FScriptParser.create(this);
 var px     = new foam.lib.parse.ParserContextImpl();` +
         validationPredicates
           .map((vp) => {
@@ -816,7 +818,7 @@ foam.CLASS({
       name: 'javaCode',
       // flags: ['java'],
     },
-    { class: 'foam.java.JavaType' },
+    { class: 'foam.java.JavaType' }, // JavaType defines 'name' and other properties
     {
       class: 'Boolean',
       name: 'final'
@@ -1009,7 +1011,7 @@ foam.CLASS({
         return foam.java.asJavaValue(value);
       }
     },
-    { class: 'foam.java.JavaType' }
+    { class: 'foam.java.JavaType' } // JavaType defines 'name' and other properties
   ],
 
   methods: [
@@ -1095,7 +1097,7 @@ foam.CLASS({
   // flags: ['java'],
 
   properties: [
-    { class: 'foam.java.JavaType' }
+    { class: 'foam.java.JavaType' } // JavaType defines 'name' and other properties
   ],
 
   methods: [
@@ -1299,10 +1301,10 @@ foam.CLASS({
   // flags: ['java'],
 
   properties: [
-    { class:           'foam.java.JavaType' },
-    ['javaInfoType',   'foam.core.AbstractEnumPropertyInfo'],
-    ['javaJSONParser', 'new foam.lib.parse.Alt(foam.lib.json.IntParser.instance(), foam.lib.json.StringParser.instance())'],
-    ['javaCSVParser',  'new foam.lib.parse.Alt(foam.lib.json.IntParser.instance(), foam.lib.json.StringParser.instance())']
+    { class: 'foam.java.JavaType' }, // JavaType defines 'name' and other properties
+    [ 'javaInfoType',   'foam.core.AbstractEnumPropertyInfo' ],
+    [ 'javaJSONParser', 'parser__' ], // parser__ defined in AbstractEnumPropertyInfo
+    [ 'javaCSVParser',  'parser__' ]
   ],
 
   methods: [
@@ -1416,7 +1418,7 @@ foam.CLASS({
           });
 
           cls.declarations = this.VALUES.map(function(v) {
-            return `${v.name}(${properties.map(p => foam.java.asJavaValue(v[p])).join(', ')})`;
+            return `${v.name}(${properties.map(p => foam.java.asJavaValue(v[p.name])).join(', ')})`;
           }).join(',\n  ');
 
           cls.method({
@@ -1511,11 +1513,11 @@ foam.CLASS({
   // flags: ['java'],
   mixins: [ 'foam.java.JavaCompareImplementor' ],
 
-   properties: [
-       ['javaInfoType',    'foam.core.AbstractDatePropertyInfo'],
-       ['javaJSONParser',  'foam.lib.json.DateParser.instance()'],
-       ['sqlType',         'DATE']
-   ],
+  properties: [
+    ['javaInfoType',    'foam.core.AbstractDatePropertyInfo'],
+    ['javaJSONParser',  'foam.lib.json.DateParser.instance()'],
+    ['sqlType',         'DATE']
+  ],
 
    methods: [
      function createJavaPropertyInfo_(cls) {
@@ -1897,7 +1899,7 @@ foam.CLASS({
   // flags: ['java'],
 
   properties: [
-    { class: 'foam.java.JavaType' },
+    { class: 'foam.java.JavaType' }, // JavaType defines 'name' and other properties
     {
       name: 'javaFactory',
       expression: function(type) {

@@ -77,6 +77,7 @@ foam.CLASS({
       display: flex;
       justify-content: flex-end;
       padding: 16px 0px;
+      gap: 8px;
     }
     ^fullscreen ^wrapper {
       height: 100%;
@@ -163,7 +164,7 @@ foam.CLASS({
             .end()
             .start()
               .addClass(this.myClass('actionBar'))
-              .add(this.addActions())
+              .call(this.addActions, [this])
             .end()
           .end()
         .end();
@@ -171,13 +172,13 @@ foam.CLASS({
     function addBody() {
       return this.E().tag('', null, this.content$);
     },
-    function addActions() {
-      var actions = this.E().startContext({ data$: this.data$ });
-      for ( action of this.actionArray ) {
+    function addActions(self) {
+      var actions = this.startContext({ data$: self.data$ });
+      for ( action of self.actionArray ) {
         actions.tag(action);
       }
-      return actions.endContext();
+      actions.endContext();
     }
   ]
-
 });
+

@@ -1,0 +1,127 @@
+#!/bin/bash
+#
+#########################
+# JVM Configuration and Tuning parameters
+# See shrc.custom to override memory parameters
+#
+# See https://docs.oracle.com/en/java/javase/14/docs/specs/man/java.html
+#########################
+
+if [ -z "${DEBUG_PORT}" ]; then
+  DEBUG_PORT=*:5005
+fi
+
+if [ -z "${DEBUG_SUSPEND}" ]; then
+  DEBUG_SUSPEND=n
+fi
+
+###### Customer parameter File
+CUSTOM_CONFIG="${APP_HOME}/conf/shrc.custom"
+if [ -f "${CUSTOM_CONFIG}" ]; then
+  . ${CUSTOM_CONFIG} $1
+fi
+
+###### Project parameter File
+PROJECT_CONFIG="${APP_HOME}/etc/shrc.project"
+if [ -f "${PROJECT_CONFIG}" ]; then
+  . ${PROJECT_CONFIG} $1
+fi
+
+# memory - heap
+if [ -z "`echo "${JAVA_OPTS}" | grep "Xms"`" ]; then
+  JAVA_OPTS="${JAVA_OPTS} -Xms2048m"
+fi
+
+if [ -z "`echo "${JAVA_OPTS}" | grep "Xmx"`" ]; then
+  JAVA_OPTS="${JAVA_OPTS} -Xmx4096m"
+fi
+
+# memory - stack
+#if [ -z "`echo "${JAVA_OPTS}" | grep "Xss"`" ]; then
+#  JAVA_OPTS="${JAVA_OPTS} -Xss1m"
+#fi
+
+#if [ -z "`echo "${JAVA_OPTS}" | grep "XX:.*NewSize"`" ]; then
+#  JAVA_OPTS="${JAVA_OPTS} -XX:NewSize=192m"
+#  JAVA_OPTS="${JAVA_OPTS} -XX:MaxNewSize=512m"
+#fi
+
+# Attempt to avoid unnecessary class unloading/loading
+JAVA_OPTS="${JAVA_OPTS} -XX:ReservedCodeCacheSize=128m"
+
+# TTL caching policy for Name Service lookup. Default is -1 (forever)
+# which prevents DNS spoofing but does not allow us to reconfigure
+# (change an ipaddress of a clustered node) without restarting all
+# other cluster nodes. Time in seconds.
+JAVA_OPTS=$JAVA_OPTS" -Dnetworkaddress.cache.ttl=3600"
+
+##### Debugging / Diagnostic
+# Troubleshooting debug setup.
+
+# Uncomment in shrc.custom to enable all Debug/Diagnostic parameters.
+#DEBUG=1 - enable in shrc.custom
+
+if [ "${DEBUG}" = "1" ]; then
+  JAVA_OPTS="${JAVA_OPTS} -XX:+PrintFlagsFinal"
+
+  # Turn on to debug random JVM pauses
+  JAVA_OPTS="${JAVA_OPTS} -XX:+UnlockDiagnosticVMOptions"
+  JAVA_OPTS="${JAVA_OPTS} -XX:+LogCompilation"
+  JAVA_OPTS="${JAVA_OPTS} -XX:+PrintCompilation"
+
+  # Free List Statistics
+  # (failing on java 11) JAVA_OPTS="${JAVA_OPTS} -XX:PrintFLSStatistics=2"
+  JAVA_OPTS="${JAVA_OPTS} -XX:+LogVMOutput"
+
+  # DTrace - no longer supported?
+  #JAVA_OPTS="${JAVA_OPTS} -XX:+ExtendedDTraceProbes"
+  #JAVA_OPTS="${JAVA_OPTS} -XX:+DTraceAllocProbes"
+  #JAVA_OPTS="${JAVA_OPTS} -XX:+DTraceMethodProbes"
+  #JAVA_OPTS="${JAVA_OPTS} -XX:+DTraceMonitorProbes"
+fi
+# Uncomment in shrc.custom to enable only the following Dev Debug/Diagnostic parameters.
+# NOTE: these parameters are also enabled when DEBUG is enabled.
+#DEBUG_DEV=1 - enable in shrc.custom
+
+if [ "${DEBUG}" = "1" -o "${DEBUG_DEV}" = "1" ]; then
+  JAVA_OPTS="${JAVA_OPTS} -Xdebug"
+  JAVA_OPTS="${JAVA_OPTS} -Xnoagent"
+  JAVA_OPTS="${JAVA_OPTS} -agentlib:jdwp=transport=dt_socket,server=y,suspend=${DEBUG_SUSPEND},address=${DEBUG_PORT}"
+fi
+
+##### Garbage Collection
+# Java <21 The default G1 garbage collector, presently gives the best performance
+# Java 21 onward, Generational Z garbage collector is most performant
+JAVA_OPTS="${JAVA_OPTS} -XX:+UseZGC -XX:+ZGenerational"
+
+JAVA_OPTS="${JAVA_OPTS} -XX:+UseStringDeduplication"
+# -XX:StringTableSize - explicit adjustment had negative impact.
+
+# Garbage Collection logging
+if [ "${DEBUG}" = "1" -o "${DEBUG_DEV}" = "1" ]; then
+    if [ -z "`echo "${JAVA_OPTS}" | grep "Xlog:.*gc"`" ]; then
+        # See
+        # https://www.linkedin.com/pulse/javajvm-logs-monday-jvm-introduction-safepoints-krzysztof-%C5%9Blusarski
+        # https://docs.oracle.com/en/java/javase/14/docs/specs/man/java.html
+        if [[ $OSTYPE =~ $LINUXOS ]]; then
+            JAVA_OPTS="${JAVA_OPTS} -Xlog:codecache+sweep*=trace,class+unload,class+load,os+thread,safepoint,gc*,gc+ergo=trace,gc+age=trace,gc+phases=trace,gc+humongous=trace,stringdedup*=debug:file=${LOG_HOME}/gc-%t.log:tags,time,uptime,level:filesize=10M,filecount=10"
+        fi
+    fi
+fi
+
+# OutOfMemory
+JAVA_OPTS=$JAVA_OPTS" -XX:+HeapDumpOnOutOfMemoryError"
+JAVA_OPTS=$JAVA_OPTS" -XX:HeapDumpPath=${LOG_HOME}/java-%t.hprof"
+#JAVA_OPTS=$JAVA_OPTS" -XX:OnOutOfMemoryError="< cmd args >;< cmd args >" // shutdown -r for example.
+JAVA_OPTS=$JAVA_OPTS" -XX:+UseGCOverheadLimit"
+
+# default on Solaris but not Linux
+#JAVA_OPTS="${JAVA_OPTS} -XX:+UseLargePages"
+
+##### File descriptors - includes network IO
+JAVA_OPTS="${JAVA_OPTS} -XX:+MaxFDLimit"
+
+#### Stack Trace
+## re-enable stack trace for repeated JVM implicit exceptions
+## See https://stackoverflow.com/a/58700744
+JAVA_OPTS=$JAVA_OPTS" -XX:-OmitStackTraceInFastThrow"

@@ -69,12 +69,7 @@ foam.CLASS({
   ],
 
   imports: [
-    'analyticEventDAO',
-    'capabilityDAO',
     'installCSS',
-    'notificationDAO',
-    'params',
-    'sessionSuccess',
     'window'
   ],
 
@@ -84,6 +79,7 @@ foam.CLASS({
     'as ctrl',
     'crunchController',
     'currentMenu',
+    'defaultUserLanguage',
     'displayWidth',
     'group',
     'initLayout',
@@ -100,6 +96,7 @@ foam.CLASS({
     'memento_ as topMemento_',
     'menuListener',
     'notify',
+    'onUserAgentAndGroupLoaded',
     'popupManager',
     'prefersMenuOpen',
     'pushDefaultMenu',
@@ -202,9 +199,11 @@ foam.CLASS({
   properties: [
     {
       name: 'loginVariables',
-      expression: function(client$userDAO) {
+      expression: function( client$userRegistrationDAO, group$emailRequired ) {
         return {
-          dao_: client$userDAO || null,
+          dao_: client$userRegistrationDAO || null,
+          emailRequired_: group$emailRequired,
+          disableEmail_: ! group$emailRequired,
           imgPath: ''
         };
       }
@@ -371,19 +370,12 @@ foam.CLASS({
       of: 'foam.nanos.auth.Language',
       name: 'defaultLanguage',
       factory: function() {
-        return foam.nanos.auth.Language.create({code: 'en'})
+        return foam.nanos.auth.Language.create({code: 'en'});
       }
     },
     {
       name: 'route',
-      memorable: true,
-      postSet: function(_, n) {
-        // only pushmenu on route change after the fetchsubject process has been initiated
-        // as the init process will also check the route and pushmenu if required
-        if (this.initSubject) {
-          n ? this.pushMenu_(null, n) : this.pushDefaultMenu();
-        }
-      }
+      memorable: true
     },
     'currentMenu',
     'lastMenuLaunched',
@@ -413,6 +405,17 @@ foam.CLASS({
       class: 'Boolean',
       name: 'initSubject'
     },
+    {
+      name: 'defaultUserLanguage',
+      factory: function() {
+        let l = foam.locale.split('-');
+        let code = l[0];
+        let variant = l[1];
+        let language = foam.nanos.auth.Language.create({ code: code });
+        if ( variant ) language.variant = variant;
+        return language;
+      }
+    },
     //TODO: temporary fix, remove when client signin service is fixed/added
     {
       name: 'groupLoadingHandled',
@@ -430,15 +433,13 @@ foam.CLASS({
       // done to start using SectionedDetailViews instead of DetailViews
       this.__subContext__.register(foam.u2.detail.SectionedDetailView, 'foam.u2.DetailView');
 
-      var self = this;
-
       // Reload styling on theme change
       this.onDetach(this.sub('themeChange', this.reloadStyles));
     },
 
     async function initMenu() {
       if ( this.route ) {
-        this.pushMenu(this.route)
+        this.pushMenu(this.route);
       } else  {
         this.pushDefaultMenu();
       }
@@ -473,11 +474,11 @@ foam.CLASS({
 
         self.onDetach(self.__subContext__.cssTokenOverrideService?.cacheUpdated.sub(self.reloadStyles));
 
+        // group required for loginVariables before initMenu
+        await self.fetchGroup();
 
         self.subToNotifications();
         let ret = await self.initMenu();
-
-        await self.fetchGroup();
 
         // For anonymous users, we shouldn't reinstall the language
         // because the user's language setting isn't meaningful.
@@ -507,18 +508,16 @@ foam.CLASS({
     },
 
     function render() {
-      var self = this;
-      self.addMacroLayout();
+      this.addMacroLayout();
       this.onClientLoad();
       this.initLayout.then(() => {
         this.layoutInitialized = true;
       });
-      window.addEventListener('resize', this.updateDisplayWidth);
+      this.window.addEventListener('resize', this.updateDisplayWidth);
       this.updateDisplayWidth();
 
-
-      self.AppStyles.create();
-      self.Fonts.create();
+      this.AppStyles.create();
+      this.Fonts.create();
     },
 
     async function reloadClient() {
@@ -569,7 +568,7 @@ foam.CLASS({
         // TODO: don't update language setting for anonymous users
         // Can tell if a user is anonymous if their id === their spid's.anonymousUser
         if ( ! userPreferLanguage ) {
-          foam.locale = this.defaultLanguage.toString()
+          foam.locale = this.defaultLanguage.toString();
           let user = this.subject.realUser;
           user.language = this.defaultLanguage.id;
           await client.userDAO.put(user);
@@ -588,7 +587,7 @@ foam.CLASS({
         if ( group == null ) throw new Error(this.GROUP_NULL_ERR);
         this.group = group;
       } catch (err) {
-        this.notify(this.GROUP_FETCH_ERR, '', this.LogLevel.ERROR, true);
+        // this.notify(this.GROUP_FETCH_ERR, '', this.LogLevel.ERROR, true);
         console.error(err.message || this.GROUP_FETCH_ERR);
       }
     },
@@ -602,10 +601,11 @@ foam.CLASS({
 
         promptLogin = promptLogin && await this.client.auth.check(this, 'auth.promptlogin');
         var authResult =  await this.client.auth.check(this, '*');
-        if ( ! result || ! result.user ) throw new Error();
+        if ( ! result || ! result.user || promptLogin && ! authResult ) throw new Error();
         this.fetchGroup();
       } catch (err) {
         if ( ! promptLogin || authResult ) return;
+        await this.clientPromise;
         await this.requestLogin();
         return await this.fetchSubject();
       } finally {
@@ -719,12 +719,13 @@ foam.CLASS({
       if ( stringMenu && ! menu.includes('/') )
         menu = realMenu;
       this.menuListener(menu);
-      return menu?.launch?.(this.__subContext__);
+      await menu?.launch?.(this.__subContext__);
+      return true;
     },
 
     async function findDefaultMenu(dao) {
       var menu;
-      var menuArray = this.theme?.defaultMenu.concat(this.theme?.unauthenticatedDefaultMenu)
+      var menuArray = this.theme?.defaultMenu.concat(this.theme?.unauthenticatedDefaultMenu);
       if ( ! menuArray || ! menuArray.length ) return null;
       for ( menuId in menuArray ) {
         menu = await dao.find(menuArray[menuId]);
@@ -750,8 +751,8 @@ foam.CLASS({
         if ( defaultMenu.authenticate ) {
           this.routeTo(defaultMenu.id);
         } else {
-          await this.pushMenu_('', defaultMenu.id ?? '');
-          this.memento_.str = '';
+          let ret = await this.pushMenu(defaultMenu.id ?? '');
+          ret && (this.memento_.str = '');
         }
         return defaultMenu;
       }
@@ -760,25 +761,32 @@ foam.CLASS({
 
     function requestLogin() {
       var self = this;
+      var view =  self.loginView ?? {
+        ...({ class: 'foam.u2.borders.BaseUnAuthBorder' }),
+         children: [ { class: 'foam.nanos.auth.login.LoginView', mode_: 0 } ]
+      };
 
       // don't go to log in screen if going to reset password screen
       if ( location.hash && location.hash === '#reset' ) {
-        return new Promise(function(resolve, reject) {
-          self.stack.set({
-            class: 'foam.nanos.auth.ChangePasswordView',
-            modelOf: 'foam.nanos.auth.resetPassword.ResetPasswordByToken'
-           }, self);
-          self.loginSuccess$.sub(resolve);
-        });
+        view = {
+          class: 'foam.nanos.auth.ChangePasswordView',
+          modelOf: 'foam.nanos.auth.resetPassword.ResetPasswordByToken'
+        };
+      }
+
+      // don't go to log in screen if going to sign up password screen
+      if ( location.hash && location.hash === '#sign-up' && ! self.loginSuccess ) {
+        view = {
+          ...(self.loginView ?? { class: 'foam.u2.borders.BaseUnAuthBorder' }),
+            children: [ { class: 'foam.nanos.auth.login.LoginView', mode_: 1 } ]
+        };
       }
 
       return new Promise(function(resolve, reject) {
-        self.stack.set({
-            ...(self.loginView ?? { class: 'BaseUnAuthBorder' }),
-            children: [ { class: 'foam.u2.view.LoginView', mode_: 'SignIn' } ]
-          },self);
+        self.stack.set(view, self);
         self.loginSuccess$.sub(resolve);
       });
+
     },
 
     async function login(identifier, password) {
@@ -787,18 +795,29 @@ foam.CLASS({
       await this.onUserAgentAndGroupLoaded();
     },
 
-    function notify(toastMessage, toastSubMessage, severity, transient, icon) {
-      var notification = this.Notification.create();
-
-      notification.userId = this.subject && this.subject.realUser ?
-        this.subject.realUser.id : this.user.id;
-      notification.toastMessage    = toastMessage;
-      notification.toastSubMessage = toastSubMessage;
-      notification.toastState      = this.ToastState.REQUESTED;
-      notification.severity        = severity || this.LogLevel.INFO;
-      notification.transient       = foam.Undefined.isInstance(transient) ? true : transient;
-      notification.icon            = icon;
-      this.__subContext__.myNotificationDAO?.put(notification);
+    function notify(toastMessage, toastSubMessage, severity, transient=true, icon) {
+      if ( transient ) {
+        this.add(this.NotificationMessage.create({
+          err: toastMessage.exception,
+          message: toastMessage.exception ? '' : toastMessage,
+          description: toastSubMessage,
+          type: severity,
+          icon: icon
+        }));
+      } else {
+        var notification = this.Notification.create();
+        notification.userId = this.subject && this.subject.realUser ?
+          this.subject.realUser.id : this.user && this.user.id || 0;
+        notification.toastMessage    = toastMessage;
+        notification.toastSubMessage = toastSubMessage;
+        notification.toastState      = this.ToastState.REQUESTED;
+        notification.severity        = severity || this.LogLevel.INFO;
+        notification.transient       = transient;
+        notification.icon            = icon;
+        var dao = notification.userId == 0 ?
+            this.__subContext__.notificationDAO : this.__subContext__.myNotificationDAO || this.__subContext__.notificationDAO;
+        dao.put(notification);
+      }
     },
 
     function displayToastMessage(sub, on, put, obj) {
@@ -836,7 +855,7 @@ foam.CLASS({
       var hash = this.window.location.hash;
       if ( hash ) hash = hash.substring(1);
       if ( hash && hash != 'null' /* How does it even get set to null? */ && ( hash != this.currentMenu?.id || this.currentMenu.authenticate ) ) {
-        this.window.onpopstate();
+        this.routeUpdated()
       } else {
         await this.pushDefaultMenu();
       }
@@ -942,7 +961,7 @@ foam.CLASS({
       var lastTheme = this.theme;
       try {
         this.theme = this.__subContext__.theme;
-        this.appConfig.copyFrom(this.theme.appConfig)
+        this.appConfig.copyFrom(this.theme.appConfig);
       } catch (err) {
         this.notify(this.LOOK_AND_FEEL_NOT_FOUND, '', this.LogLevel.ERROR, true);
         console.error(err);
@@ -975,7 +994,7 @@ foam.CLASS({
         this.displayWidth = foam.u2.layout.DisplayWidth.VALUES
           .concat()
           .sort((a, b) => b.minWidth - a.minWidth)
-          .find(o => o.minWidth <= Math.min(window.innerWidth, window.screen.width) );
+          .find(o => o.minWidth <= Math.min(this.window.innerWidth, this.window.screen.width) );
       }
     },
     function replaceStyleTag(text, eid) {
@@ -995,6 +1014,17 @@ foam.CLASS({
           const style = this.styles[eid];
           text = foam.CSS.replaceTokens(style.text, style.cls, this.__subContext__, this.THEME_OVERRIDE_REGEXP);
           this.replaceStyleTag(text, eid);
+        }
+      }
+    },
+    {
+      name: 'routeUpdated',
+      on: ['this.propertyChange.route'],
+      code: function() {
+        // only pushmenu on route change after the fetchsubject process has been initiated
+        // as the init process will also check the route and pushmenu if required
+        if (this.initSubject) {
+          this.route ? this.pushMenu_(null, this.route) : this.pushDefaultMenu();
         }
       }
     },
@@ -1033,7 +1063,7 @@ foam.CLASS({
       }
     },
     function logAnalyticEvent(evt) {
-      this.__subContext__.analyticEventDAO.put(this.AnalyticEvent.create(evt), this);
+      this.__subContext__.analyticEventDAO?.put(this.AnalyticEvent.create(evt), this);
     }
   ]
 });

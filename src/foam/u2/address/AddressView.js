@@ -7,17 +7,23 @@
 foam.CLASS({
   package: 'foam.u2.address',
   name: 'AddressView',
-  extends: 'foam.u2.view.ModeAltView',
+  extends: 'foam.u2.View',
 
-  documentation: 'ModeAlt Address View, suitable for almost all address propery displays',
+  documentation: 'ModeAlt Address View, suitable for almost all address property displays',
 
   requires: [
     'foam.nanos.auth.Country',
-    'foam.u2.address.AddressWriteView'
+    'foam.u2.address.AddressWriteView',
+    'foam.nanos.auth.Address',
+    'foam.u2.DisplayMode'
   ],
 
   imports: [
     'countryDAO'
+  ],
+
+  exports: [
+    'data'
   ],
 
   properties: [
@@ -25,6 +31,14 @@ foam.CLASS({
       class: 'Boolean',
       name: 'useAutocompleter',
       value: true
+    },
+    {
+      class: 'FObjectProperty',
+      of: 'foam.nanos.auth.Address',
+      name: 'data',
+      factory: function() {
+        return this.Address.create({}, this);
+      }
     },
     {
       class: 'Enum',

@@ -208,8 +208,7 @@ foam.CLASS({
   extends: 'foam.u2.Element',
 
   requires: [
-    'foam.mlang.order.Desc',
-    'foam.u2.Entity'
+    'foam.mlang.order.Desc'
   ],
 
   imports: [
@@ -240,21 +239,19 @@ foam.CLASS({
           if ( ! order ) return '';
           var desc = this.Desc.isInstance(order);
           var baseOrder = desc ? order.arg1 : order;
-          return prop.name === baseOrder.name ?
-              this.Entity.create({ name: desc ? 'darr' : 'uarr' }) : '';
+          return prop.name === baseOrder.name ? ( desc ? '\u02c5 ' : '\u02c4 ' ) : '';
         }.bind(this, this.columns_[i]));
 
         e.start('td')
-            .enableClass(this.myClass('sorting'), sorting$)
-            .start('span')
-                .addClass(this.myClass('sort-direction'))
-                .add(sorting$)
-            .end()
-            .add(this.columns_[i].columnLabel)
-            .on('click', this.tableView.sortBy.bind(this.tableView, this.columns_[i]))
-            .end();
+          .enableClass(this.myClass('sorting'), sorting$)
+          .start('span')
+            .addClass(this.myClass('sort-direction'))
+            .add(sorting$)
+          .end()
+          .add(this.columns_[i].columnLabel)
+          .on('click', this.tableView.sortBy.bind(this.tableView, this.columns_[i]))
+        .end();
       }
-      e.end();
     }
   ]
 });
@@ -327,8 +324,8 @@ foam.CLASS({
         if ( tableColumns ) return tableColumns.columns;
 
         return this.of.getAxiomsByClass(foam.core.Property)
-            .filter(p => ! p.hidden)
-            .map(foam.core.Property.NAME.f);
+          .filter(p => ! p.hidden)
+          .map(foam.core.Property.NAME.f);
       }
     },
     {
@@ -382,8 +379,8 @@ foam.CLASS({
       this.onDAOUpdate();
       this.data$proxy.sub('on', this.onDAOUpdate);
 
-      return this.
-        addClass(this.myClass()).
+      this.
+        addClass().
         add(this.header$, this.body$);
     },
 

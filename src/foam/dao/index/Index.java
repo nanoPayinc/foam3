@@ -23,8 +23,7 @@ public interface Index {
   // Remove all objects
   public Object removeAll();
 
-  // Create a Plan for a find()
-  public FindPlan planFind(Object state, Object key);
+  public FObject find(Object state, Object key);
 
   // Create a Plan for a select()
   public SelectPlan planSelect(Object state, Sink sink, long skip, long limit, Comparator order, Predicate predicate);

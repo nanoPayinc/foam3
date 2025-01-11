@@ -11,7 +11,8 @@ import foam.mlang.order.Comparator;
 import foam.mlang.predicate.Predicate;
 
 /** Have-no-plan Plan. **/
-public class NoPlan implements FindPlan, SelectPlan
+public class NoPlan
+  implements SelectPlan
 {
   protected final static NoPlan instance_ = new NoPlan();
 
@@ -21,14 +22,10 @@ public class NoPlan implements FindPlan, SelectPlan
 
   public long cost() { return Long.MAX_VALUE; }
 
-  public FObject find(Object state, Object key) {
-    throw new UnsupportedOperationException();
+  public void select(Object state, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {
   }
 
-  public void select(Object state, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {
-    //throw new UnsupportedOperationException();
-    return;
-  }
+  public SelectPlan restate(Object state) { return this; }
 
   @Override
   public String toString() {

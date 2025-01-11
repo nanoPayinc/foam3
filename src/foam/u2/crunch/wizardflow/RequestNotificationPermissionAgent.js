@@ -125,7 +125,7 @@ foam.CLASS({
     {
       class: 'String',
       name: 'title',
-      factory: function () {
+      factory: function() {
         return this.NOTIFICATION_PROMPT_TITLE;
       }
     },

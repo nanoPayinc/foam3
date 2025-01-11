@@ -49,14 +49,14 @@ foam.CLASS({
     {
       name: 'action',
       factory: null,
-      expression: function(actionReference) {
-        return actionReference.action;
+      expression: function(actionReference$action) {
+        return actionReference$action;
       }
     },
     {
       name: 'data',
-      expression: function(actionReference) {
-        return actionReference.data;
+      expression: function(actionReference$data) {
+        return actionReference$data;
       }
     }
   ]

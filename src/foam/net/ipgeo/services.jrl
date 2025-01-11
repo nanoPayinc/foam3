@@ -13,3 +13,16 @@ p({
       .addPropertyIndex(new foam.core.PropertyInfo[] { foam.net.ipgeo.IPGeolocationInfo.IP });
   """
 })
+
+
+
+p({
+  "class":"foam.nanos.boot.NSpec",
+  "name":"maxmindConfig",
+  "service":{
+    "class":"foam.net.ipgeo.MaxmindConfig",
+    "accountId":"1111111",
+    "licenseKey":"2222222abc",
+    "path":"../var/maxmind/"
+  }
+})

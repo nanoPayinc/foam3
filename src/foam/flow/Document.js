@@ -26,8 +26,12 @@ foam.CLASS({
 
   methods: [
     function toE(args, x) {
-      var f = this.htmlish.parseString(this.markup, this.cls_.id);
-      return f ? f(x) : x.E('span').add(this.htmlish.getLastError());
+      var self = this;
+
+      return x.E('span').add(this.dynamic(function(markup) {
+        var f = self.htmlish.parseString(markup, self.cls_.id);
+        this.add(f ? f(x) : 'Syntax Error' /*self.htmlish.getLastError()*/);
+      }));
     }
   ],
 
@@ -145,6 +149,7 @@ foam.CLASS({
           'attrib-value': repeat(notChars('"'))
         }
       },
+
       actions: {
         'foam.flow.Document': function(v) {
           if ( foam.String.isInstance(v[0]) ) this.title = v[0];

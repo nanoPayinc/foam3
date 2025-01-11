@@ -376,3 +376,86 @@ foam.CLASS({
     }
   ]
 });
+
+
+foam.CLASS({
+  package: 'foam.u2.view',
+  name: 'MinMaxChoiceView',
+  extends: 'foam.u2.view.MultiChoiceView',
+  description: 'ChoiceView with additional support to make it compatible with MinMaxCapabilities',
+
+  properties: [
+    'feedback_',
+    {
+      name: 'choice',
+      // 'choice' is the canonical source of truth. Updating 'choice' is
+      // responsible for updating 'index', 'data', and 'text'. Updating any
+      // of those properties calls back to updating 'choice'.
+      documentation: 'The current choice. (That is, a [value, text, isFinal].)',
+      postSet: function(o, n) {
+        if ( o === n || this.feedback_ ) return;
+
+        this.feedback_ = true;
+
+        try {
+          if ( ! n && this.placeholder ) {
+            this.data  = [];
+          } else {
+            this.data  = n && [n[0]];
+          }
+        } finally {
+          this.feedback_ = false;
+        }
+      }
+    },
+    {
+      class: 'StringArray',
+      name: 'data',
+      postSet: function(o, n) {
+        if ( o !== n && ! foam.Null.isInstance(n) ) this.choice = this.findChoiceByData(n);
+      }
+    },
+    {
+      class: 'foam.u2.ViewSpec',
+      name: 'selectSpec',
+      value: { class: 'foam.u2.view.ChoiceView' }
+    },
+    {
+      class: 'String',
+      name: 'placeholder',
+      factory: function() { return 'Select...'; }
+    },
+    'prop_'
+  ],
+
+  methods: [
+    function render() {
+      var self = this;
+
+      this.onDAOUpdate();
+
+      this.start(self.selectSpec, {
+        choice$:          self.choice$,
+        choices$:         self.choices$,
+        placeholder$:     self.placeholder$,
+        mode$:            self.mode$,
+      })
+        .attrs({ name: self.name })
+      .end();
+    },
+
+    function fromProperty(p) {
+      this.SUPER(p);
+      this.prop_ = p;
+      this.placeholder = p.placeholder;
+      this.label = p.label || this.label || p.name;
+    },
+
+    function findChoiceByData(data) {
+      var choices = this.choices;
+      for ( var i = 0 ; i < choices.length ; i++ ) {
+        if ( foam.util.equals(choices[i][0], data[0]) ) return choices[i];
+      }
+    }
+  ]
+});

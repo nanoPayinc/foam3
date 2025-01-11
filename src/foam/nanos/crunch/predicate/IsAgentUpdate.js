@@ -15,11 +15,9 @@
  * from nanopay Corporation.
  */
 
-foam.CLASS({
+foam.RULE_PREDICATE({
   package: 'foam.nanos.crunch.predicate',
   name: 'IsAgentUpdate',
-  extends: 'foam.mlang.predicate.AbstractPredicate',
-  implements: ['foam.core.Serializable'],
 
   documentation: `
     Returns true if session user(s) is not the same as the user(s) of the usercapabilityjunction,
@@ -27,35 +25,28 @@ foam.CLASS({
   `,
 
   javaImports: [
-    'foam.core.X',
     'foam.nanos.auth.Subject',
     'foam.nanos.crunch.AgentCapabilityJunction',
     'foam.nanos.crunch.UserCapabilityJunction',
     'foam.nanos.session.Session'
   ],
 
-  methods: [
-    {
-      name: 'f',
-      javaCode: `
-        X x = (X) obj;
-        UserCapabilityJunction ucj = (UserCapabilityJunction) x.get("NEW");
+  ruleF: `
+    UserCapabilityJunction ucj = (UserCapabilityJunction) n;
 
-        Session session = (Session) x.get(Session.class);
-        if ( session == null ) return false;
+    Session session = (Session) x.get(Session.class);
+    if ( session == null ) return false;
 
-        Long userId = session.getUserId();
-        Long agentId = session.getAgentId();
-        if ( userId == 1 ) return false;
+    Long userId  = session.getUserId();
+    Long agentId = session.getAgentId();
 
-        Subject ucjSubject = ucj.getSubject(x);
-        if ( ucjSubject.isAgent() ) {
-          return userId != ucjSubject.getUser().getId() ||
-            agentId != ucjSubject.getRealUser().getId();
-        } else {
-          return userId != ucjSubject.getUser().getId() && agentId != ucjSubject.getUser().getId();
-        }
-      `
+    if ( userId == 1 ) return false;
+
+    Subject ucjSubject = ucj.getSubject(x);
+    if ( ucjSubject.isAgent() ) {
+      return userId != ucjSubject.getUser().getId() || agentId != ucjSubject.getRealUser().getId();
     }
-  ]
+
+    return userId != ucjSubject.getUser().getId() && agentId != ucjSubject.getUser().getId();
+  `
 });

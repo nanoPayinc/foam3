@@ -156,7 +156,8 @@ foam.POM({
     { name: "wizardflow/Export",                       flags: "web" },
     { name: "wizardflow/WizardDSL",                    flags: "web" },
     { name: "wizardflow/SubDSL",                       flags: "web" },
-    { name: "wizardflow/AddWizardlet",                flags: "web" },
+    { name: "wizardflow/AddWizardlet",                 flags: "web" },
+    { name: "wizardflow/AddFacadeWizardlet",           flags: "web" },
     { name: "wizardflow/EditWizardlet",                flags: "web" },
     { name: "wizardflow/RemoveWizardlets",             flags: "web" },
     { name: "wizardflow/Predicated",                   flags: "web" }

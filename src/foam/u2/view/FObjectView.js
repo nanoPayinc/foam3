@@ -59,6 +59,7 @@ foam.CLASS({
     {
       class: 'FObjectProperty',
       name: 'data',
+      autoValidate: true,
       label: '',
       // We need to override the default view, otherwise we end up with a
       // circular definition where FObjectView has an FObjectProperty which gets
@@ -218,7 +219,7 @@ foam.CLASS({
                 return arr;
               }
 
-              return arr.concat([[sr.strategy.id, sr.strategy.model_.label]]);
+              return arr.concat([[sr.strategy.id, sr.label || sr.strategy.model_.label]]);
             }, [])
             .filter(x => x);
 

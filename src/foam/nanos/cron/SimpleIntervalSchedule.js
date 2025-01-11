@@ -52,6 +52,11 @@ foam.CLASS({
 
   properties: [
     {
+      class: 'String',
+      name: 'name',
+      label: 'name'
+    },
+    {
       class: 'Date',
       name: 'startDate',
       columnLabel: 'Start on',
@@ -109,11 +114,6 @@ foam.CLASS({
         let ret = value + ' ' + obj.frequency.label;
         this.style({ 'font-weight': '600' }).add( value > 1 ? ret + 's' : ret );
       }
-    },
-    {
-      class: 'String',
-      name: 'name',
-      label: 'name'
     },
     {
       class: 'Enum',

@@ -18,7 +18,7 @@ public class GroupByPlan
   protected long    cost_;
   protected Index   tail_;
   protected boolean reverseSort_ = false;
-  protected boolean needGroupBy = true;
+  protected boolean needGroupBy  = true;
 
   public GroupByPlan(Object state, Sink sink, Predicate predicate, Indexer indexer, Index tail) {
     state_ = state;
@@ -37,15 +37,19 @@ public class GroupByPlan
     return cost_;
   }
 
-  public void select(Object state, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {
-    if ( state_ == null )
-      return;
-    ((TreeNode) state).groupBy((TreeNode) state_, sink, tail_);
+  public void select(Object unused, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {
+    if ( state_ == null ) return;
+    ((TreeNode) state_).groupBy((TreeNode) state_, sink, tail_);
+  }
+
+  public SelectPlan restate(Object state) {
+    // Not needed because GroupByPlan stores its state in state_
+    return this;
   }
 
   @Override
   public String toString() {
-    var size = state_ == null ?
+    var size = ( state_ == null ) ?
       0 :
       state_ instanceof TreeNode ? ((TreeNode) state_).size : 1;
     return "group-by(size:" + size + ", cost:" + cost() + ")";

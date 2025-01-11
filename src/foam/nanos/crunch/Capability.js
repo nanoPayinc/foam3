@@ -284,7 +284,7 @@ foam.CLASS({
       name: 'autoSave',
       documentation: 'If false, disable auto save for wizardlets associated to this capability.',
       hidden: true,
-      value: true
+      // value: true
     },
     {
       class: 'Boolean',

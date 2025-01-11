@@ -74,7 +74,7 @@ foam.CLASS({
     function init() {
       let self = this;
       if ( ! this.imgPath && ! this.leftView ) {
-        this.tag('', {}, this.content$)
+        this.tag('', {}, this.content$);
         return;
       }
       // RENDER EVERYTHING ONTO PAGE
@@ -89,7 +89,7 @@ foam.CLASS({
                 .start('img')
                   .addClass(self.myClass('image-one'))
                   .attr('src', self.imgPath$)
-                .end()
+                .end();
             } else {
               this.tag(self.leftView);
             }

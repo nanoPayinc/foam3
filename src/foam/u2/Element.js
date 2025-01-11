@@ -451,7 +451,7 @@ foam.CLASS({
         var self  = this;
 
         if ( ! foam.dao.DAO.isInstance(this.dao) ) {
-          throw new Exception("You must set the 'dao' property of RenderSink.");
+          throw new Error("You must set the 'dao' property of RenderSink.");
         }
 
         var dao = this.dao;
@@ -690,11 +690,14 @@ foam.CLASS({
     {
       name: 'NAMED_CODES',
       value: {
-        '13': 'enter',
-        '37': 'left',
-        '38': 'up',
-        '39': 'right',
-        '40': 'down'
+        '8':   'backspace',
+        '13':  'enter',
+        '27':  'esc',
+        '37':  'left',
+        '38':  'up',
+        '39':  'right',
+        '40':  'down',
+        '127': 'del'
       }
     }
   ],

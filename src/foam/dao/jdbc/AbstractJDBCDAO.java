@@ -19,7 +19,7 @@ import java.util.*;
 /**
  * Abstract class for implementing JDBC-based DAOs.
  */
-public abstract class AbstractJDBCDAO extends AbstractDAO{
+public abstract class AbstractJDBCDAO extends AbstractDAO {
 
   /** Holds the relevant properties (column names) of the table */
   protected List<PropertyInfo> properties_;

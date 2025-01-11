@@ -404,6 +404,7 @@ foam.CLASS({
 
         MimeMessage message = createMimeMessage(emailMessage);
         if ( message == null ) {
+          // issue already logged.
           emailMessage.setStatus(Status.FAILED);
           return emailMessage;
         }
@@ -430,6 +431,7 @@ foam.CLASS({
             clearSession_();
             disable();
           } else {
+            logger.error("Send failed", emailMessage.getId(), e);
             emailMessage.setStatus(Status.FAILED);
           }
         } catch ( MessagingException e ) {

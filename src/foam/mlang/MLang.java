@@ -30,8 +30,8 @@ public class MLang
 
   public static final Expr      NOW     = new CurrentTime();
 
-  public static final Expr      NEW_OBJ = new ContextObject("NEW");
-  public static final Expr      OLD_OBJ = new ContextObject("OLD");
+  public static final Expr      NEW_OBJ = ContextObject.create("NEW");
+  public static final Expr      OLD_OBJ = ContextObject.create("OLD");
 
   public static Comparator DESC(Comparator c) {
     return new Desc(c);

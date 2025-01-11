@@ -1,2 +1,4 @@
 p({"class":"foam.nanos.auth.Group","id":"system","description":"System Internal","parent":""})
 p({"class":"foam.nanos.auth.Group","id":"anonymous","description":"System anonymous group","parent":""})
+p({"class":"foam.nanos.auth.Group","id":"basicUser","description":"Base group for all users","parent":""})
+p({"class":"foam.nanos.auth.Group","id":"foam","description":"Default user group","parent":"basicUser"})

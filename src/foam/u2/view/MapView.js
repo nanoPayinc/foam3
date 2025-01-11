@@ -106,6 +106,7 @@ foam.CLASS({
       },
       code: function() {
         var d2 = foam.Object.shallowClone(this.data);
+        // ???: Why do we set the key to a timestamp?
         d2[Date.now()] = '';
         this.data = d2;
       }

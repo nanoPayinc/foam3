@@ -16,8 +16,7 @@ foam.CLASS({
     'com.maxmind.geoip2.model.CityResponse',
     'foam.core.X',
     'foam.dao.DAO',
-    'foam.nanos.fs.ResourceStorage',
-    'foam.nanos.fs.Storage',
+    'foam.nanos.fs.FileSystemStorage',
     'foam.nanos.logger.Loggers',
     'foam.net.IPSupport',
     'foam.net.ipgeo.IPGeolocationInfo',
@@ -49,7 +48,7 @@ foam.CLASS({
 
       // Load database
       if ( ret.getDbReader() == null ) {
-        var database = x.get(Storage.class).getInputStream("GeoLite2-City/GeoLite2-City.mmdb");
+        var database = x.get(FileSystemStorage.class).getInputStream("../var/maxmind/GeoLite2-City.mmdb");
         try {
           ret.setDbReader(new DatabaseReader.Builder(database).build());
         } catch ( Exception e ) {

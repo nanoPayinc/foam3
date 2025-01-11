@@ -9,6 +9,8 @@ import foam.dao.Sink;
 import foam.mlang.order.Comparator;
 import foam.mlang.predicate.Predicate;
 
-public interface SelectPlan extends Plan {
+public interface SelectPlan {
+  public long cost();
   public void select(Object state, Sink sink, long skip, long limit, Comparator order, Predicate predicate);
+  public SelectPlan restate(Object state);
 }

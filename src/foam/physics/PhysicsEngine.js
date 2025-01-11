@@ -25,8 +25,7 @@ foam.CLASS({
   properties: [
     {
       class: 'Boolean',
-      name: 'gravity',
-      value: false
+      name: 'gravity'
     },
     {
       class: 'Float',
@@ -39,11 +38,17 @@ foam.CLASS({
     function updateChild(c) {
       this.SUPER(c);
 
-      var gravity  = c.gravity, friction = c.friction;
+      var gravity = c.gravity, friction = c.friction;
 
       // Gravity
       if ( gravity && this.gravity ) {
-        c.vy += gravity * this.gravityStrength;
+        var d = this.bounds.height - c.bottom_;
+        // Have vy decay to zero
+        if ( d > 10 ) {
+          c.vy += gravity * this.gravityStrength;
+        } else if ( d > 1 ) {
+          c.vy += gravity * this.gravityStrength * (d/10)*(d/10);
+        }
       }
 
       // Friction

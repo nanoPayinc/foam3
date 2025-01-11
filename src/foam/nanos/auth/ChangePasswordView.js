@@ -145,7 +145,7 @@ foam.CLASS({
               .addClass(this.myClass('sectionView'))
             .end()
             .callIf(this.popup, function() {
-              let label = self.stack?.stack_[self.stack.pos - 1]?.breadcrumbTitle
+              let label = self.stack?.stack_[self.stack.pos - 1]?.breadcrumbTitle;
               this.tag(self.BACK,
                 { label: self.BACK_LABEL + ' ' +  (label || (self.theme?.appName ?? 'home')) }
               );
@@ -161,9 +161,9 @@ foam.CLASS({
       buttonStyle: 'TEXT',
       code: function(X) {
         if ( X.stack.pos > 0 ) {
-          X.stack.back();
+          X.stack.jump(X.stack.pos-1);
         } else {
-          X.pushMenu('', true);
+          X.pushDefaultMenu();
         }
       }
     }

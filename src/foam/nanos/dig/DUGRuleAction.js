@@ -87,24 +87,23 @@ foam.CLASS({
             sb.append(getLoopbackPath());
             url = sb.toString();
         }
-        if ( dugDigestConfig != null &&
-             dugDigestConfig.getEnabled() ) {
-            sink = new HTTPDigestSink(
-              url,
-              dugRule.evaluateBearerToken(),
-              dugDigestConfig,
-              dugRule.getFormat(),
-              new foam.lib.AndPropertyPredicate(
-                agencyX,
-                new foam.lib.PropertyPredicate[] {
-                  new foam.lib.ExternalPropertyPredicate(),
-                  new foam.lib.NetworkPropertyPredicate(),
-                  new foam.lib.PermissionedPropertyPredicate()
-                }
-              ),
-              true,
-              true
-            );
+        if ( dugDigestConfig != null && dugDigestConfig.getEnabled() ) {
+          sink = new HTTPDigestSink(
+            url,
+            dugRule.evaluateBearerToken(),
+            dugDigestConfig,
+            dugRule.getFormat(),
+            new foam.lib.AndPropertyPredicate(
+              agencyX,
+              new foam.lib.PropertyPredicate[] {
+                new foam.lib.ExternalPropertyPredicate(),
+                new foam.lib.NetworkPropertyPredicate(),
+                new foam.lib.PermissionedPropertyPredicate()
+              }
+            ),
+            true,
+            true
+          );
         } else {
             sink = new HTTPSink(
               url,

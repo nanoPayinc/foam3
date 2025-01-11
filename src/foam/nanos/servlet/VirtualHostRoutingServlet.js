@@ -221,7 +221,8 @@ foam.CLASS({
         }
 
         PrintWriter out = response.getWriter();
-        out.println("<!DOCTYPE>");
+        out.println("<!DOCTYPE>"); // quirk mode
+        // out.println("<!DOCTYPE html>"); // strict mode
 
         out.println("<html lang=\\"en\\">");
         out.println("<head>");

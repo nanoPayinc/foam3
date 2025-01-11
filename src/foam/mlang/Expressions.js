@@ -157,8 +157,8 @@ foam.CLASS({
     },
     function THEN_BY(a, b) { return this.ThenBy.create({head: a, tail: b}); },
 
-    function INSTANCE_OF(cls) { return this.IsInstanceOf.create({ targetClass: cls }); },
-    function CLASS_OF(cls) { return this.IsClassOf.create({ targetClass: cls }); },
+    function INSTANCE_OF(cls) { return this.IsInstanceOf.create({ of: cls }); },
+    function CLASS_OF(cls) { return this.IsClassOf.create({ of: cls }); },
     function MQL(mql) { return this.MQLExpr.create({query: mql}); },
     function STRING_LENGTH(a) { return this._unary_("StringLength", a); },
     function IS_VALID(o) { return this.IsValid.create({arg1: o}); },

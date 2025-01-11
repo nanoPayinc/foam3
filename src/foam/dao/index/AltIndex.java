@@ -16,7 +16,6 @@ import java.util.ArrayList;
 public class AltIndex
   extends AbstractIndex
 {
-
   public final static int GOOD_ENOUGH_PLAN_COST = 10;
 
   protected ArrayList<Index> delegates_ = new ArrayList();
@@ -36,7 +35,7 @@ public class AltIndex
     if ( state == null ) return state;
 
     // Copy all data from first index into new index, updating state
-    final Object[] sa = toObjectArray(state);
+    final Object[] sa = cloneState(state);
     Sink sink = new AbstractSink() {
       public void put(Object obj, foam.core.Detachable sub) {
         try {
@@ -58,7 +57,7 @@ public class AltIndex
     return sa;
   }
 
-  protected Object[] toObjectArray(Object state) {
+  protected Object[] cloneState(Object state) {
     Object[] s2 = new Object[delegates_.size()];
 
     if ( state != null ) {
@@ -73,7 +72,7 @@ public class AltIndex
   }
 
   public Object put(Object state, FObject value) {
-    Object[] s = toObjectArray(state);
+    Object[] s = cloneState(state);
 
     for ( int i = 0 ; i < delegates_.size() ; i++ )
       try {
@@ -87,7 +86,7 @@ public class AltIndex
 
 
   public Object remove(Object state, FObject value) {
-    Object[] s = toObjectArray(state);
+    Object[] s = cloneState(state);
 
     for ( int i = 0 ; i < delegates_.size() ; i++ )
       try {
@@ -100,7 +99,7 @@ public class AltIndex
   }
 
   public Object removeAll() {
-    Object[] s = toObjectArray(null);
+    Object[] s = cloneState(null);
 
     for ( int i = 0 ; i < delegates_.size() ; i++ )
       try {
@@ -112,26 +111,10 @@ public class AltIndex
     return s;
   }
 
+  public FObject find(Object state, Object key) {
+    if ( state == null ) return null;
 
-  public FindPlan planFind(Object state, Object key) {
-    if ( state == null ) return NotFoundPlan.instance();
-
-    Object[] s         = (Object[]) state;
-    FindPlan bestPlan  = NoPlan.instance();
-    Object   bestState = null;
-
-    for ( int i = 0 ; i < delegates_.size() && i < s.length ; i++ ) {
-      FindPlan plan = delegates_.get(i).planFind(s[i], key);
-
-      // only return the smallest cost plan
-      if ( plan.cost() < bestPlan.cost() ) {
-        bestPlan  = plan;
-        bestState = s[i];
-        if ( bestPlan.cost() <= GOOD_ENOUGH_PLAN_COST ) break;
-      }
-    }
-
-    return new AltFindPlan(bestState, bestPlan);
+    return delegates_.get(0).find(((Object[]) state)[0], key);
   }
 
   public SelectPlan planSelect(Object state, Sink sink, long skip, long limit, Comparator order, Predicate predicate) {
@@ -142,6 +125,7 @@ public class AltIndex
     Object     bestState = null;
 
     for ( int i = 0 ; i < delegates_.size() && i < s.length ; i++ ) {
+      try {
       SelectPlan plan = delegates_.get(i).planSelect(s[i], sink, skip, limit, order, predicate);
 
       if ( plan.cost() < bestPlan.cost() ) {
@@ -149,9 +133,14 @@ public class AltIndex
         bestState = s[i];
         if ( bestPlan.cost() <= GOOD_ENOUGH_PLAN_COST ) break;
       }
+    } catch (Throwable t) {
+      System.err.println("********* ERROR PLANNING SELECT " + i + " " + delegates_.get(i));
+
+      t.printStackTrace();
+    }
     }
 
-    return new AltSelectPlan(bestState, bestPlan);
+    return bestPlan.restate(bestState);
   }
 
   public long size(Object state) {

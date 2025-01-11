@@ -1,0 +1,6 @@
+p({
+  "class":"foam.strategy.StrategyReference",
+  "id":"foam_nanos_auth_Credential",
+  "desiredModelId":"foam.nanos.auth.Credential",
+  "strategy":"foam.nanos.auth.Credential"
+})

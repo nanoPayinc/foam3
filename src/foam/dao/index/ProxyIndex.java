@@ -50,8 +50,8 @@ public class ProxyIndex
   }
 
   @Override
-  public FindPlan planFind(Object state, Object key) {
-    return getDelegate().planFind(unwrap(state), key);
+  public FObject find(Object state, Object key) {
+    return getDelegate().find(unwrap(state), key);
   }
 
   @Override
