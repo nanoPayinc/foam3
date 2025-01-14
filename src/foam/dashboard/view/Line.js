@@ -8,12 +8,14 @@ foam.CLASS({
   package: 'foam.dashboard.view',
   name: 'Line',
   extends: 'org.chartjs.Line',
+
   imports: [
     'data as visualization',
     'visualizationColors',
     'visualizationHeight',
-    'visualizationWidth',
+    'visualizationWidth'
   ],
+
   properties: [
     {
       name: 'width',
@@ -26,8 +28,9 @@ foam.CLASS({
     {
       name: 'colors',
       expression: function(visualizationColors) { return visualizationColors; }
-    },
+    }
   ],
+
   methods: [
     function initCView(x) {
       this.data$ = this.visualization$.dot('data');

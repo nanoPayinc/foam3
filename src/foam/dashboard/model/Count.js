@@ -8,6 +8,7 @@ foam.CLASS({
   package: 'foam.dashboard.model',
   name: 'Count',
   extends: 'foam.dashboard.model.Visualization',
+
   requires: [
     'foam.dashboard.view.Count as CountView',
     'foam.mlang.sink.Count',
@@ -15,12 +16,13 @@ foam.CLASS({
     'foam.parse.QueryParser',
     'foam.u2.ContextSensitiveDetailView as DetailView'
   ],
+
   properties: [
     {
       name: 'views',
       factory: function() {
         return [
-          [ this.CountView, 'Count' ],
+          [ this.CountView,  'Count' ],
           [ this.DetailView, 'Configure' ]
         ];
       }

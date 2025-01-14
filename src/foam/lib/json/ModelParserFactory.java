@@ -10,34 +10,37 @@ import foam.core.ClassInfo;
 import foam.core.PropertyInfo;
 import foam.lib.parse.*;
 import foam.parse.NewlineParser;
-
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Iterator;
 import java.util.List;
 
 public class ModelParserFactory {
-  protected static ConcurrentHashMap<Class, Parser> parsers_ = new ConcurrentHashMap<Class, Parser>();
+  protected final static ConcurrentHashMap<Class, Parser> parsers_ = new ConcurrentHashMap<Class, Parser>();
+  protected final static Parser COMMENTS = CommentParser.create();
+  protected final static Parser OPTIONAL_COMMENTS = new Optional(COMMENTS);
 
   public static Parser getInstance(Class c) {
-    if ( parsers_.containsKey(c) ) return parsers_.get(c);
+    // Sync is required to avoid building one parser per AssemblyLine thread.
+    synchronized ( c ) {
+      if ( parsers_.containsKey(c) ) return parsers_.get(c);
+      ClassInfo info = null;
 
-    ClassInfo info = null;
+      try {
+        info = (ClassInfo) c.getMethod("getOwnClassInfo").invoke(null);
+      } catch(NoSuchMethodException|IllegalAccessException|InvocationTargetException e) {
+        throw new RuntimeException("Failed to build parser ", e);
+      }
 
-    try {
-      info = (ClassInfo) c.getMethod("getOwnClassInfo").invoke(null);
-    } catch(NoSuchMethodException|IllegalAccessException|InvocationTargetException e) {
-      throw new RuntimeException("Failed to build parser ", e);
+      Parser parser = buildInstance_(info);
+      parsers_.put(c, parser);
+      return parser;
     }
-
-    Parser parser = buildInstance_(info);
-    parsers_.put(c, parser);
-    return parser;
   }
 
   public static Parser buildInstance_(ClassInfo info) {
     List     properties      = info.getAxiomsByClass(PropertyInfo.class);
-    Parser[] propertyParsers = new Parser[properties.size() + 2];
+    Parser[] propertyParsers = new Parser[properties.size() + 2]; // space for UnknownPropertyParser and Comment Parser
     Iterator iter            = properties.iterator();
     int      i               = 0;
 
@@ -53,11 +56,10 @@ public class ModelParserFactory {
     // Prevents failure to parse if unknown property found
     propertyParsers[i] = new UnknownPropertyParser();
 
-    Parser commentParser = CommentParser.create();
-    propertyParsers[i+1] = commentParser;
+    propertyParsers[i+1] = COMMENTS;
 
     return new Repeat0(
-      new Seq0( new Optional(commentParser),
+      new Seq0(OPTIONAL_COMMENTS,
         Whitespace.instance(), new Alt(propertyParsers)),
       Literal.create(",")
     );

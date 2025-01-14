@@ -56,12 +56,7 @@ foam.CLASS({
   methods: [
     {
       name: 'parseString',
-      args: [
-        {
-          name: 'data',
-          type: 'String'
-        }
-      ],
+      args: 'String data',
       type: 'FObject',
       javaCode: 'return parseString(data, null);'
     }

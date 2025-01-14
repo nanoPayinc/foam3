@@ -1,0 +1,8 @@
+p({
+  class: 'foam.nanos.notification.email.EmailServiceConfig',
+  id: 'test',
+  enabled: 'false',
+  rateLimit: 2,
+  pollInterval: 2,
+  initialDelay: 1
+})

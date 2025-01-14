@@ -18,7 +18,7 @@ import java.util.List;
 public class PreventPrivilegeEscalationTest
   extends foam.nanos.test.Test {
 
-  DAO bareUserDAO;
+  DAO localUserDAO;
   DAO userDAO;
   DAO groupDAO;
   DAO localPermissionDAO;
@@ -32,7 +32,7 @@ public class PreventPrivilegeEscalationTest
 
   @Override
   public void runTest(X x) {
-    bareUserDAO = (DAO) x.get("bareUserDAO");
+    localUserDAO = (DAO) x.get("localUserDAO");
     userDAO = (DAO) x.get("userDAO");
     groupDAO = (DAO) x.get("groupDAO");
     localPermissionDAO = (DAO) x.get("localPermissionDAO");
@@ -98,16 +98,16 @@ public class PreventPrivilegeEscalationTest
     }
 
     // Create a test user to sudo to.
-    bareUserDAO.where(foam.mlang.MLang.EQ(User.EMAIL, "ppet@example.com")).removeAll();
+    localUserDAO.where(foam.mlang.MLang.EQ(User.EMAIL, "ppet@foamdev.com")).removeAll();
     testUser = new User.Builder(x)
       .setId(999999999L)
-      .setEmail("ppet@example.com")
+      .setEmail("ppet@foamdev.com")
       .setUserName("ppet")
       .setGroup(groupId)
       .setSpid(spid_)
       .setLifecycleState(foam.nanos.auth.LifecycleState.ACTIVE)
       .build();
-    testUser = (User) bareUserDAO.put(testUser);
+    testUser = (User) localUserDAO.put(testUser);
     return Auth.sudo(x, testUser);
   }
 
@@ -119,7 +119,7 @@ public class PreventPrivilegeEscalationTest
     groupDAO.remove_(x, testGroup);
 
     // Remove the user.
-    bareUserDAO.where(foam.mlang.MLang.EQ(User.EMAIL, "ppet@example.com")).removeAll();
+    localUserDAO.where(foam.mlang.MLang.EQ(User.EMAIL, "ppet@foamdev.com")).removeAll();
   }
 
   // Try to create a group when you don't have the 'create' permission.
@@ -282,7 +282,7 @@ public class PreventPrivilegeEscalationTest
     User u = new User.Builder(x)
       .setGroup("admin")
       .setSpid(spid_)
-      .setEmail("ppet+admin@example.com")
+      .setEmail("ppet+admin@foamdev.com")
       .setUserName("ppet-admin")
       .setDesiredPassword("!@#$ppet1234")
       .setLifecycleState(foam.nanos.auth.LifecycleState.ACTIVE)
@@ -295,7 +295,7 @@ public class PreventPrivilegeEscalationTest
     try {
       // Try to create a user in the admin group.
       u = (User) userDAO.inX(userContext).put(u);
-      test(null == bareUserDAO.find(foam.mlang.MLang.EQ(foam.nanos.auth.User.EMAIL, "ppet+admin@example.com")), "User was not created with that email address.");
+      test(null == localUserDAO.find(foam.mlang.MLang.EQ(foam.nanos.auth.User.EMAIL, "ppet+admin@foamdev.com")), "User was not created with that email address.");
       userDAO.remove(u);
 
       // If the put didn't throw, then this test failed.
@@ -308,7 +308,7 @@ public class PreventPrivilegeEscalationTest
         print("Error message mismatch. Actual was: " + e.getMessage());
       }
     } finally {
-      bareUserDAO.where(foam.mlang.MLang.EQ(User.EMAIL, "ppet+admin@example.com")).removeAll();
+      localUserDAO.where(foam.mlang.MLang.EQ(User.EMAIL, "ppet+admin@foamdev.com")).removeAll();
       cleanUp(x);
     }
   }
@@ -318,14 +318,14 @@ public class PreventPrivilegeEscalationTest
     logger_.info(new Object[]{"updateUserGroupToAdminThrows"});
     TEST_MESSAGE = "Users cannot update another user's group to a group containing a permission that isn't implied by one they already have.";
 
-    bareUserDAO.where(foam.mlang.MLang.EQ(User.EMAIL, "ppet1+admin@example.com")).removeAll();
-    bareUserDAO.where(foam.mlang.MLang.EQ(User.EMAIL, "ppet2+admin@example.com")).removeAll();
+    localUserDAO.where(foam.mlang.MLang.EQ(User.EMAIL, "ppet1+admin@foamdev.com")).removeAll();
+    localUserDAO.where(foam.mlang.MLang.EQ(User.EMAIL, "ppet2+admin@foamdev.com")).removeAll();
 
     // Create a user for the test user to put.
     User u = new User.Builder(x)
       .setGroup("anonymous")
       .setSpid(spid_)
-      .setEmail("ppet1+admin@example.com")
+      .setEmail("ppet1+admin@foamdev.com")
       .setUserName("ppet1-admin")
       .setFirstName("ppet")
       .setLastName("ppet")
@@ -346,7 +346,7 @@ public class PreventPrivilegeEscalationTest
     try {
       // Try to update the user's group to "admin".
       u2 = (User) u1.fclone();
-      u2.setEmail("ppet2+admin@example.com");
+      u2.setEmail("ppet2+admin@foamdev.com");
       u2.setUserName("ppet2-admin");
       u2.setGroup("admin");
       u2 = (User) userDAO.inX(userContext).put(u2);
@@ -360,8 +360,8 @@ public class PreventPrivilegeEscalationTest
         print("Error message mismatch. Actual was: " + e.getMessage());
       }
     } finally {
-      bareUserDAO.remove(u1);
-      bareUserDAO.remove(u2);
+      localUserDAO.remove(u1);
+      localUserDAO.remove(u2);
       cleanUp(x);
     }
   }

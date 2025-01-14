@@ -23,12 +23,19 @@ foam.CLASS({
       name: 'runTest',
       javaCode: `
         User nonAdminUser = new User();
-        DAO bareUserDAO = (DAO) x.get("bareUserDAO");
+        nonAdminUser.setGroup("test");
+        nonAdminUser.setSpid("test");
+        nonAdminUser.setUserName(this.getClass().getSimpleName());
+        nonAdminUser.setFirstName(nonAdminUser.getUserName());
+        nonAdminUser.setLastName(nonAdminUser.getUserName());
+        nonAdminUser.setEmail(nonAdminUser.getUserName()+"@test.com");
+
+        DAO userDAO = (DAO) x.get("localUserDAO");
         DAO serviceProviderDAO = (DAO) x.get("serviceProviderDAO");
         ServiceProvider serviceProvider = new ServiceProvider.Builder(x).setId("testspid").build();
         boolean threw;
 
-        nonAdminUser = (User) bareUserDAO.put(nonAdminUser);
+        nonAdminUser = (User) userDAO.put(nonAdminUser);
 
         Session nonAdminUserSession = new Session.Builder(x)
           .setUserId(nonAdminUser.getId())

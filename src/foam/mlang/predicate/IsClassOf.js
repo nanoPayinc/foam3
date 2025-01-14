@@ -41,7 +41,7 @@ foam.CLASS({
         return this.propExpr == null || this.propExpr == undefined ? this.of.id == obj.cls_.id : this.of.id == this.propExpr.f(obj).cls_.id;
       },
       javaCode: `
-      return getPropExpr() == null ? getOf().getObjClass() == obj.getClass() : getOf().getObjClass() == getPropExpr().f(obj).getClass();
+        return getPropExpr() == null ? getOf().getObjClass() == obj.getClass() : getOf().getObjClass() == getPropExpr().f(obj).getClass();
       `
     },
     {
@@ -52,8 +52,7 @@ foam.CLASS({
       javaCode: 'return f(n);'
     },
     function toString() {
-      return foam.String.constantize(this.cls_.name) +
-          '(' + this.of.id + ')';
+      return foam.String.constantize(this.cls_.name) + '(' + this.of.id + ')';
     }
   ]
 });

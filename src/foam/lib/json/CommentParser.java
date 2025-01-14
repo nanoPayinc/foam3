@@ -11,6 +11,7 @@ import foam.parse.NewlineParser;
 
 public class CommentParser
 {
+  // ???: Why not a singleton
   public static Parser create() {
     return new Repeat0(new Seq0(Whitespace.instance(), Literal.create("//"),new Until(NewlineParser.create())));
   }

@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+// See: https://support.google.com/a/users/answer/9300022?hl=en for features that could be added
 foam.CLASS({
   package: 'foam.demos.sevenguis',
   name: 'CellParser',

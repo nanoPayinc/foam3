@@ -191,14 +191,6 @@ foam.CLASS({
       ],
       type: 'Boolean',
       javaCode: `
-        if ( getClusterable() ) {
-          foam.nanos.medusa.MedusaSupport support = (foam.nanos.medusa.MedusaSupport) x.get("medusaSupport");
-          if ( support != null &&
-               ! support.cronEnabled(x, getClusterable()) ) {
-            // ((Logger) x.get("logger")).debug(this.getClass().getSimpleName(), "execution disabled.", getId(), getDescription());
-            return false;
-          }
-        }
         if ( getReattemptRequested() )
           return getReattempts() < getMaxReattempts();
 

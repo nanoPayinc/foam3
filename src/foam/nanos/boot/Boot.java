@@ -161,16 +161,6 @@ public class Boot {
     root_ = ((ProxyX) root_).getX();
     XLocator.set(root_);
 
-    if ( cluster ) {
-      // On startup, select() above will be against repo services.0.
-      // Mediator/Node replay put()s will hit the serviceDAO_ above,
-      // which has a listener to Reload the service on change.
-      foam.nanos.medusa.MedusaSupport support = (foam.nanos.medusa.MedusaSupport) root_.get("medusaSupport");
-      if ( support != null ) {
-        serviceDAO_ = support.clusterServiceDAO(root_, serviceDAO_);
-      }
-    }
-
     // Export the ServiceDAO
     ((ProxyDAO) root_.get("nSpecDAO")).setDelegate(
       new foam.nanos.auth.AuthorizationDAO.Builder(getX())

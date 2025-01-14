@@ -51,10 +51,7 @@ foam.CLASS({
     {
       name: 'replay',
       documentation: 'Replays the journal file',
-      args: [
-        { name: 'x',   type: 'Context' },
-        { name: 'dao', type: 'foam.dao.DAO' }
-      ],
+      args: 'Context x, foam.dao.DAO dao',
       javaCode: `
         // count number of entries successfully read
         AtomicInteger passCount = new AtomicInteger();

@@ -114,13 +114,6 @@ foam.CLASS({
         }
         if ( ! config.getEnabled() ) return;
 
-        foam.nanos.medusa.MedusaSupport support = (foam.nanos.medusa.MedusaSupport) x.get("medusaSupport");
-        if ( support != null &&
-             ! support.cronEnabled(x, true) ) {
-          // Loggers.logger(x, this).debug("execution disabled");
-          return;
-        }
-
         Logger logger = new PrefixLogger(
           new Object[] {
             this.getClass().getSimpleName(),

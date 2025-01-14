@@ -2,5 +2,6 @@ p({
   "class":"foam.nanos.auth.ServiceProvider",
   "id":"test",
   "enabled":true,
-  anonymousUser: 185426801
+  anonymousUser: 95250647,
 })
+p({"class":"foam.nanos.auth.ServiceProvider", "id":"other", "enabled":true})

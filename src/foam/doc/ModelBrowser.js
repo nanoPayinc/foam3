@@ -130,7 +130,7 @@ foam.CLASS({
     'foam.nanos.boot.NSpec'
   ],
 
-  imports: [ 'nSpecDAO', 'params' ],
+  imports: [ 'params' ],
 
   exports: [ 'conventionalUML', 'modelDAO', 'package', 'path as browserPath', 'query' ],
 
@@ -203,22 +203,22 @@ foam.CLASS({
       }
     },
     {
+      // TODO: it would be better if this were somewhere more reusable
       name: 'modelDAO',
-      factory: function(/*nSpecDAO, allowedModels*/) {
-        var self = this;
-        var dao  = self.ArrayDAO.create({of: self.Model}).orderBy(foam.core.Model.ID);
-        var all = [];
+      factory: function(/* allowedModels*/) {
+        var dao      = this.ArrayDAO.create({of: this.Model}).orderBy(foam.core.Model.ID);
+        var all      = [];
         var packages = { '--All--': all};
         function addModel(m) {
           try {
-          var c = foam.maybeLookup(m);
-          if ( c ) {
-            var mdl = c.model_;
-            (packages[mdl.package] || ( packages[mdl.package] = [])).push(mdl);
-            all.push(mdl);
-            dao.put(mdl);
-          }
-        } catch (x) {}
+            var c = foam.maybeLookup(m);
+            if ( c ) {
+              var mdl = c.model_;
+              (packages[mdl.package] || ( packages[mdl.package] = [])).push(mdl);
+              all.push(mdl);
+              dao.put(mdl);
+            }
+          } catch (x) {}
         }
         Object.keys(foam.USED).forEach(addModel);
         Object.keys(foam.UNUSED).forEach(addModel);

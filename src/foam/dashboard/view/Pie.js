@@ -8,12 +8,14 @@ foam.CLASS({
   package: 'foam.dashboard.view',
   name: 'Pie',
   extends: 'org.chartjs.Pie',
+
   imports: [
     'visualizationWidth',
     'visualizationHeight',
     'visualizationColors',
     'data as visualization'
   ],
+
   properties: [
     {
       name: 'width',
@@ -26,8 +28,9 @@ foam.CLASS({
     {
       name: 'colors',
       expression: function(visualizationColors) { return visualizationColors; }
-    },
+    }
   ],
+
   methods: [
     function initCView(x) {
       this.data$ = this.visualization$.dot('data');

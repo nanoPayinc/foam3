@@ -8,14 +8,13 @@ foam.CLASS({
   package: 'foam.dashboard.view',
   name: 'Count',
   extends: 'foam.u2.Element',
+
   imports: [
     'data',
     'visualizationWidth',
     'visualizationHeight'
   ],
-  properties: [
-    [ 'nodeName', 'div' ]
-  ],
+
   css: `
 ^ {
   display: flex;
@@ -23,6 +22,11 @@ foam.CLASS({
   align-items: center;
 }
 `,
+
+  properties: [
+    [ 'nodeName', 'div' ]
+  ],
+
   methods: [
     function render() {
       var view = this;
@@ -34,8 +38,7 @@ foam.CLASS({
         }).
         addClass('h100', this.myClass()).
         add(this.slot(function(data$data) {
-          return this.E('span').
-            add(data$data.value);
+          return this.E('span').add(data$data.value);
         }));
     }
   ]

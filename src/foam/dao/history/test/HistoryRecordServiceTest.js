@@ -21,8 +21,8 @@ foam.CLASS({
   ],
 
   messages: [
-    { name: "OLD_EMAIL", message: "test_user_1_old@nanopay.net"},
-    { name: "NEW_EMAIL", message: "test_user_1_new@nanopay.net"}
+    { name: "OLD_EMAIL", message: "test_user_1_old@foamdev.com"},
+    { name: "NEW_EMAIL", message: "test_user_1_new@foamdev.com"}
   ],
 
   methods: [
@@ -31,7 +31,7 @@ foam.CLASS({
       javaCode: `
         User testUser1 = null;
         User testUser2 = null;
-        DAO userDAO = (DAO) x.get("bareUserDAO");
+        DAO userDAO = (DAO) x.get("historyRecordServiceTestUserDAO");
         DAO userHistoryDAO = (DAO) x.get("userHistoryDAO");
         HistoryRecordService historyRecordService = (HistoryRecordService) x.get("historyRecordService");
 

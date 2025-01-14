@@ -1,0 +1,20 @@
+p({class:"foam.nanos.auth.GroupPermissionJunction",sourceId:"test",targetId:"capability.read.*"})
+p({class:"foam.nanos.auth.GroupPermissionJunction",sourceId:"test",targetId:"service.referralCodeDAO"})
+p({class:"foam.nanos.auth.GroupPermissionJunction",sourceId:"test",targetId:"referralcode.create"})
+// PostMethodTest
+p({class:"foam.nanos.auth.GroupPermissionJunction",sourceId:"test",targetId:"menu.read.gateway"})
+
+p({ class: "foam.nanos.auth.GroupPermissionJunction", sourceId: "test-api", targetId: "service.crunchService.updateUserContext"})
+p({class:"foam.nanos.auth.GroupPermissionJunction",sourceId:"test-api",targetId:"service.run.dig"})
+p({class:"foam.nanos.auth.GroupPermissionJunction",sourceId:"test-api",targetId:"capability.read.*"})
+p({class:"foam.nanos.auth.GroupPermissionJunction",sourceId:"test-api",targetId:"service.referralCodeDAO"})
+p({class:"foam.nanos.auth.GroupPermissionJunction",sourceId:"test-api",targetId:"referralcode.create"})
+p({class:"foam.nanos.auth.GroupPermissionJunction",sourceId:"test-api",targetId:"group.read.test-api"})
+p({class:"foam.nanos.auth.GroupPermissionJunction",sourceId:"test-api",targetId:"service.userDAO"})
+
+p({class:"foam.nanos.auth.GroupPermissionJunction",sourceId:"anonymous",targetId:"service.capabilityDAO"})
+p({class:"foam.nanos.auth.GroupPermissionJunction",sourceId:"anonymous",targetId:"service.crunchService"})
+p({class:"foam.nanos.auth.GroupPermissionJunction",sourceId:"anonymous",targetId:"service.userCapabilityJunctionDAO"})
+p({class:"foam.nanos.auth.GroupPermissionJunction",sourceId:"anonymous",targetId:"service.userCapabilityJunctionApprovableDAO"})
+
+p({class:"foam.nanos.auth.GroupPermissionJunction",sourceId:"anonymous",targetId:"capability.read.*"})

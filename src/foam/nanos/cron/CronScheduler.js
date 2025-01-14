@@ -54,11 +54,6 @@ foam.CLASS({
       value: 60000
     },
     {
-      name: 'cronDAO',
-      class: 'String',
-      value: 'cronDAO',
-    },
-    {
       name: 'schedulableDAO',
       class: 'String',
       value: 'schedulableDAO',
@@ -96,7 +91,11 @@ foam.CLASS({
       type: 'DateTime',
       javaCode: `
     Min min = (Min) ((DAO) getX().get(getCronJobDAO()))
-      .where(MLang.EQ(Cron.ENABLED, true))
+      .where(
+        MLang.AND(
+          MLang.EQ(Cron.ENABLED, true),
+          MLang.HAS(Cron.SCHEDULED_TIME)
+        ))
       .select(MLang.MIN(Cron.SCHEDULED_TIME));
 
     if ( min.getValue().equals(0) ) {
@@ -111,34 +110,8 @@ foam.CLASS({
       javaCode: `
     final Logger logger = Loggers.logger(x, this);
     try {
-      // Wait until Medusa Replay is complete
-      foam.nanos.medusa.MedusaSupport support = (foam.nanos.medusa.MedusaSupport) x.get("medusaSupport");
-      if ( support != null &&
-           support.isReplaying(x) ) {
-        logger.debug("execute", "replaying");
-        Timer timer = new Timer(this.getClass().getSimpleName());
-        timer.schedule(
-          new AgencyTimerTask(x, this),
-          getInitialTimerDelay());
-        return;
-      }
-
       logger.info("initialize", "cronjobs", "start");
-      // copy all entries to from cronjob to localCronDAO for execution
-      final DAO cronDAO = (DAO) getX().get(getCronDAO());
-      final DAO cronJobDAO = (DAO) getX().get(getCronJobDAO());
-      final DAO schedulableDAO = (DAO) getX().get(getSchedulableDAO());
-      cronDAO.where(MLang.EQ(Cron.ENABLED, true)).
-        select(new Sink() {
-          public void put(Object obj, Detachable sub) {
-            Cron cron = (Cron) ((FObject) obj).fclone();
-            cron.setScheduledTime(cron.getNextScheduledTime(getX()));
-            cronJobDAO.put(cron);
-          }
-          public void remove(Object obj, Detachable sub) {}
-          public void eof() {}
-          public void reset(Detachable sub) {}
-        });
+      DAO schedulableDAO = (DAO) getX().get(getSchedulableDAO());
       schedulableDAO.where(MLang.EQ(Schedulable.ENABLED, true)).
         select(new Sink() {
           public void put(Object obj, Detachable sub) {
@@ -153,7 +126,7 @@ foam.CLASS({
                   true
                 )
             );
-            cronJobDAO.put(schedulable);
+            ((DAO) x.get(getCronJobDAO())).put(schedulable);
           }
           public void remove(Object obj, Detachable sub) {}
           public void eof() {}
@@ -164,6 +137,7 @@ foam.CLASS({
       while ( true ) {
         if ( getEnabled() ) {
           Date now = new Date();
+          DAO cronJobDAO = (DAO) x.get(getCronJobDAO());
           cronJobDAO.where(
                          MLang.AND(
                                    MLang.LTE(Cron.SCHEDULED_TIME, now),

@@ -693,12 +693,13 @@ foam.CLASS({
           box = this.RetryBox.create({
             maxAttempts: this.retryBoxMaxAttempts,
             delegate: box,
-          })
+          });
         }
         return this.SessionClientBox.create({ delegate: box });
       }
     },
     {
+      // TODO: move refine in foam-medusa
       documentation: 'Cluster this DAO',
       name: 'cluster',
       class: 'Boolean',

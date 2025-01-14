@@ -17,6 +17,10 @@ public class Whitespace
     return instance__;
   }
 
+  public static Parser wrap(Parser p) {
+    return new Seq1(1, instance(), p, instance());
+  }
+
   private Whitespace() {
   }
 

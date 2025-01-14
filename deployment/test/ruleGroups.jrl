@@ -1,0 +1,12 @@
+p({
+  class:"foam.nanos.ruler.RuleGroup",
+  id:"Notifications"
+})
+p({
+  class:"foam.nanos.ruler.RuleGroup",
+  id:"EventRecord"
+})
+p({
+  class:"foam.nanos.ruler.RuleGroup",
+  id:"DUG"
+})

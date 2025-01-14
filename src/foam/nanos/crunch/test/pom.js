@@ -1,7 +1,6 @@
 foam.POM({
   name: "test",
   files: [
-    { name: "RenewableTest",
-      flags: "java" }
+    { name: "RenewableTest", flags: "js|java" }
   ]
-})
+});

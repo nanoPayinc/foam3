@@ -25,7 +25,7 @@ foam.CLASS({
       name: 'setup',
       args: 'X x',
       javaCode: `
-      DAO cronDAO = (DAO) x.get("cronDAO");
+      DAO cronDAO = (DAO) x.get("cronJobDAO");
       Cron cron = (Cron) cronDAO.find("SystemOutage").fclone();
       cron.setEnabled(false);
       cronDAO.put(cron);
@@ -80,7 +80,7 @@ foam.CLASS({
       name: 'teardown',
       args: 'X x',
       javaCode: `
-      DAO cronDAO = (DAO) x.get("cronDAO");
+      DAO cronDAO = (DAO) x.get("cronJobDAO");
       Cron cron = (Cron) cronDAO.find("SystemOutage").fclone();
       cron.setEnabled(true);
       cronDAO.put(cron);

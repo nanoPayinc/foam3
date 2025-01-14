@@ -51,9 +51,9 @@ foam.CLASS({
       var cls   = this.data;
       var model = cls.model_;
       var impls = cls.getAxiomsByClass(this.Implements);
+      var exts  = [];
+      var m     = cls;
 
-      var exts = [];
-      var m = cls;
       while ( m.id != 'foam.core.FObject' ) {
         m = foam.lookup(m.model_.extends);
         exts.push(m);
@@ -138,47 +138,32 @@ foam.CLASS({
           }).
         end().
 
-        add(this.AxiomSummaryView.create({
-          title: 'Property Summary',
-          of: this.PropertyAxiom,
-          modelId: model.id,
-        })).
-        forEach(exts.map(function(e) { return e.id }).concat(impls.map(function(i) { return i.path })), function(id) {
-          this.
-            start(this.AxiomListView, {
-              of: this.PropertyAxiom,
-              modelId: id,
-              titleFn: function() {
-                  return this.E('h4').
-                    add('Properties inherited from ').
-                    start(this.ClassLink, { data: id }).
-                    end()
-              }.bind(this),
-            }).
-            end()
-        }).
-
-        add(this.AxiomSummaryView.create({
-          title: 'Method Summary',
-          of: this.MethodAxiom,
-          modelId: model.id,
-          sort: true
-        })).
-        forEach(exts.map(function(e) { return e.id }).concat(impls.map(function(i) { return i.path })), function(id) {
-          this.
-            start(this.AxiomListView, {
-              of: this.MethodAxiom,
-              modelId: id,
-              titleFn: function() {
-                  return this.E('h4').
-                    add('Methods inherited from ').
-                    tag(this.ClassLink, { data: id });
-              }.bind(this),
-            }).
-            end()
-        })
-
+        call(this.addAxiomSection, [this, exts, model, impls, 'Property', 'Properties', this.PropertyAxiom]).
+        call(this.addAxiomSection, [this, exts, model, impls, 'Method',   'Methods',    this.MethodAxiom]);
+//        call(this.addAxiomSection, [this, exts, model, impls, 'Action',   'Actions',    this.ActionAxiom]);
         // TODO property and method detail sections.
+    },
+
+    function addAxiomSection(self, exts, model, impls, name, plural, of) {
+      this.add(self.AxiomSummaryView.create({
+        title:   name + ' Summary',
+        of:      of,
+        modelId: model.id,
+        sort:    true
+      })).
+      forEach(exts.map(function(e) { return e.id }).concat(impls.map(function(i) { return i.path })), function(id) {
+        self.
+          start(self.AxiomListView, {
+            of:      of,
+            modelId: id,
+            titleFn: () => {
+              return self.E('h4').
+                add(plural + ' inherited from ').
+                tag(self.ClassLink, { data: id });
+            },
+          }).
+          end();
+      });
     }
   ]
 });

@@ -55,12 +55,12 @@ foam.CLASS({
       user.setFirstName("test");
       user.setMiddleName("session");
       user.setLastName("group");
-      user.setEmail("test-session-group@nanopay.net");
+      user.setEmail("test-session-group@foamdev.com");
       user.setUserName("test-session-group");
       user.setGroup(group.getId());
       user.setEmailVerified(true);
       user.setLifecycleState(LifecycleState.ACTIVE);
-      user = (User) ((DAO)x.get("userDAO")).put(user);
+      user = (User) ((DAO)x.get("localUserDAO")).put(user);
 
       Session session = new Session();
       session.setUserId(user.getId());

@@ -9,9 +9,7 @@ foam.CLASS({
   package: 'foam.dashboard.view',
   name: 'BackgroundCard',
   extends: 'foam.dashboard.view.Card',
-  documentation: '',
-  css: `
-  `,
+
   properties: [
     {
       class: 'String',
@@ -22,6 +20,7 @@ foam.CLASS({
       class: 'String'
     }
   ],
+
   methods: [
     function init() {
       this.addClass()

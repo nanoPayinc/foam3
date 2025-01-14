@@ -33,3 +33,25 @@ p({
   "saveHistory":false,
   "lifecycleState":1
 })
+
+p({
+  "class":"foam.nanos.ruler.Rule",
+  "id":"foam-nanos-auth-UserLifecycleDeletedRule",
+  "name":"UserLifecycleDeletedRule",
+  "documentation":"When user removes themselves, generate a UserLifecycleTicket to manage the operation",
+  "enabled":true,
+  "saveHistory":false,
+  "ruleGroup": "auth",
+  "daoKey": "userDAO",
+  "operation": 2,
+  "after": true,
+  "lifecycleState": 1,
+  "predicate": {
+    class: "foam.nanos.ruler.predicate.FScriptRulePredicate",
+    query: 'o.lifecycleState == foam.nanos.auth.LifecycleState.ACTIVE && n.lifecycleState == foam.nanos.auth.LifecycleState.DELETED && n.loginEnabled == true && n.type == "User"',
+  },
+  action: {
+    "class": "foam.nanos.auth.UserLifecycleDeletedRuleAction"
+  },
+  "generateTicket": true
+})

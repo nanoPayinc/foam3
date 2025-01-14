@@ -73,3 +73,46 @@ p({
   parameters: true,
   serviceClass: "foam.nanos.dig.DUGLoopbackWebAgent"
 })
+
+
+p({
+  "class": "foam.nanos.boot.NSpec",
+  "name": "userHistoryDAO",
+  "description": "DAO containing any modifications made to users",
+  "serve": true,
+  "lazy": true,
+  "authNotes": "Protected by service-level access control. This service requires the 'service.userHistoryDAO' permission to access.",
+  "serviceScript":
+  """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setAuthorize(false)
+      .setSeqNo(true)
+      .setSeqPropertyName("seqNo")
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("userHistory")
+      .setOf(foam.dao.history.HistoryRecord.getOwnClassInfo())
+      .build()
+      .addPropertyIndex(new foam.core.PropertyInfo[] { foam.dao.history.HistoryRecord.OBJECT_ID })
+      .orderBy(foam.mlang.MLang.DESC(foam.dao.history.HistoryRecord.TIMESTAMP));
+  """,
+  "client":
+  """
+    { "of": "foam.dao.history.HistoryRecord" }
+  """
+})
+p({
+  "class": "foam.nanos.boot.NSpec",
+  "name": "historyRecordServiceTestUserDAO",
+  "serve": false,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.nanos.auth.User.getOwnClassInfo())
+      .setPm(true)
+      .setFuid(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("users")
+      .setDecorator(new foam.dao.history.HistoryDAO(x, "userHistoryDAO", new foam.dao.NullDAO.Builder(x).setOf(foam.nanos.auth.User.getOwnClassInfo()).build()))
+      .build()
+      .addPropertyIndex(new foam.core.PropertyInfo[] { foam.nanos.auth.User.REFERRAL_CODE });
+  """
+})

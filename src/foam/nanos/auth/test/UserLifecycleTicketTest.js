@@ -28,6 +28,7 @@ foam.CLASS({
     'foam.nanos.crunch.*',
     'foam.nanos.logger.Loggers',
     'foam.test.TestUtils',
+    'foam.util.Auth',
     'java.util.List'
   ],
 
@@ -57,10 +58,11 @@ foam.CLASS({
     user.setLastName(user.getUserName());
     user.setSpid("test");
     user.setGroup("test");
-    user.setEmail(user.getUserName()+"@foam.test");
+    user.setEmail(user.getUserName()+"@foamdev.com");
     user.setEmailVerified(true);
-    user.setId(user.getUserName().hashCode());
     user = (User) userDAO.put(user);
+
+    X userX = Auth.sudo(x, user);
 
     Capability dep = new Capability();
     dep.setId(user.getUserName()+"-dep");
@@ -74,12 +76,12 @@ foam.CLASS({
     // CapabilityCapabilityJunction ccjunction = new CapabilityCapabilityJunction();
     // ccjunction.setSourceId(dep.getId());
     // ccjunction.setTargetId(pre.getId());
-    // prerequisiteCapabilityJunctionDAO.put_(x, ccjunction);
+    // prerequisiteCapabilityJunctionDAO.put_(userX, ccjunction);
 
     UserCapabilityJunction ucjunction = new UserCapabilityJunction();
     ucjunction.setSourceId(user.getId());
     ucjunction.setTargetId(dep.getId());
-    userCapabilityJunctionDAO.put_(x, ucjunction);
+    userCapabilityJunctionDAO.put_(userX, ucjunction);
 
     List<UserCapabilityJunction> userCapabilityJunctions = (List<UserCapabilityJunction>) ((ArraySink) userCapabilityJunctionDAO
         .where(EQ(UserCapabilityJunction.SOURCE_ID, user.getId()))
@@ -130,10 +132,10 @@ foam.CLASS({
     // Delete in Active state - will trigger
     // 1. LifecycleAwareDAO which will map remove to put lifecycleState DELETED
     // 2. which in turn triggers UserLifecycleDeletedRuleAction to create ticket
-    // and deleted associated data.
+    // and delete associated data.
     ((DAO) x.get("userDAO")).remove(user);
     user = (User) ((DAO) x.get("userDAO")).find(user.getId());
-    test ( user == null || user.getLifecycleState() == LifecycleState.DELETED, "user deleted");
+    test ( user == null || user.getLifecycleState() == LifecycleState.DELETED, "user deleted: " + (user != null ? user.getLifecycleState().toString() : "null"));
 
     userCapabilityJunctions = (List<UserCapabilityJunction>) ((ArraySink) userCapabilityJunctionDAO
         .where(EQ(UserCapabilityJunction.SOURCE_ID, user.getId()))

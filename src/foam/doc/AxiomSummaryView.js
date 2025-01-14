@@ -57,8 +57,11 @@ foam.CLASS({
       var dao = this.axiomDAO.where(
         this.AND(
           this.INSTANCE_OF(of),
-          this.EQ(this.Axiom.HAS_PERMISSION, true),
           this.EQ(this.Axiom.PARENT_ID, modelId)));
+
+      // Only Properties are permissioned
+      if ( this.of == foam.doc.PropertyAxiom )
+        dao = dao.where(this.EQ(this.Axiom.HAS_PERMISSION, true));
 
       if ( this.sort ) dao = dao.orderBy(this.Axiom.NAME);
 

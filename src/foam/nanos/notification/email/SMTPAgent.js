@@ -97,7 +97,7 @@ foam.CLASS({
     },
     {
       name: 'session_',
-      javaType: 'Session',
+      javaType: 'jakarta.mail.Session',
       class: 'Object',
       visibility: 'HIDDEN',
       transient: true,
@@ -118,7 +118,7 @@ foam.CLASS({
     },
     {
       class: 'Object',
-      javaType: 'Transport',
+      javaType: 'jakarta.mail.Transport',
       name: 'transport_',
       visibility: 'HIDDEN',
       transient: true,
@@ -126,7 +126,7 @@ foam.CLASS({
         Logger logger = Loggers.logger(getX(), this);
         OMLogger omLogger = (OMLogger) getX().get("OMLogger");
         EmailServiceConfig config = findId(getX());
-        Transport transport = null;
+        jakarta.mail.Transport transport = null;
         try {
           omLogger.log(this.getClass().getSimpleName(), "transport", "connecting");
           transport = getSession_().getTransport("smtp");
@@ -224,12 +224,6 @@ foam.CLASS({
     {
       name: 'execute',
       javaCode: `
-      foam.nanos.medusa.MedusaSupport support = (foam.nanos.medusa.MedusaSupport) x.get("medusaSupport");
-      if ( support != null &&
-           ! support.cronEnabled(x, true) ) {
-        // Loggers.logger(x, this).debug("execution disabled");
-        return;
-      }
       try {
         while ( true ) {
           reload();

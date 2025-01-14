@@ -11,6 +11,13 @@ foam.CLASS({
 
   documentation: 'Just shows the value of data as a string.',
 
+  css: `
+    ^ {
+      display: block;
+      min-width: 220px;
+    }
+  `,
+
   properties: [
     [ 'nodeName', 'SPAN' ],
     {
@@ -26,6 +33,7 @@ foam.CLASS({
 
     function render() {
       this.SUPER();
+      this.addClass();
       var self = this;
       var prop = this.prop;
       if ( prop && prop.unitPropValueToString ) {

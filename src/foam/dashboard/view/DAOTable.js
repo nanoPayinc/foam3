@@ -14,6 +14,7 @@ foam.CLASS({
     'foam.comics.v2.DAOBrowseControllerView',
     'foam.u2.stack.StackBlock'
   ],
+
   imports: [
     'dashboardController',
     'menu',
@@ -43,7 +44,7 @@ foam.CLASS({
       padding-left: 20px;
       padding-right: 20px;
       border-bottom: 1px solid $grey200;
-      
+
     }
     ^ div.table-row:last-child > div {
       border-bottom: none;
