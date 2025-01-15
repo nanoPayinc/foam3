@@ -11,6 +11,7 @@ foam.CLASS({
   documentation: 'The base model for country information.',
 
   ids: ['code'],
+  order: 'name',
 
   properties: [
     {

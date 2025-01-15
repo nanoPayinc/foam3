@@ -248,7 +248,7 @@ foam.CLASS({
             view: {
               class: 'foam.u2.view.ChoiceView',
               placeholder: this.PLACE_HOLDER,
-              dao: this.customCountryDAO,
+              dao: this.customCountryDAO.orderBy(foam.nanos.auth.Country.NAME),
               objToChoice: function(a) {
                 return [a.id, a.name];
               },

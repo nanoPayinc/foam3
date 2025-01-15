@@ -92,21 +92,24 @@ foam.CLASS({
         errorSlot = this.SimpleSlot.create({ value: null });
         let linkErrorSlot = () => {
           if ( ! this.data ) return;
+          // Re-find current prop when data changes since data might be a subclass of old data which might have different validation
+          // requirements
+          let currentProp = this.data.cls_.getAxiomByName(prop.name).clone();
           var slot;
 
           // ???: Would it make more sense to combine these in Property as validateObj_?
-          if ( prop.validateObj && prop.internalValidateObj ) {
+          if ( currentProp.validateObj && currentProp.internalValidateObj ) {
             slot = foam.core.ExpressionSlot.create({
-              args: [ this.data.slot(prop.validateObj), this.data.slot(prop.internalValidateObj) ],
+              args: [ this.data.slot(currentProp.validateObj), this.data.slot(currentProp.internalValidateObj) ],
               // The commented out version will cause both internal and external errors to be displayed.
               // code: function (e1, e2) { return e1 ? e1 + ' ' + ( e2 || '' ) : e2; }
               // This version only displays internal errors or external errors if there are no internal.
               code: function (e1, e2) { return e2 || e1; }
             });
           } else {
-            slot = prop.validateObj ?
-              this.data.slot(prop.validateObj) :
-              this.data.slot(prop.internalValidateObj);
+            slot = currentProp.validateObj ?
+              this.data.slot(currentProp.validateObj) :
+              this.data.slot(currentProp.internalValidateObj);
           }
 
           errorSlot.follow(slot);

@@ -27,7 +27,7 @@ foam.CLASS({
       display: none;
     }
 
-    ^ [type=radio]:checked ~ label {
+    ^ label:has(input[type=radio]:checked) {
       border-bottom: solid 3px $primary400;
       font-weight: bold;
       color: $primary400;
@@ -62,45 +62,38 @@ foam.CLASS({
         this.index = 0;
       }
 
-      if ( this.dao ) this.onDAOUpdate();
-      this.choices$.sub(this.onChoicesUpdate);
-      this.onChoicesUpdate();
-    }
-  ],
-
-  listeners: [
-    function onChoicesUpdate() {
       var self = this;
-      var id;
-      this.removeAllChildren();
 
-      this.add(this.choices.map(function(c) {
-        if ( this.cannedQuery == c[1] )
-          this.data = c[0];
-        return this.E('div').
-          addClass(this.myClass('item')).
-          start('input').
-            attrs({
+      this.add(this.dynamic(function(choices) {
+        choices.forEach((c) => {
+          if ( self.cannedQuery == c[1] )
+            self.data = c[0];
+
+          this
+            .start("div")
+            .addClass(self.myClass("item"))
+            .start('label')
+            .start('input')
+            .attrs({
               type: 'radio',
-              name: this.id,
-              checked: self.slot(function (data) { return data === c[0]; })
-            }).
-            call(function() {
-              id = this.id || ( this.id = this.$UID );
-            }).
-            on('change', function() {
+              checked: self.slot(function (data) {
+                return data === c[0];
+              })
+            })
+            .on('change', function () {
               self.data = c[0];
               self.cannedQuery = c[1];
-            }).
-          end().
-          start('label').
-            addClass('p').
-            attrs({ for: id }).
-            start('span').
-              translate(c[1], c[1]).
-            end().
-          end();
-      }.bind(this)));
+            })
+            .end()
+            .addClass('p')
+            .start('span')
+            .translate(c[1], c[1])
+            .end()
+            .end();
+        });
+      }));
+
+      if ( this.dao ) this.onDAOUpdate();
     }
   ]
 });

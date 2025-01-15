@@ -115,6 +115,7 @@ foam.POM({
     { name: "auth/Region",                                                                flags: "js|java" },
     { name: "auth/Address",                                                               flags: "js|java" },
     { name: "auth/PKAddress",                                                             flags: "js|java" },
+    { name: "auth/GBAddress",                                                             flags: "js|java" },
     { name: "auth/AccessDeniedException",                                                 flags: "js|java" },
     { name: "auth/AccountLockedException",                                                flags: "js|java" },
     { name: "auth/AccountDisabledException",                                              flags: "js|java" },

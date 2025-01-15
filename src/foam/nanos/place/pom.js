@@ -25,6 +25,10 @@ foam.POM({
       flags: "js|java" 
     },
     { 
+      name: "google/AddressRefine",
+      flags: "java" 
+    },
+    { 
       name: "PlaceDetailResp",
       flags: "js|java" 
     },
