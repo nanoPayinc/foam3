@@ -23,8 +23,8 @@ foam.CLASS({
   requires: [
     'foam.comics.DAOCreateController',
     'foam.log.LogLevel',
-    'foam.nanos.notification.Notification',
-    'foam.nanos.notification.ToastState',
+    'foam.core.notification.Notification',
+    'foam.core.notification.ToastState',
     'foam.u2.DisplayMode'
   ],
 
@@ -98,7 +98,7 @@ foam.CLASS({
           .start()
             .start()
               .show(this.mode$.map((m) => m === this.DisplayMode.RW))
-              .add(this.data.cls_.getAxiomsByClass(foam.core.Action))
+              .add(this.data.cls_.getAxiomsByClass(foam.lang.Action))
             .end()
           .end()
         .end()

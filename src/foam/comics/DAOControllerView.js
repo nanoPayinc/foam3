@@ -13,8 +13,8 @@ foam.CLASS({
     'foam.comics.SearchMode',
     'foam.comics.DAOController',
     'foam.comics.DAOUpdateControllerView',
-    'foam.nanos.controller.Memento',
-    'foam.nanos.u2.navigation.IFrameTopNavigation',
+    'foam.core.controller.Memento',
+    'foam.core.u2.navigation.IFrameTopNavigation',
     'foam.u2.dialog.Popup',
     'foam.u2.view.ScrollTableView'
   ],
@@ -207,7 +207,7 @@ foam.CLASS({
                     .end();
                 })
                 .start().show(self.mode$.map(m => m === foam.u2.DisplayMode.RW))
-                  .forEach(self.cls.getAxiomsByClass(foam.core.Action).filter(action => {
+                  .forEach(self.cls.getAxiomsByClass(foam.lang.Action).filter(action => {
                     return action.name !== self.data.primaryAction.name;
                   }), function(action) {
                     this.tag(action, { buttonStyle: 'LINK' });

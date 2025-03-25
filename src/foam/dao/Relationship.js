@@ -282,7 +282,7 @@ foam.CLASS({
       var prop;
 
       if ( this.cardinality === '1:*' ) {
-        prop = foam.core.Reference.create({
+        prop = foam.lang.Reference.create({
           name: this.inverseName,
           of: this.sourceModel,
           targetDAOKey: this.sourceDAOKey,
@@ -467,14 +467,14 @@ foam.CLASS({
     },
     {
       class: 'Object',
-      javaType: 'foam.core.PropertyInfo',
+      javaType: 'foam.lang.PropertyInfo',
       swiftType: 'PropertyInfo',
       name: 'targetProperty',
       hidden: true
     },
     {
       class: 'Object',
-      javaType: 'foam.core.PropertyInfo',
+      javaType: 'foam.lang.PropertyInfo',
       swiftType: 'PropertyInfo',
       name: 'sourceProperty',
       hidden: true
@@ -501,7 +501,7 @@ foam.CLASS({
             setDelegate((foam.dao.DAO)getX().get(getTargetDAOKey())).
             build();
         } catch ( NullPointerException e ) {
-          foam.nanos.logger.Logger logger = (foam.nanos.logger.Logger) getX().get("logger");
+          foam.core.logger.Logger logger = (foam.core.logger.Logger) getX().get("logger");
           logger.error("TargetDAOKey", getTargetDAOKey(), "not found.", e);
           throw e;
         }
@@ -537,7 +537,7 @@ foam.CLASS({
         try {
           return (foam.dao.DAO)getX().get(getTargetDAOKey());
         } catch ( NullPointerException e ) {
-          foam.nanos.logger.Logger logger = (foam.nanos.logger.Logger) getX().get("logger");
+          foam.core.logger.Logger logger = (foam.core.logger.Logger) getX().get("logger");
           logger.error("TargetDAOKey", getTargetDAOKey(), "not found.", e);
           throw e;
         }
@@ -551,7 +551,7 @@ foam.CLASS({
       name: 'add',
       args: [{ name: 'target', type: 'FObject' }],
       javaCode: `getJunctionDAO()
-              .put_(getX(), createJunction(((foam.core.Identifiable)target)
+              .put_(getX(), createJunction(((foam.lang.Identifiable)target)
               .getPrimaryKey()));`,
       swiftCode: `_ = try junctionDAO!
               .put(createJunction((target as? foam_core_Identifiable)?
@@ -563,7 +563,7 @@ foam.CLASS({
     {
       name: 'remove',
       javaCode: `getJunctionDAO()
-              .remove_(getX(), createJunction(((foam.core.Identifiable)target)
+              .remove_(getX(), createJunction(((foam.lang.Identifiable)target)
               .getPrimaryKey()));`,
       swiftCode: `_ = try junctionDAO!
               .remove(createJunction((target as? foam_core_Identifiable)?
@@ -575,7 +575,7 @@ foam.CLASS({
     {
       name: 'createJunction',
       args: [{ name: 'targetId', type: 'Any' }],
-      type: 'foam.core.FObject',
+      type: 'foam.lang.FObject',
       code: function createJunction(targetId) {
         foam.assert( ( ! foam.Undefined.isInstance(this.sourceId) ) &&
                      ( ! foam.Undefined.isInstance(targetId) ),
@@ -585,7 +585,7 @@ foam.CLASS({
         this.sourceProperty.set(junction, this.sourceId);
         return junction;
       },
-      javaCode: `foam.core.FObject junction = (foam.core.FObject)getX().create(getJunction().getObjClass());
+      javaCode: `foam.lang.FObject junction = (foam.lang.FObject)getX().create(getJunction().getObjClass());
 getTargetProperty().set(junction, targetId);
 getSourceProperty().set(junction, getSourceId());
 return junction;`,
@@ -799,7 +799,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.dao',
   name: 'OneToManyRelationshipMethod',
-  extends: 'foam.core.Method',
+  extends: 'foam.lang.Method',
 
   flags: [],
 
@@ -907,7 +907,7 @@ foam.CLASS({
     },
     ['of', 'foam.dao.ManyToManyRelationshipImpl'],
     ['transient', true],
-    ['javaInfoType', 'foam.core.AbstractFObjectRelationshipPropertyInfo'],
+    ['javaInfoType', 'foam.lang.AbstractFObjectRelationshipPropertyInfo'],
     ['tableCellFormatter', null],
     ['cloneProperty', function() {}],
     ['javaCloneProperty', '//noop'],
@@ -971,7 +971,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.dao',
   name: 'ManyToManyRelationshipMethod',
-  extends: 'foam.core.Method',
+  extends: 'foam.lang.Method',
 
   flags: [],
 

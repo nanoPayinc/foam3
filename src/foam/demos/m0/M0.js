@@ -36,7 +36,7 @@ foam.CLASS({
       this.m0.emit(this);
     },
     function toString() {
-      return this.cls_.name + '(' + this.cls_.getAxiomsByClass(foam.core.Property).map(p => p.get(this)).join(',') + ')';
+      return this.cls_.name + '(' + this.cls_.getAxiomsByClass(foam.lang.Property).map(p => p.get(this)).join(',') + ')';
     },
     function toBinary() {
     }
@@ -64,11 +64,11 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.demos.m0',
   name: 'L',
-  extends: 'foam.core.Property',
+  extends: 'foam.lang.Property',
 
   static: [
     function test(value) {
-      return foam.core.LowRegister.isInstance(value);
+      return foam.lang.LowRegister.isInstance(value);
     }
   ],
 
@@ -83,11 +83,11 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.demos.m0',
   name: 'R',
-  extends: 'foam.core.Property',
+  extends: 'foam.lang.Property',
 
   static: [
     function test(value) {
-      return foam.core.HighRegister.isInstance(value);
+      return foam.lang.HighRegister.isInstance(value);
     }
   ],
 
@@ -101,9 +101,9 @@ foam.CLASS({
 
 [ 3, 5, 7, 8 ].forEach(i => { const max = Math.pow(2, i);
 foam.CLASS({
-  package: 'foam.core',
+  package: 'foam.lang',
   name: 'Immed' + i,
-  extends: 'foam.core.Property',
+  extends: 'foam.lang.Property',
 
   static: [
     function test(value) {
@@ -119,16 +119,16 @@ foam.CLASS({
 })});
 
 foam.CLASS({
-  package: 'foam.core',
+  package: 'foam.lang',
   name: 'LowRegister',
-  extends: 'foam.core.Int',
+  extends: 'foam.lang.Int',
   description: 'A marker class so we can easily tell which registers are low.'
 });
 
 foam.CLASS({
-  package: 'foam.core',
+  package: 'foam.lang',
   name: 'HighRegister',
-  extends: 'foam.core.Int',
+  extends: 'foam.lang.Int',
   description: 'A marker class so we can easily tell which registers are high.'
 });
 

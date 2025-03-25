@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'DateTimeGroupingExpr',
   extends: 'foam.mlang.AbstractExpr',
 
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   documentation: `
     An expr whose value is the name of a date grouping.
@@ -17,7 +17,7 @@ foam.CLASS({
   `,
 
   javaImports: [
-    'foam.nanos.auth.CreatedAware',
+    'foam.core.auth.CreatedAware',
     'java.util.Arrays',
     'java.util.Comparator',
     'java.util.Date'

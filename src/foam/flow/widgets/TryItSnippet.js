@@ -12,7 +12,7 @@ foam.CLASS({
   imports: [ 'innerFLOW' ],
 
   requires: [
-    'foam.nanos.script.Script',
+    'foam.core.script.Script',
     'foam.u2.view.PreView'
   ],
 
@@ -24,7 +24,7 @@ foam.CLASS({
     {
       name: 'language',
       class: 'Enum',
-      of: 'foam.nanos.script.Language'
+      of: 'foam.core.script.Language'
     },
     {
       name: 'code',
@@ -43,7 +43,7 @@ foam.CLASS({
     {
       name: 'script',
       class: 'FObjectProperty',
-      of: 'foam.nanos.script.Script',
+      of: 'foam.core.script.Script',
       factory: function () {
         return this.Script.create({
           id$: this.scriptId$,

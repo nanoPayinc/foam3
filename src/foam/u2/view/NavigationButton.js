@@ -36,7 +36,7 @@ foam.CLASS({
     {
       name: 'NavButtonBackgroundColor',
       class: 'foam.u2.ColorToken',
-      value: '$foam.nanos.menu.VerticalMenu.menuBackground',
+      value: '$foam.core.menu.VerticalMenu.menuBackground',
       onLight: '$grey700',
       disabledModifier: -10,
       hoverModifier: -10,

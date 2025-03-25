@@ -29,6 +29,18 @@ foam.CLASS({
       class: 'String',
       name: 'postalCode',
       documentation: `postalCode associated to IP Address`
+    },
+    {
+      class: 'Double',
+      name: 'latitude'
+    },
+    {
+      class: 'Double',
+      name: 'longitude'
+    },
+    {
+      class: 'Int',
+      name: 'accuracyRadius'
     }
   ]
 });

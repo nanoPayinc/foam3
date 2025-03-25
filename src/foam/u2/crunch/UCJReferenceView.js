@@ -26,10 +26,10 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.nanos.crunch.ui.UCJView',
-    'foam.nanos.crunch.Capability',
-    'foam.nanos.crunch.UserCapabilityJunction',
-    'foam.nanos.crunch.AgentCapabilityJunction',
+    'foam.core.crunch.ui.UCJView',
+    'foam.core.crunch.Capability',
+    'foam.core.crunch.UserCapabilityJunction',
+    'foam.core.crunch.AgentCapabilityJunction',
     'foam.u2.crunch.wizardflow.ApprovalRequestAgent',
     'foam.u2.crunch.wizardflow.LoadCapabilitiesAgent',
     'foam.u2.stack.Stack',
@@ -56,14 +56,14 @@ foam.CLASS({
     {
       name: 'ucjPropertyList',
       class: 'FObjectArray',
-      of: 'foam.nanos.crunch.UserCapabilityJunction',
+      of: 'foam.core.crunch.UserCapabilityJunction',
       transient: true,
       documentation: 'Stores the property predicate search results from ucjDAO.'
     },
     {
       name: 'capabilitiesList',
       class: 'FObjectArray',
-      of: 'foam.nanos.crunch.Capability',
+      of: 'foam.core.crunch.Capability',
       transient: true,
       documentation: 'Set this property to display these ucj\'s in wizard'
     }

@@ -35,7 +35,7 @@ foam.CLASS({
     ^ {
       width: 100%;
       -webkit-appearance: none;
-      height: 2px;
+      height: 8px;
     }
     ^::-webkit-progress-bar {
       background-color: $trackColor;

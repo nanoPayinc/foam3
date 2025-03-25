@@ -1,7 +1,7 @@
 p({
-  "class":"foam.nanos.auth.ServiceProvider",
+  "class":"foam.core.auth.ServiceProvider",
   "id":"test",
   "enabled":true,
   anonymousUser: 95250647,
 })
-p({"class":"foam.nanos.auth.ServiceProvider", "id":"other", "enabled":true})
+p({"class":"foam.core.auth.ServiceProvider", "id":"other", "enabled":true})

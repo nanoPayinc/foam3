@@ -10,17 +10,17 @@ foam.CLASS({
   extends: 'foam.dao.ProxyDAO',
 
   implements: [
-    'foam.nanos.auth.EnabledAware',
-    'foam.nanos.boot.NSpecAware'
+    'foam.core.auth.EnabledAware',
+    'foam.core.boot.CSpecAware'
   ],
 
   requires: [
-    'foam.nanos.pm.PM'
+    'foam.core.pm.PM'
   ],
 
   javaImports: [
-    'foam.core.X',
-    'foam.nanos.pm.PM'
+    'foam.lang.X',
+    'foam.core.pm.PM'
   ],
 
   properties: [
@@ -33,7 +33,7 @@ foam.CLASS({
       name: 'name',
       class: 'String',
       javaFactory: `
-      foam.nanos.boot.NSpec nspec = getNSpec();
+      foam.core.boot.CSpec nspec = getCSpec();
       if ( nspec != null ) {
         return nspec.getName();
       }
@@ -41,9 +41,9 @@ foam.CLASS({
       `
     },
     {
-      name: 'nSpec',
+      name: 'cSpec',
       class: 'FObjectProperty',
-      type: 'foam.nanos.boot.NSpec'
+      type: 'foam.core.boot.CSpec'
     },
     {
      name: 'classType',

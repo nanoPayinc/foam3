@@ -3,6 +3,6 @@ foam.POM({
   version: 22,
   projects: [
     { name: '../../../pom' },
-    { name: '../../../foam/nanos/pom' }
+    { name: '../../../foam/core/pom' }
   ]
 });

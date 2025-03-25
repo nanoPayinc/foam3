@@ -20,41 +20,41 @@ foam.CLASS({
   name: 'AllProperties',
   properties: [
     {
-      class: 'foam.core.Int',
+      class: 'foam.lang.Int',
       name: 'intProp'
     },
     {
-      class: 'foam.core.String',
+      class: 'foam.lang.String',
       name: 'stringProp'
     },
     {
-      class: 'foam.core.FObjectArray',
+      class: 'foam.lang.FObjectArray',
       of: 'foam.test.TestObj',
       name: 'fObjectArrayProp'
     },
     {
-      class: 'foam.core.Object',
+      class: 'foam.lang.Object',
       name: 'objectProp'
     },
     {
-      class: 'foam.core.Function',
+      class: 'foam.lang.Function',
       name: 'functionProp'
     },
     {
-      class: 'foam.core.StringArray',
+      class: 'foam.lang.StringArray',
       name: 'stringArray'
     },
     {
-      class: 'foam.core.Class',
+      class: 'foam.lang.Class',
       name: 'classProp'
     },
     {
-      class: 'foam.core.FObjectProperty',
+      class: 'foam.lang.FObjectProperty',
       of: 'foam.test.TestObj',
       name: 'fObjectPropertyProp'
     },
     {
-      class: 'foam.core.EMail',
+      class: 'foam.lang.EMail',
       name: 'emailProp'
     },
     {
@@ -62,44 +62,44 @@ foam.CLASS({
       name: 'viewSpecProp'
     },
     {
-      class: 'foam.core.Enum',
+      class: 'foam.lang.Enum',
       of: 'foam.test.TestEnum',
       name: 'enumProp'
     },
     {
-      class: 'foam.core.Date',
+      class: 'foam.lang.Date',
       name: 'dateProp'
     },
     {
-      class: 'foam.core.DateTime',
+      class: 'foam.lang.DateTime',
       name: 'dateTimeProp'
     },
     {
-      class: 'foam.core.Float',
+      class: 'foam.lang.Float',
       name: 'floatProp'
     },
     {
-      class: 'foam.core.Long',
+      class: 'foam.lang.Long',
       name: 'longProp'
     },
     {
-      class: 'foam.core.UnitValue',
+      class: 'foam.lang.UnitValue',
       name: 'currencyProp'
     },
     {
-      class: 'foam.core.Color',
+      class: 'foam.lang.Color',
       name: 'colorProp'
     },
     // {
-    //   class: 'foam.core.Reference',
+    //   class: 'foam.lang.Reference',
     //   name: 'reference'
     // },
     {
-      class: 'foam.core.Array',
+      class: 'foam.lang.Array',
       name: 'arrayProp'
     },
     {
-      class: 'foam.core.Map',
+      class: 'foam.lang.Map',
       name: 'mapProp'
     },
     {
@@ -107,39 +107,39 @@ foam.CLASS({
       name: 'tableCellFormatterProp'
     },
     {
-      class: 'foam.core.Byte',
+      class: 'foam.lang.Byte',
       name: 'byteProp'
     },
     {
-      class: 'foam.core.Short',
+      class: 'foam.lang.Short',
       name: 'shortProp'
     },
     {
-      class: 'foam.core.Double',
+      class: 'foam.lang.Double',
       name: 'doubleProp'
     },
     {
-      class: 'foam.core.List',
+      class: 'foam.lang.List',
       name: 'listProp'
     },
     {
-      class: 'foam.core.Image',
+      class: 'foam.lang.Image',
       name: 'imageProp'
     },
     {
-      class: 'foam.core.URL',
+      class: 'foam.lang.URL',
       name: 'urlProp'
     },
     {
-      class: 'foam.core.Password',
+      class: 'foam.lang.Password',
       name: 'passwordProp'
     },
     {
-      class: 'foam.core.PhoneNumber',
+      class: 'foam.lang.PhoneNumber',
       name: 'phoneNumberProp'
     },
     // {
-    //   class: 'foam.core.MultiPartID',
+    //   class: 'foam.lang.MultiPartID',
     //   name: 'multiPartID'
     // },
     {
@@ -171,11 +171,11 @@ foam.CLASS({
     //   name: 'relationshipProperty'
     // },
     {
-      class: 'foam.core.Blob',
+      class: 'foam.lang.Blob',
       name: 'blobProp'
     },
     // {
-    //   class: 'foam.core.Stub',
+    //   class: 'foam.lang.Stub',
     //   name: 'stub'
     // },
     {
@@ -183,49 +183,49 @@ foam.CLASS({
       name: 'viewFactoryProp'
     },
     {
-      class: 'foam.core.Int',
+      class: 'foam.lang.Int',
       transient: true,
       name: 'transientInt'
     },
     {
-      class: 'foam.core.String',
+      class: 'foam.lang.String',
       transient: true,
       name: 'transientString'
     },
     {
-      class: 'foam.core.FObjectArray',
+      class: 'foam.lang.FObjectArray',
       of: 'foam.test.TestObj',
       transient: true,
       name: 'transientFObjectArray'
     },
     {
-      class: 'foam.core.Object',
+      class: 'foam.lang.Object',
       transient: true,
       name: 'transientObject'
     },
     {
-      class: 'foam.core.Function',
+      class: 'foam.lang.Function',
       transient: true,
       name: 'transientFunction'
     },
     {
-      class: 'foam.core.StringArray',
+      class: 'foam.lang.StringArray',
       transient: true,
       name: 'transientStringArray'
     },
     {
-      class: 'foam.core.Class',
+      class: 'foam.lang.Class',
       transient: true,
       name: 'transientClass'
     },
     {
-      class: 'foam.core.FObjectProperty',
+      class: 'foam.lang.FObjectProperty',
       of: 'foam.test.TestObj',
       transient: true,
       name: 'transientFObjectProperty',
     },
     {
-      class: 'foam.core.EMail',
+      class: 'foam.lang.EMail',
       transient: true,
       name: 'transientEMail'
     },
@@ -235,53 +235,53 @@ foam.CLASS({
       name: 'transientViewSpec'
     },
     {
-      class: 'foam.core.Enum',
+      class: 'foam.lang.Enum',
       transient: true,
       of: 'foam.test.TestEnum',
       name: 'transientEnum'
     },
     {
-      class: 'foam.core.Date',
+      class: 'foam.lang.Date',
       transient: true,
       name: 'transientDate'
     },
     {
-      class: 'foam.core.DateTime',
+      class: 'foam.lang.DateTime',
       transient: true,
       name: 'transientDateTime'
     },
     {
-      class: 'foam.core.Float',
+      class: 'foam.lang.Float',
       transient: true,
       name: 'transientFloat'
     },
     {
-      class: 'foam.core.Long',
+      class: 'foam.lang.Long',
       transient: true,
       name: 'transientLong'
     },
     {
-      class: 'foam.core.UnitValue',
+      class: 'foam.lang.UnitValue',
       transient: true,
       name: 'transientCurrency'
     },
     {
-      class: 'foam.core.Color',
+      class: 'foam.lang.Color',
       transient: true,
       name: 'transientColor'
     },
     // {
-    //   class: 'foam.core.Reference',
+    //   class: 'foam.lang.Reference',
     //   transient: true,
     //   name: 'transientReference'
     // },
     {
-      class: 'foam.core.Array',
+      class: 'foam.lang.Array',
       transient: true,
       name: 'transientArray'
     },
     {
-      class: 'foam.core.Map',
+      class: 'foam.lang.Map',
       transient: true,
       name: 'transientMap'
     },
@@ -291,47 +291,47 @@ foam.CLASS({
       name: 'transientTableCellFormatter'
     },
     {
-      class: 'foam.core.Byte',
+      class: 'foam.lang.Byte',
       transient: true,
       name: 'transientByte'
     },
     {
-      class: 'foam.core.Short',
+      class: 'foam.lang.Short',
       transient: true,
       name: 'transientShort'
     },
     {
-      class: 'foam.core.Double',
+      class: 'foam.lang.Double',
       transient: true,
       name: 'transientDouble'
     },
     {
-      class: 'foam.core.List',
+      class: 'foam.lang.List',
       transient: true,
       name: 'transientList'
     },
     {
-      class: 'foam.core.Image',
+      class: 'foam.lang.Image',
       transient: true,
       name: 'transientImage'
     },
     {
-      class: 'foam.core.URL',
+      class: 'foam.lang.URL',
       transient: true,
       name: 'transientURL'
     },
     {
-      class: 'foam.core.Password',
+      class: 'foam.lang.Password',
       transient: true,
       name: 'transientPassword'
     },
     {
-      class: 'foam.core.PhoneNumber',
+      class: 'foam.lang.PhoneNumber',
       transient: true,
       name: 'transientPhoneNumber'
     },
     // {
-    //   class: 'foam.core.MultiPartID',
+    //   class: 'foam.lang.MultiPartID',
     //   transient: true,
     //   name: 'transientMultiPartID'
     // },
@@ -371,7 +371,7 @@ foam.CLASS({
     //   name: 'transientRelationshipProperty'
     // },
     {
-      class: 'foam.core.Blob',
+      class: 'foam.lang.Blob',
       transient: true,
       name: 'transientBlob'
     },

@@ -6,13 +6,13 @@
 
 package foam.util;
 
-import foam.core.Detachable;
-import foam.core.X;
+import foam.lang.Detachable;
+import foam.lang.X;
 import foam.dao.AbstractSink;
 import foam.dao.ArraySink;
 import foam.dao.DAO;
-import foam.nanos.auth.Country;
-import foam.nanos.auth.Region;
+import foam.core.auth.Country;
+import foam.core.auth.Region;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;

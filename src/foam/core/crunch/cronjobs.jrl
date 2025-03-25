@@ -1,0 +1,20 @@
+p({
+  "class":"foam.core.cron.Cron",
+  "id":"Expire User CapabilityJunctions",
+  "description":"Periodic check to expire expired UserCapabilityJunctions",
+  "schedule":{
+    "class":"foam.core.cron.CronSchedule",
+    "minute":0,
+    "hour":-1,
+    "dayOfMonth":-1,
+    "month":-1,
+    "dayOfWeek":-1,
+    "second":0
+  },
+  "code": """
+    cron = new foam.core.crunch.ExpireUserCapabilityJunctionsCron();
+    cron.execute(x);
+    print("done");
+  """,
+  "enabled":true
+})

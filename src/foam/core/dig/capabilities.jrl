@@ -1,0 +1,26 @@
+p({
+  class: "foam.core.crunch.Capability",
+  id: "foam-core-dig-DIG",
+  name: "DIG",
+  description: "Data Integration Gateway",
+  enabled: true,
+  keywords: ["dig"],
+  permissionsGranted: [
+    "service.digDAO",
+    "service.AuthenticatedCSpecDAO",
+    "service.run.dig",
+    "menu.read.dig",
+    "menu.read.gateway"
+  ]
+})
+p({
+  class: "foam.core.crunch.Capability",
+  id: "foam-core-dig-DIG-create",
+  name: "DIG-create",
+  description: "Data Integration Gateway (Create)",
+  enabled: true,
+  keywords: ["dig"],
+  permissionsGranted: [
+    "dig.create"
+  ]
+})

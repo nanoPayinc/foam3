@@ -12,9 +12,9 @@ foam.CLASS({
   flags: ['java'],
 
   javaImports: [
-    'foam.core.FObject',
-    'foam.core.ClassInfo',
-    'foam.core.MethodInfo'
+    'foam.lang.FObject',
+    'foam.lang.ClassInfo',
+    'foam.lang.MethodInfo'
   ],
 
   properties: [
@@ -27,7 +27,7 @@ foam.CLASS({
       type: 'Object',
 
       args: [
-        { name: 'x' , type: 'foam.core.X'}, { name: 'obj' , type: 'Object' }
+        { name: 'x' , type: 'foam.lang.X'}, { name: 'obj' , type: 'Object' }
       ],
 
       javaCode: `

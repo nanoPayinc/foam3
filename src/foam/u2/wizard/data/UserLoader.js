@@ -26,7 +26,7 @@ foam.CLASS({
         // by rules corresponding to previous UCJ updates.
         const user = await this.userDAO.find(this.subject.user.id);
 
-        var props = this.wizardletOf.getOwnAxiomsByClass(foam.core.Property);
+        var props = this.wizardletOf.getOwnAxiomsByClass(foam.lang.Property);
         props.forEach(p => {
           if ( user.hasOwnProperty(p.name) && ! p.isDefaultValue(user[p.name] ) ) {
             d.copyFrom(user);

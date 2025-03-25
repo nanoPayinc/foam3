@@ -20,7 +20,7 @@ foam.CLASS({
       classInfo.fields.push(foam.swift.Field.create({
         defaultValue: '[:]',
         lazy: true,
-        type: `[${property.swiftType}:${foam.core.FObject.model_.swiftName}]`,
+        type: `[${property.swiftType}:${foam.lang.FObject.model_.swiftName}]`,
         name: 'multitonMap',
       }));
       classInfo.fields.push(foam.swift.Field.create({

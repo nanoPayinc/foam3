@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.mlang.predicate',
   name: 'Neq',
   extends: 'foam.mlang.predicate.Binary',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   documentation: 'Binary Predicate returns true iff arg1 does NOT EQUAL arg2.',
 

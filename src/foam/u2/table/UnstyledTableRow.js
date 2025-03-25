@@ -12,7 +12,7 @@ foam.CLASS({
   mixins: ['foam.comics.v2.Clickable'],
 
   requires: [
-    'foam.core.SimpleSlot',
+    'foam.lang.SimpleSlot',
     'foam.u2.CheckBox',
     'foam.u2.tag.Image',
     'foam.u2.view.OverlayActionListView',

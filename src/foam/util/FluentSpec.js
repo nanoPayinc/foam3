@@ -13,7 +13,7 @@ foam.INTERFACE({
     Represents an operation to be performed on a Fluent object.
     This can be used to specify Sequence steps in a journal.
     For more information, see the following:
-    - foam.core.Fluent
+    - foam.lang.Fluent
     - foam.u2.async.Sequence
   `,
 
@@ -21,7 +21,7 @@ foam.INTERFACE({
     {
       name: 'apply',
       args: [
-        { name: 'fluent', type: 'foam.core.Fluent' }
+        { name: 'fluent', type: 'foam.lang.Fluent' }
       ]
     }
   ]

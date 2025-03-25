@@ -7,17 +7,17 @@
 foam.CLASS({
   package: 'foam.dao',
   name: 'SequenceNumberDAOTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
 
   methods: [
     {
       name: 'runTest',
       javaCode: `
-        foam.dao.DAO delegate = new foam.dao.MDAO(foam.nanos.auth.User.getOwnClassInfo());
+        foam.dao.DAO delegate = new foam.dao.MDAO(foam.core.auth.User.getOwnClassInfo());
         foam.dao.SequenceNumberDAO seq = new SequenceNumberDAO(delegate);
 
         // test using default value
-        foam.core.FObject user = new foam.nanos.auth.User.Builder(x).setFirstName("Test").build();
+        foam.lang.FObject user = new foam.core.auth.User.Builder(x).setFirstName("Test").build();
         test(seq.getValue_() == 1, "Sequence number value equals 1 before putting to DAO.");
         user = seq.put(user);
 
@@ -25,8 +25,8 @@ foam.CLASS({
         test(seq.getValue_() == 2, "Sequence number value equals 2 after putting to DAO.");
 
         // test using starting value of 1000
-        user = new foam.nanos.auth.User.Builder(x).setFirstName("Test").build();
-        delegate = new foam.dao.MDAO(foam.nanos.auth.User.getOwnClassInfo());
+        user = new foam.core.auth.User.Builder(x).setFirstName("Test").build();
+        delegate = new foam.dao.MDAO(foam.core.auth.User.getOwnClassInfo());
         seq = new SequenceNumberDAO(1000, delegate);
 
         test(seq.getValue_() == 1000, "Sequence number value equals 1 before putting to DAO.");
@@ -36,8 +36,8 @@ foam.CLASS({
         test(seq.getValue_() == 1001, "Sequence number value equals 1001 after putting to DAO.");
 
         // test sequence number getting delegate max
-        user = new foam.nanos.auth.User.Builder(x).setId(5000).setFirstName("Test").build();
-        delegate = new foam.dao.MDAO(foam.nanos.auth.User.getOwnClassInfo());
+        user = new foam.core.auth.User.Builder(x).setId(5000).setFirstName("Test").build();
+        delegate = new foam.dao.MDAO(foam.core.auth.User.getOwnClassInfo());
         delegate.put(user);
 
         seq = new SequenceNumberDAO(delegate);

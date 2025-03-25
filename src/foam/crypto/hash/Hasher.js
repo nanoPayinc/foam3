@@ -21,7 +21,7 @@ foam.INTERFACE({
       args: [
         {
           name: 'obj',
-          type: 'foam.core.FObject'
+          type: 'foam.lang.FObject'
         },
         {
           name: 'md',

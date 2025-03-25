@@ -1,0 +1,52 @@
+p({
+  class: "foam.core.benchmark.DateFormatBenchmark",
+  id: "DateFormatBenchmark"
+})
+p({
+  class: "foam.core.benchmark.F3FileJournalBenchmark",
+  id: "F3FileJournalBenchmark"
+})
+p({
+  class: "foam.core.benchmark.F3JournalReplayBenchmark",
+  id: "F3JournalReplayBenchmark"
+})
+p({
+  class: "foam.core.benchmark.FUIDBenchmark",
+  id: "FUIDBenchmark"
+})
+p({
+  class: "foam.core.benchmark.FileJournalBenchmark",
+  id: "FileJournalBenchmark"
+})
+p({
+  class: "foam.core.benchmark.JSONFormatterBenchmark",
+  id: "JSONFormatterBenchmark"
+})
+p({
+  class: "foam.core.benchmark.JSONOutputterBenchmark",
+  id: "JSONOutputterBenchmark"
+})
+p({
+  class: "foam.core.benchmark.JSONOutputterEscapeBenchmark",
+  id: "JSONOutputterEscapeBenchmark"
+})
+p({
+  class: "foam.core.benchmark.JournalReplayBenchmark",
+  id: "JournalReplayBenchmark"
+})
+p({
+  class: "foam.core.benchmark.LoggingBenchmark",
+  id: "LoggingBenchmark"
+})
+p({
+  class: "foam.core.benchmark.PMBenchmark",
+  id: "PerfMonBenchmark"
+})
+p({
+  class: "foam.core.benchmark.TimestampBenchmark",
+  id: "TimestampBenchmark"
+})
+p({
+  class: "foam.core.benchmark.UUIDBenchmark",
+  id: "UUIDBenchmark"
+})

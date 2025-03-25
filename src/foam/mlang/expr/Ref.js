@@ -8,15 +8,15 @@ foam.CLASS({
   package: 'foam.mlang.expr',
   name: 'Ref',
   extends: 'foam.mlang.AbstractExpr',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   documentation: 'An Unary Expression which returns reference property object',
 
   javaImports: [
-    'foam.core.FObject',
-    'foam.core.PropertyInfo',
-    'foam.nanos.logger.Logger',
-    'foam.nanos.logger.StdoutLogger',
+    'foam.lang.FObject',
+    'foam.lang.PropertyInfo',
+    'foam.core.logger.Logger',
+    'foam.core.logger.StdoutLogger',
     'foam.util.StringUtil'
   ],
 
@@ -38,8 +38,8 @@ foam.CLASS({
         PropertyInfo p1 = (PropertyInfo) getArg1();
         FObject refObj = null;
         try {
-          refObj = (FObject)obj.getClass().getMethod("find" + StringUtil.capitalize(p1.getName()), foam.core.X.class)
-            .invoke(obj, foam.core.XLocator.get());
+          refObj = (FObject)obj.getClass().getMethod("find" + StringUtil.capitalize(p1.getName()), foam.lang.X.class)
+            .invoke(obj, foam.lang.XLocator.get());
         } catch ( Throwable t ) {
           Logger logger = (Logger) getX().get("logger");
           if ( logger == null ) {

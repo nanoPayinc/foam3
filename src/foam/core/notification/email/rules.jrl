@@ -1,0 +1,85 @@
+p({
+  class: "foam.core.ruler.Rule",
+  id: "foam-core-notification-email-EmailMessagePropertyServiceRule",
+  name: "EmailMessage EmailPropertyService",
+  ruleGroup: "EmailMessage",
+  daoKey: "localEmailMessageDAO",
+  priority: 1000,
+  operation: 3,
+  predicate: {
+    class: "foam.mlang.predicate.And",
+    args: [
+      {
+        class: "foam.core.ruler.predicate.PropertyEQValue",
+        propName: "status",
+        propValue:  {
+          class: "foam.core.notification.email.Status",
+          ordinal: 0
+        }
+      }
+    ]
+  },
+  action: {
+    class: "foam.core.notification.email.EmailMessagePropertyServiceRuleAction",
+  },
+  enabled: true,
+  lifecycleState:1
+})
+
+p({
+  class: "foam.core.ruler.Rule",
+  id: "foam-core-notification-email-EmailMessageStatusRule",
+  name: "EmailMessage Status",
+  ruleGroup: "EmailMessage",
+  daoKey: "localEmailMessageDAO",
+  priority: 100,
+  operation: 3,
+  predicate: {
+    class: "foam.mlang.predicate.And",
+    args: [
+      {
+        class: "foam.core.ruler.predicate.PropertyEQValue",
+        propName: "status",
+        propValue:  {
+          class: "foam.core.notification.email.Status",
+          ordinal: 0
+        }
+      }
+    ]
+  },
+  action: {
+    class: "foam.core.notification.email.EmailMessageStatusRuleAction",
+  },
+  enabled: true,
+  lifecycleState:1
+})
+
+p({
+  class: "foam.core.ruler.Rule",
+  id: "foam-core-notification-email-EmailMessageProcessedStatusRule",
+  name: "EmailMessage Status - Processed",
+  documentation: "Move Processed EmailMessages to EmailMesageProcessedDAO",
+  ruleGroup: "EmailMessage",
+  daoKey: "localEmailMessageReceivedDAO",
+  priority: 0,
+  operation: 3,
+  predicate: {
+    class: "foam.mlang.predicate.And",
+    args: [
+      {
+        class: "foam.core.ruler.predicate.PropertyEQValue",
+        propName: "status",
+        propValue:  {
+          class: "foam.core.notification.email.Status",
+          ordinal: 6
+        }
+      }
+    ]
+  },
+  action: {
+    class: "foam.core.ruler.action.DAOPutRuleAction",
+    daoKey: "emailMessageProcessedDAO"
+  },
+  enabled: true,
+  lifecycleState:1
+})

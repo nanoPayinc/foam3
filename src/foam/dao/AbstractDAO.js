@@ -39,6 +39,8 @@ foam.CLASS({
     'foam.dao.SkipSink'
   ],
 
+  javaImports: [ 'foam.lang.ContextAgent' ],
+
   topics: [
     {
       name: 'on',
@@ -57,19 +59,19 @@ foam.CLASS({
         will store.
       */
       class: 'Class',
-      javaInfoType: 'foam.core.AbstractObjectPropertyInfo',
-      javaType: 'foam.core.ClassInfo',
+      javaInfoType: 'foam.lang.AbstractObjectPropertyInfo',
+      javaType: 'foam.lang.ClassInfo',
       name: 'of',
     },
     {
-      javaType: 'foam.core.PropertyInfo',
-      javaInfoType: 'foam.core.AbstractObjectPropertyInfo',
+      javaType: 'foam.lang.PropertyInfo',
+      javaInfoType: 'foam.lang.AbstractObjectPropertyInfo',
       swiftType: 'PropertyInfo',
       name: 'primaryKey',
       swiftExpressionArgs: ['of'],
       swiftExpression: 'return of.axiom(byName: "id") as! PropertyInfo',
       javaFactory: `
-return getOf() == null ? null : (foam.core.PropertyInfo) getOf().getAxiomByName("id");
+return getOf() == null ? null : (foam.lang.PropertyInfo) getOf().getAxiomByName("id");
       `,
     }
   ],
@@ -197,6 +199,8 @@ return new LimitedDAO(this.getX(), count, this);
     {
       name: 'pipe',
       code: function(sink) {//, skip, limit, order, predicate) {
+        sink = this.prepareSink_(sink);
+
         this.pipe_(this.__context__, sink, undefined);
       },
       swiftCode: 'return try pipe_(__context__, sink)',
@@ -213,7 +217,7 @@ return new LimitedDAO(this.getX(), count, this);
           dao: this
         });
 
-        var sub = this.listen(sink); //, skip, limit, order, predicate);
+        var sub = this.listen_(x, sink, predicate); //, skip, limit, order, predicate);
         sink.reset();
 
         return sub;
@@ -226,9 +230,14 @@ throw new UnsupportedOperationException();
     {
       name: 'listen',
       code: function(sink) {
-        if ( ! foam.core.FObject.isInstance(sink) ) {
-          sink = foam.dao.AnonymousSink.create({ sink: sink }, this);
-        }
+        if ( ! sink ) return;
+
+        // TODO: This should just be prepareSink_(sink). but we should make sure nobody is relying on the FnSink behaviour
+        // before changing.
+        sink = foam.Function.isInstance(sink) ?
+          foam.dao.FnSink.create({fn: sink}) :
+          this.prepareSink_(sink) ;
+
         return this.listen_(this.__context__, sink, undefined);
       },
       swiftCode: 'return try listen_(__context__, sink)',
@@ -243,7 +252,7 @@ throw new UnsupportedOperationException();
       code: function(x, sink, predicate) {
         var mySink = this.decorateListener_(sink, predicate);
 
-        var sub = foam.core.FObject.create();
+        var sub = foam.lang.FObject.create();
 
         sub.onDetach(this.on.sub(function(s, on, e, obj) {
           switch(e) {
@@ -427,7 +436,7 @@ return decorateSink(getX(), sink, skip, limit, order, predicate);
         return this.remove_(this.__context__, obj);
       },
       swiftCode: 'return try remove_(__context__, obj)',
-      javaCode: `return this.remove_(this.getX(), obj);`,
+      javaCode: 'return this.remove_(this.getX(), obj);',
     },
 
     {
@@ -449,24 +458,16 @@ this.removeAll_(this.getX(), 0, this.MAX_SAFE_INTEGER, null, null);
     function prepareSink_(sink) {
       if ( ! sink ) return foam.dao.ArraySink.create();
 
-      if ( foam.Function.isInstance(sink) )
-        sink = {
-          put: sink,
-          eof: function() {}
-        };
-      else if ( sink == console || sink == console.log )
-        sink = {
-          put: function(o) { console.log(o, foam.json.Pretty.stringify(o)); },
-          eof: function() {}
-        };
-      else if ( sink == globalThis.document )
-        sink = {
-          put: function(o) { foam.u2.DetailView.create({data: o}).write(document); },
-          eof: function() {}
-        };
+      if ( foam.Function.isInstance(sink) ) {
+        sink = { put: sink };
+      } else if ( sink == console || sink == console.log ) {
+        sink = { put: function(o) { console.log(o, foam.json.Pretty.stringify(o)); } };
+      } else if ( sink == globalThis.document ) {
+        sink = { put: function(o) { foam.u2.DetailView.create({data: o}).write(document); } };
+      }
 
-      if ( ! foam.core.FObject.isInstance(sink) ) {
-        sink = foam.dao.AnonymousSink.create({ sink: sink });
+      if ( ! foam.lang.FObject.isInstance(sink) ) {
+        sink = foam.dao.ProxySink.create({delegate: sink});
       }
 
       return sink;
@@ -486,25 +487,28 @@ return this.select_(this.getX(), sink, 0, this.MAX_SAFE_INTEGER, null, null);
 
     {
       name: 'find',
-      code: function find(id) {
+      code: async function find(id) {
         // Temporary until DAO supports find_(Predicate) directly
         if ( foam.mlang.predicate.Predicate.isInstance(id) ) {
-          var self = this;
-          return new Promise(function (resolve) {
-            self.where(id).limit(1).select().then(function (a) {
-              resolve(a.array.length ? a.array[0] : null);
-            });
-          });
+          return (await this.where(id).limit(1).select()).array[0] ?? null;
         }
 
-        return this.find_(this.__context__, id);
+        // Turn no argument find() into a select limit 1
+        if ( arguments.length == 0 ) {
+          var self = this;
+          return (await this.limit(1).select()).array[0] ?? null;
+        }
+
+        if ( foam.String.isInstance(id) && this.of && this?.of.ID?.adapt ) id = this.of.ID.adapt(null, id, this.of.ID);
+
+        return await this.find_(this.__context__, id);
       },
       swiftCode: 'return try find_(__context__, id)',
       javaCode: `
 // Temporary until DAO supports find_(Predicate) directly
 if ( id instanceof foam.mlang.predicate.Predicate ) {
   java.util.List l = ((ArraySink) where((foam.mlang.predicate.Predicate) id).limit(1).select(new ArraySink())).getArray();
-  return l.size() == 1 ? (foam.core.FObject) l.get(0) : null;
+  return l.size() == 1 ? (foam.lang.FObject) l.get(0) : null;
 }
 
 return this.find_(this.getX(), id);
@@ -518,13 +522,19 @@ return this.find_(this.getX(), id);
         return undefined;
       },
       javaCode: `
-      if ( obj != null && obj instanceof String ) {
-        String s = (String) obj;
-        if ( s.startsWith("CLASS? ") ) {
-          try {
-            if ( Class.forName(s.substring(7)).isAssignableFrom(getClass()) ) return true;
-          } catch (ClassNotFoundException e) {
+      if ( obj != null ) {
+        if ( obj instanceof String ) {
+          String s = (String) obj;
+          if ( s.startsWith("CLASS? ") ) {
+            try {
+              if ( Class.forName(s.substring(7)).isAssignableFrom(getClass()) ) return true;
+            } catch (ClassNotFoundException e) {
+            }
           }
+        } else if ( obj instanceof ContextAgent ) {
+          ContextAgent agent = (ContextAgent) obj;
+          agent.execute(x.put("AGENTDAO", this.inX(x)));
+          return agent;
         }
       }
 
@@ -626,11 +636,11 @@ return sink;
         cls.extras.push(`
 public final static long MAX_SAFE_INTEGER = 9007199254740991l;
 
-public Object getPK(foam.core.FObject obj) {
+public Object getPK(foam.lang.FObject obj) {
   return getPrimaryKey().get(obj);
 }
 
-protected class DAOListener implements foam.core.Detachable {
+protected class DAOListener implements foam.lang.Detachable {
   protected Sink sink;
   protected java.util.Collection listeners;
 
@@ -643,7 +653,7 @@ protected class DAOListener implements foam.core.Detachable {
     listeners.remove(this);
   }
 
-  public void put(foam.core.FObject obj) {
+  public void put(foam.lang.FObject obj) {
     try {
       sink.put(obj, this);
     } catch (java.lang.Exception e) {
@@ -651,7 +661,7 @@ protected class DAOListener implements foam.core.Detachable {
     }
   }
 
-  public void remove(foam.core.FObject obj) {
+  public void remove(foam.lang.FObject obj) {
     try {
       sink.remove(obj, this);
     } catch (java.lang.Exception e) {
@@ -670,7 +680,7 @@ protected class DAOListener implements foam.core.Detachable {
 
 protected java.util.List<DAOListener> listeners_ = new java.util.concurrent.CopyOnWriteArrayList<DAOListener>();
 
-protected void onPut(foam.core.FObject obj) {
+protected void onPut(foam.lang.FObject obj) {
   java.util.Iterator<DAOListener> iter = listeners_.iterator();
 
   while ( iter.hasNext() ) {
@@ -678,12 +688,12 @@ protected void onPut(foam.core.FObject obj) {
     try {
       s.put(obj);
     } catch (Throwable t) {
-      foam.nanos.logger.StdoutLogger.instance().warning(getOf().getId(), "onPut", t);
+      foam.core.logger.StdoutLogger.instance().warning(getOf().getId(), "onPut", t);
     }
   }
 }
 
-protected void onRemove(foam.core.FObject obj) {
+protected void onRemove(foam.lang.FObject obj) {
   java.util.Iterator<DAOListener> iter = listeners_.iterator();
 
   while ( iter.hasNext() ) {
@@ -691,7 +701,7 @@ protected void onRemove(foam.core.FObject obj) {
     try {
       s.remove(obj);
     } catch (Throwable t) {
-      foam.nanos.logger.StdoutLogger.instance().warning(getOf().getId(), "onRemove", t);
+      foam.core.logger.StdoutLogger.instance().warning(getOf().getId(), "onRemove", t);
     }
   }
 }
@@ -704,7 +714,7 @@ protected void onReset() {
     try {
       s.reset();
     } catch (Throwable t) {
-      foam.nanos.logger.StdoutLogger.instance().warning(getOf().getId(), "onReset", t);
+      foam.core.logger.StdoutLogger.instance().warning(getOf().getId(), "onReset", t);
     }
   }
 }

@@ -31,10 +31,34 @@ foam.CLASS({
     'foam.u2.search.FilterController'
   ],
 
+
+  css: `
+    ^ {
+      display: flex;
+      flex-grow: 1;
+      width: 100%;
+    }
+
+    .Gold {
+      color: #c98910;
+    }
+    .Silver {
+      color: #a8a8a8;
+    }
+    .Bronze {
+      color: #965a38;
+    }
+
+    td {
+      padding: 8px;
+    }
+  `,
+
   properties: [
     {
       name: 'data',
       factory: function() {
+        /* ignoreWarning */
         var dao = this.EasyDAO.create({
           of: this.Medal,
           seqNo: true,
@@ -91,29 +115,7 @@ foam.CLASS({
   methods: [
     function render() {
       this.addClass();
-      this.start(this.filterController, { data: this.data }).end();
+      this.start(this.filterController, {data: this.data}).end();
     }
-  ],
-
-  css: `
-    ^ {
-      display: flex;
-      flex-grow: 1;
-      width: 100%;
-    }
-
-    .Gold {
-      color: #c98910;
-    }
-    .Silver {
-      color: #a8a8a8;
-    }
-    .Bronze {
-      color: #965a38;
-    }
-
-    td {
-      padding: 8px;
-    }
-  `
+  ]
 });

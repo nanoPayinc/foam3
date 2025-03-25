@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'TimeView',
   extends: 'foam.u2.view.ModeAltView',
 
-  documentation: 'A view for foam.core.Time properties.',
+  documentation: 'A view for foam.lang.Time properties.',
 
   requires: [
     'foam.u2.TimeView',

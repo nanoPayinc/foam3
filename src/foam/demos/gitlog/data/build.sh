@@ -14,3 +14,7 @@ echo "FOAM 2023"
 pushd . ; cd ../../../../.. ;    git log --since="2023-01-01" --until="2024-01-01" --no-merges -p > src/foam/demos/gitlog/data/data2023.log ; popd
 echo "NP 2023"
 pushd . ; cd ../../../../../.. ; git log --since="2023-01-01" --until="2024-01-01" --no-merges -p > foam3/src/foam/demos/gitlog/data/np2023.log ; popd
+echo "FOAM 2024"
+pushd . ; cd ../../../../.. ;    git log --since="2024-01-01" --until="2025-01-01" --no-merges -p > src/foam/demos/gitlog/data/data2024.log ; popd
+echo "NP 2024"
+pushd . ; cd ../../../../../.. ; git log --since="2024-01-01" --until="2025-01-01" --no-merges -p > foam3/src/foam/demos/gitlog/data/np2024.log ; popd

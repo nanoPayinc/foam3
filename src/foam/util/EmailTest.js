@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.util',
   name: 'EmailTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
 
   methods: [
     {

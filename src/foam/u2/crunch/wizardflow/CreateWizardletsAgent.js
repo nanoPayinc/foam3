@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.u2.crunch.wizardflow',
   name: 'CreateWizardletsAgent',
   implements: [
-    'foam.core.ContextAgent'
+    'foam.lang.ContextAgent'
   ],
   documentation: `
     Creates wizardlets corresponding to the capabilities in context. A
@@ -26,9 +26,9 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.nanos.crunch.MinMaxCapability',
-    'foam.nanos.crunch.ui.CapableWAO',
-    'foam.nanos.crunch.ui.PrerequisiteAwareWizardlet',
+    'foam.core.crunch.MinMaxCapability',
+    'foam.core.crunch.ui.CapableWAO',
+    'foam.core.crunch.ui.PrerequisiteAwareWizardlet',
     'foam.u2.wizard.wao.NullWAO',
     'foam.u2.wizard.wao.ProxyWAO'
   ],

@@ -16,7 +16,7 @@ foam.CLASS({
   flags: ['web'],
 
   requires: [
-    'foam.core.ExpressionSlot',
+    'foam.lang.ExpressionSlot',
     'foam.u2.LoadingSpinner',
     'foam.u2.tag.Image'
   ],
@@ -103,7 +103,7 @@ foam.CLASS({
 
   methods: [
     function render() {
-      let size = foam.core.Int.isInstance(this.size) ? this.size+'px' : this.size;
+      let size = foam.lang.Int.isInstance(this.size) ? this.size+'px' : this.size;
       this
         .addClass(this.myClass())
         .style({

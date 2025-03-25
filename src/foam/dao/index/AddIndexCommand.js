@@ -15,7 +15,7 @@ foam.CLASS({
     },
     {
       class: 'FObjectArray',
-      of: 'foam.core.Indexer',
+      of: 'foam.lang.Indexer',
       name: 'indexers'
     },
     {

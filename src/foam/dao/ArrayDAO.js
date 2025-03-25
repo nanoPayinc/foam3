@@ -12,8 +12,8 @@ foam.CLASS({
   documentation: 'DAO implementation backed by an array.',
 
   javaImports: [
-    'foam.core.FObject',
-    'foam.core.PropertyInfo',
+    'foam.lang.FObject',
+    'foam.lang.PropertyInfo',
     'foam.dao.ArraySink',
     'foam.mlang.Expr',
     'foam.mlang.predicate.Predicate',
@@ -33,13 +33,13 @@ foam.CLASS({
       class: 'Class',
       name: 'of',
       factory: function() {
-        return this.array.length === 0 ? this.__context__.lookup('foam.core.FObject') : null;
+        return this.array.length === 0 ? this.__context__.lookup('foam.lang.FObject') : null;
       },
       hidden: true
     },
     {
       class: 'List',
-      of: 'foam.core.FObject',
+      of: 'foam.lang.FObject',
       name: 'array',
       factory: function() { return []; },
       javaFactory: 'return new ArrayList();',
@@ -105,7 +105,7 @@ foam.CLASS({
         sink = this.decorateSink_(resultSink, skip, limit, order, predicate);
 
         var detached = false;
-        var sub = foam.core.FObject.create();
+        var sub = foam.lang.FObject.create();
         sub.onDetach(function() { detached = true; });
 
         var self = this;
@@ -159,7 +159,7 @@ foam.CLASS({
       code: function(x, id) {
         // id of type Predicate handled in AbstractDAO
         var identity = this.identityExpr
-        var val = this.of.isInstance(id) ? identity.f(id) : id;
+        var val      = this.of.isInstance(id) ? identity.f(id) : id;
         for ( var i = 0 ; i < this.array.length ; i++ ) {
           if ( foam.util.equals(identity.f(this.array[i]), val) )
             return Promise.resolve(this.array[i]);

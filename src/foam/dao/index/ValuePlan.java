@@ -4,7 +4,7 @@
  */
 package foam.dao.index;
 
-import foam.core.FObject;
+import foam.lang.FObject;
 import foam.dao.MDAO;
 import foam.dao.Sink;
 import foam.mlang.order.Comparator;

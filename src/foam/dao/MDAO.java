@@ -5,15 +5,15 @@
  */
 package foam.dao;
 
-import foam.core.*;
+import foam.lang.*;
 import foam.dao.index.*;
 import foam.mlang.MLang;
 import foam.mlang.order.Comparator;
 import foam.mlang.predicate.Or;
 import foam.mlang.predicate.Predicate;
 import foam.mlang.sink.GroupBy;
-import foam.nanos.logger.Logger;
-import foam.nanos.pm.PM;
+import foam.core.logger.Logger;
+import foam.core.pm.PM;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashSet;

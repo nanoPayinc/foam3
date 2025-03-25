@@ -28,7 +28,7 @@ foam.CLASS({
     {
       // A Method which has the call-site context added as the first arg
       // when exported.
-      class: 'foam.core.ContextMethod',
+      class: 'foam.lang.ContextMethod',
       name: 'E',
       code: function E(ctx, opt_nodeName, opt_args) {
         var nodeName = opt_nodeName ? opt_nodeName.toLowerCase() : 'div';

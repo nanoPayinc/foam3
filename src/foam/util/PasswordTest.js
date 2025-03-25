@@ -7,10 +7,10 @@
 foam.CLASS({
   package: 'foam.util',
   name: 'PasswordTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
 
   javaImports: [
-    'foam.core.X'
+    'foam.lang.X'
   ],
 
   methods: [
@@ -18,7 +18,7 @@ foam.CLASS({
       name: 'runTest',
       javaCode: `
         // hashing tests
-        Password_HashWithInvalidInput_IllegalArgumentException(null, "Password hashing with null throws an IllegalArgumentException");;
+        Password_HashWithInvalidInput_IllegalArgumentException(null, "Password hashing with null throws an IllegalArgumentException");
         Password_HashWithInvalidInput_IllegalArgumentException("", "Password hashing with empty string input throws an IllegalArgumentException");
         Password_HashWithValidInput_Succeeds("Testing123");
 

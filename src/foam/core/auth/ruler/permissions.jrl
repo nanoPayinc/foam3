@@ -1,0 +1,4 @@
+p({"class":"foam.core.auth.Permission","id":"prevent-duplicate-email","description":"Dissallow duplicate emails"})
+p({"class":"foam.core.auth.Permission","id":"userlifecycleticket.read.*","description":"Permission to view"})
+p({"class":"foam.core.auth.Permission","id":"userlifecycleticket.crate","description":"Permission to create"})
+p({"class":"foam.core.auth.Permission","id":"userlifecycleticket.update.*","description":"Permission to modify"})

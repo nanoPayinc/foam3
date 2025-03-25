@@ -63,7 +63,7 @@ daoSub = try! newValue!.listen(FnSink_create([
     } else {
       self?.onDAOUpdate()
     }
-  } as (String?, Any?, ${foam.core.Detachable.model_.swiftName}?) -> Void,
+  } as (String?, Any?, ${foam.lang.Detachable.model_.swiftName}?) -> Void,
 ]), nil)
 
 onDetach(daoSub)
@@ -71,9 +71,9 @@ onDAOUpdate()
       `
     },
     {
-      type: 'foam.core.Detachable',
+      type: 'foam.lang.Detachable',
       name: 'daoSub',
-      swiftPostSet: `if let o = oldValue as? ${foam.core.Detachable.model_.swiftName} { o.detach() }`,
+      swiftPostSet: `if let o = oldValue as? ${foam.lang.Detachable.model_.swiftName} { o.detach() }`,
     },
     {
       swiftType: 'UITableView?',

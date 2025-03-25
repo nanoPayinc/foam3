@@ -5,7 +5,7 @@
 
 package foam.lib.json;
 
-import foam.core.PropertyInfo;
+import foam.lang.PropertyInfo;
 import foam.lib.parse.*;
 import java.util.ArrayList;
 import java.util.Collections;

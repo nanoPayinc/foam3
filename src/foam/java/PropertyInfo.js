@@ -41,6 +41,11 @@ foam.CLASS({
       }
     },
     {
+      class: 'Int',
+      name: 'precision',
+      factory: function() { return this.property.precision; }
+    },
+    {
       class: 'Boolean',
       name: 'networkTransient',
       factory: function() { return this.property.networkTransient; }
@@ -204,7 +209,8 @@ foam.CLASS({
           }
         ];
 
-        var primitiveType = [ 'boolean', 'long', 'byte', 'double', 'float', 'short', 'int' ];
+        var numberType    = [ 'long', 'byte', 'double', 'float', 'short', 'int' ];
+        var primitiveType = [ ...numberType, 'boolean' ];
 
         if ( ! ( primitiveType.includes(this.propType) || this.propType == 'Object' || this.propType == 'String' ) ) {
           m.push({
@@ -216,7 +222,7 @@ foam.CLASS({
           });
         }
 
-        if ( ! ( primitiveType.includes(this.propType) || this.propType == 'Object' || this.extends == 'foam.core.AbstractFObjectPropertyInfo' || this.extends == 'foam.core.AbstractFObjectArrayPropertyInfo' ) ) {
+        if ( ! ( primitiveType.includes(this.propType) || this.propType == 'Object' || this.extends == 'foam.lang.AbstractFObjectPropertyInfo' || this.extends == 'foam.lang.AbstractFObjectArrayPropertyInfo' ) ) {
           m.push({
             name: 'getSQLType',
             visibility: 'public',
@@ -246,8 +252,8 @@ foam.CLASS({
             //TODO add support for special type.
 //              || this.propType == 'java.util.Map' || this.propType == 'java.util.List'
             //TODO add support for subtype.
-//            this.propType == 'foam.core.AbstractFObjectPropertyInfo' || this.propType == 'foam.core.AbstractClassPropertyInfo') ||
-//            this.propType == 'foam.core.AbstractObjectPropertyInfo'
+//            this.propType == 'foam.lang.AbstractFObjectPropertyInfo' || this.propType == 'foam.lang.AbstractClassPropertyInfo') ||
+//            this.propType == 'foam.lang.AbstractObjectPropertyInfo'
 
           m.push({
             name: 'getValueClass',
@@ -304,7 +310,18 @@ foam.CLASS({
             body: this.comparePropertyToValue,
           });
         }
-        if ( ! ( primitiveType.includes(this.propType) || this.propType  == 'java.util.Date' || this.propType == 'String' || this.propType == 'Object' || this.extends == 'foam.core.AbstractFObjectPropertyInfo' || this.extends == 'foam.core.AbstractFObjectArrayPropertyInfo') ) {
+        if ( numberType.includes(this.propType) ) {
+          if ( this.propValue != '0' ) {
+            m.push({
+              name: 'isDefaultValue',
+              visibility: 'public',
+              type: 'boolean',
+              args: [{ name: 'o', type: 'Object' }],
+              /* TODO: revise when/if expression support is added to Java */
+              body: `return foam.util.SafetyUtil.compare(get_(o), ${this.propValue}) == 0;`
+            });
+          }
+        } else if ( this.propType != 'boolean' && this.propType != 'java.util.Date' && this.propType != 'String' && this.propType != 'Object' && this.extends != 'foam.lang.AbstractFObjectPropertyInfo' && this.extends != 'foam.lang.AbstractFObjectArrayPropertyInfo' ) {
           m.push({
             name: 'isDefaultValue',
             visibility: 'public',
@@ -313,25 +330,34 @@ foam.CLASS({
             /* TODO: revise when/if expression support is added to Java */
             body: `return foam.util.SafetyUtil.compare(get_(o), ${this.propValue}) == 0;`
           });
-          // TODO: We could reduce the amount a Enum PropertyInfo code we output
-          if ( this.extends != 'foam.core.AbstractEnumPropertyInfo' ) {
-            m.push({
-              name: 'format',
-              visibility: 'public',
-              type: 'void',
-              args: [
-                {
-                  name: 'formatter',
-                  type: 'foam.lib.formatter.FObjectFormatter'
-                },
-                {
-                  name: 'obj',
-                  type: 'foam.core.FObject'
-                }
-              ],
-              body: 'formatter.output(get_(obj));'
-            });
+        }
+
+        // TODO: We could reduce the amount a Enum PropertyInfo code we output
+        if ( this.extends != 'foam.lang.AbstractEnumPropertyInfo' ) {
+          var body = 'formatter.output(get_(obj));';
+
+          // Double extends Float, so just checking for Float catches both
+          if ( foam.lang.Float.isInstance(this.property) && this.precision ) {
+            var precision = this.precision;
+            var body = `formatter.output(get_(obj), ${precision});`;
           }
+
+          m.push({
+            name: 'format',
+            visibility: 'public',
+            type: 'void',
+            args: [
+              {
+                name: 'formatter',
+                type: 'foam.lib.formatter.FObjectFormatter'
+              },
+              {
+                name: 'obj',
+                type: 'foam.lang.FObject'
+              }
+            ],
+            body: body
+          });
         }
 
         m.push({
@@ -409,8 +435,8 @@ foam.CLASS({
           visibility: 'public',
           type: 'void',
           args: [
-            { name: 'x', type: 'foam.core.X' },
-            { name: 'obj', type: 'foam.core.FObject' }
+            { name: 'x', type: 'foam.lang.X' },
+            { name: 'obj', type: 'foam.lang.FObject' }
           ],
           body: this.validateObj
         });
@@ -436,8 +462,8 @@ foam.CLASS({
             name: 'cloneProperty',
             visibility: 'public',
             type: 'void',
-            args: [{ type: 'foam.core.FObject', name: 'source' },
-                    { type: 'foam.core.FObject', name: 'dest' }],
+            args: [{ type: 'foam.lang.FObject', name: 'source' },
+                    { type: 'foam.lang.FObject', name: 'dest' }],
             body: this.cloneProperty
           });
         }
@@ -447,10 +473,10 @@ foam.CLASS({
             name: 'diff',
             visibility: 'public',
             type: 'void',
-            args: [{ type: 'foam.core.FObject',       name: 'o1'   },
-                    { type: 'foam.core.FObject',      name: 'o2'   },
+            args: [{ type: 'foam.lang.FObject',       name: 'o1'   },
+                    { type: 'foam.lang.FObject',      name: 'o2'   },
                     { type: 'java.util.Map',          name: 'diff' },
-                    { type: 'foam.core.PropertyInfo', name: 'prop' }],
+                    { type: 'foam.lang.PropertyInfo', name: 'prop' }],
             body: this.diffProperty
           });
         }
@@ -517,7 +543,7 @@ foam.CLASS({
               },
               {
                 name: 'obj',
-                type: 'foam.core.FObject'
+                type: 'foam.lang.FObject'
               }
             ],
             body: this.formatJSON + ';'

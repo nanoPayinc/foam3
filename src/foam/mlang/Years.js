@@ -12,7 +12,7 @@ foam.CLASS({
 
 /*
   implements: [
-    'foam.core.Serializable'
+    'foam.lang.Serializable'
   ],
   */
 
@@ -39,11 +39,13 @@ foam.CLASS({
     {
       name: 'f',
       code: function f(obj) {
-        var from = this.arg1.f(obj).getUTCFullYear();
-        var now = new Date().getUTCFullYear();
-        var years = now - from;
-        if ( from > now ) {
-          years = from - now;
+        var from = this.arg1.f(obj);
+        var now = new Date();
+        var years = now.getUTCFullYear() - from.getUTCFullYear();
+        if ( now.getMonth() < from.getMonth() ||
+             now.getMonth() == from.getMonth() &&
+             now.getDate() < from.getDate() ) {
+          years -= 1;
         }
         return years;
       },

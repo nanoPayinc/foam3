@@ -1,0 +1,17 @@
+p({
+  class: "foam.core.notification.email.EmailTemplate",
+  id:"foam-core-er-EventRecordEmailTemplate",
+  name:"foam-core-er-EventRecordEmailTemplate",
+  "subject": "EventRecord - {{summary}}",
+  "body": """event: {{event}}
+partner: {{partner}}
+code: {{code}}
+severity: {{severity}}
+{% if message %}message: {{message}}{% endif %}
+{% if createdFrom %}createdFrom: {{createdFrom}}{% endif %}
+createdBy: {{createdBy}}
+created: {{created}}
+hostname: {{hostname}}
+{% if eventRecord %}eventRecord: {{url}}/#er?id={{eventRecord}}{% endif %}
+  """
+})

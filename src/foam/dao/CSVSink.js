@@ -8,10 +8,10 @@ foam.CLASS({
   package: 'foam.dao',
   name: 'CSVSink',
   extends: 'foam.dao.AbstractSink',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   javaImports: [
-    'foam.core.PropertyInfo',
+    'foam.lang.PropertyInfo',
     'java.util.List'
   ],
 
@@ -36,7 +36,7 @@ foam.CLASS({
       factory: function() {
         if ( ! this.of ) return [];
         if ( tc = this.of.getAxiomByName('tableColumns') ) return tc.columns;
-        return this.of.getAxiomsByClass(foam.core.Property)
+        return this.of.getAxiomsByClass(foam.lang.Property)
           .filter((p) => ! p.networkTransient)
           .map((p) => p.name);
       },
@@ -78,10 +78,9 @@ foam.CLASS({
       },
       javaCode: `
         setCsv("");
-        getOutputter().outputFObject(getX(), (foam.core.FObject)obj);
+        getOutputter().outputFObject(getX(), (foam.lang.FObject)obj);
       `
     },
-
     {
       name: 'eof',
       code: function() {
@@ -91,7 +90,6 @@ foam.CLASS({
         setCsv(getOutputter().toString());
       `
     },
-
     {
       name: 'reset',
       code: function() {
@@ -102,7 +100,8 @@ foam.CLASS({
         getOutputter().flush();
         setCsv("");
       `
-    }
+    },
+    function addToE(e) { e.start('pre').style({margin: 0}).add(this.csv); }
   ]
 });
 
@@ -110,7 +109,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.dao',
   name: 'PropertyCSVRefinement',
-  refines: 'foam.core.Property',
+  refines: 'foam.lang.Property',
 
   properties: [
     {
@@ -134,7 +133,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.dao',
   name: 'FObjectPropertyCSVRefinement',
-  refines: 'foam.core.FObjectProperty',
+  refines: 'foam.lang.FObjectProperty',
   requires: [
     'foam.lib.csv.PrefixedCSVOutputter'
   ],
@@ -152,7 +151,7 @@ foam.CLASS({
           outputter.outputValue(obj ? this.f(obj) : null);
           return;
         }
-        this.of.getAxiomsByClass(foam.core.Property)
+        this.of.getAxiomsByClass(foam.lang.Property)
           .forEach((p) => {
             p.toCSV.call(p, x, obj ? this.f(obj) : null, outputter);
           });
@@ -162,11 +161,11 @@ foam.CLASS({
       name: 'javaToCSV',
       class: 'String',
       value: `
-        if ( of() instanceof foam.core.EmptyClassInfo ) {
+        if ( of() instanceof foam.lang.EmptyClassInfo ) {
           outputter.outputValue(obj != null ? f(obj) : null);
           return;
         }
-        for ( foam.core.PropertyInfo p : (java.util.List<foam.core.PropertyInfo>) of().getAxiomsByClass(foam.core.PropertyInfo.class) ) {
+        for ( foam.lang.PropertyInfo p : (java.util.List<foam.lang.PropertyInfo>) of().getAxiomsByClass(foam.lang.PropertyInfo.class) ) {
           p.toCSV(x, obj != null ? f(obj) : null, outputter);
         }
       `
@@ -183,7 +182,7 @@ foam.CLASS({
           prefix: this.name + '.',
           delegate: outputter
         });
-        this.of.getAxiomsByClass(foam.core.Property)
+        this.of.getAxiomsByClass(foam.lang.Property)
           .forEach(p => {
             p.toCSVLabel.call(p, x, outputter);
           });
@@ -193,7 +192,7 @@ foam.CLASS({
       name: 'javaToCSVLabel',
       class: 'String',
       value: `
-        if ( of() instanceof foam.core.EmptyClassInfo ) {
+        if ( of() instanceof foam.lang.EmptyClassInfo ) {
           outputter.outputValue(getName());
           return;
         }
@@ -201,7 +200,7 @@ foam.CLASS({
           .setPrefix(getName() + ".")
           .setDelegate(outputter)
           .build();
-        for ( foam.core.PropertyInfo p : (java.util.List<foam.core.PropertyInfo>) of().getAxiomsByClass(foam.core.PropertyInfo.class) ) {
+        for ( foam.lang.PropertyInfo p : (java.util.List<foam.lang.PropertyInfo>) of().getAxiomsByClass(foam.lang.PropertyInfo.class) ) {
           p.toCSVLabel(x, outputter);
         }
       `

@@ -11,7 +11,7 @@ foam.CLASS({
   abstract: true,
 
   javaImports:[
-    'foam.core.PropertyInfo',
+    'foam.lang.PropertyInfo',
     'foam.mlang.Constant'
   ],
 

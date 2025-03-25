@@ -10,11 +10,11 @@ foam.CLASS({
 
   documentation: 'Represents a database connection pool',
 
-  implements: [ 'foam.nanos.NanoService' ],
+  implements: [ 'foam.core.COREService' ],
 
   javaImports: [
     'org.apache.commons.dbcp2.BasicDataSource',
-    'foam.nanos.logger.Logger'
+    'foam.core.logger.Logger'
    ],
 
   properties: [

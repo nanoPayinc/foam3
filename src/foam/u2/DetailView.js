@@ -13,7 +13,7 @@ foam.CLASS({
   documentation: 'A generic property-sheet style View for editing an FObject.',
 
   requires: [
-    'foam.core.Property',
+    'foam.lang.Property',
     'foam.u2.Tab',
     'foam.u2.Tabs'
   ],
@@ -231,9 +231,9 @@ foam.CLASS({
       preSet: function(_, ps) {
         foam.assert(ps, 'Properties required.');
         for ( var i = 0 ; i < ps.length ; i++ ) {
-          if ( ! foam.core.Property.isInstance(ps[i]) ) {
+          if ( ! foam.lang.Property.isInstance(ps[i]) ) {
             var p = this.of.getAxiomByName(ps[i]);
-            if ( ! foam.core.Property.isInstance(p) ) {
+            if ( ! foam.lang.Property.isInstance(p) ) {
               foam.assert(
                 false,
                 `Non-Property in 'properties' list:`,
@@ -247,12 +247,12 @@ foam.CLASS({
       },
       expression: function(of) {
         if ( ! of ) return [];
-        var ret = this.of.getAxiomsByClass(foam.core.Property).
+        var ret = this.of.getAxiomsByClass(foam.lang.Property).
           // TODO: this is a temporary fix, but DisplayMode.HIDDEN should be included and could be switched
           filter(function(p) {
             return ! ( p.hidden || p.visibility === foam.u2.DisplayMode.HIDDEN );
           });
-        ret.sort(foam.core.Property.ORDER.compare);
+        ret.sort(foam.lang.Property.ORDER.compare);
         return ret;
       }
     },
@@ -265,7 +265,7 @@ foam.CLASS({
       name: 'actions',
       expression: function(of) {
         if ( ! of ) return [];
-        return this.of.getAxiomsByClass(foam.core.Action);
+        return this.of.getAxiomsByClass(foam.lang.Action);
       }
     },
     {

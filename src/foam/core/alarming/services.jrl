@@ -1,0 +1,111 @@
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"alarmConfigDAO",
+  "serve":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setPm(true)
+      .setPipelinePm(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("alarmConfigs")
+      .setOf(foam.core.alarming.AlarmConfig.getOwnClassInfo())
+      .setDecorator(new foam.core.alarming.AlarmConfigOMNameDAO.Builder(x)
+        .setDelegate(new foam.dao.NullDAO(x, foam.core.alarming.AlarmConfig.getOwnClassInfo()))
+        .build())
+      .build();
+  """,
+  "client":"{\"of\":\"foam.core.alarming.AlarmConfig\"}"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"monitoringReportDAO",
+  "serve":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.alarming.MonitoringReport.getOwnClassInfo())
+      .setNullify(true)
+      .setSeqNo(true)
+      .setPm(true)
+      .setPipelinePm(true)
+      .setRuler(true)
+      .build();
+  """,
+  "client":"{\"of\":\"foam.core.alarming.MonitoringReport\"}"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"localAlarmDAO",
+  "serviceScript":`
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.alarming.Alarm.getOwnClassInfo())
+      .setPm(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("alarms")
+      .setWriteOnly(true)
+      .setSAF(true)
+      .setOrder(new foam.mlang.order.Comparator[] {
+        foam.core.alarming.Alarm.LAST_MODIFIED,
+        new foam.mlang.order.Desc.Builder(x).setArg1(
+          foam.core.alarming.Alarm.IS_ACTIVE).build()})
+     .build()
+     .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.alarming.Alarm.NAME })
+     .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.alarming.Alarm.HOSTNAME })
+     .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.alarming.Alarm.SEVERITY })
+     .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.alarming.Alarm.IS_ACTIVE })
+     .addPropertyIndex(new foam.lang.PropertyInfo[] {
+       foam.core.alarming.Alarm.HOSTNAME,
+       foam.core.alarming.Alarm.SEVERITY,
+       foam.core.alarming.Alarm.IS_ACTIVE
+     });
+  `
+})
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"alarmDAO",
+  "serve":true,
+  "serviceScript":`
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.alarming.Alarm.getOwnClassInfo())
+      .setInnerDAO(x.get("localAlarmDAO"))
+      .setDecorator(new foam.core.alarming.AddAlarmNameDAO.Builder(x)
+        .setDelegate(new foam.core.alarming.AlarmLoggingDAO.Builder(x)
+        .setDelegate(new foam.core.alarming.AlarmNotificationDAO.Builder(x)
+        .setDelegate(new foam.dao.NullDAO(x, foam.core.alarming.Alarm.getOwnClassInfo()))
+        .build())
+        .build())
+        .build())
+      .build();
+  `,
+  "client":"{\"of\":\"foam.core.alarming.Alarm\"}"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"omNameDAO",
+  "serve":true,
+  "serviceScript":`
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.alarming.OMName.getOwnClassInfo())
+      .setCluster(false)
+      .build();
+    `
+  ,"client":"{\"of\":\"foam.core.alarming.OMName\"}"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"candlestickAlarmDAO",
+  "serve":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.alarming.CandlestickAlarm.getOwnClassInfo())
+      .setFuid(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("candlestickalarms")
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.alarming.CandlestickAlarm.KEY });
+  """,
+  "client":"{\"of\":\"foam.core.alarming.CandlestickAlarm\"}"
+})

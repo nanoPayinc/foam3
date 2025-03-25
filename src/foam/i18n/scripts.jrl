@@ -1,5 +1,5 @@
 p({
-  "class": "foam.nanos.script.Script",
+  "class": "foam.core.script.Script",
   "id": "ExtractStringAxiom",
   "description": "get all String axiom to translate them",
   "server": false,
@@ -34,7 +34,7 @@ p({
         x.localeDAO.put(xl);
       }
 
-      if ( !!!p.label && !!p.name && ( p.class != "foam.core.Enum" && p.class != "Enum") ) {
+      if ( !!!p.label && !!p.name && ( p.class != "foam.lang.Enum" && p.class != "Enum") ) {
         let xl = foam.i18n.Locale.create({
           "id": o.id+'.'+foam.String.constantize(p.name)+'.label',
           "locale": 'fr',
@@ -45,7 +45,7 @@ p({
         })
         x.localeDAO.put(xl);
       }
-      if ( !!p.value && typeof p.value !== 'function' && p.name !== 'slashReplacement' && p.name !== 'code' && typeof p.value !== 'object' && ( p.class != "foam.core.Enum" && p.class != "Enum")  ) { //not for object
+      if ( !!p.value && typeof p.value !== 'function' && p.name !== 'slashReplacement' && p.name !== 'code' && typeof p.value !== 'object' && ( p.class != "foam.lang.Enum" && p.class != "Enum")  ) { //not for object
         let xl = foam.i18n.Locale.create({
           "id": o.id+'.'+foam.String.constantize(p.name)+'.value',
           "locale": 'fr',
@@ -158,7 +158,7 @@ p({
 })
 
 p({
-  "class": "foam.nanos.script.Script",
+  "class": "foam.core.script.Script",
   "id": "extractMenuFromJournal",
   "lastRun": 1593184732391,
   "lastDuration": 18,
@@ -242,7 +242,7 @@ p({
   "lastModifiedBy": 1348
 })
 p({
-  "class": "foam.nanos.script.Script",
+  "class": "foam.core.script.Script",
   "id": "ExtractStringAxiomPerPackage",
   "description":"get all String axiom to translate them per package",
   "server": false,
@@ -281,7 +281,7 @@ p({
         msg+= p.label+'\\n';
       }
 
-      if ( !!!p.label && !!p.name && ( p.class != "foam.core.Enum" && p.class != "Enum") ) {
+      if ( !!!p.label && !!p.name && ( p.class != "foam.lang.Enum" && p.class != "Enum") ) {
         let xl = foam.i18n.Locale.create({
           "id": o.id+'.'+foam.String.constantize(p.name)+'.label',
           "locale": 'pt',
@@ -293,7 +293,7 @@ p({
         x.localeDAO.put(xl);
         msg+= p.name+'\\n';
       }
-      if ( !!p.value && typeof p.value !== 'function' && p.name !== 'slashReplacement' && p.name !== 'code' && typeof p.value !== 'object' && ( p.class != "foam.core.Enum" && p.class != "Enum")  ) { //not for object
+      if ( !!p.value && typeof p.value !== 'function' && p.name !== 'slashReplacement' && p.name !== 'code' && typeof p.value !== 'object' && ( p.class != "foam.lang.Enum" && p.class != "Enum")  ) { //not for object
         let xl = foam.i18n.Locale.create({
           "id": o.id+'.'+foam.String.constantize(p.name)+'.value',
           "locale": 'pt',

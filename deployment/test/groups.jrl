@@ -1,15 +1,15 @@
 p({
-  class:"foam.nanos.auth.Group",
+  class:"foam.core.auth.Group",
   id:"test",
   description:"test"
 })
 p({
-  class:"foam.nanos.auth.Group",
+  class:"foam.core.auth.Group",
   id:"test-api",
   description:"test api/dig acess"
 })
 p({
-  class:"foam.nanos.auth.Group",
+  class:"foam.core.auth.Group",
   id:"test-admin",
   description:"test admin",
   parent:"msp-admin"

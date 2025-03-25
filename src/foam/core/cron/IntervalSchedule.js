@@ -1,0 +1,90 @@
+/**
+ * @license
+ * Copyright 2019 The FOAM Authors. All Rights Reserved.
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+foam.CLASS({
+  package: 'foam.core.cron',
+  name: 'IntervalSchedule',
+
+  documentation: `
+    Schedule periodically with a time duration (hours, minutes, seconds).
+
+    For example, to run a task every 90 minutes:
+    { start: "1970-01-01",
+      duration: { hour: 1, minute: 30 , second: 0 } }
+  `,
+
+  implements: [
+    'foam.core.cron.Schedule'
+  ],
+
+  javaImports: [
+    'foam.lang.X',
+    'java.util.Calendar',
+    'java.util.Date'
+  ],
+
+  properties: [
+    {
+      class: 'FObjectProperty',
+      of: 'foam.core.cron.TimeHMS',
+      name: 'duration',
+      factory: () => {
+        return foam.core.cron.TimeHMS.create();
+      },
+      javaFactory: 'return new foam.core.cron.TimeHMS();'
+    },
+    {
+      class: 'DateTime',
+      name: 'start',
+      factory: function() { return new Date(); },
+      javaFactory: 'return new Date();'
+    }
+  ],
+
+  methods: [
+    {
+      name: 'getNextScheduledTime',
+      type: 'DateTime',
+      args: [
+        {
+          name: 'x',
+          type: 'X'
+        },
+        {
+          name: 'from',
+          type: 'java.util.Date'
+        }
+      ],
+      javaCode:
+`
+Calendar now = Calendar.getInstance();
+now.setTime(from);
+
+Calendar start = Calendar.getInstance();
+start.setTime(getStart());
+if ( now.getTimeInMillis() < start.getTimeInMillis() ) {
+  return start.getTime();
+}
+
+Calendar next = Calendar.getInstance();
+next.setTime(getStart());
+while ( next.getTimeInMillis() < now.getTimeInMillis() ) {
+  next.add(Calendar.HOUR_OF_DAY, getDuration().getHour());
+  next.add(Calendar.MINUTE,      getDuration().getMinute());
+  next.add(Calendar.SECOND,      getDuration().getSecond());
+}
+
+return next.getTime();
+`
+    },
+    {
+      name: 'postExecution',
+      javaCode: `
+        return;
+      `
+    }
+  ]
+});

@@ -213,7 +213,7 @@ foam.CLASS({
         {
           class: 'String',
           name: 'foo',
-          visibility: foam.core.ConstantSlot.create({ value: foam.u2.DisplayMode.RW })
+          visibility: foam.lang.ConstantSlot.create({ value: foam.u2.DisplayMode.RW })
         }
       `,
     }

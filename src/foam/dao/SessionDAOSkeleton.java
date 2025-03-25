@@ -7,7 +7,7 @@
 package foam.dao;
 
 import foam.box.RPCMessage;
-import foam.core.FObject;
+import foam.lang.FObject;
 
 /**
  * Extend the generated DAOSkeleton and map all non Context-Oriented methods
@@ -40,7 +40,7 @@ public class SessionDAOSkeleton
       DAO delegate = (DAO) getDelegateFactory().create(getMessageX(message));
 
       synchronized ( this ) {
-        FObject obj = (foam.core.FObject)(rpc.getArgs() != null && rpc.getArgs().length > 1 ? rpc.getArgs()[1] : null);
+        FObject obj = (foam.lang.FObject)(rpc.getArgs() != null && rpc.getArgs().length > 1 ? rpc.getArgs()[1] : null);
         if ( ! delegate.getOf().isInstance(obj) )
           throw new ClassCastException(obj.getClass() + " isn't instance of " + delegate.getOf());
         if ( obj != null ) {

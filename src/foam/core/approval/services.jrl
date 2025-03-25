@@ -1,0 +1,119 @@
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"approvableDAO",
+  "serve":true,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setGuid(true)
+      .setAuthorize(false)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("approvables")
+      .setOf(foam.core.approval.Approvable.getOwnClassInfo())
+      .build();
+  """,
+  "client": """
+    {
+      "of": "foam.core.approval.Approvable"
+    }
+  """
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "approvalRequestDAO",
+  "serve": true,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.approval.ApprovalRequest.getOwnClassInfo())
+      .setAuthorizer(new foam.core.approval.AuthenticatedApprovalDAOAuthorizer())
+      .setPm(true)
+      .setFuid(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("approvalRequests")
+      .setValidated(true)
+      .setRulerDaoKey("approvalRequestDAO")
+      .setDecorator(
+        new foam.core.approval.SendGroupRequestApprovalDAO(x,
+          new foam.dao.NullDAO(x, foam.core.approval.ApprovalRequest.getOwnClassInfo())
+        )
+      )
+      .setFixedSize(new foam.dao.FixedSizeDAO.Builder(x)
+        .setPredicate(foam.mlang.MLang.NEQ(foam.core.approval.ApprovalRequest.STATUS, foam.core.approval.ApprovalStatus.REQUESTED))
+        .setComparator(foam.mlang.MLang.DESC(foam.core.approval.ApprovalRequest.CREATED))
+        .setSize(10000)
+        .build())
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.approval.ApprovalRequest.CREATED })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.approval.ApprovalRequest.DAO_KEY, foam.core.approval.ApprovalRequest.CLASSIFICATION })
+      .orderBy(foam.mlang.MLang.DESC(foam.core.approval.ApprovalRequest.CREATED));
+  """,
+  "client": "{\"of\":\"foam.core.approval.ApprovalRequest\"}"
+})
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "tableViewApprovalRequestDAO",
+  "lazy": true,
+  "serve": true,
+  "serviceScript":
+  """
+    of = foam.core.approval.ApprovalRequest.getOwnClassInfo();
+    dao = new foam.core.approval.PopulateApprovalRequestSummariesDAO(x);
+    dao = new foam.dao.MaterializedDAO.Builder(x)
+          .setOf(of)
+          .setAutoStart(true)
+          .setAdapter(new foam.core.approval.PopulateApprovalRequestSummariesAdapter(x, of, dao))
+          .setSourceDAO(x.get("approvalRequestDAO"))
+          .build()
+          .orderBy(foam.mlang.MLang.DESC(foam.core.approval.ApprovalRequest.CREATED));
+    dao = new foam.core.auth.AuthorizationDAO.Builder(x)
+            .setDelegate(dao)
+            .setAuthorizer(new foam.core.approval.AuthenticatedApprovalDAOAuthorizer())
+            .build();
+    return new foam.dao.PMDAO.Builder(x)
+      .setDelegate(dao)
+      .build();
+  """,
+  "client":
+  """
+    {
+      "of": "foam.core.approval.ApprovalRequest",
+      "remoteListenerSupport": false,
+      "serverBox": {
+        "class": "foam.box.SessionClientBox",
+        "url": "service/tableViewApprovalRequestDAO",
+        "delegate": {
+          "class": "foam.box.TimeoutBox",
+          "timeout": 25000,
+          "delegate": {
+            "class": "foam.box.HTTPBox",
+            "url": "service/tableViewApprovalRequestDAO"
+          }
+        }
+      }
+    }
+  """
+})
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "ApprovalRequestNotification",
+  "serviceClass": "foam.core.approval.ApprovalRequestNotification"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"releaseCashInApprovalTypeDAO",
+  "serve":true,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setFuid(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("releaseCashInApprovalTypes")
+      .setOf(foam.core.approval.ReleaseCashInApprovalType.getOwnClassInfo())
+      .build();
+  """,
+  "client": """
+    {
+      "of": "foam.core.approval.ReleaseCashInApprovalType"
+    }
+  """
+})

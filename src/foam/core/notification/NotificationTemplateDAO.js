@@ -1,0 +1,142 @@
+/**
+ * @license
+ * Copyright 2018 The FOAM Authors. All Rights Reserved.
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+foam.CLASS({
+  package: 'foam.core.notification',
+  name: 'NotificationTemplateDAO',
+  extends: 'foam.dao.ProxyDAO',
+
+  documentation: `Populate notification with template values.
+The caller only has to know the template name and does not need to be aware how
+the notification will be handled. `,
+
+  implements: [
+    'foam.mlang.Expressions'
+  ],
+
+  imports: [
+    'notificationTemplateDAO'
+  ],
+
+  javaImports: [
+    'foam.lang.FObject',
+    'foam.dao.ArraySink',
+    'foam.dao.DAO',
+    'foam.dao.Sink',
+    'static foam.mlang.MLang.EQ',
+    'foam.core.auth.User',
+    'foam.core.logger.Logger',
+    'foam.core.logger.Loggers',
+    'foam.util.SafetyUtil',
+    'java.util.List',
+    'java.util.Map'
+  ],
+
+  methods: [
+    {
+      name: 'put_',
+      code: function(x, obj) {
+        if ( obj.template != null && '' != obj.template ) {
+          return this.notificationTemplateDAO.where(this.EQ(Notification.TEMPLATE, obj.template))
+            .limit(2).select().then(function(sink) {
+              var template = obj;
+              if ( sink.array.size == 1 ) {
+                template = sink.array[0];
+                template.copyFrom(obj);
+                return this.delegate.put_(x, template);
+              } else {
+                console.err('Notification template ' + obj.template + ' not found.');
+                return obj;
+              }
+            }).bind(this);
+        }
+        return this.delegate.put_(x, obj);
+      },
+      javaCode: `
+        Logger       logger       = Loggers.logger(x, this);
+        Notification notification = (Notification) obj;
+        Notification template     = notification;
+
+        if ( ! foam.util.SafetyUtil.isEmpty(notification.getTemplate()) ) {
+          List templates = ((ArraySink) ((DAO) x.get("notificationTemplateDAO"))
+            .limit(2)
+            .where(EQ(Notification.TEMPLATE, notification.getTemplate()))
+            .select(new ArraySink()))
+            .getArray();
+
+          if ( templates.size() > 1 ) {
+            logger.info("ERROR,Multiple templates found", notification.getTemplate());
+            return notification;
+          }
+          if ( templates.size() == 1 ) {
+            template = (Notification) ((FObject)templates.get(0)).fclone();
+
+            Notification.ID.clear(template);
+            Notification.TEMPLATE.clear(template);
+
+            // Can't use copyFrom which tests isSet, as we don't
+            // want all properties copied.
+            if ( Notification.IN_APP_ENABLED.isSet(notification) ) {
+              template.setInAppEnabled(notification.getInAppEnabled());
+            }
+            if ( Notification.BODY.isSet(notification) && ! SafetyUtil.isEmpty(notification.getBody()) ) {
+              template.setBody(notification.getBody());
+            }
+            if ( Notification.CLUSTERABLE.isSet(notification) ) {
+              template.setClusterable(notification.getClusterable());
+            }
+            if ( Notification.EMAIL_NAME.isSet(notification) && ! SafetyUtil.isEmpty(notification.getEmailName())) {
+              template.setEmailName(notification.getEmailName());
+            }
+            if ( Notification.READ.isSet(notification) ) {
+              template.setRead(notification.getRead());
+            }
+            if ( Notification.SPID.isSet(notification) ) {
+              template.setSpid(notification.getSpid());
+            }
+            if ( Notification.TOAST_MESSAGE.isSet(notification) && ! SafetyUtil.isEmpty(notification.getToastMessage()) ) {
+              template.setToastMessage(notification.getToastMessage());
+            }
+            if ( Notification.TOAST_SUB_MESSAGE.isSet(notification) && ! SafetyUtil.isEmpty(notification.getToastSubMessage()) ) {
+              template.setToastSubMessage(notification.getToastSubMessage());
+            }
+            if ( Notification.EMAIL_ARGS.isSet(notification) &&
+                 Notification.EMAIL_ARGS.isSet(template) ) {
+              Map args = template.getEmailArgs();
+              notification.getEmailArgs().forEach((k, v) -> {
+                if ( ! args.containsKey(k) ) {
+                  args.put(k, v);
+                }
+              });
+              template.setEmailArgs(args);
+            }
+            if ( Notification.ALARM.isSet(notification) ) {
+              template.setAlarm(notification.getAlarm());
+            }
+            if ( Notification.USER_ID.isSet(notification) &&
+                 ! Notification.USER_ID.isSet(template) ) {
+              template.setUserId(notification.getUserId());
+            }
+            if ( Notification.GROUP_ID.isSet(notification) &&
+                 ! Notification.GROUP_ID.isSet(template) && ! SafetyUtil.isEmpty(notification.getGroupId()) ) {
+              template.setGroupId(notification.getGroupId());
+            }
+            if ( Notification.BROADCASTED.isSet(notification) &&
+                 ! Notification.BROADCASTED.isSet(template) ) {
+              template.setBroadcasted(notification.getBroadcasted());
+            }
+          } else {
+            // NOTE: do not generate an error or warning log as this
+            // generates an alarm which in turn generates a notification
+            logger.info("ERROR,Template not found", notification.getTemplate());
+          }
+        }
+
+        return getDelegate().put_(x, template);
+      `
+    }
+  ]
+});

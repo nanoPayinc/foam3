@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'PropertySwiftRefinement',
-  refines: 'foam.core.Property',
+  refines: 'foam.lang.Property',
   flags: ['swift'],
   requires: [
     'foam.swift.Argument',
@@ -194,7 +194,7 @@ foam.CLASS({
       if ( ! parentCls.hasOwnAxiom(this.name) ) return;
       if ( ! this.swiftSupport ) return;
 
-      if ( foam.core.AbstractInterface.isSubClass(parentCls) ) {
+      if ( foam.lang.AbstractInterface.isSubClass(parentCls) ) {
         cls.field(this.ProtocolField.create({
           name: this.swiftVarName,
           type: this.swiftType,
@@ -498,7 +498,7 @@ return PInfo(classInfo())
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'ListSwiftRefinement',
-  refines: 'foam.core.List',
+  refines: 'foam.lang.List',
   flags: ['swift'],
   properties: [
     {
@@ -515,7 +515,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'MapSwiftRefinement',
-  refines: 'foam.core.Map',
+  refines: 'foam.lang.Map',
   flags: ['swift'],
   properties: [
     {
@@ -532,7 +532,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'ArraySwiftRefinement',
-  refines: 'foam.core.Array',
+  refines: 'foam.lang.Array',
   flags: ['swift'],
   properties: [
     {
@@ -549,7 +549,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'StringArraySwiftRefinement',
-  refines: 'foam.core.StringArray',
+  refines: 'foam.lang.StringArray',
   flags: ['swift'],
   properties: [
     {
@@ -566,7 +566,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'ClassSwiftRefinement',
-  refines: 'foam.core.Class',
+  refines: 'foam.lang.Class',
   flags: ['swift'],
   properties: [
     {
@@ -579,7 +579,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'BooleanSwiftRefinement',
-  refines: 'foam.core.Boolean',
+  refines: 'foam.lang.Boolean',
   flags: ['swift'],
   properties: [
     {
@@ -592,7 +592,7 @@ foam.CLASS({
 foam.CLASS({
   name: 'GenIBOutletDetailViewModel',
   package: 'foam.swift.ui',
-  extends: 'foam.core.Model',
+  extends: 'foam.lang.Model',
   properties: [
     [ 'extends', 'foam.swift.ui.AbstractGenIBOutletDetailView' ],
     {
@@ -638,8 +638,8 @@ foam.CLASS({
               }))
               didSets.push(didSet);
             };
-            c.getAxiomsByClass(foam.core.Property).forEach(addViewAxioms);
-            c.getAxiomsByClass(foam.core.Action).forEach(addViewAxioms);
+            c.getAxiomsByClass(foam.lang.Property).forEach(addViewAxioms);
+            c.getAxiomsByClass(foam.lang.Action).forEach(addViewAxioms);
             cls.fields.push(foam.swift.Field.create({
               visibility: 'public',
               name: dvName,
@@ -658,7 +658,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'DateTimeSwiftRefinement',
-  refines: 'foam.core.DateTime',
+  refines: 'foam.lang.DateTime',
   flags: ['swift'],
   properties: [
     {
@@ -683,7 +683,7 @@ return Date()
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'EnumSwiftRefinement',
-  refines: 'foam.core.Enum',
+  refines: 'foam.lang.Enum',
   flags: ['swift'],
   properties: [
     {
@@ -712,7 +712,7 @@ return newValue as! ${swiftType}
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'MultiPartIDSwitRefinement',
-  refines: 'foam.core.MultiPartID',
+  refines: 'foam.lang.MultiPartID',
   flags: [ 'swift' ],
   properties: [
     {
@@ -748,7 +748,7 @@ for propName in propNames {
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'IDAliasSwiftRefinement',
-  refines: 'foam.core.IDAlias',
+  refines: 'foam.lang.IDAlias',
   flags: [ 'swift' ],
   properties: [
     {
@@ -773,7 +773,7 @@ return Swift.type(of: self).${foam.String.constantize(propName)}().set(self, val
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'ReferenceSwiftRefinement',
-  refines: 'foam.core.Reference',
+  refines: 'foam.lang.Reference',
   flags: [ 'swift' ],
   requires: [
     'foam.swift.ProtocolMethod',
@@ -784,7 +784,7 @@ foam.CLASS({
       name: 'referencedProperty',
       transient: true,
       factory: function() {
-        var idProp = this.of.ID.cls_ == foam.core.IDAlias ? this.of.ID.targetProperty : this.of.ID;
+        var idProp = this.of.ID.cls_ == foam.lang.IDAlias ? this.of.ID.targetProperty : this.of.ID;
 
         idProp = idProp.clone();
         idProp.name = this.name;

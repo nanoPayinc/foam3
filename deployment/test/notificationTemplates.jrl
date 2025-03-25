@@ -1,5 +1,5 @@
 p({
-  "class":"foam.nanos.notification.Notification",
+  "class":"foam.core.notification.Notification",
   "id": 761590193,
   "template": "DAONotificationTest-test",
   "emailName": "DAONotificationEmailTemplateTest-test",
@@ -7,10 +7,10 @@ p({
 })
 
 p({
-  class:"foam.nanos.notification.Notification",
+  class:"foam.core.notification.Notification",
   id: 3,
-  template: "foam-nanos-er-EventRecordNotificationTemplate",
-  emailName:"foam-nanos-er-EventRecordEmailTemplate",
+  template: "foam-core-er-EventRecordNotificationTemplate",
+  emailName:"foam-core-er-EventRecordEmailTemplate",
   groupId: "test",
   notificationType: "NOC",
   spid: "test"

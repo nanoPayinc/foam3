@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.mlang.sink',
   name: 'Unique',
   extends: 'foam.dao.ProxySink',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   documentation: 'Sink decorator which only put()\'s a single obj for each unique expression value.',
 

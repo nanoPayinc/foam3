@@ -25,7 +25,7 @@ foam.CLASS({
 
     Icon Fonts
     If using icon-fonts a css stylesheet link to the fonts is required in index.html.
-    The default of foam.core.Action.js is 'Material Icons' supported by the following
+    The default of foam.lang.Action.js is 'Material Icons' supported by the following
     link: <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"></link>
   `,
 

@@ -24,7 +24,7 @@ foam.CLASS({
   `,
 
   requires: [
-    'foam.core.Property',
+    'foam.lang.Property',
     'foam.mlang.expr.Dot'
   ],
 
@@ -39,7 +39,7 @@ foam.CLASS({
         let expr = null;
 
         for ( let part of parts ) {
-          const partialProperty = foam.core.Property.create({
+          const partialProperty = foam.lang.Property.create({
             name: part
           });
           expr = expr ? p.DOT(expr, partialProperty) : partialProperty;

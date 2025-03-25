@@ -1,0 +1,6 @@
+p({
+  "class":"foam.strategy.StrategyReference",
+  "id":"foam_core_pii_PIIReportTicket",
+  "desiredModelId":"foam.core.ticket.Ticket",
+  "strategy":"foam.core.pii.PIIReportTicket"
+})

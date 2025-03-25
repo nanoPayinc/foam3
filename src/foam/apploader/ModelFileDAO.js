@@ -67,17 +67,17 @@ foam.CLASS({
           };
 
           context.foam.INTERFACE = function(json) {
-            json.class = json.class || 'foam.core.InterfaceModel';
+            json.class = json.class || 'foam.lang.InterfaceModel';
             context.foam.CLASS(json);
           };
 
           context.foam.ENUM = function(json) {
-            json.class = json.class || 'foam.core.EnumModel';
+            json.class = json.class || 'foam.lang.EnumModel';
             context.foam.CLASS(json);
           };
 
           context.foam.SCRIPT = function(json) {
-            json.class = json.class || 'foam.core.Script';
+            json.class = json.class || 'foam.lang.Script';
             context.foam.CLASS(json);
           };
 

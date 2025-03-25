@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.u2.crunch.wizardflow',
   name: 'LoadTopConfig',
   implements: [
-    'foam.core.ContextAware'
+    'foam.lang.ContextAware'
   ],
 
   documentation: `

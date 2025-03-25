@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.crunch.wizardflow',
   name: 'RequirementsPreviewAgent',
-  implements: [ 'foam.core.ContextAgent' ],
+  implements: [ 'foam.lang.ContextAgent' ],
   documentation: `
     Display a preview of the capability. This gives the user an idea of what to
     expect before they proceed.

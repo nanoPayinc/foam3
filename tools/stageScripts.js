@@ -6,7 +6,7 @@ delete localStorage.UNUSED;
 // 2. Load each initial screen and then run the following:
 
 var a = Object.keys(foam.UNUSED).filter(f => {
-  if ( f.indexOf('foam.core') != -1 ) return false;
+  if ( f.indexOf('foam.lang') != -1 ) return false;
   return true;
 });
 if ( ! localStorage.UNUSED ) {
@@ -53,7 +53,7 @@ document.body.innerText = '// Generated with foam3/tools/stageScripts.js\nfoam.P
 The following script gives a single list for a stage1 in a two stage build:
 
 var a = Object.keys(foam.UNUSED).filter(f => {
-  if ( f.indexOf('foam.core') != -1 ) return false;
+  if ( f.indexOf('foam.lang') != -1 ) return false;
   return true;
 }).map(f => {
   f = f.replaceAll('.', '/');

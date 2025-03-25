@@ -1,0 +1,502 @@
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "auth",
+  "serve": true,
+  "authenticate": false,
+  "boxClass": "foam.core.auth.AuthServiceSkeleton",
+  "serviceScript": """
+    auth = new foam.core.auth.UserAndGroupAuthService(x);
+    auth = new foam.core.auth.CapabilityAuthService.Builder(x).setDelegate(auth).build();
+    auth = new foam.core.auth.EnabledCheckAuthService.Builder(x)
+      .setDelegate(auth)
+      .build();
+    auth = new foam.core.auth.PasswordExpiryAuthService.Builder(x)
+      .setDelegate(auth)
+      .build();
+    auth = new foam.core.auth.twofactor.TwoFactorAuthService.Builder(x)
+      .setDelegate(auth)
+      .build();
+    auth = new foam.core.auth.ResetSpidBeforeLoginAuthService.Builder(x)
+      .setDelegate(auth)
+      .build();
+    auth = new foam.core.auth.CachingAuthService(auth);
+    auth = new foam.core.auth.SubjectAuthService.Builder(x)
+      .setDelegate(auth)
+      .build();
+    auth = new foam.core.auth.PMAuthService.Builder(x)
+      .setLabel("uncached")
+      .setDelegate(auth)
+      .build();
+    auth = new foam.core.auth.SystemAuthService.Builder(x)
+      .setDelegate(auth)
+      .build();
+    return auth;
+  """,
+  "client":"""
+    {
+      "class": "foam.core.auth.AuthorizeAnonymousClientDecorator",
+      "delegate":
+      {
+        "class":"foam.core.auth.CachedAuthServiceProxy",
+        "delegate":{
+          "class":"foam.core.auth.ClientLoginAuthService"
+        }
+      }
+    }
+  """
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "loginService",
+  "serve": false,
+  "authenticate": false,
+  "serviceScript": """
+    return new foam.core.auth.LoginService(x)
+  """
+})
+
+p({"class":"foam.core.boot.CSpec", "name":"agentAuth",                        "lazy":false, "serve":true, "authenticate": false, "description":"Permits users to act as others if permitted. Places user as an agent of the system.", "boxClass":"foam.core.auth.AgentAuthServiceSkeleton", "serviceScript":"return new foam.core.auth.AgentUserAuthService(x);", "client": "{\"class\":\"foam.core.auth.AgentAuthClient\",\"delegate\":{\"class\":\"foam.core.auth.ClientAgentAuthService\"}}"})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "agentJunctionDAO",
+  "lazy": false,
+  "serve": true,
+  "description": "DAO responsible for storing agent authentication permission information.",
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName(\"agentJunctions\")
+      .setOf(foam.core.auth.UserUserJunction.getOwnClassInfo())
+      .build();
+  """,
+  "client": "{\"of\":\"foam.core.auth.UserUserJunction\", \"remoteListenerSupport\": false}"
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "localCountryDAO",
+  "description": "A DAO which contains information about countries.",
+  "serve": false,
+  "authenticate": false,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setPm(true)
+      .setAuthorizer(new foam.core.auth.GlobalReadAuthorizer("country"))
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("countries")
+      .setOf(foam.core.auth.Country.getOwnClassInfo())
+      .setOrder(new foam.lang.PropertyInfo[] {foam.core.auth.Country.NAME})
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.auth.Country.ISO31661CODE })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.auth.Country.ALTERNATIVE_NAMES });
+  """
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "countryDAO",
+  "serve": true,
+  "authenticate": false,
+  "serviceScript":
+  """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.auth.Country.getOwnClassInfo())
+      .setName("countries")
+      .setAuthorizer(new foam.core.auth.GlobalReadAuthorizer("country"))
+      .setInnerDAO(x.get("localCountryDAO"))
+      .build();
+  """,
+  "client":
+  """
+    {
+      "of": "foam.core.auth.Country",
+      "cache": true,
+      "ttlSelectPurgeTime": 0,
+      "ttlPurgeTime": 0
+    }
+  """,
+  "authNotes": "The \"authenticate\" flag is explicitly set to false because we want to be able to use the countryDAO to populate a dropdown in the sign up form. The DAO is decorated with an AuthorizationDAO decorator with \"authorizeOnRead\" set to false so that anyone can read from countryDAO but only those with permission can write to or remove from it."
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"countryService",
+  "serve":false,
+  "serviceClass":"foam.core.auth.CountryService"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"credentialDAO",
+  "serve":true,
+  "serviceScript":`
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.auth.Credential.getOwnClassInfo())
+      .setFuid(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("credentials")
+      .build()
+      .addPropertyIndex(new foam.lang.Indexer[] {foam.core.auth.Credential.TYPE})
+      .addPropertyIndex(new foam.lang.Indexer[] {foam.core.auth.Credential.SERVICE_NAME});
+    `,
+  "client":"{\"of\":\"foam.core.auth.Credential\"}"
+})
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"credentialsDAO",
+  "serve":false,
+  "serviceScript":`
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.auth.Credential.getOwnClassInfo())
+      .setInnerDAO(x.get("credentialDAO"))
+      .build();
+  `
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"localGroupDAO",
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setPm(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("groups")
+      .setOf(foam.core.auth.Group.getOwnClassInfo())
+      .setAuthorize(false)
+      .build();
+  """,
+  "client":"{\"of\":\"foam.core.auth.Group\"}"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"groupDAO",
+  "serve":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setPm(true)
+      .setInnerDAO(x.get("localGroupDAO"))
+      .setOf(foam.core.auth.Group.getOwnClassInfo())
+      .build();
+  """,
+  "client":"{\"of\":\"foam.core.auth.Group\"}"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"localGroupPermissionJunctionDAO",
+  "description":"The junction DAO for the many-to-many relationship between groups and permissions",
+  "serviceScript":"""
+    dao = new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.auth.GroupPermissionJunction.getOwnClassInfo())
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("groupPermissionJunctions")
+      .setPm(true)
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.auth.GroupPermissionJunction.SOURCE_ID });
+    return dao;
+  """
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"groupPermissionJunctionDAO",
+  "description":"The junction DAO for the many-to-many relationship between groups and permissions. NOTE: authorization is setup on local dao.",
+  "serve":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.auth.GroupPermissionJunction.getOwnClassInfo())
+      .setAuthorize(false)
+      .setInnerDAO((foam.dao.DAO) x.get("localGroupPermissionJunctionDAO"))
+    .build();""",
+  "client":"{\"of\": \"foam.core.auth.GroupPermissionJunction\"}"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"languageDAO",
+  "lazy":false,
+  "serve":true,
+  "authenticate": false,
+  "serviceScript":`
+    return new foam.dao.EasyDAO.Builder(x)
+      .setPm(true)
+      .setAuthorizer(new foam.core.auth.GlobalReadAuthorizer("language"))
+      .setAuthorize(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("languages")
+      .setOf(foam.core.auth.Language.getOwnClassInfo())
+      .build();
+    `,
+  "client":"{\"of\":\"foam.core.auth.Language\"}"
+})
+
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"commonPasswordDAO",
+  "lazy":false,
+  "serve":true,
+  "authenticate":false,
+  "serviceScript":`
+    return new foam.dao.EasyDAO.Builder(x)
+      .setPm(true)
+      .setAuthorizer(new foam.core.auth.GlobalReadAuthorizer("commonpassword"))
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("commonPasswords")
+      .setOf(foam.core.auth.CommonPassword.getOwnClassInfo())
+      .build();
+    `,
+  "client":"{\"of\":\"foam.core.auth.CommonPassword\"}"
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "resetPasswordService",
+  "serve": true,
+  "authenticate": false,
+  "boxClass": "foam.core.auth.resetPassword.ResetPasswordServiceSkeleton",
+  "serviceClass": "foam.core.auth.resetPassword.ServerResetPasswordService",
+  "client":
+    """
+      {
+        "class": "foam.core.auth.resetPassword.ClientResetPasswordService",
+        "delegate": {
+          "class": "foam.box.SessionClientBox",
+          "delegate": {
+            "class": "foam.box.HTTPBox",
+            "url": "service/resetPasswordService"
+          }
+        }
+      }
+    """
+})
+
+p({"class":"foam.core.boot.CSpec", "name":"resetPasswordToken",                 "serve":true,  "authenticate": false, "serviceClass":"foam.core.auth.resetPassword.ResetPasswordTokenService","boxClass":"foam.core.auth.token.TokenServiceSkeleton","client":"{\"class\":\"foam.core.auth.token.ClientTokenService\"}"})
+
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"localPermissionDAO",
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setPm(true)
+      .setAuthorize(false)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("permissions")
+      .setOf(foam.core.auth.Permission.getOwnClassInfo())
+      .build();
+    """
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"permissionDAO",
+  "serve":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.auth.Permission.getOwnClassInfo())
+      .setInnerDAO((foam.dao.DAO) x.get("localPermissionDAO"))
+      .build();
+  """,
+  "client":"{\"of\":\"foam.core.auth.Permission\"}"
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "regionDAO",
+  "description": "A DAO which contains information about regions in countries. A region is a province or a state, for example.",
+  "serve": true,
+  "authenticate": false,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setPm(true)
+      .setAuthorizer(new foam.core.auth.GlobalReadAuthorizer("region"))
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName(\"regions\")
+      .setOf(foam.core.auth.Region.getOwnClassInfo())
+      .setOrder(new foam.lang.PropertyInfo[] {foam.core.auth.Region.NAME})
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.auth.Region.NAME })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.auth.Region.COUNTRY_ID })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.auth.Region.ISO_CODE })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.auth.Region.ALTERNATIVE_NAMES });
+  """,
+  "client": "{\"of\":\"foam.core.auth.Region\"}",
+  "documentation": "A DAO which contains information about regions in countries. A region is a province or a state, for example.",
+  "authNotes": "The \"authenticate\" flag is explicitly set to false because we want to be able to use the regionDAO to populate a dropdown in the sign up form. The DAO is decorated with an AuthenticatedDAO decorator with \"authorizeOnRead\" set to false so that anyone can read from regionDAO but only those with permission can write to or remove from it."
+})
+p({"class":"foam.core.boot.CSpec", "name":"regionService",                      "serve":false, "serviceClass":"foam.core.auth.RegionService"})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"localServiceProviderDAO",
+  "serviceScript":
+  """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setPm(true)
+      .setAuthorize(false)
+      .setOf(foam.core.auth.ServiceProvider.getOwnClassInfo())
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("capabilities")
+      .setValidated(true)
+      .setInnerDAO((foam.dao.DAO) x.get("localCapabilityDAO"))
+      .setDecorator(
+        new foam.dao.FilteredDAO.Builder(x)
+          .setPredicate(foam.mlang.MLang.INSTANCE_OF(foam.core.auth.ServiceProvider.class))
+          .setDelegate(new foam.dao.NullDAO.Builder(x).setOf(foam.core.auth.ServiceProvider.getOwnClassInfo()).build())
+        .build())
+      .build();
+  """,
+  "client":"{\"of\":\"foam.core.auth.ServiceProvider\"}"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"serviceProviderDAO",
+  "serve":true,
+  "serviceScript":
+  """
+    return new foam.core.auth.AuthorizationDAO.Builder(x)
+      .setDelegate((foam.dao.DAO) x.get("localServiceProviderDAO"))
+      .setAuthorizer(new foam.core.auth.StandardAuthorizer("serviceprovider"))
+      .build();
+  """,
+  "client":"{\"of\":\"foam.core.auth.ServiceProvider\"}"
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "localUserDAO",
+  "serve": false,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.auth.User.getOwnClassInfo())
+      .setPm(true)
+      .setFuid(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("users")
+      .setDecorator(new foam.core.auth.UserPasswordHashingDAO(x, new foam.dao.NullDAO(x, foam.core.auth.User.getOwnClassInfo())))
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.auth.User.REFERRAL_CODE });
+  """
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"userDAO",
+  "serve":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setPm(true)
+      .setInnerDAO(x.get("localUserDAO"))
+      .setOf(foam.core.auth.User.getOwnClassInfo())
+      .setPermissioned(true)
+      .setDecorator(
+        new foam.dao.ValidatingDAO(x,
+          new foam.core.auth.UserLifecycleStateDAO(x,
+            new foam.dao.NullDAO(x, foam.core.auth.User.getOwnClassInfo())),
+          new foam.core.auth.validators.UserGroupAndSpidValidator()
+        )
+      )
+      .build();
+  """,
+  "client":"""
+    {
+      "of":"foam.core.auth.User",
+      "ttlSelectPurgeTime": 15000,
+      "ttlPurgeTime": 0,
+      "decorators": [{"class":"foam.core.fs.FileDAODecorator"}]
+    }
+  """
+})
+
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"localUserUserDAO",
+  "description":"A filter on localUserDAO that filters out all subclasses of User.",
+  "authenticate": false,
+  "serviceScript":
+  """
+    // Filter in other projects which create new User types.
+    return x.get("localUserDAO");
+  """
+})
+
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "uniqueUserService",
+  "serve": true,
+  "authenticate": true,
+  "boxClass": "foam.core.auth.UniqueUserServiceSkeleton",
+  "serviceScript": """
+    x = x.put("localUserDAO", x.get("localUserDAO")
+      .where(foam.mlang.MLang.NEQ(foam.core.auth.User.LIFECYCLE_STATE, foam.core.auth.LifecycleState.DELETED)));
+    ul = new foam.core.auth.PreventDuplicateEmailLoginService(x);
+    ul = new foam.core.auth.FilterBySpidService.Builder(x)
+      .setDelegate(ul)
+      .build();
+    return ul;
+  """
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "userQueryService",
+  "serve": true,
+  "serviceClass": "foam.core.auth.SimpleUserQueryService",
+  "boxClass": "foam.core.auth.UserQueryServiceSkeleton",
+  "client":
+  """
+    {
+      "class":"foam.core.auth.ClientUserQueryService",
+      "delegate": {
+        "class":"foam.box.SessionClientBox",
+        "delegate": {
+          "class":"foam.box.HTTPBox",
+          "url":
+          "service/userQueryService"
+        }
+      }
+    }
+  """
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "userRegistrationDAO",
+  "lazy": false,
+  "serve": true,
+  "authenticate": false,
+  "authNotes": "UserRegistrationDAO disables find, select and remove operations.",
+  "serviceScript":
+  """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.auth.User.getOwnClassInfo())
+      .setInnerDAO(x.get("localUserDAO"))
+      .setDecorator(
+        new foam.core.auth.UserRegistrationSanitationDAO(x,
+        new foam.core.auth.UserRegistrationDAO(x,
+        new foam.dao.ValidatingDAO(x,
+          new foam.dao.NullDAO(x,foam.core.auth.User.getOwnClassInfo()),
+          new foam.core.auth.validators.UserGroupAndSpidValidator()
+        ))))
+      .setAuthorize(false)
+      .setRuler(true)
+      .setPm(true)
+      .setValidated(true)
+      .setEnableInterfaceDecorators(false)
+      .build();
+  """,
+  "client": """
+    {
+      "of": "foam.core.auth.User",
+      "cache": true,
+      "retryBoxMaxAttempts": 0
+    }
+  """
+})

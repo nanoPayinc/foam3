@@ -22,7 +22,7 @@ foam.CLASS({
         e = { type: a[0], name: a[1] };
       }
 
-      return foam.core.FObjectArray.ADAPT_ARRAY_ELEMENT.value.call(this, e, obj);
+      return foam.lang.FObjectArray.ADAPT_ARRAY_ELEMENT.value.call(this, e, obj);
     }],
     [ 'adapt', function(_, a, prop) {
       // Support comma-delimited String of types, like:
@@ -32,7 +32,7 @@ foam.CLASS({
         // console.log('ArgumentArray.adapt **************************************************************************',a);
       }
 
-      return foam.core.FObjectArray.ADAPT.value.call(this, _, a, prop);
+      return foam.lang.FObjectArray.ADAPT.value.call(this, _, a, prop);
     }]
   ],
 

@@ -59,7 +59,7 @@ foam.CLASS({
   extends: 'foam.box.ProxyBox',
 
   requires: [
-    'foam.core.Exception'
+    'foam.lang.Exception'
   ],
 
   properties: [

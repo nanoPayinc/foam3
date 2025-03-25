@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'AbstractEnumSwiftRefinement',
-  refines: 'foam.core.AbstractEnum',
+  refines: 'foam.lang.AbstractEnum',
   flags: ['swift'],
   axioms: [
     {
@@ -23,7 +23,7 @@ foam.CLASS({
               visibility: 'public',
               defaultValue: `Context.GLOBAL.create(
                 ${self.model_.swiftName}.self, args: [
-                  ${v.cls_.getAxiomsByClass(foam.core.Property)
+                  ${v.cls_.getAxiomsByClass(foam.lang.Property)
                       .filter(function(p) {
                         return foam.swift.asSwiftValue(p.get(v));
                       })
@@ -33,7 +33,7 @@ foam.CLASS({
                 ])!`,
             }));
           });
-          if ( this.model_.id != 'foam.core.AbstractEnum' ) {
+          if ( this.model_.id != 'foam.lang.AbstractEnum' ) {
             cls.method(foam.swift.Method.create({
               static: true,
               name: 'fromOrdinal',
@@ -64,7 +64,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'EnumSwiftRefinement',
-  refines: 'foam.core.Enum',
+  refines: 'foam.lang.Enum',
   flags: ['swift'],
   properties: [
     {

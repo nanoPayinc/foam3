@@ -21,7 +21,7 @@ have multiple classloaders running alongside eachother`
 ],*/
 
   requires: [
-    'foam.core.Script',
+    'foam.lang.Script',
     'foam.dao.OrDAO',
     'foam.dao.Relationship',
     'foam.apploader.SubClassLoader',
@@ -144,7 +144,7 @@ have multiple classloaders running alongside eachother`
             var json = this.latched[id];
             delete this.latched[id];
             return this.pending[id] = Promise.all(foam.json.references(subClassLoader.__subContext__, json)).then(function() {
-              var cls = json.class ? foam.lookup(json.class) : foam.core.Model;
+              var cls = json.class ? foam.lookup(json.class) : foam.lang.Model;
               return self.modelDeps_(cls.create(json), path);
             }).then(function() {
               // Latched models will already be registered in the
@@ -182,7 +182,7 @@ return Promise.resolve(foam.maybeLookup(id));
           });
         }
 
-        if ( foam.core.Model.isInstance(id) )
+        if ( foam.lang.Model.isInstance(id) )
           return this.pending[id.id] = this.buildClass_(id, path);
 
         throw new Error("Invalid parameter to ClassLoader.load_");
@@ -221,7 +221,7 @@ return Promise.resolve(foam.maybeLookup(id));
             foam.package.registerClass(cls);
           } else if ( model.name ) {
             // Register refinement id in global context.
-            foam.register(cls, ( model.package || 'foam.core' ) + '.' + model.name);
+            foam.register(cls, ( model.package || 'foam.lang' ) + '.' + model.name);
           }
           // TODO(markdittmer): Identify and name anonymous refinements with:
           // else {

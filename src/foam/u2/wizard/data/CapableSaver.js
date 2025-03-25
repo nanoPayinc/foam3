@@ -19,7 +19,7 @@
   ],
 
   requires: [
-    'foam.nanos.crunch.CapabilityJunctionPayload',
+    'foam.core.crunch.CapabilityJunctionPayload',
     'foam.u2.wizard.data.NullLoader',
     'foam.u2.wizard.data.ProxyLoader'
   ],

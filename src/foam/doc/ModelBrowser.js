@@ -118,7 +118,7 @@ foam.CLASS({
   documentation: 'Show UML & properties for passed in models',
 
   requires: [
-    'foam.core.Model',
+    'foam.lang.Model',
     'foam.dao.ArrayDAO',
     'foam.dao.PromisedDAO',
     'foam.doc.ClassList',
@@ -127,7 +127,7 @@ foam.CLASS({
     'foam.doc.PackageList',
     'foam.doc.SimpleClassView',
     'foam.doc.UMLDiagram',
-    'foam.nanos.boot.NSpec'
+    'foam.core.boot.CSpec'
   ],
 
   imports: [ 'params' ],
@@ -156,7 +156,7 @@ foam.CLASS({
       ^ .foam-u2-ActionView-printPage{
         display: none;
       }
-      .foam-nanos-u2-navigation-TopNavigation{
+      .foam-core-u2-navigation-TopNavigation{
         display: none;
       }
     }
@@ -173,7 +173,7 @@ foam.CLASS({
       name: 'path',
       width: 80,
       factory: function() {
-        return this.params.path || 'foam.core.Property';
+        return this.params.path || 'foam.lang.Property';
       }
     },
     {
@@ -188,7 +188,7 @@ foam.CLASS({
     {
 //      class: 'String',
       name: 'model',
-      value: 'foam.core.Model'
+      value: 'foam.lang.Model'
     },
     [ 'conventionalUML', true ],
     {
@@ -206,7 +206,7 @@ foam.CLASS({
       // TODO: it would be better if this were somewhere more reusable
       name: 'modelDAO',
       factory: function(/* allowedModels*/) {
-        var dao      = this.ArrayDAO.create({of: this.Model}).orderBy(foam.core.Model.ID);
+        var dao      = this.ArrayDAO.create({of: this.Model}).orderBy(foam.lang.Model.ID);
         var all      = [];
         var packages = { '--All--': all};
         function addModel(m) {

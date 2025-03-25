@@ -1,0 +1,36 @@
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "emailVerificationService",
+  "serve": true,
+  "authenticate": false,
+  "boxClass": "foam.core.auth.email.EmailVerificationServiceSkeleton",
+  "serviceClass": "foam.core.auth.email.ServerEmailVerificationService",
+  "client":
+    """
+      {
+        "class": "foam.core.auth.email.ClientEmailVerificationService",
+        "delegate": {
+          "class": "foam.box.SessionClientBox",
+          "delegate": {
+            "class": "foam.box.HTTPBox",
+            "url": "service/emailVerificationService"
+          }
+        }
+      }
+    """
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"emailVerificationCodeDAO",
+  "serve":false,
+  "serviceScript":
+  """
+  return new foam.dao.EasyDAO.Builder(x)
+    .setAuthorize(false)
+    .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+    .setJournalName("emailVerificationCode")
+    .setOf(foam.core.auth.email.EmailVerificationCode.getOwnClassInfo())
+    .build();
+  """
+})

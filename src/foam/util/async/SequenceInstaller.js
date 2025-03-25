@@ -24,7 +24,7 @@ foam.CLASS({
     async function install (targetSequence, targetPosition) {
       let x = this.__subContext__;
 
-      const targetPosition$ = foam.core.SimpleSlot.create({
+      const targetPosition$ = foam.lang.SimpleSlot.create({
         value: targetPosition ?? 0
       });
 

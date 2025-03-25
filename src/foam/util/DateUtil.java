@@ -6,7 +6,7 @@
 
 package foam.util;
 
-import foam.core.X;
+import foam.lang.X;
 import foam.dao.DAO;
 import foam.time.TimeZone;
 import foam.util.SafetyUtil;

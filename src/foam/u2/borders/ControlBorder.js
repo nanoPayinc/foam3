@@ -21,7 +21,7 @@ foam.CLASS({
   properties: [
     {
       class: 'FObjectArray',
-      of: 'foam.core.FObject',
+      of: 'foam.lang.FObject',
       name: 'actionRules'
     }
   ],

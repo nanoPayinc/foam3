@@ -1,0 +1,39 @@
+/**
+ * @license
+ * Copyright 2018 The FOAM Authors. All Rights Reserved.
+ */
+
+foam.CLASS({
+  package: 'foam.core.dig.exception',
+  name: 'DAORequiredException',
+  extends: 'foam.core.dig.exception.DigErrorMessage',
+  javaGenerateDefaultConstructor: false,
+
+  javaCode: `
+    public DAORequiredException() {
+      super();
+    }
+
+    public DAORequiredException(Throwable cause) {
+      super(cause);
+    }
+  `,
+
+  properties: [
+    {
+      name: 'exceptionMessage',
+      class: 'String',
+      value: 'DAO name required'
+    },
+    {
+      class: 'String',
+      name: 'status',
+      value: '400'
+    },
+    {
+      class: 'String',
+      name: 'errorCode',
+      value: '1008'
+    }
+  ]
+});

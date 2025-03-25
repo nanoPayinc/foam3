@@ -44,7 +44,7 @@ foam.INTERFACE({
       name: 'javaExtras',
       buildJavaClass: function(cls) {
         cls.methods.push(`
-          static String t(foam.core.X x, String source, String defaultText) {
+          static String t(foam.lang.X x, String source, String defaultText) {
             if ( x == null ) return defaultText;
 
             var ts = (TranslationService) x.get("translationService");

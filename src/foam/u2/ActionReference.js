@@ -11,12 +11,12 @@ foam.CLASS({
   properties: [
     {
       class: 'FObjectProperty',
-      of: 'foam.core.Action',
+      of: 'foam.lang.Action',
       name: 'action'
     },
     {
       class: 'FObjectProperty',
-      of: 'foam.core.FObject',
+      of: 'foam.lang.FObject',
       name: 'data'
     },
     {
@@ -28,7 +28,7 @@ foam.CLASS({
   ],
   methods: [
     function toE(args, X) {
-      if ( foam.core.FObject.isInstance(X) ) {
+      if ( foam.lang.FObject.isInstance(X) ) {
         X = X.__subContext__.createSubContext({ actionReference: this });
       } else {
         X = X.createSubContext({ actionReference: this });

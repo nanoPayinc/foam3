@@ -1,0 +1,4 @@
+p({
+  class:"foam.core.analytics.test.AnalyticEventDAOSecurityTest",
+  id:"AnalyticEventDAOSecurityTest"
+})

@@ -8,7 +8,7 @@ foam.CLASS({
             args: [
                 {
                     name: 'model',
-                    javaType: 'foam.core.Model'
+                    javaType: 'foam.lang.Model'
                 }
             ],
             javaReturns: 'foam.typescript.model.TypeScriptClass',
@@ -18,7 +18,7 @@ foam.CLASS({
             .setName(model.getName())
             .build();
 
-        for (foam.core.PropertyInfo prop : model.getAxiomsByClass(foam.core.PropertyInfo.class)) {
+        for (foam.lang.PropertyInfo prop : model.getAxiomsByClass(foam.lang.PropertyInfo.class)) {
           foam.typescript.model.TypeScriptProperty tsProperty =
               new foam.typescript.model.TypeScriptProperty.Builder(getX())
               .setName(prop.getName())
@@ -27,14 +27,14 @@ foam.CLASS({
           tsClass.getProperties().add(tsProperty);
         }
 
-        for (foam.core.MethodInfo method : model.getAxiomsByClass(foam.core.MethodInfo.class)) {
+        for (foam.lang.MethodInfo method : model.getAxiomsByClass(foam.lang.MethodInfo.class)) {
           foam.typescript.model.TypeScriptMethod tsMethod =
               new foam.typescript.model.TypeScriptMethod.Builder(getX())
               .setName(method.getName())
               .setReturnType(mapToTypeScriptType(method.getReturnType().getSimpleName()))
               .build();
 
-          for (foam.core.ArgumentInfo arg : method.getArguments()) {
+          for (foam.lang.ArgumentInfo arg : method.getArguments()) {
             foam.typescript.model.TypeScriptParameter tsParam =
                 new foam.typescript.model.TypeScriptParameter.Builder(getX())
                 .setName(arg.getName())

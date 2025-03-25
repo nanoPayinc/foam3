@@ -6,23 +6,23 @@
 
 package foam.box;
 
-import foam.core.SubX;
-import foam.core.X;
-import foam.core.XLocator;
+import foam.lang.SubX;
+import foam.lang.X;
+import foam.lang.XLocator;
 import foam.dao.DAO;
-import foam.nanos.app.AppConfig;
-import foam.nanos.app.Mode;
-import foam.nanos.auth.AuthenticationException;
-import foam.nanos.auth.AuthorizationException;
-import foam.nanos.auth.Group;
-import foam.nanos.auth.User;
-import foam.nanos.boot.Boot;
-import foam.nanos.boot.NSpec;
-import foam.nanos.logger.Logger;
-import foam.nanos.logger.Loggers;
-import foam.nanos.om.OMLogger;
-import foam.nanos.pm.PM;
-import foam.nanos.session.Session;
+import foam.core.app.AppConfig;
+import foam.core.app.Mode;
+import foam.core.auth.AuthenticationException;
+import foam.core.auth.AuthorizationException;
+import foam.core.auth.Group;
+import foam.core.auth.User;
+import foam.core.boot.Boot;
+import foam.core.boot.CSpec;
+import foam.core.logger.Logger;
+import foam.core.logger.Loggers;
+import foam.core.om.OMLogger;
+import foam.core.pm.PM;
+import foam.core.session.Session;
 import foam.util.SafetyUtil;
 import org.eclipse.jetty.server.Request;
 
@@ -35,7 +35,7 @@ import jakarta.servlet.http.HttpServletRequest;
  * Its core purpose is to create a new context using parts of the context it was
  * created with and parts of a user's session context to pass on to its delegate
  * box. This class also enforces authorization and authentication controls for
- * the NSpec in the context.
+ * the CSpec in the context.
  */
 public class SessionServerBox
   extends ProxyBox
@@ -55,7 +55,7 @@ public class SessionServerBox
   }
 
   public static void send(X x, Box delegate, boolean authenticate, Message msg) {
-    NSpec   spec       = x.get(NSpec.class);
+    CSpec   spec       = x.get(CSpec.class);
     Logger  logger     = Loggers.logger(x, null, "SessionServerBox", spec.getName());
     DAO     sessionDAO = (DAO) x.get("localSessionDAO");
     Session session    = null;
@@ -132,7 +132,7 @@ public class SessionServerBox
             session.setRemoteHost(remoteIp);
             session = (Session) sessionDAO.put(session);
           }
-        } catch (foam.core.ValidationException e) {
+        } catch (foam.lang.ValidationException e) {
           sessionDAO.remove(session);
           // Session.validateRemoteHost tests for both a change in IP and
           // restricted IPs.
@@ -165,7 +165,7 @@ public class SessionServerBox
       }
 
       if ( session.getContext().get("localLocalSettingDAO") == null && session.getUserId() != 0 ) {
-        DAO localLocalSettingDAO = new foam.dao.MDAO(foam.nanos.session.LocalSetting.getOwnClassInfo());
+        DAO localLocalSettingDAO = new foam.dao.MDAO(foam.core.session.LocalSetting.getOwnClassInfo());
         session.setContext(session.getContext().put("localLocalSettingDAO", localLocalSettingDAO));
       }
 

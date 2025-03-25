@@ -204,7 +204,7 @@ foam.CLASS({
     },
 
     function getSelectedSlot(choice) {
-      var slot = foam.core.SimpleSlot.create();
+      var slot = foam.lang.SimpleSlot.create();
       slot.sub(() => {
         var arr = [
           ...this.data,
@@ -325,9 +325,9 @@ foam.CLASS({
     },
 
     function mustSlot(v) {
-      return foam.core.Slot.isInstance(v) ?
+      return foam.lang.Slot.isInstance(v) ?
         v :
-        foam.core.SimpleSlot.create({ value: v });
+        foam.lang.SimpleSlot.create({ value: v });
     }
   ],
 

@@ -85,34 +85,6 @@ foam.CLASS({
 
   properties: [
     {
-      class: 'FObjectProperty',
-      of: 'foam.flow.laminar.Document',
-      name: 'laminar',
-      value: {
-        class: 'foam.flow.laminar.Document',
-        doclets: [
-          {
-            class: 'foam.flow.laminar.MarkdownDoclet',
-            text: `
-              Lets learn about **foam.util.async.Sequence** and
-              **foam.flow.laminar.AutoDefinitionDoclet**
-            `
-          },
-          {
-            class: 'foam.flow.laminar.PrintDoclet',
-            key: 'definitionWords',
-            showMeta: true
-          },
-          {
-            class: 'foam.flow.laminar.AutoDefinitionDoclet'
-          }
-        ]
-      },
-      view: {
-        class: 'foam.flow.laminar.DocumentView'
-      }
-    },
-    {
       class: 'String',
       name: 'markdownView',
       value: `
@@ -292,7 +264,7 @@ foam.CLASS({
       class: 'Int',
       name: 'intWithTemperatureView',
       view: {
-        class: 'foam.nanos.pm.TemperatureCView'
+        class: 'foam.core.pm.TemperatureCView'
       }
     },
     {
@@ -803,8 +775,8 @@ foam.CLASS({
         class: 'foam.u2.view.FObjectView',
         choices: [
           [ 'foam.util.Timer',         'Timer' ],
-          [ 'foam.core.Property',      'Property' ],
-          [ 'foam.nanos.menu.DAOMenu', 'DAO' ]
+          [ 'foam.lang.Property',      'Property' ],
+          [ 'foam.core.menu.DAOMenu', 'DAO' ]
         ]
       }
     },
@@ -818,10 +790,10 @@ foam.CLASS({
         classIsFinal: true,
         choices: [
           [ 'foam.util.Timer', 'Timer' ],
-          [ 'foam.core.Property', 'Property' ],
-          [ 'foam.nanos.menu.DAOMenu',  'DAO'     ],
-          [ 'foam.nanos.menu.SubMenu',  'SubMenu' ],
-          [ 'foam.nanos.menu.TabsMenu', 'Tabs'    ]
+          [ 'foam.lang.Property', 'Property' ],
+          [ 'foam.core.menu.DAOMenu',  'DAO'     ],
+          [ 'foam.core.menu.SubMenu',  'SubMenu' ],
+          [ 'foam.core.menu.TabsMenu', 'Tabs'    ]
         ]
       }
     },
@@ -844,11 +816,11 @@ foam.CLASS({
       view: {
         class: 'foam.u2.view.FObjectView',
         choices: [
-          [ 'foam.core.Property',       'Property' ],
+          [ 'foam.lang.Property',       'Property' ],
           [ 'foam.util.Timer',          'Timer' ],
-          [ 'foam.nanos.menu.DAOMenu',  'DAO'     ],
-          [ 'foam.nanos.menu.SubMenu',  'SubMenu' ],
-          [ 'foam.nanos.menu.TabsMenu', 'Tabs'    ]
+          [ 'foam.core.menu.DAOMenu',  'DAO'     ],
+          [ 'foam.core.menu.SubMenu',  'SubMenu' ],
+          [ 'foam.core.menu.TabsMenu', 'Tabs'    ]
         ]
       }
     },
@@ -861,10 +833,10 @@ foam.CLASS({
         allowCustom: true,
         choices: [
           [ 'foam.util.Timer',          'Timer' ],
-          [ 'foam.core.Property',       'Property' ],
-          [ 'foam.nanos.menu.DAOMenu',  'DAO'     ],
-          [ 'foam.nanos.menu.SubMenu',  'SubMenu' ],
-          [ 'foam.nanos.menu.TabsMenu', 'Tabs'    ]
+          [ 'foam.lang.Property',       'Property' ],
+          [ 'foam.core.menu.DAOMenu',  'DAO'     ],
+          [ 'foam.core.menu.SubMenu',  'SubMenu' ],
+          [ 'foam.core.menu.TabsMenu', 'Tabs'    ]
         ]
       }
     }

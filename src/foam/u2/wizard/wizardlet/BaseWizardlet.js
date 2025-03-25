@@ -32,7 +32,7 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.core.SimpleSlot',
+    'foam.lang.SimpleSlot',
     'foam.log.LogLevel',
     'foam.u2.borders.LoadingLevel',
     'foam.u2.detail.AbstractSectionedDetailView',
@@ -407,8 +407,8 @@ foam.CLASS({
       this.clearProperty('indicator');
       return ret;
     },
-    async function load() {
-      await this.wao.load(this);
+    async function load(options = {}) {
+      await this.wao.load(this, options);
       this.loadEvent.pub(this);
       return this;
     },

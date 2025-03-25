@@ -15,8 +15,8 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.nanos.auth.Address',
-    'foam.nanos.auth.Region',
+    'foam.core.auth.Address',
+    'foam.core.auth.Region',
     'foam.u2.layout.Grid',
     'foam.u2.layout.GUnit'
   ],
@@ -104,7 +104,7 @@ foam.CLASS({
       imports: ['addressConfigDAO'],
 
       requires: [
-        'foam.nanos.auth.AddressConfig',
+        'foam.core.auth.AddressConfig',
         'foam.u2.layout.Grid',
         'foam.u2.layout.GUnit'
       ],
@@ -198,7 +198,7 @@ foam.CLASS({
     },
     {
       class: 'FObjectProperty',
-      of: 'foam.nanos.auth.Address',
+      of: 'foam.core.auth.Address',
       name: 'data'
     },
     {
@@ -225,13 +225,13 @@ foam.CLASS({
       this.SUPER();
       var self = this;
       // default translations
-      self.defaultRegionLabel = self.regionLabel = this.translationService.getTranslation(foam.locale, '*.foam.nanos.auth.Address.REGION.label', self.Address.REGION_ID.label);
-      self.defaultPostalCodeLabel = self.postalCodeLabel = this.translationService.getTranslation(foam.locale, '*.foam.nanos.auth.Address.POSTAL_CODE.label', self.Address.POSTAL_CODE.label);
+      self.defaultRegionLabel = self.regionLabel = this.translationService.getTranslation(foam.locale, '*.foam.core.auth.Address.REGION.label', self.Address.REGION_ID.label);
+      self.defaultPostalCodeLabel = self.postalCodeLabel = this.translationService.getTranslation(foam.locale, '*.foam.core.auth.Address.POSTAL_CODE.label', self.Address.POSTAL_CODE.label);
 
       function updateTranslations() {
         const country = self.data.countryId.toLowerCase();
-        self.regionLabel = self.translationService.getTranslation(foam.locale,`${country}.foam.nanos.auth.Address.REGION.label`, self.defaultRegionLabel);
-        self.postalCodeLabel = self.translationService.getTranslation(foam.locale, `${country}.foam.nanos.auth.Address.POSTAL_CODE.label`, self.defaultPostalCodeLabel);
+        self.regionLabel = self.translationService.getTranslation(foam.locale,`${country}.foam.core.auth.Address.REGION.label`, self.defaultRegionLabel);
+        self.postalCodeLabel = self.translationService.getTranslation(foam.locale, `${country}.foam.core.auth.Address.POSTAL_CODE.label`, self.defaultPostalCodeLabel);
       }
       // update translations
       this.data$.dot('countryId').sub(updateTranslations);
@@ -248,7 +248,7 @@ foam.CLASS({
             view: {
               class: 'foam.u2.view.ChoiceView',
               placeholder: this.PLACE_HOLDER,
-              dao: this.customCountryDAO.orderBy(foam.nanos.auth.Country.NAME),
+              dao: this.customCountryDAO.orderBy(foam.core.auth.Country.NAME),
               objToChoice: function(a) {
                 return [a.id, a.name];
               },

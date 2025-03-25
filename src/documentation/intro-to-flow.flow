@@ -11,7 +11,7 @@ FOAM system.  It is a subset of HTML with added support for FOAM specific featur
 <h2>Features</h2>
 A quick rundown of the features in FLOW
 <ul>
-  <li>&lt;i&gt;<i>italics</i>&lt;/li&gt;</li>
+  <li>&lt;i&gt;<i>italics</i>&lt;/i&gt;</li>
   <li>&lt;b&gt;<b>bold</b>&lt;/b&gt;</li>
   <li>&lt;p&gt;Paragraph tags&lt;/p&gt;</li>
   <li>HTML entities: &amp;amp; -> &amp;</li>
@@ -48,7 +48,7 @@ A quick rundown of the features in FLOW
  */
 
 foam.CLASS({
-  package: 'foam.nanos.demo.relationship',
+  package: 'foam.core.demo.relationship',
   name: 'Student',
   ids: [ 'studentId' ],
   properties: [
@@ -64,16 +64,16 @@ foam.CLASS({
 });
 
 foam.RELATIONSHIP({
-  sourceModel: 'foam.nanos.demo.relationship.Student',
-  targetModel: 'foam.nanos.demo.relationship.Course',
+  sourceModel: 'foam.core.demo.relationship.Student',
+  targetModel: 'foam.core.demo.relationship.Course',
   cardinality: '*:*',
   forwardName: 'courses',
   inverseName: 'students'
 });
 </code>
 </li>
-<li>Image support:</br>
-<img src="/src/foam/nanos/controller/foam_red.png"/>
+<li>Image support:<br/>
+<img src="/src/foam/core/controller/foam_red.png"/></li>
 </ul>
 
 

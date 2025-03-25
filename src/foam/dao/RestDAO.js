@@ -29,7 +29,7 @@ foam.CLASS({
    `,
 
   requires: [
-    'foam.core.Serializable',
+    'foam.lang.Serializable',
     'foam.dao.ArraySink',
     'foam.json.Outputter',
     'foam.net.HTTPRequest'
@@ -198,7 +198,7 @@ foam.CLASS({
         throw new Error('Expected ArraySink from REST endpoint when proxying local sink');
 
       if ( localSink.put ) {
-        var sub = foam.core.FObject.create();
+        var sub = foam.lang.FObject.create();
         var detached = false;
         sub.onDetach(function() { detached = true; });
         for ( var i = 0; i < array.length; i++ ) {

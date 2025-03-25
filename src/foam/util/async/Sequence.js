@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.util.async',
   name: 'Sequence',
-  extends: 'foam.core.Fluent',
+  extends: 'foam.lang.Fluent',
 
   documentation: `
     Sequence creates and executes ContextAgents in the order specified, passing
@@ -17,13 +17,13 @@ foam.CLASS({
   `,
 
   implements: [
-    'foam.core.ContextAgent',
+    'foam.lang.ContextAgent',
     'foam.mlang.Expressions'
   ],
 
   requires: [
-    'foam.core.ContextAgent',
-    'foam.core.NullAgent'
+    'foam.lang.ContextAgent',
+    'foam.lang.NullAgent'
   ],
 
   exports: [
@@ -199,7 +199,7 @@ foam.CLASS({
         } else if ( spec.create ) {
           contextAgent = spec.create(args, x);
         } else {
-          var cls = foam.core.FObject.isSubClass(spec.class)
+          var cls = foam.lang.FObject.isSubClass(spec.class)
             ? spec.class : this.__subContext__.lookup(spec.class);
           if ( ! cls ) foam.assert(false,
             'Argument to Sequence.add specifies unknown class: ', spec.class);
@@ -256,7 +256,7 @@ foam.CLASS({
     function waitForUnpause() {
       if ( ! this.paused_ ) return Promise.resolve();
       return new Promise((resolve, reject) => {
-        const detachable = foam.core.FObject.create();
+        const detachable = foam.lang.FObject.create();
         detachable.onDetach(this.paused_$.sub(() => {
           if ( ! this.paused_ ) {
             detachable.detach();
@@ -274,7 +274,7 @@ foam.CLASS({
         } else if ( spec.create ) {
           spec = spec.name;
         } else {
-          var cls = foam.core.FObject.isSubClass(spec.class)
+          var cls = foam.lang.FObject.isSubClass(spec.class)
             ? spec.class : this.__subContext__.lookup(spec.class);
           spec = cls.name;
         }

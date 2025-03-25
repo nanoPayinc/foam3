@@ -49,13 +49,13 @@ foam.CLASS({
             .tag(this.ModelSummary, { of$: this.of$ })
           .end()
           .start(this.Tab, {
-            label: foam.core.Model.METHODS.label,
+            label: foam.lang.Model.METHODS.label,
             selected: this.defaultTab == 'methods'
           })
             .tag(this.MethodShortSummary, { of$: this.of$ })
           .end()
           .start(this.Tab, {
-            label: foam.core.Model.PROPERTIES.label,
+            label: foam.lang.Model.PROPERTIES.label,
             selected: this.defaultTab == 'properties'
           })
             .tag(this.PropertyShortSummary, { of$: this.of$ })

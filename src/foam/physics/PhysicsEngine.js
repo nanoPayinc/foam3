@@ -42,12 +42,16 @@ foam.CLASS({
 
       // Gravity
       if ( gravity && this.gravity ) {
-        var d = this.bounds.height - c.bottom_;
-        // Have vy decay to zero
-        if ( d > 10 ) {
+        if ( this.bounds ) {
+          var d = this.bounds.height - c.bottom_;
+          // Have vy decay to zero
+          if ( d > 10 ) {
+            c.vy += gravity * this.gravityStrength;
+          } else if ( d > 1 ) {
+            c.vy += gravity * this.gravityStrength * (d/10)*(d/10);
+          }
+        } else {
           c.vy += gravity * this.gravityStrength;
-        } else if ( d > 1 ) {
-          c.vy += gravity * this.gravityStrength * (d/10)*(d/10);
         }
       }
 

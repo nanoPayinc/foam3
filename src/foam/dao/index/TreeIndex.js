@@ -21,7 +21,7 @@
 foam.CLASS({
   package: 'foam.dao.index',
   name: 'PropertyToIndexRefinement',
-  refines: 'foam.core.Property',
+  refines: 'foam.lang.Property',
 
   requires: [
     'foam.dao.index.TreeIndex'
@@ -40,7 +40,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.dao.index',
   name: 'FObjectArrayToIndexRefinement',
-  refines: 'foam.core.FObjectArray',
+  refines: 'foam.lang.FObjectArray',
 
   requires: [
     'foam.dao.index.SetIndex'
@@ -57,7 +57,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.dao.index',
   name: 'AxiomArrayToIndexRefinement',
-  refines: 'foam.core.AxiomArray',
+  refines: 'foam.lang.AxiomArray',
 
   requires: [
     'foam.dao.index.SetIndex'
@@ -74,7 +74,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.dao.index',
   name: 'StringArrayToIndexRefinement',
-  refines: 'foam.core.StringArray',
+  refines: 'foam.lang.StringArray',
 
   requires: [
     'foam.dao.index.SetIndex'
@@ -95,7 +95,7 @@ foam.CLASS({
   extends: 'foam.dao.index.Index',
 
   requires: [
-    'foam.core.Property',
+    'foam.lang.Property',
     'foam.dao.ArraySink',
     'foam.mlang.sink.NullSink',
     'foam.dao.index.MergePlan',
@@ -120,8 +120,7 @@ foam.CLASS({
     'foam.mlang.predicate.In',
     'foam.mlang.predicate.Contains',
     'foam.mlang.predicate.ContainsIC',
-    'foam.mlang.sink.Count',
-    'foam.mlang.sink.Explain',
+    'foam.mlang.sink.Count'
   ],
 
   constants: {
@@ -547,7 +546,7 @@ foam.CLASS({
             limit += skip;
             limit = Math.min(a.length, limit);
 
-            var sub = foam.core.FObject.create();
+            var sub = foam.lang.FObject.create();
             var detached = false;
             sub.onDetach(function() { detached = true; });
             for ( var i = skip; i < limit; i++ ) {

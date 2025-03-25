@@ -20,7 +20,7 @@ foam.CLASS({
   name: 'Stack',
 
   requires: [
-    'foam.nanos.controller.Memento',
+    'foam.core.controller.Memento',
     'foam.u2.stack.StackBlock'
   ],
 
@@ -210,7 +210,7 @@ foam.CLASS({
     {
       name: 'StackSlot',
 
-      implements: [ 'foam.core.Slot' ],
+      implements: [ 'foam.lang.Slot' ],
 
       properties: [
         {

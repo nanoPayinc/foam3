@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.u2.wizard.agents',
   name: 'StepWizardAgent',
   implements: [
-    'foam.core.ContextAgent',
+    'foam.lang.ContextAgent',
     'foam.mlang.Expressions'
   ],
   documentation: `
@@ -79,6 +79,9 @@ foam.CLASS({
       }
 
       await new Promise((resolve, onError) => {
+        // If something has already completed the wizard at this stage, discard
+        if( this.wizardController.status != this.WizardStatus.IN_PROGRESS ) 
+          return resolve();
         this.onDetach(this.wizardController.lastException$.sub(() => {
           let e = this.wizardController.lastException;
           if ( ! e ) return;

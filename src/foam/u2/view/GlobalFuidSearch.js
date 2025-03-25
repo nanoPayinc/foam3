@@ -10,8 +10,8 @@ foam.CLASS({
   extends: 'foam.u2.view.SuggestedTextField',
 
   requires: [
-    'foam.core.Action',
-    'foam.nanos.menu.Menu',
+    'foam.lang.Action',
+    'foam.core.menu.Menu',
     'foam.u2.FUIDAutocompleter',
     'foam.u2.md.OverlayDropdown',
     'foam.u2.stack.StackBlock'

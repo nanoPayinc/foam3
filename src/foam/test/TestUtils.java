@@ -6,18 +6,18 @@
 
 package foam.test;
 
-import foam.core.ClassInfo;
-import foam.core.FObject;
-import foam.core.X;
+import foam.lang.ClassInfo;
+import foam.lang.FObject;
+import foam.lang.X;
 import foam.dao.DAO;
 import foam.dao.MDAO;
 import foam.dao.ProxyDAO;
 import foam.dao.SequenceNumberDAO;
-import foam.nanos.auth.Group;
-import foam.nanos.auth.GroupPermissionJunction;
-import foam.nanos.auth.User;
-import foam.nanos.fs.File;
-import foam.nanos.session.Session;
+import foam.core.auth.Group;
+import foam.core.auth.GroupPermissionJunction;
+import foam.core.auth.User;
+import foam.core.fs.File;
+import foam.core.session.Session;
 import foam.util.Auth;
 
 /**
@@ -64,7 +64,7 @@ public class TestUtils {
     File profilePicFile = new File();
     profilePicFile.setFilename("Profile picture");
     user.setProfilePicture(profilePicFile);
-    user.setLifecycleState(foam.nanos.auth.LifecycleState.ACTIVE);
+    user.setLifecycleState(foam.core.auth.LifecycleState.ACTIVE);
     return user;
   }
 

@@ -1,0 +1,60 @@
+p({
+  class: "foam.core.ruler.Rule",
+  id: "foam-core-er-EventRecordNotificationRule",
+  name: "foam-core-er-EventRecordNotificationRule",
+  ruleGroup: "EventRecord",
+  daoKey: "eventRecordDAO",
+  after: true,
+  priority: 100,
+  operation: 0,
+  predicate:{
+    class: "foam.core.ruler.predicate.FScriptRulePredicate",
+    query: 'n.severity == foam.log.LogLevel.ERROR'
+  },
+  lifecycleState:1,
+  action: {
+    class: "foam.core.er.EventRecordNotificationRuleAction"
+  }
+})
+
+p({
+  class: "foam.core.ruler.Rule",
+  id: "foam-core-er-EventRecordAlarmRule",
+  name: "foam-core-er-EventRecordAlarmRule",
+  ruleGroup: "EventRecord",
+  daoKey: "eventRecordDAO",
+  after: true,
+  priority: 110,
+  operation: 0,
+  predicate:{
+    class: "foam.core.ruler.predicate.FScriptRulePredicate",
+    query: 'n.raiseAlarm == true && n.severity != foam.log.LogLevel.DEBUG'
+  },
+  lifecycleState:1,
+  action: {
+    class: "foam.core.er.EventRecordAlarmRuleAction"
+    alarmSeverity: "WARN"
+  }
+})
+
+p({
+  class: "foam.core.ruler.Rule",
+  id: "foam-core-er-EventRecordSystemOutageRule",
+  name: "foam-core-er-EventRecordSystemOutageRule",
+  ruleGroup: "EventRecord",
+  daoKey: "eventRecordDAO",
+  after: true,
+  operation: 3,
+  predicate:{
+    class: "foam.core.ruler.predicate.FScriptRulePredicate",
+    query: 'n.systemOutage exists && (o !exists || o.severity != n.severity)'
+  },
+  lifecycleState:1,
+  action: {
+    class: "foam.core.er.EventRecordSystemOutageRuleAction"
+  }
+})
+// predicate:{
+//   class: "foam.core.ruler.predicate.FScriptRulePredicate",
+//   query: 'n.systemEvent exists && ((o !exists && (n.severity == foam.log.LogLevel.WARN || n.severity == foam.log.LogLevel.ERROR )) || o.severity != n.severity)'
+// },

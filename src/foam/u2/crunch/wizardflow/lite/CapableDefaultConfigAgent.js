@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'CapableDefaultConfigAgent',
 
   implements: [
-    'foam.core.ContextAware'
+    'foam.lang.ContextAware'
   ],
 
   requires: [

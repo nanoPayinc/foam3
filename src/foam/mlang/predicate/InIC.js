@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.mlang.predicate',
   name: 'InIC',
   extends: 'foam.mlang.predicate.ArrayBinary',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   documentation: 'Predicate returns true iff arg1 is a substring of arg2, or if arg2 is an array, is an element of arg2, case insensitive.',
 

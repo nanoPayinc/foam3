@@ -1,0 +1,8 @@
+p({
+  class:"foam.core.notification.Notification",
+  id: 3,
+  template: "foam-core-er-EventRecordNotificationTemplate",
+  emailName:"foam-core-er-EventRecordEmailTemplate",
+  groupId: "noc",
+  notificationType: "NOC"
+})

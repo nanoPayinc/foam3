@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.mlang.predicate',
   name: 'StartsWithIC',
   extends: 'foam.mlang.predicate.Binary',
-  implements: ['foam.core.Serializable'],
+  implements: ['foam.lang.Serializable'],
 
   documentation: 'Predicate returns true iff arg1 starts with arg2 or if arg1 is an array, if an element starts with arg2, ignoring case.',
 

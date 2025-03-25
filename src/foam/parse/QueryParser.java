@@ -6,7 +6,7 @@
 
 package foam.parse;
 
-import foam.core.*;
+import foam.lang.*;
 import foam.lib.json.Whitespace;
 import foam.lib.parse.*;
 import foam.lib.parse.Action;
@@ -15,8 +15,8 @@ import foam.lib.parse.Optional;
 import foam.mlang.Expr;
 import foam.mlang.MLang;
 import foam.mlang.predicate.*;
-import foam.nanos.auth.Subject;
-import foam.nanos.auth.User;
+import foam.core.auth.Subject;
+import foam.core.auth.User;
 import foam.util.SafetyUtil;
 
 import java.lang.Exception;
@@ -211,7 +211,7 @@ public class QueryParser
         instanceOf.setOf(clsInstance.getClassInfo());
         return instanceOf;
       } catch (Exception e) {
-        foam.nanos.logger.Logger logger = (foam.nanos.logger.Logger) x.get("logger");
+        foam.core.logger.Logger logger = (foam.core.logger.Logger) x.get("logger");
         logger.warning("failed to parse instanceof query");
         return null;
       }
@@ -398,7 +398,7 @@ public class QueryParser
       if ( ( (Object[]) val )[0].equals("me") ) {
         User user = ((Subject) x.get("subject")).getUser();
         if ( user == null ) {
-          foam.nanos.logger.Logger logger = (foam.nanos.logger.Logger) x.get("logger");
+          foam.core.logger.Logger logger = (foam.core.logger.Logger) x.get("logger");
           logger.warning("user not logged in ");
           return val;
         }

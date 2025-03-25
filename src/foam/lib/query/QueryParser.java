@@ -6,19 +6,20 @@ import foam.lib.parse.Parser;
 import foam.lib.parse.ParserContext;
 
 public class QueryParser
-  extends foam.lib.parse.ProxyParser {
-  private foam.core.ClassInfo info_;
+  extends foam.lib.parse.ProxyParser
+{
+  protected foam.lang.ClassInfo info_;
 
-  public QueryParser(foam.core.ClassInfo classInfo) {
+  public QueryParser(foam.lang.ClassInfo classInfo) {
     info_ = classInfo;
 
-    java.util.List properties = classInfo.getAxiomsByClass(foam.core.PropertyInfo.class);
+    java.util.List properties = classInfo.getAxiomsByClass(foam.lang.PropertyInfo.class);
 
     Parser[] expressions = new Parser[properties.size()];
 
     int i = 0;
     for ( Object prop : properties ) {
-      foam.core.PropertyInfo info = (foam.core.PropertyInfo)prop;
+      foam.lang.PropertyInfo info = (foam.lang.PropertyInfo) prop;
 
       expressions[i++] = PropertyExpressionParser.create(info);
     }

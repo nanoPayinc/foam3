@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.crunch.wizardflow',
   name: 'RequestNotificationPermissionAgent',
-  implements: [ 'foam.core.ContextAgent' ],
+  implements: [ 'foam.lang.ContextAgent' ],
   documentation: `
     Requests user for push notification permissions based on a predicate. Does nothing if already granted on device.
   `,

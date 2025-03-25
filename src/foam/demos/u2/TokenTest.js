@@ -51,7 +51,7 @@ foam.CLASS({
       name: 'tokenDAO',
       factory: function() {
         return foam.dao.EasyDAO.create({
-          of: foam.nanos.theme.customisation.CSSTokenOverride,
+          of: foam.core.theme.customisation.CSSTokenOverride,
           daoType: 'MDAO'
         }, this);
       }
@@ -59,7 +59,7 @@ foam.CLASS({
     {
       name: 'tokenService',
       factory: function() {
-        return foam.nanos.theme.customisation.CSSTokenOverrideService.create({}, this);
+        return foam.core.theme.customisation.CSSTokenOverrideService.create({}, this);
       }
     }
   ],
@@ -110,8 +110,8 @@ foam.CLASS({
     {
       name: 'save',
       code: function(X) {
-        X.cssTokenOverrideDAO.put(foam.nanos.theme.customisation.CSSTokenOverride.create({ theme: '', source: 'buttonPrimaryColor', target: this.color }, this));
-        return X.cssTokenOverrideDAO.put(foam.nanos.theme.customisation.CSSTokenOverride.create({ theme: '', source: 'buttonSecondaryColor', target: this.color2 }, this));
+        X.cssTokenOverrideDAO.put(foam.core.theme.customisation.CSSTokenOverride.create({ theme: '', source: 'buttonPrimaryColor', target: this.color }, this));
+        return X.cssTokenOverrideDAO.put(foam.core.theme.customisation.CSSTokenOverride.create({ theme: '', source: 'buttonSecondaryColor', target: this.color2 }, this));
       }
     }
   ]

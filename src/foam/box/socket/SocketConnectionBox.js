@@ -11,7 +11,7 @@ foam.CLASS({
 
   implements: [
     'foam.box.Box',
-    'foam.core.ContextAgent'
+    'foam.lang.ContextAgent'
   ],
 
   javaImports: [
@@ -19,14 +19,14 @@ foam.CLASS({
     'foam.box.Message',
     'foam.box.ReplyBox',
     'foam.box.RPCErrorMessage',
-    'foam.core.ContextAgent',
-    'foam.core.FObject',
-    'foam.core.X',
+    'foam.lang.ContextAgent',
+    'foam.lang.FObject',
+    'foam.lang.X',
     'foam.lib.json.JSONParser',
-    'foam.nanos.logger.PrefixLogger',
-    'foam.nanos.logger.Logger',
-    'foam.nanos.om.OMLogger',
-    'foam.nanos.pm.PM',
+    'foam.core.logger.PrefixLogger',
+    'foam.core.logger.Logger',
+    'foam.core.om.OMLogger',
+    'foam.core.pm.PM',
     'java.io.BufferedInputStream',
     'java.io.BufferedOutputStream',
     'java.io.DataInputStream',
@@ -93,7 +93,7 @@ foam.CLASS({
     {
       name: 'logger',
       class: 'FObjectProperty',
-      of: 'foam.nanos.logger.Logger',
+      of: 'foam.core.logger.Logger',
       visibility: 'HIDDEN',
       transient: true,
       javaCloneProperty: '//noop',
@@ -283,7 +283,7 @@ NOTE: duplicated in SocketConnectionReplyBox
               }
               if ( replyBox == null ) {
                 getLogger().error("ReplyBox not found", replyBoxId);
-                ((foam.dao.DAO) x.get("alarmDAO")).put(new foam.nanos.alarming.Alarm("ReplyBox not found"));
+                ((foam.dao.DAO) x.get("alarmDAO")).put(new foam.core.alarming.Alarm("ReplyBox not found"));
                 throw new RuntimeException("ReplyBox not found. message: "+data);
               }
               getReplyBoxes().remove(replyBoxId);
@@ -296,7 +296,7 @@ NOTE: duplicated in SocketConnectionReplyBox
                 foam.box.RemoteException re = (foam.box.RemoteException) ((foam.box.RPCErrorMessage) o).getData();
                 getLogger().warning("RemoteException", re.getId(), re.getMessage(), re.getException() != null ? re.getException().getClass().getName() : "");
                 if ( re.getException() != null ) {
-                  throw (foam.core.FOAMException) re.getException();
+                  throw (foam.lang.FOAMException) re.getException();
                 }
                 throw new RuntimeException(re.getMessage());
               }

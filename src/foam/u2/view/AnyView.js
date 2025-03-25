@@ -98,18 +98,18 @@ foam.CLASS({
           }),
           foam.u2.view.AnyView.Choice.create({
             label: 'FObject',
-            type: foam.core.FObject,
+            type: foam.lang.FObject,
             view: foam.u2.view.FObjectView,
             toType: function(o) {
-              return foam.core.FObject.isInstance(o) ? o : foam.core.FObject.create();
+              return foam.lang.FObject.isInstance(o) ? o : foam.lang.FObject.create();
             }
           }),
           foam.u2.view.AnyView.Choice.create({
             label: 'Enum',
-            type: foam.core.AbstractEnum,
+            type: foam.lang.AbstractEnum,
             view: foam.u2.view.EnumView,
             toType: function(o) {
-              return foam.core.AbstractEnum.isInstance(o) ? o : foam.core.AbstractEnum.create();
+              return foam.lang.AbstractEnum.isInstance(o) ? o : foam.lang.AbstractEnum.create();
             }
           }),
           foam.u2.view.AnyView.Choice.create({
@@ -137,9 +137,9 @@ foam.CLASS({
       expression: function(data, types) {
         var type = foam.typeOf(data);
         // Hack for Enum values.
-        if ( type == foam.core.FObject ) {
-          if ( foam.core.AbstractEnum.isInstance(data) ) {
-            type = foam.core.AbstractEnum;
+        if ( type == foam.lang.FObject ) {
+          if ( foam.lang.AbstractEnum.isInstance(data) ) {
+            type = foam.lang.AbstractEnum;
           }
         }
         var choice = types.find(t => type == t.type);

@@ -15,9 +15,9 @@ foam.CLASS({
   ],
 
   javaImports: [
-    'foam.core.FObject',
+    'foam.lang.FObject',
     'foam.lib.json.JSONParser',
-    'foam.nanos.pm.PM',
+    'foam.core.pm.PM',
     'foam.util.concurrent.AssemblyLine',
     'foam.util.SafetyUtil',
     'java.io.BufferedReader',
@@ -93,7 +93,7 @@ foam.CLASS({
                   }
                   switch ( operation ) {
                     case 'p':
-                      foam.core.FObject old = dao.find(obj.getProperty("id"));
+                      foam.lang.FObject old = dao.find(obj.getProperty("id"));
                       dao.put(old != null ? mergeFObject(old.fclone(), obj) : obj);
                       break;
 
@@ -116,9 +116,9 @@ foam.CLASS({
           assemblyLine.shutdown();
           pm.log(x);
           if ( getFailCount() == 0 ) {
-            getLogger().info("Replay complete", getFilename(), "processed", getPassCount(), "of", getFailCount()+getPassCount(), "in", Duration.ofMillis(pm.getTime()));
+            getLogger().info("Replay complete", getFilename(), "processed", passCount.get(), "of", failCount.get()+passCount.get(), "in", Duration.ofMillis(pm.getTime()));
           } else {
-            getLogger().warning("Replay complete", getFilename(), "processed", getPassCount(), "of", getFailCount()+getPassCount(), "in", Duration.ofMillis(pm.getTime()));
+            getLogger().warning("Replay complete", getFilename(), "processed", passCount.get(), "of", failCount.get()+passCount.get(), "in", Duration.ofMillis(pm.getTime()));
           }
         }
       `

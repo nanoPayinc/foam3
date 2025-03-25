@@ -12,7 +12,7 @@ foam.CLASS({
     use this parser when you have a CSV that contains a header and want the
     parser to figure out which column maps to which property.
 
-    This parser makes use of the foam.core.Property's fromCSVLabelMapping
+    This parser makes use of the foam.lang.Property's fromCSVLabelMapping
     which allows one property to map to multiple columns.
   `,
   requires: [
@@ -43,7 +43,7 @@ foam.CLASS({
   ],
   methods: [
     function fromCSV(cls, s, sink) {
-      var propMap = cls.getAxiomsByClass(foam.core.Property)
+      var propMap = cls.getAxiomsByClass(foam.lang.Property)
         .reduce((map, p) => {
           p.fromCSVLabelMapping(map, p);
           return map;
@@ -76,7 +76,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.lib.csv',
   name: 'PropertyFromCSV',
-  refines: 'foam.core.Property',
+  refines: 'foam.lang.Property',
   properties: [
     {
       class: 'Function',
@@ -91,13 +91,13 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.lib.csv',
   name: 'FObjectPropertyFromCSV',
-  refines: 'foam.core.FObjectProperty',
+  refines: 'foam.lang.FObjectProperty',
   properties: [
     {
       class: 'Function',
       name: 'fromCSVLabelMapping',
       value: function(map, prop) {
-        prop.of.getAxiomsByClass(foam.core.Property)
+        prop.of.getAxiomsByClass(foam.lang.Property)
           .forEach(a => {
             var m = {};
             a.fromCSVLabelMapping(m, a);
@@ -118,7 +118,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.lib.csv',
   name: 'FObjectArrayFromCSV',
-  refines: 'foam.core.FObjectArray',
+  refines: 'foam.lang.FObjectArray',
   properties: [
     {
       class: 'Function',
@@ -137,7 +137,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.lib.csv',
   name: 'ArrayFromCSV',
-  refines: 'foam.core.Array',
+  refines: 'foam.lang.Array',
   properties: [
     {
       class: 'Function',
@@ -156,7 +156,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.lib.csv',
   name: 'StringArrayFromCSV',
-  refines: 'foam.core.StringArray',
+  refines: 'foam.lang.StringArray',
   properties: [
     {
       class: 'Function',

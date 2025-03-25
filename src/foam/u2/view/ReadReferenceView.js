@@ -74,7 +74,7 @@ foam.CLASS({
 
         {
           class: 'Reference',
-          of: 'foam.nanos.auth.Group',
+          of: 'foam.core.auth.Group',
           name: 'group',
           menuKeys: [
             'someMenuId',
@@ -85,7 +85,7 @@ foam.CLASS({
         2. passing properties to view
 
         class: 'Reference',
-        of: 'foam.nanos.auth.Group',
+        of: 'foam.core.auth.Group',
         name: 'group',
         view: {
           class: 'foam.u2.view.ReadReferenceView',

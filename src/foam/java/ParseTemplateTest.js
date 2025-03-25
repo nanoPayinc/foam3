@@ -37,7 +37,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.java',
   name: 'ParseTemplateTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
 
   javaImports: [
     'java.lang.StringBuilder'

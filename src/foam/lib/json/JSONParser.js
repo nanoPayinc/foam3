@@ -13,7 +13,7 @@ foam.CLASS({
   // to hold all the args while we parse
 
   javaImports: [
-    'foam.core.FObject',
+    'foam.lang.FObject',
     'foam.lib.parse.Parser',
     'foam.lib.parse.ParserContext',
     'foam.lib.parse.ParserContextImpl',

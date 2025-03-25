@@ -44,11 +44,11 @@ foam.CLASS({
       value: 'id'
     },
     {
-      javaType: 'foam.core.PropertyInfo',
-      javaInfoType: 'foam.core.AbstractObjectPropertyInfo',
+      javaType: 'foam.lang.PropertyInfo',
+      javaInfoType: 'foam.lang.AbstractObjectPropertyInfo',
       name: 'axiom',
       javaFactory: `
-return (foam.core.PropertyInfo)(getOf().getAxiomByName(getProperty()));
+return (foam.lang.PropertyInfo)(getOf().getAxiomByName(getProperty()));
       `,
     }
   ],
@@ -82,7 +82,7 @@ return getDelegate().put_(x, obj);
     {
       buildJavaClass: function(cls) {
         cls.extras.push(`
-public GUIDDAO(foam.core.X x, DAO delegate) {
+public GUIDDAO(foam.lang.X x, DAO delegate) {
   setX(x);
   setDelegate(delegate);
 }

@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.comics.v2.userfeedback',
   name: 'UserFeedbackException',
 
-  implements: ['foam.core.Exception'],
+  implements: ['foam.lang.Exception'],
 
   javaExtends: [
     'java.lang.RuntimeException'

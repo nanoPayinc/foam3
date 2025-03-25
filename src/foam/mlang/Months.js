@@ -12,7 +12,7 @@ foam.CLASS({
 
 /*
   implements: [
-    'foam.core.Serializable'
+    'foam.lang.Serializable'
   ],
   */
 

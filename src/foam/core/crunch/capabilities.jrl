@@ -1,0 +1,9 @@
+p({
+  "class":"foam.core.crunch.Capability",
+  "id":"foam.core.crunch.AppStore",
+  "name":"App Store",
+  "isInternalCapability": true,
+  "permissionsGranted": [
+    "menu.read.appStore"
+  ]
+})

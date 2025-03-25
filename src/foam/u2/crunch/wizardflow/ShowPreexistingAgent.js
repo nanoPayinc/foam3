@@ -12,7 +12,7 @@ foam.CLASS({
   `,
   imports: [ 'wizardlets' ],
   requires: [
-    'foam.nanos.crunch.CapabilityJunctionStatus'
+    'foam.core.crunch.CapabilityJunctionStatus'
   ],
 
 
@@ -20,7 +20,7 @@ foam.CLASS({
     async function execute() {
       for ( let wizardlet of this.wizardlets ){
         if (
-          foam.nanos.crunch.ui.MinMaxCapabilityWizardlet.isInstance(wizardlet) &&
+          foam.core.crunch.ui.MinMaxCapabilityWizardlet.isInstance(wizardlet) &&
           wizardlet.data.selectedData?.length > 0
         ){
           var selectedDataCapabilityIds = wizardlet.data.selectedData;

@@ -1,0 +1,18 @@
+p({
+  "class": "foam.strategy.StrategyReference",
+  "id": "foam.core.bench.Benchmark",
+  "desiredModelId": "foam.core.bench.Benchmark",
+  "strategy": "foam.core.bench.Benchmark"
+})
+p({
+  "class": "foam.strategy.StrategyReference",
+  "id": "foam.core.bench.TestScriptBenchmark",
+  "desiredModelId": "foam.core.bench.Benchmark",
+  "strategy": "foam.core.bench.TestScriptBenchmark"
+})
+p({
+  "class": "foam.strategy.StrategyReference",
+  "id": "foam.core.bench.BenchmarkRunner",
+  "desiredModelId": "foam.core.bench.BenchmarkRunner",
+  "strategy": "foam.core.bench.BenchmarkRunner"
+})

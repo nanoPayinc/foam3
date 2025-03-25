@@ -1,0 +1,148 @@
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"pmLogger",
+  "lazy":true,
+  "serve":false,
+  "serviceClass":"foam.core.pm.FoldReducePMLogger"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"daoPMLogger",
+  "lazy":true,
+  "serve":false,
+  "serviceClass":"foam.core.pm.DAOPMLogger"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"pm1MinuteDAO",
+  "lazy":true,
+  "serve":true,
+  "serviceScript":"return new foam.dao.MDAO(foam.core.analytics.Candlestick.getOwnClassInfo());",
+  "client":"{\"of\":\"foam.core.analytics.Candlestick\"}"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"pmHourlyDAO",
+  "lazy":true,
+  "serve":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setPm(true)
+      .setPipelinePm(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("PMHourly")
+      .setOf(foam.core.analytics.Candlestick.getOwnClassInfo())
+      .setCluster(false)
+      .build();
+    """,
+  "client":"{\"of\":\"foam.core.analytics.Candlestick\"}"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"pmHourlyReduceManager",
+  "lazy":true,
+  "serve":false,
+  "serviceScript":"""
+    return new foam.core.analytics.DAOReduceManager.Builder(x)
+      .setSourceDAO((foam.dao.DAO) x.get("pm1MinuteDAO"))
+      .setDestDAO((foam.dao.DAO) x.get("pmHourlyDAO"))
+      .setPeriodLengthMs(60*60*1000)
+      .build();
+  """
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"pmDailyDAO",
+  "lazy":true,
+  "serve":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setPm(true)
+      .setPipelinePm(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("PMDaily")
+      .setOf(foam.core.analytics.Candlestick.getOwnClassInfo())
+      .setCluster(false)
+      .build();
+    """,
+  "client":"{\"of\":\"foam.core.analytics.Candlestick\"}"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"pmDailyReduceManager",
+  "lazy":true,
+  "serve":false,
+  "serviceScript":"""
+    return new foam.core.analytics.DAOReduceManager.Builder(x)
+      .setSourceDAO((foam.dao.DAO) x.get("pmHourlyDAO"))
+      .setDestDAO((foam.dao.DAO) x.get("pmDailyDAO"))
+      .setPeriodLengthMs(24*60*60*1000)
+      .build();
+  """
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"pmFoldManager",
+  "lazy":true,
+  "serve":false,
+  "serviceScript":"""
+    return new foam.core.analytics.DAOFoldManager.Builder(x)
+      .setDao((foam.dao.DAO) x.get("pm1MinuteDAO"))
+      .setPeriodLengthMs(60*1000)
+      .build();
+  """
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"pmInfoDAO",
+  "serve":true,
+  "serviceScript":`
+    return x.get("pmLogger").asDAO().orderBy(foam.mlang.MLang.DESC(foam.core.pm.PMInfo.TOTAL_TIME));
+  `,
+  "client":"""
+  {
+    "of":"foam.core.pm.PMInfo",
+    "remoteListenerSupport": false,
+    "ttlPurgeTime": 0
+  }
+  """
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"pmDAO",
+  "serve":true,
+  "serviceScript":
+  """
+    return new foam.core.analytics.FoldManagerDAODecorator.Builder(x)
+      .setDelegate(
+        new foam.core.ruler.RulerDAO(x,
+          new foam.dao.NullDAO.Builder(x)
+            .setOf(foam.core.pm.PM.getOwnClassInfo())
+            .build(),
+          "pmDAO"))
+      .setFm((foam.core.analytics.DAOFoldManager) x.get("pmFoldManager"))
+      .build();
+  """,
+  "client":"{\"of\":\"foam.core.pm.PM\", \"remoteListenerSupport\": false}"
+})
+
+p({
+  class:"foam.core.boot.CSpec",
+  name:"PM",
+  description:"Configurable PM Factory",
+  authenticate:false,
+  pm:false,
+  service:{
+    class:"foam.core.pm.PMFactory",
+    percentage:100
+  }
+})

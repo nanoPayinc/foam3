@@ -59,7 +59,7 @@ List entries are of the form: 172.0.0.0/24 - this would restrict logins to 172.x
         try {
           calculateAddresses(val);
         } catch ( java.net.UnknownHostException e ) {
-          throw new foam.core.FOAMException(e.getMessage(), e);
+          throw new foam.lang.FOAMException(e.getMessage(), e);
         }
       }
       notation_ = val;
@@ -93,7 +93,7 @@ List entries are of the form: 172.0.0.0/24 - this would restrict logins to 172.x
   ],
 
   javaCode: `
-  public CIDR(foam.core.X x, String notation) {
+  public CIDR(foam.lang.X x, String notation) {
     setX(x);
     setNotation(notation);
   }
@@ -140,7 +140,7 @@ List entries are of the form: 172.0.0.0/24 - this would restrict logins to 172.x
       javaCode: `
       String[] tokens = notation.split("/");
       if ( tokens.length < 2 ) {
-        throw new foam.core.FOAMException("Invalid CIDR notation");
+        throw new foam.lang.FOAMException("Invalid CIDR notation");
       }
       long addr32 = IPSupport.instance().ip2long(tokens[0]);
       long mask = Long.parseLong(tokens[1]);

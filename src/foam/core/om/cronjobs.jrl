@@ -1,0 +1,66 @@
+p({
+  class:"foam.core.cron.Cron",
+  id:"om5MinuteReduce",
+  enabled:true,
+  clusterable:false,
+  schedule:{
+    class:"foam.core.cron.IntervalSchedule",
+    duration:{
+      class:"foam.core.cron.TimeHMS",
+      minute:5
+    }
+  },
+  code:"""
+    import foam.core.analytics.DAOReduceManager;
+    m = x.get("om5MinuteReduceManager");
+    m.doReduce();
+  """,
+  lastModifiedBy:1348,
+  lastModified:1606453674357
+})
+
+p({
+  "class":"foam.core.cron.Cron",
+  "id":"omHourlyReduce",
+  "enabled":true,
+  clusterable:false,
+  "schedule":{
+    "class":"foam.core.cron.CronSchedule",
+    "minute":0,
+    "hour":-1,
+    "dayOfMonth":-1,
+    "month":-1,
+    "dayOfWeek":-1,
+    "second":0
+  },
+  "code":"""
+    import foam.core.analytics.DAOReduceManager;
+    m = x.get("omHourlyReduceManager");
+    m.doReduce();
+  """,
+  lastModifiedBy:1348,
+  lastModified:1606453674357
+})
+
+p({
+  "class":"foam.core.cron.Cron",
+  "id":"omDailyReduce",
+  "enabled":true,
+  clusterable:false,
+  "schedule":{
+    "class":"foam.core.cron.CronSchedule",
+    "minute":0,
+    "hour":0,
+    "dayOfMonth":-1,
+    "month":-1,
+    "dayOfWeek":-1,
+    "second":0
+  },
+  "code":"""
+    import foam.core.analytics.DAOReduceManager;
+    m = x.get("omDailyReduceManager");
+    m.doReduce();
+  """,
+  lastModifiedBy:1348,
+  lastModified:1606453674357
+})

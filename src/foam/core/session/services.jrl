@@ -1,0 +1,57 @@
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"localSessionDAO",
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.session.Session.getOwnClassInfo())
+      .setGuid(true)
+      .setJournalName("sessions")
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setSAF(true)
+      .setAuthorize(false)
+      .setDecorator(new foam.dao.ValidatingDAO(x, new foam.dao.NullDAO(x, foam.core.session.Session.getOwnClassInfo())))
+      .build();
+  """
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "sessionDAO",
+  "serve": true,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.session.Session.getOwnClassInfo())
+      .setPm(true)
+      .setAuthorize(false)
+      .setInnerDAO(((foam.dao.DAO) x.get("localSessionDAO")))
+      .setEnableInterfaceDecorators(false)
+      .setOrder(new foam.mlang.order.Comparator[] { new foam.mlang.order.Desc.Builder(x).setArg1(foam.core.session.Session.LAST_USED).build() })
+      .build();
+  """,
+  "client": "{\"of\":\"foam.core.session.Session\"}",
+  "authNotes": "Users must have the 'service.sessionDAO' permission to access this service. Due to the highly sensitive nature of sessions, only superadmins should have permission to access this service."
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "sessionService",
+  "serve": true,
+  "serviceClass": "foam.core.session.SimpleSessionService"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"localSettingDAO",
+  "lazy":false,
+  "serve":true,
+  "authenticate": true,
+  "serviceScript":"""
+    import foam.dao.DAO;
+    return new foam.dao.EasyDAO.Builder(x)
+      .setDecorator(new foam.core.session.LocalSettingSessionDAO(x, new foam.dao.NullDAO(x, foam.core.session.LocalSetting.getOwnClassInfo())))
+      .setAuthorize(true)
+      .setOf(foam.core.session.LocalSetting.getOwnClassInfo())
+      .build();
+  """,
+  "client":"{\"of\":\"foam.core.session.LocalSetting\", \"remoteListenerSupport\": false}"
+})

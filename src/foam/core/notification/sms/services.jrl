@@ -1,0 +1,58 @@
+// not lazy as needed by notification system during startup.
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"localSmsMessageDAO",
+  "lazy":false,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.notification.sms.SMSMessage.getOwnClassInfo())
+      .setAuthorize(false)
+      .setCreatedByAware(true)
+      .setCreatedAware(true)
+      .setSeqNo(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("smsMessages")
+      .setWaitReplay(false)
+      .setFixedSize(new foam.dao.FixedSizeDAO.Builder(x)
+        .setComparator(foam.mlang.MLang.DESC(foam.core.notification.sms.SMSMessage.CREATED))
+        .setPredicate(foam.mlang.MLang.EQ(foam.core.notification.sms.SMSMessage.STATUS, foam.core.notification.sms.SMSStatus.SENT))
+        .setSize(1000)
+        .build())
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] {foam.core.notification.sms.SMSMessage.CREATED});
+  """
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"smsMessageDAO",
+  "serve":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.notification.sms.SMSMessage.getOwnClassInfo())
+      .setInnerDAO((foam.dao.DAO) x.get("localSmsMessageDAO"))
+      .build();
+  """,
+  "client":"{\"of\":\"foam.core.notification.sms.SMSMessage\"}"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"smsService",
+  "serviceScript":"""
+    import foam.core.notification.sms.NullSMSService;
+    import foam.core.notification.sms.ProxySMSService;
+
+    return new ProxySMSService.Builder(x)
+      .setDelegate(
+        new NullSMSService.Builder(x).build())
+      .build();
+  """
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"twilioConfig",
+  "lazy":false,
+  "service":{"class":"foam.core.notification.sms.TwilioConfig"}
+})

@@ -1,0 +1,5 @@
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "threadPoolInfo",
+  "serviceClass": "foam.core.pool.ThreadPoolWebAgent"
+})

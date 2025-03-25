@@ -382,7 +382,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.graphics',
   name: 'Radians',
-  extends: 'foam.core.Float',
+  extends: 'foam.lang.Float',
 
   properties: [
     [ 'preSet', function(_, r) {
@@ -1063,7 +1063,7 @@ foam.CLASS({
   properties: [
     { class: 'Array', of: 'Float', name: 'xCoordinates' }, // 'of' not used
     { class: 'Array', of: 'Float', name: 'yCoordinates' }, // 'of' not used
-    { class: 'foam.core.Color', name: 'color', value: '#000' },
+    { class: 'foam.lang.Color', name: 'color', value: '#000' },
     { class: 'Float', name: 'lineWidth', value: 1 },
     { class: 'IntegerArray', name: 'lineDash', documentation: 'An Array of numbers which specify distances to alternately draw lines and gaps. Full line if not set.' },
   ],

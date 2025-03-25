@@ -34,7 +34,7 @@ foam.CLASS({
   ],
 
   implements: [
-    'foam.nanos.boot.NSpecAware'
+    'foam.core.boot.CSpecAware'
   ],
 
   imports: [
@@ -42,8 +42,8 @@ foam.CLASS({
   ],
 
   javaImports: [
-    'foam.core.X',
-    'foam.core.PropertyInfo',
+    'foam.lang.X',
+    'foam.lang.PropertyInfo',
     'foam.util.SafetyUtil',
     'foam.util.UIDGenerator',
     'foam.util.AUIDGenerator',
@@ -60,7 +60,7 @@ foam.CLASS({
       class: 'String',
       name: 'salt',
       javaFactory: `
-      if ( getNSpec() != null ) return getNSpec().getName();
+      if ( getCSpec() != null ) return getCSpec().getName();
       throw new IllegalArgumentException("Salt not defined");
       `
     },
@@ -68,16 +68,16 @@ foam.CLASS({
       /** @private */
       name: 'propertyInfo',
       hidden: true,
-      javaType: 'foam.core.PropertyInfo',
-      javaInfoType: 'foam.core.AbstractObjectPropertyInfo',
-      javaFactory: 'return (foam.core.PropertyInfo)(getOf().getAxiomByName(getProperty()));'
+      javaType: 'foam.lang.PropertyInfo',
+      javaInfoType: 'foam.lang.AbstractObjectPropertyInfo',
+      javaFactory: 'return (foam.lang.PropertyInfo)(getOf().getAxiomByName(getProperty()));'
     },
     {
       class: 'Object',
       name: 'uIDGenerator',
       javaType: 'foam.util.UIDGenerator',
       javaFactory: `
-        if ( getPropertyInfo() instanceof foam.core.AbstractLongPropertyInfo ) {
+        if ( getPropertyInfo() instanceof foam.lang.AbstractLongPropertyInfo ) {
           return new NUIDGenerator(getX(), getSalt(), getDelegate(), getPropertyInfo());
         }
         return new AUIDGenerator.Builder(getX()).setSalt(getSalt()).setMinLength(getMinLength()).build();
@@ -85,9 +85,9 @@ foam.CLASS({
       hidden: true,
     },
     {
-      name: 'nSpec',
+      name: 'cSpec',
       class: 'FObjectProperty',
-      type: 'foam.nanos.boot.NSpec',
+      type: 'foam.core.boot.CSpec',
       hidden: true,
     },
     {

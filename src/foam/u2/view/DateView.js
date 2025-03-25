@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'DateView',
   extends: 'foam.u2.view.ModeAltView',
 
-  documentation: 'A view for foam.core.Date properties.',
+  documentation: 'A view for foam.lang.Date properties.',
 
   requires: [
     'foam.u2.DateView',

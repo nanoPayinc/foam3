@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'ProxiedMethodSwiftRefinement',
-  refines: 'foam.core.ProxiedMethod',
+  refines: 'foam.lang.ProxiedMethod',
   flags: ['swift'],
   properties: [
     {
@@ -27,7 +27,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'ProxySwiftRefinement',
-  refines: 'foam.core.Proxy',
+  refines: 'foam.lang.Proxy',
   flags: ['swift'],
   properties: [
     {
@@ -40,7 +40,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'ProxySubSwiftRefinement',
-  refines: 'foam.core.ProxySub',
+  refines: 'foam.lang.ProxySub',
   flags: ['swift'],
   methods: [
     function writeToSwiftClass(cls) {
@@ -49,7 +49,7 @@ foam.CLASS({
         foam.swift.Field.create({
           name: `${this.prop}EventProxy_`,
           visibility: 'private',
-          type: foam.core.EventProxy.model_.swiftName,
+          type: foam.lang.EventProxy.model_.swiftName,
           lazy: true,
           initializer: `
 return __context__.create(foam_core_EventProxy.self, args: [

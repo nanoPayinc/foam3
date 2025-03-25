@@ -17,7 +17,7 @@
 
   requires: [
     'foam.doc.CodeTabs',
-    'foam.nanos.dig.DIG',
+    'foam.core.dig.DIG',
     'foam.u2.Tab',
   ],
 

@@ -52,15 +52,8 @@ if let oldValue = oldValue as? foam_dao_AbstractDAO {
         return this.delegate.cmd_(x, obj);
       },
       javaCode: `
-        if ( obj != null && obj instanceof String ) {
-          String s = (String) obj;
-          if ( s.startsWith("CLASS? ") ) {
-            try {
-              if ( Class.forName(s.substring(7)).isAssignableFrom(getClass()) ) return true;
-            } catch (ClassNotFoundException e) {
-            }
-          }
-        }
+        Object ret = super.cmd_(x, obj);
+        if ( ret != null ) return ret;
         return getDelegate().cmd_(x, obj);
       `
     },
@@ -107,12 +100,12 @@ return listener
     {
       buildJavaClass: function(cls) {
         cls.extras.push(`
-  public ProxyDAO(foam.core.X x, foam.dao.DAO delegate) {
+  public ProxyDAO(foam.lang.X x, foam.dao.DAO delegate) {
     setX(x);
     setDelegate(delegate);
   }
 
-  public ProxyDAO(foam.core.X x, foam.core.ClassInfo of, foam.dao.DAO delegate) {
+  public ProxyDAO(foam.lang.X x, foam.lang.ClassInfo of, foam.dao.DAO delegate) {
     setX(x);
     setOf(of);
     setDelegate(delegate);

@@ -6,7 +6,7 @@
 
 package foam.parse;
 
-import foam.core.*;
+import foam.lang.*;
 import foam.lib.parse.*;
 import java.util.ArrayList;
 import java.util.List;

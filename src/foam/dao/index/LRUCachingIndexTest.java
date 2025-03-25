@@ -6,7 +6,7 @@
 
 package foam.dao.index;
 
-import foam.nanos.auth.Country;
+import foam.core.auth.Country;
 import org.apache.commons.text.RandomStringGenerator;
 
 import java.io.IOException;

@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.crunch.wizardflow',
   name: 'GraphWizardletsAgent',
-  implements: [ 'foam.core.ContextAgent' ],
+  implements: [ 'foam.lang.ContextAgent' ],
 
   imports: [
     'capabilities',
@@ -24,9 +24,9 @@ foam.CLASS({
     'foam.graph.GraphTraverser',
     'foam.graph.TraversalOrder',
     'foam.graph.WeightPriorityStrategy',
-    'foam.nanos.crunch.ui.CapabilityWizardlet',
-    'foam.nanos.crunch.ui.LiftingAwareWizardlet',
-    'foam.nanos.crunch.ui.PrerequisiteAwareWizardlet',
+    'foam.core.crunch.ui.CapabilityWizardlet',
+    'foam.core.crunch.ui.LiftingAwareWizardlet',
+    'foam.core.crunch.ui.PrerequisiteAwareWizardlet',
     'foam.u2.wizard.wao.NullWAO',
     'foam.u2.wizard.wao.ProxyWAO'
   ],

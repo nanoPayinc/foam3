@@ -8,13 +8,13 @@ foam.CLASS({
   package: 'foam.mlang.predicate',
   name: 'DotF',
   extends: 'foam.mlang.predicate.Binary',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   documentation: `A binary predicate that evaluates arg1 as a predicate with
     arg2 as its argument.`,
 
   javaImports: [
-    'static foam.core.ContextAware.maybeContextualize'
+    'static foam.lang.ContextAware.maybeContextualize'
   ],
 
   methods: [

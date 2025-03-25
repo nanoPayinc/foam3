@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.wizard.debug',
   name: 'TestWizardScenarioMenu',
-  extends: 'foam.nanos.menu.AbstractMenu',
+  extends: 'foam.core.menu.AbstractMenu',
 
   imports: [
     'crunchController',
@@ -36,7 +36,7 @@ foam.CLASS({
       flags: ['web'],
       expression: function (scenario) {
         return this.ArrayDAO.create({
-          of: 'foam.nanos.crunch.Capability',
+          of: 'foam.core.crunch.Capability',
           array: scenario.capabilities
         });
       }
@@ -47,7 +47,7 @@ foam.CLASS({
       flags: ['web'],
       expression: function (scenario) {
         return this.ArrayDAO.create({
-          of: 'foam.nanos.crunch.CapabilityCapabilityJunction',
+          of: 'foam.core.crunch.CapabilityCapabilityJunction',
           array: scenario.capabilityCapabilityJunctions
         });
       }

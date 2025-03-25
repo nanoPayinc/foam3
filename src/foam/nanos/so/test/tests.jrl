@@ -1,8 +1,0 @@
-p({
-  class: "foam.nanos.so.test.EventRecordSystemOutageTest",
-  id: "EventRecordSystemOutageTest"
-})
-p({
-  class: "foam.nanos.so.test.SystemOutageSystemNotificationThemeTest",
-  id: "SystemOutageSystemNotificationThemeTest"
-})

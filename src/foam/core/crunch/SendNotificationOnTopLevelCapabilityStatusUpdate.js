@@ -1,0 +1,81 @@
+/**
+ * @license
+ * Copyright 2019 The FOAM Authors. All Rights Reserved.
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+foam.CLASS({
+  package: 'foam.core.crunch',
+  name: 'SendNotificationOnTopLevelCapabilityStatusUpdate',
+
+  documentation: 'Rule to notify user on every visible Capability status update.',
+
+  implements: [
+    'foam.core.ruler.RuleAction'
+  ],
+
+  javaImports: [
+    'foam.lang.ContextAgent',
+    'foam.lang.X',
+    'foam.dao.DAO',
+    'static foam.i18n.TranslationService.t',
+    'foam.core.auth.User',
+    'foam.core.auth.Subject',
+    'foam.core.crunch.TopLevelCapabilityStatusUpdateNotification',
+    'foam.core.theme.Theme',
+    'foam.core.theme.Themes',
+    'java.util.Date',
+    'java.util.HashMap'
+  ],
+
+  methods: [
+    {
+      name: 'applyAction',
+      javaCode: `
+      agency.submit(x, new ContextAgent() {
+        @Override
+        public void execute(X x) {
+          UserCapabilityJunction junction = (UserCapabilityJunction) obj;
+
+          var subject = junction.getSubject(x);
+          var subjectX = x.put("subject", subject);
+          var capabilityDAO = ((DAO) subjectX.get("capabilityDAO")).inX(subjectX);
+          var cap = (Capability) capabilityDAO.find(junction.getTargetId());
+          if ( cap == null || cap.getLifecycleState() != foam.core.auth.LifecycleState.ACTIVE ) return;
+
+          if ( ! cap.getVisibilityPredicate().f(subjectX) ) return;
+
+          User user = (User) subject.getRealUser();
+
+          String capabilityName = t(x, cap.getId() + ".name", cap.getName());
+          String junctionStatus = t(x, "foam.core.crunch.CapabilityJunctionStatus." + junction.getStatus().getName() + ".label", junction.getStatus().getLabel());
+
+          HashMap<String, Object> args = new HashMap<>();
+          args.put("capNameEn", cap.getName());
+          args.put("capName", capabilityName);
+          args.put("junctionStatusEn", junction.getStatus().getName());
+          args.put("junctionStatus", junctionStatus);
+          args.put("templateSource", this.getClass().getName());
+
+          TopLevelCapabilityStatusUpdateNotification notification = new TopLevelCapabilityStatusUpdateNotification();
+          notification.setCapabilityName(cap.getName());
+          notification.setCapabilitySource(cap.getId() + ".name");
+          notification.setJunctionStatus(junction.getStatus().getLabel());
+          notification.setJunctionSource("foam.core.crunch.CapabilityJunctionStatus." + junction.getStatus().getName() + ".label");
+
+          // if the UserCapabilityJunction belongs to an actual user, send the notification to the user.
+          // otherwise, send the notification to the group the user is under
+          if ( user.getClass().equals(User.class) ) notification.setUserId(user.getId());
+          else  notification.setGroupId(user.getGroup());
+
+          notification.setNotificationType("Capability Status Update");
+          notification.setCreated(new Date());
+          notification.setEmailName("top-level-capability-status-update");
+          notification.setEmailArgs(args);
+          user.doNotify(x, notification);
+        }
+      }, "Send Notification On Top Level Capability Status Update");
+      `
+    },
+  ]
+});

@@ -12,7 +12,7 @@ foam.CLASS({
 
   imports: ['menuDAO', 'currentMenu'],
 
-  requires: ['foam.nanos.u2.navigation.ApplicationLogoView'],
+  requires: ['foam.core.u2.navigation.ApplicationLogoView'],
 
   css: `
     ^ {
@@ -41,7 +41,7 @@ foam.CLASS({
   properties: [
     {
       class: 'FObjectArray',
-      of: 'foam.core.Array',
+      of: 'foam.lang.Array',
       name: 'menuIds',
       documentation: `Array of menu items displayed in the border
         Ex: [['menuId1', { <viewProps≥: <values>, ...}], ...]

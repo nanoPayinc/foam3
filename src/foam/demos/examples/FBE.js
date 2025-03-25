@@ -374,7 +374,7 @@ foam.CLASS({
       // Note that you can specify modules (like 'scratch') not listed in the module with the 'modules' URL parameter
       var modules = (this.params?.modules || this.MODULES).split(',');
 
-      for ( const m of modules ) await load(m);
+      for ( const m of modules ) await load(m + ".fbe");
 
       this.
         addClass(this.myClass()).

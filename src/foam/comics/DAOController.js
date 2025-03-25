@@ -23,7 +23,7 @@ foam.CLASS({
   requires: [
     'foam.comics.SearchMode',
     'foam.u2.borders.NullBorder',
-    'foam.nanos.export.CSVTableExportDriver'
+    'foam.core.export.CSVTableExportDriver'
   ],
 
   topics: [
@@ -148,7 +148,7 @@ foam.CLASS({
     },
     {
       class: 'FObjectProperty',
-      of: 'foam.core.Action',
+      of: 'foam.lang.Action',
       name: 'primaryAction',
       documentation: `
         The most important action on the page. The view for this controller may
@@ -186,8 +186,8 @@ foam.CLASS({
         var sectionName = undefined;
         var hasManySections = false;
         var cls = this.data.of;
-        while ( foam.core.FObject.isSubClass(cls)
-          && foam.core.FObject !== cls
+        while ( foam.lang.FObject.isSubClass(cls)
+          && foam.lang.FObject !== cls
         ) {
           if ( cls.model_.sections ) {
             hasManySections = cls.model_.sections.length > 1;

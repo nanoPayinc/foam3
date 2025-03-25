@@ -1,10 +1,10 @@
 p({
-  class: "foam.nanos.boot.NSpec",
+  class: "foam.core.boot.CSpec",
   name: "broadcast",
   authenticate:false,
   parameters:true,
   service: {
-    class: "foam.nanos.http.BroadcastWebAgent",
+    class: "foam.core.http.BroadcastWebAgent",
     to: [
       "service/trace",
       "service/fail"

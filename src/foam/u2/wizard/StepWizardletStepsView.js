@@ -129,7 +129,7 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.core.ExpressionSlot',
+    'foam.lang.ExpressionSlot',
     'foam.u2.detail.AbstractSectionedDetailView',
     'foam.u2.tag.CircleIndicator',
     'foam.u2.wizard.WizardPosition',
@@ -160,9 +160,9 @@ foam.CLASS({
         wizardlets$: this.data.wizardlets$
       });
 
-      var wizardletIsVisibleSlots = foam.core.ArraySlot.create({ slots: this.data.wizardlets.map(w => w.isVisible$) });
+      var wizardletIsVisibleSlots = foam.lang.ArraySlot.create({ slots: this.data.wizardlets.map(w => w.isVisible$) });
       var slots_ = [this.data.wizardlets$, this.data.wizardPosition$, wizardletIsVisibleSlots];
-      var arraySlot = foam.core.ArraySlot.create({ slots: slots_ });
+      var arraySlot = foam.lang.ArraySlot.create({ slots: slots_ });
 
       this
         .addClass(this.myClass())
@@ -273,7 +273,7 @@ foam.CLASS({
       if ( ! title || ! foam.Function.isInstance(title) && ! title.trim() ) title = this.PART_LABEL + index;
 
       title = foam.Function.isInstance(title) ?
-      foam.core.ExpressionSlot.create({
+      foam.lang.ExpressionSlot.create({
         obj$: section.data$,
         code: title
       }) : title;

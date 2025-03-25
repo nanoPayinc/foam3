@@ -18,7 +18,7 @@
 foam.CLASS({
   package: 'foam.box',
   name: 'RPCErrorMessage',
-  implements: ['foam.core.Exception'],
+  implements: ['foam.lang.Exception'],
 
   properties: [
     {
@@ -33,5 +33,9 @@ foam.CLASS({
         return this.data && ( this.data.message || this.data.id );
       }
     }
+  ],
+
+  methods: [
+    function toString() { return this.message; }
   ]
 });

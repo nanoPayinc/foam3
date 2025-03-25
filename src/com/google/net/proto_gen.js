@@ -16,7 +16,6 @@
  */
 
 /* global window */
-/* jshint evil: true */
 require('../../../foam');
 require('./OAuth2');
 require('./ProtobufParser');
@@ -116,12 +115,12 @@ function mapType(typeStr, obj) {
 }
 
 function reverseMapType(property) {
-  if ( foam.core.Int.isInstance(property) ) return 'number';
-  if ( foam.core.Float.isInstance(property) ) return 'number';
-  if ( foam.core.Long.isInstance(property) ) return 'number';
-  if ( foam.core.Double.isInstance(property) ) return 'number';
-  if ( foam.core.String.isInstance(property) ) return 'string';
-  if ( foam.core.Boolean.isInstance(property) ) return 'bool';
+  if ( foam.lang.Int.isInstance(property) ) return 'number';
+  if ( foam.lang.Float.isInstance(property) ) return 'number';
+  if ( foam.lang.Long.isInstance(property) ) return 'number';
+  if ( foam.lang.Double.isInstance(property) ) return 'number';
+  if ( foam.lang.String.isInstance(property) ) return 'string';
+  if ( foam.lang.Boolean.isInstance(property) ) return 'bool';
 
   if ( property.of ) return property.of;
 
@@ -148,7 +147,7 @@ function getTypedThing(name, prop, pkg, parent) {
   // detect class references
   if ( p.class === prop.type ) {
     // no capitalization required, therefore this was already a class name
-    p.class = 'foam.core.FObjectProperty';
+    p.class = 'foam.lang.FObjectProperty';
     p.of = ofName;
     p.toJSON = function(value) {
       return value.toJSON ? value.toJSON() : value;
@@ -157,7 +156,7 @@ function getTypedThing(name, prop, pkg, parent) {
 
   // TODO: plain array for primitive repeats?
   if ( prop.repeated ) {
-    p.class = 'foam.core.FObjectArray';
+    p.class = 'foam.lang.FObjectArray';
     p.of = ofName;
     p.toJSON = function(value) {
       return value.map(function(x) { return x.toJSON ? x.toJSON() : x; });
@@ -185,7 +184,7 @@ function processFields(model, message, pkg) {
     var p = getTypedThing(camelName, prop, pkg, message);
 
     // TODO: plain arrays for primitive repeats?
-    if ( p.class === 'foam.core.FObjectArray' ) {
+    if ( p.class === 'foam.lang.FObjectArray' ) {
       p.factory = function() { return []; };
       model.methods.push({
         name: 'get' + capName + 'List',
@@ -244,7 +243,7 @@ function getServiceMethods(service, pkg) {
     var bodyKey = bodyBuilderMode ? undefined : options.value.body;
 
     var reqType = foam.lookup(requestType);
-    var reqProps = reqType.getAxiomsByClass(foam.core.Property);
+    var reqProps = reqType.getAxiomsByClass(foam.lang.Property);
 
     var respType = foam.lookup(responseType);
 
@@ -252,24 +251,24 @@ function getServiceMethods(service, pkg) {
     var fieldNames = Object.create(null);
     var repeatedNames = Object.create(null);
     reqProps.forEach(function(prop) {
-      if ( foam.core.FObjectProperty.isInstance(prop) ) {
+      if ( foam.lang.FObjectProperty.isInstance(prop) ) {
         // A sub-message?
         var subType = foam.lookup(prop.of);
-        subType.getAxiomsByClass(foam.core.Property).forEach(function(subProp) {
+        subType.getAxiomsByClass(foam.lang.Property).forEach(function(subProp) {
           // if a model type, but not an Enum, don't include it, since we
           // can't use it for path/{replacement}/ or query params
-          if ( foam.core.FObjectProperty.isInstance(subProp)
-              || foam.core.FObjectArray.isInstance(subProp) ) {
+          if ( foam.lang.FObjectProperty.isInstance(subProp)
+              || foam.lang.FObjectArray.isInstance(subProp) ) {
             var subSubType = foam.maybeLookup(subProp.of);
             if ( subSubType &&
-                 ! foam.core.EnumModel.isInstance(subSubType.model_) ) {
+                 ! foam.lang.EnumModel.isInstance(subSubType.model_) ) {
               return;
             }
           }
           // Field name becomes "thing.subField"
           fieldNames[prop.name + '.' + subProp.name] = subProp;
         });
-      } else if ( foam.core.FObjectArray.isInstance(prop) ) { // TODO: plain array?
+      } else if ( foam.lang.FObjectArray.isInstance(prop) ) { // TODO: plain array?
         // Can't use a repeated field in the path
         repeatedNames[prop.name] = prop;
       } else {
@@ -439,7 +438,7 @@ function outputModel(pkg, name) {
 
   foam.json.Pretty.outputDefaultValues = false;
 
-  o += ( foam.core.EnumModel.isInstance(m.model_) ) ? 'globalThis.foam.ENUM(' : 'globalThis.foam.CLASS(';
+  o += ( foam.lang.EnumModel.isInstance(m.model_) ) ? 'globalThis.foam.ENUM(' : 'globalThis.foam.CLASS(';
   o += foam.json.Pretty.stringify(m.model_);
   o += ');\n\n';
 
@@ -652,7 +651,7 @@ function buildEnum(enuma) {
   var enumName = enuma.name;
 
   return {
-    class: 'foam.core.EnumModel',
+    class: 'foam.lang.EnumModel',
     name: enumName,
     values: (function() {
       var ret = [];

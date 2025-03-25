@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.mlang.sink',
   name: 'GroupBy',
   extends: 'foam.dao.AbstractSink',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   documentation: 'Sink which behaves like the SQL group-by command.',
 
@@ -21,7 +21,9 @@ foam.CLASS({
     },
     {
       class: 'foam.mlang.SinkProperty',
-      name: 'arg2'
+      name: 'arg2',
+      javaFactory: 'return foam.mlang.MLang.COUNT();',
+      factory: function() { return foam.mlang.sink.Count.create(); }
     },
     {
       class: 'Int',
@@ -32,6 +34,7 @@ foam.CLASS({
       class: 'Map',
       name: 'groups',
       hidden: true,
+      javaCloneProperty: '// noop',
       factory: function() { return {}; },
       javaFactory: 'return new java.util.HashMap<Object, foam.dao.Sink>();'
     },
@@ -39,11 +42,10 @@ foam.CLASS({
       class: 'List',
       hidden: true,
       name: 'groupKeys',
+      javaCloneProperty: '// noop',
       transient: true,
       javaFactory: 'return new java.util.ArrayList(this.getGroups().keySet());',
-      factory: function() {
-        return Object.keys(this.groups);
-      },
+      factory: function() { return Object.keys(this.groups); },
     },
     {
       class: 'Boolean',
@@ -52,7 +54,7 @@ foam.CLASS({
       documentation: 'If true, each value of an array will be entered into a separate group.',
       factory: function() {
         // TODO: it would be good if it could also detect RelationshipJunction.sourceId/targetId
-        return ! foam.core.MultiPartID.isInstance(this.arg1);
+        return ! foam.lang.MultiPartID.isInstance(this.arg1);
       }
     }
   ],
@@ -61,47 +63,35 @@ foam.CLASS({
     {
       name: 'sortedKeys',
       javaType: 'java.util.List',
-      args: [
-        {
-          name: 'comparator',
-          type: 'foam.mlang.order.Comparator'
-        }
-      ],
+      args: 'foam.mlang.order.Comparator comparator',
       code: function sortedKeys(opt_comparator) {
-        this.groupKeys.sort(opt_comparator || this.arg1.comparePropertyValues);
+        var a1 = this.arg1;
+        // Use the property as a comparator but adapt to the correct type since number types will be stored as String values
+        this.groupKeys.sort(opt_comparator || ((o1,o2) => a1.comparePropertyValues(a1.adapt(null, o1, a1), a1.adapt(null, o2, a1))));
         return this.groupKeys;
       },
       javaCode:
 `if ( comparator != null ) {
   java.util.Collections.sort(getGroupKeys(), comparator);
 } else {
-  java.util.Collections.sort(getGroupKeys());
+  if ( getArg1() instanceof java.util.Comparator ) {
+    java.util.Collections.sort(getGroupKeys(), (java.util.Comparator) getArg1());
+  } else {
+    java.util.Collections.sort(getGroupKeys());
+  }
 }
 return getGroupKeys();`
     },
     {
       name: 'putInGroup_',
-      args: [
-        {
-          name: 'sub',
-          type: 'foam.core.Detachable'
-        },
-        {
-          name: 'key',
-          type: 'Object'
-        },
-        {
-          name: 'obj',
-          type: 'Object'
-        }
-      ],
+      args: 'foam.lang.Detachable sub, Object key, Object obj',
       code: function putInGroup_(sub, key, obj) {
         var group = this.groups.hasOwnProperty(key) && this.groups[key];
         if ( ! group ) {
           group = this.arg2.clone();
-          this.groups[key] = group;
           if ( ! this.groupKeys.includes(key) )
             this.groupKeys.push(key);
+          this.groups[key] = group;
         }
         group.put(obj, sub);
         this.pub('propertyChange', 'groups');
@@ -109,7 +99,7 @@ return getGroupKeys();`
       javaCode:
 `foam.dao.Sink group = (foam.dao.Sink) getGroups().get(key);
  if ( group == null ) {
-   group = (foam.dao.Sink) (((foam.core.FObject)getArg2()).fclone());
+   group = (foam.dao.Sink) (((foam.lang.FObject)getArg2()).fclone());
    getGroups().put(key, group);
    if ( ! this.getGroupKeys().contains(key) )
      getGroupKeys().add(key);
@@ -162,39 +152,27 @@ if ( getGroupLimit() == getGroups().size() && sub != null ) sub.detach();
     function eof() { },
 
     {
-      // TODO(adamvy): Is this right?  Seems like we should be overriding the foam2
-      // fclone or deepClone method.
-      name: 'clone',
-      type: 'foam.mlang.sink.GroupBy',
-      code: function clone() {
-        // Don't use the default clone because we don't want to copy 'groups'.
-        return this.cls_.create({ arg1: this.arg1, arg2: this.arg2 });
-      },
-      javaCode:
-`GroupBy clone = new GroupBy();
-clone.setArg1(this.getArg1());
-clone.setArg2(this.getArg2());
-return clone;`
-    },
-
-    {
       name: 'toString',
       code: function toString() {
-        return 'groupBy(' + this.arg1 + "," + this.arg2 + "," + this.groupLimit + ')';
+        return 'groupBy(' + this.arg1 + ',' + this.arg2 + ',' + this.groupLimit + ')';
       },
       javaCode: 'return this.getGroups().toString();'
     },
 
     function toE(_, x) {
-      return x.E('table').
-        add(this.slot(function(arg1, groups) {
-          return x.E('tbody').
-            forEach(Object.keys(groups), function(g) {
-              this.start('tr').
-                start('td').add(g).end().
-                start('td').add(groups[g]).end()
-            });
-        }));
+      var e = x.E();
+      this.addToE(e);
+      return e;
+    },
+
+    function addToE(e) {
+      var groups = this.groups;
+      e.start('table').start('tbody').
+        forEach(this.sortedKeys(), function(g) {
+          this.start('tr').
+            start('td').add(g.toString()).end().
+            start('td').add(groups[g]);
+        });
     }
   ]
 });

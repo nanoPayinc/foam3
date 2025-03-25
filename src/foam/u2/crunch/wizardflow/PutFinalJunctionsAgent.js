@@ -18,8 +18,8 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.nanos.crunch.AgentCapabilityJunction',
-    'foam.nanos.crunch.UserCapabilityJunction'
+    'foam.core.crunch.AgentCapabilityJunction',
+    'foam.core.crunch.UserCapabilityJunction'
   ],
 
   methods: [

@@ -32,6 +32,9 @@ foam.CLASS({
       min-height: 0;
     }
     ^ .property-selectedView { margin-bottom: 6px; }
+    ^ .foam-u2-view-RadioView.foam-u2-view-RadioView-horizontal-radio .choice {
+      display: inline-flex;
+    }
   `,
 
   properties: [

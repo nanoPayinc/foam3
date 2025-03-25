@@ -6,14 +6,14 @@
 
 package foam.parse;
 
-import foam.core.EmptyX;
+import foam.lang.EmptyX;
 import foam.dao.ArraySink;
 import foam.dao.DAO;
 import foam.lib.parse.PStream;
 import foam.lib.parse.ParserContext;
 import foam.lib.parse.ParserContextImpl;
 import foam.lib.parse.StringPStream;
-import foam.nanos.auth.Region;
+import foam.core.auth.Region;
 
 public class TestRegion {
   public static void main(String[] args) {
@@ -23,11 +23,11 @@ public class TestRegion {
     // create a data source
     DAO dao = new foam.dao.MapDAO(Region.getOwnClassInfo());
 
-    // p({"class":"foam.nanos.auth.Region", "code":"ON", "name":"Ontario",
+    // p({"class":"foam.core.auth.Region", "code":"ON", "name":"Ontario",
     // "countryId":"CA"})
-    // p({"class":"foam.nanos.auth.Region", "code":"QC", "name":"Quebec",
+    // p({"class":"foam.core.auth.Region", "code":"QC", "name":"Quebec",
     // "countryId":"CA"})
-    // p({"class":"foam.nanos.auth.Region", "code":"AB", "name":"Alberta", "countryId":"CA"})
+    // p({"class":"foam.core.auth.Region", "code":"AB", "name":"Alberta", "countryId":"CA"})
     // add some data test
     Region rgn1 = new Region();
     rgn1.setId("QN");

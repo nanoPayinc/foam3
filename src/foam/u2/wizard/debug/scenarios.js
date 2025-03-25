@@ -25,11 +25,11 @@
   properties: [
     {
       class: 'FObjectArray',
-      of: 'foam.nanos.crunch.Capability',
+      of: 'foam.core.crunch.Capability',
       name: 'capabilities',
       factory: () => [
         {
-          class: 'foam.nanos.crunch.Capability',
+          class: 'foam.core.crunch.Capability',
           id: 'Entry',
           wizardConfig: {
             class: 'foam.u2.crunch.EasyCrunchWizard',
@@ -37,30 +37,30 @@
           }
         },
         ...META.choices.map((name, i) => ({
-          class: 'foam.nanos.crunch.Capability',
+          class: 'foam.core.crunch.Capability',
           id: name,
-          of: ['String','Int','Boolean'].map(v => `foam.core.${v}Holder`)[i % 3]
+          of: ['String','Int','Boolean'].map(v => `foam.lang.${v}Holder`)[i % 3]
         })),
         {
-          class: 'foam.nanos.crunch.MinMaxCapability',
+          class: 'foam.core.crunch.MinMaxCapability',
           id: 'MinMax',
           min: 1, max: META.max
         },
         {
-          class: 'foam.nanos.crunch.Capability',
+          class: 'foam.core.crunch.Capability',
           id: 'Choice.D.A',
-          of: 'foam.core.IntHolder'
+          of: 'foam.lang.IntHolder'
         },
         {
-          class: 'foam.nanos.crunch.Capability',
+          class: 'foam.core.crunch.Capability',
           id: 'Choice.D.B',
-          of: 'foam.core.BooleanHolder'
+          of: 'foam.lang.BooleanHolder'
         }
       ]
     },
     {
       class: 'FObjectArray',
-      of: 'foam.nanos.crunch.CapabilityCapabilityJunction',
+      of: 'foam.core.crunch.CapabilityCapabilityJunction',
       name: 'capabilityCapabilityJunctions',
       factory: () => [
         ...META.lifted.map(name => ['Entry', name]),

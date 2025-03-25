@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.lib.json',
   name: 'RawMapParserTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
 
   javaImports: [
     'foam.lib.parse.*',

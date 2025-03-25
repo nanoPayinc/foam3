@@ -13,9 +13,16 @@ foam.CLASS({
     foam.pattern.Faceted.create({inherit: true})
   ],
 
+  cssTokens: [
+    {
+      name: 'padding',
+      value: '4px 8px'
+    }
+  ],
+
   css: `
     ^rw {
-      padding: 8px 8px;
+      padding: $padding;
       color: $black;
     }
 
@@ -65,7 +72,7 @@ foam.CLASS({
   methods: [
     function init() {
       this.enableClass(this.myClass('rw'), this.mode$.map(m => m === foam.u2.DisplayMode.RW))
-    },  
+    },
     function render() {
       this.SUPER();
       this.updateSummary();

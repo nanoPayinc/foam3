@@ -16,7 +16,7 @@ foam.CLASS({
   properties: [
     {
       class: 'FObjectArray',
-      of: 'foam.nanos.crunch.Capability',
+      of: 'foam.core.crunch.Capability',
       name: 'capabilities',
       adapt: function (o, n, prop) {
         n = n.map(o => ({
@@ -28,7 +28,7 @@ foam.CLASS({
     },
     {
       class: 'FObjectArray',
-      of: 'foam.nanos.crunch.CapabilityCapabilityJunction',
+      of: 'foam.core.crunch.CapabilityCapabilityJunction',
       name: 'capabilityCapabilityJunctions',
       adapt: function (o, n, prop) {
         n = n.map(spec => foam.Array.isInstance(spec) ? {

@@ -1,0 +1,46 @@
+/**
+ * @license
+ * Copyright 2021 The FOAM Authors. All Rights Reserved.
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+foam.CLASS({
+  package: 'foam.core.logger',
+  name: 'LoggerJournal',
+  extends: 'foam.dao.WriteOnlyF3FileJournal',
+
+  documentation: `Only write to underlying JDAO if not PRODUCTION mode`,
+  
+  javaImports: [
+    'foam.dao.DAO',
+    'foam.core.app.AppConfig',
+    'foam.core.app.Mode'
+  ],
+
+  methods: [
+    {
+      name: 'replay',
+      javaCode: `
+        return;
+      `
+    },
+    {
+      name: 'put',
+      type: 'FObject',
+      args: [ 'Context x', 'String prefix', 'DAO dao', 'foam.lang.FObject obj' ],
+      javaCode: `
+      AppConfig appConfig = (AppConfig) x.get("appConfig");
+      if ( appConfig == null ||
+           appConfig.getMode() == Mode.DEVELOPMENT ||
+           appConfig.getMode() == Mode.TEST ) {
+        // TODO: Extend LogMessage model, and set 
+        // javaFormatJSON: formatter.outputReadableDate(get_(obj));
+        // on 'created' property for readable dates in the
+        // 'journal' style log  file.
+        return super.put(x, prefix, dao, obj);
+      }
+      return dao.put_(x, obj);
+      `
+    }
+  ]
+});

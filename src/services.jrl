@@ -1,51 +1,51 @@
 p({
-  "class":"foam.nanos.boot.NSpec",
-  "name":"nSpecDAO",
+  "class":"foam.core.boot.CSpec",
+  "name":"cSpecDAO",
   "serve":true,
   "authenticate": false,
   "serviceClass":"foam.dao.ProxyDAO",
   "client":
   """
     {
-      "of":"foam.nanos.boot.NSpec",
+      "of":"foam.core.boot.CSpec",
       "cache":true
      }
   """
 })
 
 p({
-  "class":"foam.nanos.boot.NSpec",
-  "name":"AuthenticatedNSpecDAO",
+  "class":"foam.core.boot.CSpec",
+  "name":"AuthenticatedCSpecDAO",
   "serve":true,
   "serviceScript":"""
     return new foam.dao.EasyDAO.Builder(x)
       .setPm(true)
-      .setAuthorizer(new foam.nanos.auth.StandardAuthorizer("service"))
-      .setInnerDAO(x.get("nSpecDAO"))
-      .setOf(foam.nanos.boot.NSpec.getOwnClassInfo())
+      .setAuthorizer(new foam.core.auth.StandardAuthorizer("service"))
+      .setInnerDAO(x.get("cSpecDAO"))
+      .setOf(foam.core.boot.CSpec.getOwnClassInfo())
       .build();
   """,
   "client":"""
     {
-      "of":"foam.nanos.boot.NSpec",
+      "of":"foam.core.boot.CSpec",
       "cache":true
     }
   """,
-  documentation:"The authenticated version of nSpecDAO - for dig and docs."
+  documentation:"The authenticated version of cSpecDAO - for dig and docs."
 })
 
 p({
-  "class": "foam.nanos.boot.NSpec",
+  "class": "foam.core.boot.CSpec",
   "name": "http",
   "lazy": false,
   "service": {
-    "class": "foam.nanos.jetty.HttpServer",
+    "class": "foam.core.jetty.HttpServer",
     "welcomeFiles": ["welcome"],
     "hostDomains":["localhost"],
     "servletMappings": [{
-      "class": "foam.nanos.servlet.ServletMapping",
+      "class": "foam.core.servlet.ServletMapping",
       "servletObject": {
-        "class": "foam.nanos.servlet.VirtualHostRoutingServlet",
+        "class": "foam.core.servlet.VirtualHostRoutingServlet",
         "defaultHost":"localhost",
         "headerParameters": {
           "Cache-Control": "public,max-age=3600,immutable"
@@ -53,18 +53,18 @@ p({
       },
       "pathSpec": "/welcome"
     }, {
-      "class": "foam.nanos.servlet.ServletMapping",
-      "className": "foam.nanos.http.NanoRouter",
+      "class": "foam.core.servlet.ServletMapping",
+      "className": "foam.core.http.NanoRouter",
       "pathSpec": "/service/*"
     }, {
-      "class": "foam.nanos.servlet.ServletMapping",
-      "className": "foam.nanos.servlet.ImageServlet",
+      "class": "foam.core.servlet.ServletMapping",
+      "className": "foam.core.servlet.ImageServlet",
       "pathSpec": "/images/*",
       "initParameters": {
         "cacheControl": "public,max-age=2419200"
       }
     }, {
-      "class": "foam.nanos.servlet.ServletMapping",
+      "class": "foam.core.servlet.ServletMapping",
       "className": "org.eclipse.jetty.servlet.DefaultServlet",
       "pathSpec": "/*",
       "initParameters": {
@@ -76,21 +76,21 @@ p({
       }
     }],
     "errorMappings": [{
-      "class": "foam.nanos.servlet.ErrorPageMapping",
+      "class": "foam.core.servlet.ErrorPageMapping",
       "errorCode": 404,
       "location": "/errorPage.html"
     }, {
-      "class": "foam.nanos.servlet.ErrorPageMapping",
+      "class": "foam.core.servlet.ErrorPageMapping",
       "exceptionType": "javax.ws.rs.NotAuthorizedException",
       "location": "/unauthorizedAccess.html"
     }, {
-      "class": "foam.nanos.servlet.ErrorPageMapping",
+      "class": "foam.core.servlet.ErrorPageMapping",
       "exceptionType": "java.lang.Throwable",
       "location": "/errorPage.html"
     }],
     "filterMappings": [{
-      "class": "foam.nanos.servlet.FilterMapping",
-      "filterClass": "foam.nanos.http.csp.CSPFilter",
+      "class": "foam.core.servlet.FilterMapping",
+      "filterClass": "foam.core.http.csp.CSPFilter",
       "pathSpec": "/*",
       "initParameters": {
         "CONTENT_SECURITY_POLICY": """
@@ -106,46 +106,46 @@ p({
           report-uri /service/CSPReportWebAgent;
           worker-src 'self';
           style-src 'self' https://fonts.googleapis.com/css https://fonts.googleapis.com/css2 https://fonts.googleapis.com/icon data: chrome-extension-resource: 'unsafe-inline';
-          script-src 'self' https://cdn.plaid.com/link/v2/stable/link-initialize.js https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js 'unsafe-eval' 'sha256-HY1JzEwuxkis4xx0ggY23gbYY/MCEAE1T6+OQnWS2vA=' 'sha256-NiNrLgJ8wbIXIi5saiR3XTd1Mxm4k0nju66GJsw4b9U=' 'sha256-FLYDXBkz4oo/H5jEfYXqAGYUwERY44OO1yznaMCdMiU=' 'sha256-G3UfiJBy6rwOk3glkBQuQDFA7IoCtiOT56gTh+IfNF0=';
+          script-src 'self' https://cdn.plaid.com/link/v2/stable/link-initialize.js https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js 'unsafe-eval' 'sha256-HY1JzEwuxkis4xx0ggY23gbYY/MCEAE1T6+OQnWS2vA=' 'sha256-NiNrLgJ8wbIXIi5saiR3XTd1Mxm4k0nju66GJsw4b9U=' 'sha256-FLYDXBkz4oo/H5jEfYXqAGYUwERY44OO1yznaMCdMiU=' 'sha256-G3UfiJBy6rwOk3glkBQuQDFA7IoCtiOT56gTh+IfNF0=' 'sha256-VqQW98BZz58NothFoAKVTq/UrLorSsLU11mhJjLFzW0=';
         """
       }
     }]
   }
 })
 
-p({"class":"foam.nanos.boot.NSpec", "name":"httprouter",                         "serviceClass":"foam.nanos.http.NanoRouter"})
+p({"class":"foam.core.boot.CSpec", "name":"httprouter",                         "serviceClass":"foam.core.http.NanoRouter"})
 
-p({"class":"foam.nanos.boot.NSpec", "name":"websockets",                       "lazy":false, "serviceClass":"foam.nanos.ws.NanoWebSocketServer"})
+p({"class":"foam.core.boot.CSpec", "name":"websockets",                       "lazy":false, "serviceClass":"foam.core.ws.NanoWebSocketServer"})
 
 
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"columnConfigToPropertyConverter",
   "serve": true,
   "lazy":false,
-  "serviceClass": "foam.nanos.column.ColumnConfigToPropertyConverter",
-  "client": "{\"class\":\"foam.nanos.column.ColumnConfigToPropertyConverter\"}"
+  "serviceClass": "foam.core.column.ColumnConfigToPropertyConverter",
+  "client": "{\"class\":\"foam.core.column.ColumnConfigToPropertyConverter\"}"
 })
 
 p({
-  "class": "foam.nanos.boot.NSpec",
+  "class": "foam.core.boot.CSpec",
   "name": "export",
-  "serviceClass": "foam.nanos.export.ExportService"
+  "serviceClass": "foam.core.export.ExportService"
 })
 
 p({
-  "class": "foam.nanos.boot.NSpec",
+  "class": "foam.core.boot.CSpec",
   "name": "threadPool",
   "lazy": false,
   "serve": false,
   "serviceScript": `
-    return new foam.nanos.pool.ThreadPoolAgency.Builder(x)
+    return new foam.core.pool.ThreadPoolAgency.Builder(x)
       .build();
   `
 })
 
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"exportDriverRegistryDAO",
   "description": "DAO which provides a reference to data type drivers which are used to export data in various types",
   "serve":true,
@@ -156,17 +156,17 @@ p({
       .setAuthorize(true)
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("exportDriverRegistrys")
-      .setDecorator(new foam.dao.EnabledAwareDAO.Builder(x).setOf(foam.nanos.export.ExportDriverRegistry.getOwnClassInfo()).build())
-      .setOf(foam.nanos.export.ExportDriverRegistry.getOwnClassInfo())
+      .setDecorator(new foam.dao.EnabledAwareDAO.Builder(x).setOf(foam.core.export.ExportDriverRegistry.getOwnClassInfo()).build())
+      .setOf(foam.core.export.ExportDriverRegistry.getOwnClassInfo())
       .build();
   """,
-  "client":"{\"of\":\"foam.nanos.export.ExportDriverRegistry\"}"
+  "client":"""{"of":"foam.core.export.ExportDriverRegistry","cache":true,"ttlSelectPurgeTime":0,"ttlPurgeTime":0}"""
 })
 
 p({
-  "class": "foam.nanos.boot.NSpec",
-  "name" :"menuDAO",
-  "serve" :true,
+  "class": "foam.core.boot.CSpec",
+  "name": "menuDAO",
+  "serve": true,
   "authenticate": false,
   "serviceScript":
   """
@@ -175,78 +175,78 @@ p({
       .setPm(true)
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("menus")
-      .setOf(foam.nanos.menu.Menu.getOwnClassInfo())
-      .setOrder(new foam.core.PropertyInfo[] {foam.nanos.menu.Menu.ORDER, foam.nanos.menu.Menu.LABEL})
+      .setOf(foam.core.menu.Menu.getOwnClassInfo())
+      .setOrder(new foam.lang.PropertyInfo[] {foam.core.menu.Menu.ORDER, foam.core.menu.Menu.LABEL})
       .build();
   """,
   "client": """
     {
-      "of": "foam.nanos.menu.Menu",
+      "of": "foam.core.menu.Menu",
       "order": [
         {
           "class": "__Property__",
-          "forClass_": "foam.nanos.menu.Menu",
+          "forClass_": "foam.core.menu.Menu",
           "name": "order"
         },
         {
           "class": "__Property__",
-          "forClass_": "foam.nanos.menu.Menu",
+          "forClass_": "foam.core.menu.Menu",
           "name": "label"
         }
       ],
+      "cache": true,
       "ttlSelectPurgeTime": 0,
-      "ttlPurgeTime": 0,
-      "cache": true
+      "ttlPurgeTime": 0
     }
   """
 })
 
 p({
-  "class": "foam.nanos.boot.NSpec",
+  "class": "foam.core.boot.CSpec",
   "name": "static",
   "authenticate": false,
-  "serviceClass": "foam.nanos.http.FileWebAgent"
+  "serviceClass": "foam.core.http.FileWebAgent"
 })
 
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"blobStore",
   "serviceClass":"foam.blob.BlobStore"
 })
 
 p({
-  "class": "foam.nanos.boot.NSpec",
+  "class": "foam.core.boot.CSpec",
   "name": "httpBlobService",
   "authenticate": false,
   "serviceScript": """
-    httpBlobService = new foam.nanos.blob.HttpBlobService(x, x.get("blobStore"));
-    return new foam.nanos.http.SessionWebAgent("service.run.httpBlobService", httpBlobService);
+    httpBlobService = new foam.core.blob.HttpBlobService(x, x.get("blobStore"));
+    return new foam.core.http.SessionWebAgent("service.run.httpBlobService", httpBlobService);
   """
 })
 
 p({
-  "class": "foam.nanos.boot.NSpec",
+  "class": "foam.core.boot.CSpec",
   "name": "httpFileService",
   "authenticate": false,
   "serviceScript": """
-    fileService = new foam.nanos.blob.FileService(x, x.get("blobStore"));
+    fileService = new foam.core.blob.FileService(x, x.get("blobStore"));
     return fileService;
-    // return new foam.nanos.http.SessionWebAgent("service.run.httpFileService", fileService);
+    // return new foam.core.http.SessionWebAgent("service.run.httpFileService", fileService);
   """
 })
 
 p({
-  "class": "foam.nanos.boot.NSpec",
+  "class": "foam.core.boot.CSpec",
   "name": "file",
   "authenticate": false,
   "serviceScript": """
-    fileService = new foam.nanos.http.UnauthenticatedFileService(x, "file", x.get("blobStore"));
-    return new foam.nanos.http.ProxyWebAgent(fileService);
+    fileService = new foam.core.http.UnauthenticatedFileService(x, "file", x.get("blobStore"));
+    return new foam.core.http.ProxyWebAgent(fileService);
   """
 })
 
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"blobService",
   "serve":true,
   "client": """
@@ -257,11 +257,11 @@ p({
   """
 })
 
-p({"class":"foam.nanos.boot.NSpec", "name":"demoObjectDAO",                      "serve":true,  "serviceScript":"return new foam.dao.EasyDAO.Builder(x).setJournalType(foam.dao.JournalType.SINGLE_JOURNAL).setJournalName(\"demoObjects\").setGuid(true).setOf(foam.nanos.demo.DemoObject.getOwnClassInfo()).build();", "client":"{\"of\":\"foam.nanos.demo.DemoObject\", \"remoteListenerSupport\": false}"})
+p({"class":"foam.core.boot.CSpec", "name":"demoObjectDAO",                      "serve":true,  "serviceScript":"return new foam.dao.EasyDAO.Builder(x).setJournalType(foam.dao.JournalType.SINGLE_JOURNAL).setJournalName(\"demoObjects\").setGuid(true).setOf(foam.core.demo.DemoObject.getOwnClassInfo()).build();", "client":"{\"of\":\"foam.core.demo.DemoObject\", \"remoteListenerSupport\": false}"})
 
-p({"class":"foam.nanos.boot.NSpec", "name":"twofactor",                          "serve":true,  "authenticate": false, "boxClass":"foam.nanos.auth.twofactor.OTPAuthServiceSkeleton", "serviceClass":"foam.nanos.auth.twofactor.GoogleTOTPAuthService", "client":"{\"class\":\"foam.nanos.auth.twofactor.ClientOTPAuthService\"}"})
+p({"class":"foam.core.boot.CSpec", "name":"twofactor",                          "serve":true,  "authenticate": false, "boxClass":"foam.core.auth.twofactor.OTPAuthServiceSkeleton", "serviceClass":"foam.core.auth.twofactor.GoogleTOTPAuthService", "client":"{\"class\":\"foam.core.auth.twofactor.ClientOTPAuthService\"}"})
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"htmlDocDAO",
   "serve":true,
   "serviceScript":
@@ -270,53 +270,54 @@ p({
       .setPm(true)
       .setSeqNo(true)
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
-      .setOf(foam.nanos.auth.HtmlDoc.getOwnClassInfo())
+      .setOf(foam.core.auth.HtmlDoc.getOwnClassInfo())
       .setJournalName("htmlDoc")
       .build();
   """,
   "client":
   """
     {
-      "of":"foam.nanos.auth.HtmlDoc"
+      "of":"foam.core.auth.HtmlDoc"
     }
   """
 })
-p({"class":"foam.nanos.boot.NSpec", "name":"emailDocService",                  "lazy":false, "serve":true,  "boxClass":"foam.nanos.auth.email.EmailDocInterfaceSkeleton", "serviceClass":"foam.nanos.auth.email.EmailDocService","client":"{\"class\":\"foam.nanos.auth.email.ClientEmailDocService\", \"delegate\": { \"class\":\"foam.box.HTTPBox\", \"url\":\"service/emailDocService\" } }"})
+p({"class":"foam.core.boot.CSpec", "name":"emailDocService",                  "lazy":false, "serve":true,  "boxClass":"foam.core.auth.email.EmailDocInterfaceSkeleton", "serviceClass":"foam.core.auth.email.EmailDocService","client":"{\"class\":\"foam.core.auth.email.ClientEmailDocService\", \"delegate\": { \"class\":\"foam.box.HTTPBox\", \"url\":\"service/emailDocService\" } }"})
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"testRunnerConfig",
   "lazy":false,
   "service": {
-    "class":"foam.nanos.script.TestRunnerConfig"
+    "class":"foam.core.script.TestRunnerConfig"
   }
 })
 
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"appConfig",
   "lazy":false,
   "service": {
-    "class":"foam.nanos.app.AppConfig"
+    "class":"foam.core.app.AppConfig"
   }
 })
 
-p({"class":"foam.nanos.boot.NSpec","name":"appConfigService",                   "serve":true, "authenticate": false, "boxClass":"foam.nanos.app.AppConfigServiceSkeleton", "service":{"class":"foam.nanos.app.ContextLookupAppConfigService"}, "client":"{\"class\":\"foam.nanos.app.ClientAppConfigService\",\"delegate\":{\"class\":\"foam.box.HTTPBox\",\"url\":\"service/appConfigService\"}}"})
+p({"class":"foam.core.boot.CSpec","name":"appConfigService",                   "serve":true, "authenticate": false, "boxClass":"foam.core.app.AppConfigServiceSkeleton", "service":{"class":"foam.core.app.ContextLookupAppConfigService"}, "client":"{\"class\":\"foam.core.app.ClientAppConfigService\",\"delegate\":{\"class\":\"foam.box.HTTPBox\",\"url\":\"service/appConfigService\"}}"})
 
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"localDocumentDAO",
-
+  "serve": false,
   "serviceScript":
   """
   return new foam.dao.EasyDAO.Builder(x)
     .setOf(foam.flow.Document.getOwnClassInfo())
+    .setAuthorize(false)
     .setInnerDAO(new foam.flow.DocumentationFolderDAO.Builder(x).build())
     .build();
   """
 })
 
 p({
-  "class": "foam.nanos.boot.NSpec",
+  "class": "foam.core.boot.CSpec",
   "name": "documentDAO",
   "serve": true,
   "serviceScript":
@@ -330,53 +331,53 @@ p({
   "client": "{\"of\":\"foam.flow.Document\"\}"
 })
 
-p({"class":"foam.nanos.boot.NSpec", "name":"serializationTestEchoService", "boxClass": "foam.nanos.test.EchoServiceSkeleton",  "serve":true, "serviceClass":"foam.nanos.test.SerializationTestEchoService", "client":"{\"class\":\"foam.nanos.test.ClientEchoService\",\"delegate\":{\"class\":\"foam.box.SessionClientBox\",\"delegate\":{\"class\":\"foam.box.HTTPBox\",\"method\":\"POST\",\"url\":\"service/serializationTestEchoService\"}}}"})
+p({"class":"foam.core.boot.CSpec", "name":"serializationTestEchoService", "boxClass": "foam.core.test.EchoServiceSkeleton",  "serve":true, "serviceClass":"foam.core.test.SerializationTestEchoService", "client":"{\"class\":\"foam.core.test.ClientEchoService\",\"delegate\":{\"class\":\"foam.box.SessionClientBox\",\"delegate\":{\"class\":\"foam.box.HTTPBox\",\"method\":\"POST\",\"url\":\"service/serializationTestEchoService\"}}}"})
 
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"addressParser",
   "lazy":false,
   "serve":false,
   "serviceScript": """
-    return new foam.nanos.geocode.GoogleMapsAddressParser.Builder(x).build();
+    return new foam.core.geocode.GoogleMapsAddressParser.Builder(x).build();
   """,
 })
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"googleMapsCredentials",
   "lazy":false,
   "serve":false,
   "service":{
-    "class": "foam.nanos.geocode.GoogleMapsCredentials"
+    "class": "foam.core.geocode.GoogleMapsCredentials"
   }
 })
 
 p({
-  "class": "foam.nanos.boot.NSpec",
+  "class": "foam.core.boot.CSpec",
   "name": "localCurrencyDAO",
   "serve": false,
   "serviceScript":
   """
     return new foam.dao.EasyDAO.Builder(x)
-      .setOf(foam.core.Currency.getOwnClassInfo())
+      .setOf(foam.lang.Currency.getOwnClassInfo())
       .setName("currency")
       .setPm(true)
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("currencies")
       .build()
-      .addPropertyIndex(new foam.core.Indexer[] {foam.core.Currency.COUNTRY})
-      .addPropertyIndex(new foam.core.Indexer[] {foam.core.Unit.ID});
+      .addPropertyIndex(new foam.lang.Indexer[] {foam.lang.Currency.COUNTRY})
+      .addPropertyIndex(new foam.lang.Indexer[] {foam.lang.Unit.ID});
   """
 })
 
 p({
-  "class": "foam.nanos.boot.NSpec",
+  "class": "foam.core.boot.CSpec",
   "name": "currencyDAO",
   "serve": true,
   "serviceScript":
   """
     return new foam.dao.EasyDAO.Builder(x)
-      .setOf(foam.core.Currency.getOwnClassInfo())
+      .setOf(foam.lang.Currency.getOwnClassInfo())
       .setName("currency")
       .setInnerDAO(x.get("localCurrencyDAO"))
       .build();
@@ -384,7 +385,7 @@ p({
   "client":
   """
     {
-      "of": "foam.core.Currency",
+      "of": "foam.lang.Currency",
       "cache": true,
       "ttlSelectPurgeTime": 0,
       "ttlPurgeTime": 0
@@ -393,31 +394,31 @@ p({
 })
 
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"googleDriveService",
   "service": {
-    "class":"foam.nanos.google.api.drive.GoogleDriveService"
+    "class":"foam.core.google.api.drive.GoogleDriveService"
   },
   "documentation": "googleDriveService is used for making calls to Google Drive API"
 })
 
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"googleApiAuthService",
   "service": {
-    "class":"foam.nanos.google.api.auth.GoogleApiAuthService"
+    "class":"foam.core.google.api.auth.GoogleApiAuthService"
   },
   "documentation": "googleApiAuthService configures authoriziation (sets scope of permissions which are needed to be granted by user, sets port which will be listening to response and sets folder in which tokens will be stored) and authorize Google API calls"
 })
 
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"googleApiCredentialsDAO",
   "serve":true,
   "serviceScript":
   """
     return new foam.dao.EasyDAO.Builder(x)
-      .setOf(foam.nanos.google.api.auth.GoogleApiCredentials.getOwnClassInfo())
+      .setOf(foam.core.google.api.auth.GoogleApiCredentials.getOwnClassInfo())
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("googleCredentials")
       .build();
@@ -425,21 +426,21 @@ p({
   "client":
   """
     {
-      "of":"foam.nanos.google.api.auth.GoogleApiCredentials"
+      "of":"foam.core.google.api.auth.GoogleApiCredentials"
     }
   """
 })
 
 p({
-  "class": "foam.nanos.boot.NSpec",
+  "class": "foam.core.boot.CSpec",
   "name": "googleSheetsDataExport",
   "serve": true,
   "authenticate": true,
-  "boxClass": "foam.nanos.export.GoogleSheetsExportSkeleton",
-  "serviceClass": "foam.nanos.google.api.sheets.GoogleSheetsApiService",
+  "boxClass": "foam.core.export.GoogleSheetsExportSkeleton",
+  "serviceClass": "foam.core.google.api.sheets.GoogleSheetsApiService",
   "client":"""
     {
-      "class": "foam.nanos.export.ClientGoogleSheetsExportService",
+      "class": "foam.core.export.ClientGoogleSheetsExportService",
       "delegate":
         {
           "class": "foam.box.HTTPBox",
@@ -450,15 +451,15 @@ p({
 })
 
 p({
-  "class": "foam.nanos.boot.NSpec",
+  "class": "foam.core.boot.CSpec",
   "name": "googleSheetsDataImport",
   "serve": true,
   "authenticate": true,
-  "boxClass": "foam.nanos.google.api.sheets.views.GoogleSheetsDataImportServiceSkeleton",
-  "serviceClass": "foam.nanos.google.api.sheets.views.GoogleSheetsDataImportServiceImpl",
+  "boxClass": "foam.core.google.api.sheets.views.GoogleSheetsDataImportServiceSkeleton",
+  "serviceClass": "foam.core.google.api.sheets.views.GoogleSheetsDataImportServiceImpl",
   "client":"""
     {
-      "class": "foam.nanos.google.api.sheets.views.ClientGoogleSheetsDataImportService",
+      "class": "foam.core.google.api.sheets.views.ClientGoogleSheetsDataImportService",
       "delegate":
         {
           "class": "foam.box.HTTPBox",
@@ -469,15 +470,15 @@ p({
 })
 
 p({
-  "class": "foam.nanos.boot.NSpec",
+  "class": "foam.core.boot.CSpec",
   "name": "googleSheetsTransactionsDataImport",
   "serve": true,
   "authenticate": true,
-  "boxClass": "foam.nanos.google.api.sheets.views.GoogleSheetsDataImportServiceSkeleton",
-  "serviceClass": "foam.nanos.google.api.sheets.views.GoogleSheetsTransactionsDataImportServiceImpl",
+  "boxClass": "foam.core.google.api.sheets.views.GoogleSheetsDataImportServiceSkeleton",
+  "serviceClass": "foam.core.google.api.sheets.views.GoogleSheetsTransactionsDataImportServiceImpl",
   "client":"""
     {
-      "class": "foam.nanos.google.api.sheets.views.ClientGoogleSheetsDataImportService",
+      "class": "foam.core.google.api.sheets.views.ClientGoogleSheetsDataImportService",
       "delegate":
         {
           "class": "foam.box.HTTPBox",
@@ -488,38 +489,38 @@ p({
 })
 
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"reportTemplateDAO",
   "serve":true,
   "authenticate": true,
   "serviceScript":"""
     import foam.dao.DAO;
     return new foam.dao.EasyDAO.Builder(x)
-      .setOf(foam.nanos.export.report.Template.getOwnClassInfo())
+      .setOf(foam.core.export.report.Template.getOwnClassInfo())
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("reportTemplates")
       .setAuthorize(true)
-      .setAuthorizer(new foam.nanos.auth.GlobalReadAuthorizer("reporttemplate"))
+      .setAuthorizer(new foam.core.auth.GlobalReadAuthorizer("reporttemplate"))
       .build();
   """,
   "client":
   """
     {
-      \"of\":\"foam.nanos.export.report.Template\"
+      \"of\":\"foam.core.export.report.Template\"
     }
   """
 })
 p({
-  "class": "foam.nanos.boot.NSpec",
+  "class": "foam.core.boot.CSpec",
   "name": "userPropertyAvailabilityService",
   "serve": true,
   "authenticate": false,
-  "boxClass":"foam.nanos.auth.UserPropertyAvailabilityServiceInterfaceSkeleton",
-  "serviceClass": "foam.nanos.auth.UserPropertyAvailabilityService",
+  "boxClass":"foam.core.auth.UserPropertyAvailabilityServiceInterfaceSkeleton",
+  "serviceClass": "foam.core.auth.UserPropertyAvailabilityService",
   "client":
     """
       {
-        "class":"foam.nanos.auth.ClientUserPropertyAvailabilityService",
+        "class":"foam.core.auth.ClientUserPropertyAvailabilityService",
         "delegate": {
           "class":"foam.box.SessionClientBox",
           "delegate": {
@@ -533,7 +534,7 @@ p({
 })
 
 p({
-  "class": "foam.nanos.boot.NSpec",
+  "class": "foam.core.boot.CSpec",
   "name": "counterDAO",
   "description": "A reporting count DAO being updated on other dao update",
   "serve": true,
@@ -553,28 +554,28 @@ p({
 })
 
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"addressConfigDAO",
   "description": "A DAO that stores address formatting for different countries",
   "serve":true,
   "serviceScript": """
     return new foam.dao.EasyDAO.Builder(x)
-      .setAuthorizer(new foam.nanos.auth.GlobalReadAuthorizer("addressconfig"))
+      .setAuthorizer(new foam.core.auth.GlobalReadAuthorizer("addressconfig"))
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("addressConfig")
-      .setOf(foam.nanos.auth.AddressConfig.getOwnClassInfo())
+      .setOf(foam.core.auth.AddressConfig.getOwnClassInfo())
       .build();
   """,
    "client":
   """
     {
-      "of":"foam.nanos.auth.AddressConfig"
+      "of":"foam.core.auth.AddressConfig"
     }
   """
 })
 
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"approvalRequestClassificationDAO",
   "serve":true,
   "serviceScript": """
@@ -582,18 +583,18 @@ p({
       .setFuid(true)
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("approvalRequestClassifications")
-      .setOf(foam.nanos.approval.ApprovalRequestClassification.getOwnClassInfo())
+      .setOf(foam.core.approval.ApprovalRequestClassification.getOwnClassInfo())
       .build();
   """,
   "client": """
     {
-      "of": "foam.nanos.approval.ApprovalRequestClassification"
+      "of": "foam.core.approval.ApprovalRequestClassification"
     }
   """
 })
 
 p({
-  class: "foam.nanos.boot.NSpec",
+  class: "foam.core.boot.CSpec",
   name: "ruleRetryStrategy",
   service: {
     class: "foam.util.retry.RetryStrategyFactory",

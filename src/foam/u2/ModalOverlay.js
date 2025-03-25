@@ -18,6 +18,7 @@ foam.CLASS({
   imports: [
     'document'
   ],
+
   exports: [
     'as overlay'
   ],
@@ -65,7 +66,7 @@ foam.CLASS({
     },
 
     function open() {
-      if (this.U3) {
+      if ( this.U3 ) {
         this.document.body.append(this.element_);
       } else {
         this.document.body.insertAdjacentHTML('beforeend', this.outerHTML);

@@ -11,7 +11,7 @@ foam.CLASS({
   documentation: 'DAO that only responds to put/find',
 
   javaImports: [
-    'foam.nanos.fs.File'
+    'foam.core.fs.File'
   ],
 
   methods: [

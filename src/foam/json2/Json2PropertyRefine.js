@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.json2',
   name: 'Json2PropertyRefine',
-  refines: 'foam.core.Property',
+  refines: 'foam.lang.Property',
   methods: [
     function outputPropertyJSON2(x, obj, outputter, out) {
       if ( obj.hasDefaultValue(this.name) ) return;

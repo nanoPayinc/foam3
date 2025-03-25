@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.mlang.predicate',
   name: 'And',
   extends: 'foam.mlang.predicate.Nary',
-  implements: ['foam.core.Serializable'],
+  implements: ['foam.lang.Serializable'],
 
   documentation: 'Logical And n-ary Predicate.',
 

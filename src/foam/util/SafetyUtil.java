@@ -7,9 +7,9 @@
 package foam.util;
 
 import java.util.regex.Pattern;
-import foam.core.FObject;
-import foam.core.Validatable;
-import foam.core.X;
+import foam.lang.FObject;
+import foam.lang.Validatable;
+import foam.lang.X;
 
 /** Convenience methods for performing standard operations with null checks. **/
 public class SafetyUtil {
@@ -353,7 +353,7 @@ public class SafetyUtil {
 
   public static Object deepClone(Object o) {
     if ( o == null ) return null;
-    if ( o instanceof foam.core.FObject ) return ((foam.core.FObject) o).deepClone();
+    if ( o instanceof foam.lang.FObject ) return ((foam.lang.FObject) o).deepClone();
     if ( o.getClass().isArray() ) return foam.util.Arrays.deepClone(o);
     if ( o instanceof java.util.Map ) return deepCloneMap((java.util.Map) o);
     if ( o instanceof java.util.Collection ) return deepCloneCollection((java.util.Collection) o);

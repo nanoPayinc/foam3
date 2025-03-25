@@ -11,7 +11,7 @@ foam.CLASS({
 
   requires: [
     'foam.blob.BlobBlob',
-    'foam.nanos.fs.File'
+    'foam.core.fs.File'
   ],
 
   properties: [

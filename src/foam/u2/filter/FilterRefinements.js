@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.filter',
   name: 'PropertyRefinement',
-  refines: 'foam.core.Property',
+  refines: 'foam.lang.Property',
 
   properties: [
     {
@@ -23,7 +23,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.filter',
   name: 'StringRefinement',
-  refines: 'foam.core.String',
+  refines: 'foam.lang.String',
 
   properties: [
     {
@@ -37,7 +37,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.filter',
   name: 'BooleanRefinement',
-  refines: 'foam.core.Boolean',
+  refines: 'foam.lang.Boolean',
 
   properties: [
     {
@@ -52,7 +52,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.filter',
   name: 'ReferenceRefinement',
-  refines: 'foam.core.Reference',
+  refines: 'foam.lang.Reference',
 
   properties: [
     {
@@ -66,7 +66,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.filter',
   name: 'EnumRefinement',
-  refines: 'foam.core.Enum',
+  refines: 'foam.lang.Enum',
 
   properties: [
     {
@@ -81,7 +81,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.filter',
   name: 'UnitValueRefinement',
-  refines: 'foam.core.UnitValue',
+  refines: 'foam.lang.UnitValue',
 
   properties: [
     {
@@ -96,7 +96,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.filter',
   name: 'DateRefinement',
-  refines: 'foam.core.Date',
+  refines: 'foam.lang.Date',
 
   properties: [
     {
@@ -111,7 +111,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.filter',
   name: 'DateTimeRefinement',
-  refines: 'foam.core.DateTime',
+  refines: 'foam.lang.DateTime',
 
   properties: [
     {
@@ -126,7 +126,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.filter',
   name: 'IntRefinement',
-  refines: 'foam.core.Int',
+  refines: 'foam.lang.Int',
 
   properties: [
     {
@@ -141,7 +141,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.filter',
   name: 'ShortRefinement',
-  refines: 'foam.core.Short',
+  refines: 'foam.lang.Short',
 
   properties: [
     {
@@ -156,7 +156,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.filter',
   name: 'LongRefinement',
-  refines: 'foam.core.Long',
+  refines: 'foam.lang.Long',
 
   properties: [
     {
@@ -171,7 +171,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.filter',
   name: 'ByteRefinement',
-  refines: 'foam.core.Byte',
+  refines: 'foam.lang.Byte',
 
   properties: [
     {
@@ -186,7 +186,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.filter',
   name: 'FloatRefinement',
-  refines: 'foam.core.Float',
+  refines: 'foam.lang.Float',
 
   properties: [
     {
@@ -230,7 +230,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.filter',
   name: 'ReferenceRefinement',
-  refines: 'foam.core.Reference',
+  refines: 'foam.lang.Reference',
 
   properties: [
     {

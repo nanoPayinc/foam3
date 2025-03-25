@@ -18,7 +18,7 @@ foam.CLASS({
     {
       name: 'choices',
       expression: function(of) {
-        return of.getAxiomsByClass(foam.core.Property).map(function(prop) {
+        return of.getAxiomsByClass(foam.lang.Property).map(function(prop) {
           return [prop, prop.label];
         });
       }
@@ -28,7 +28,7 @@ foam.CLASS({
     function render() {
       this.tag(this.ChoiceView, {
         choices$: this.of$.map(function(of) {
-          return of.getAxiomsByClass(foam.core.Property).map(function(prop) {
+          return of.getAxiomsByClass(foam.lang.Property).map(function(prop) {
             return [prop, prop.label];
           });
         }),

@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'FloatView',
   extends: 'foam.u2.view.ModeAltView',
 
-  documentation: 'A view for foam.core.Float properties.',
+  documentation: 'A view for foam.lang.Float properties.',
 
   requires: [
     'foam.u2.FloatView',

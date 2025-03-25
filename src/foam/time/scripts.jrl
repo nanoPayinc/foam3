@@ -1,5 +1,5 @@
 p({
-  class:"foam.nanos.script.Script",
+  class:"foam.core.script.Script",
   id:"Build TimeZones Journal",
   description: "Create TimeZones journal from Java ZoneId Ids.",
   code:"""

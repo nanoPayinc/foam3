@@ -11,28 +11,28 @@ foam.CLASS({
   flags: ['java'],
 
   javaImports: [
-    'foam.core.ClassInfo',
-    'foam.core.FObject',
-    'foam.core.PropertyInfo',
-    'foam.core.ProxyX',
-    'foam.core.X',
-    'foam.core.AbstractFObjectPropertyInfo',
+    'foam.lang.ClassInfo',
+    'foam.lang.FObject',
+    'foam.lang.PropertyInfo',
+    'foam.lang.ProxyX',
+    'foam.lang.X',
+    'foam.lang.AbstractFObjectPropertyInfo',
     'foam.lib.formatter.JSONFObjectFormatter',
     'foam.lib.json.ExprParser',
     'foam.lib.json.JSONParser',
     'foam.lib.parse.*',
     'foam.lib.StoragePropertyPredicate',
-    'foam.nanos.auth.LastModifiedByAware',
-    'foam.nanos.auth.Subject',
-    'foam.nanos.auth.User',
-    'foam.nanos.fs.FileSystemStorage',
-    'foam.nanos.fs.Storage',
-    'foam.nanos.logger.Logger',
-    'foam.nanos.logger.Loggers',
-    'foam.nanos.logger.PrefixLogger',
-    'foam.nanos.logger.StdoutLogger',
-    'foam.nanos.om.OMLogger',
-    'foam.nanos.pm.PM',
+    'foam.core.auth.LastModifiedByAware',
+    'foam.core.auth.Subject',
+    'foam.core.auth.User',
+    'foam.core.fs.FileSystemStorage',
+    'foam.core.fs.Storage',
+    'foam.core.logger.Logger',
+    'foam.core.logger.Loggers',
+    'foam.core.logger.PrefixLogger',
+    'foam.core.logger.StdoutLogger',
+    'foam.core.om.OMLogger',
+    'foam.core.pm.PM',
     'foam.util.SafetyUtil',
     'java.io.BufferedReader',
     'java.io.BufferedWriter',
@@ -135,7 +135,7 @@ foam.CLASS({
     },
     {
       class: 'FObjectProperty',
-      of: 'foam.nanos.logger.Logger',
+      of: 'foam.core.logger.Logger',
       name: 'logger',
       javaFactory: `
         Logger logger = (Logger) getX().get("logger");
@@ -214,7 +214,7 @@ try {
     {
       name: 'put',
       type: 'FObject',
-      args: [ 'Context x', 'String prefix', 'DAO dao', 'foam.core.FObject obj' ],
+      args: [ 'Context x', 'String prefix', 'DAO dao', 'foam.lang.FObject obj' ],
       javaCode: `
         final Object               id  = obj.getProperty("id");
         final ClassInfo            of  = dao.getOf();
@@ -288,7 +288,7 @@ try {
     {
       name: 'remove',
       type: 'FObject',
-      args: [ 'Context x', 'String prefix', 'DAO dao', 'foam.core.FObject obj' ],
+      args: [ 'Context x', 'String prefix', 'DAO dao', 'foam.lang.FObject obj' ],
       javaCode: `
       final Object id = obj.getProperty("id");
       JSONFObjectFormatter fmt = getFormatter(x);
@@ -364,7 +364,7 @@ try {
       javaThrows: [
         'java.io.IOException'
       ],
-      args: [ 'Context x', 'foam.core.FObject obj' ],
+      args: [ 'Context x', 'foam.lang.FObject obj' ],
       javaCode: `
         User user = ((Subject) x.get("subject")).getUser();
         if ( user == null || user.getId() <= 1 ) return;
@@ -435,7 +435,7 @@ try {
     },
     {
       name: 'mergeFObject',
-      type: 'foam.core.FObject',
+      type: 'foam.lang.FObject',
       documentation: 'Add diff property to old property',
       args: ['FObject oldFObject', 'FObject diffFObject' ],
       javaCode: `
@@ -453,7 +453,7 @@ try {
     },
     {
       name: 'mergeProperty',
-      args: [ 'FObject oldFObject', 'FObject diffFObject', 'foam.core.PropertyInfo prop' ],
+      args: [ 'FObject oldFObject', 'FObject diffFObject', 'foam.lang.PropertyInfo prop' ],
       javaCode: `
       try {
         if ( prop.isSet(diffFObject) ) {
@@ -583,7 +583,7 @@ try {
              SafetyUtil.isEmpty(cmd.getError()) ) {
           try {
             cmd.setRolledFilename(roll(x));
-            ((foam.nanos.logger.Logger) x.get("logger")).info(this.getClass().getSimpleName(), "cmd", "FileRollCmd", cmd.getRolledFilename());
+            ((foam.core.logger.Logger) x.get("logger")).info(this.getClass().getSimpleName(), "cmd", "FileRollCmd", cmd.getRolledFilename());
           } catch (Throwable t) {
             cmd.setError(t.getMessage());
           }

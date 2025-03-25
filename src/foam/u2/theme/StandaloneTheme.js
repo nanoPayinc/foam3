@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'StandaloneTheme',
 
   documentation: `
-    A barebones theme object that can be used to theme non-nanos apps
+    A barebones theme object that can be used to theme non-core apps
     Currently provides: 
       - id for cssTokenOverrides
       - name

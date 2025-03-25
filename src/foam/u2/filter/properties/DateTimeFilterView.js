@@ -40,7 +40,7 @@ foam.CLASS({
 
   properties: [
     {
-      // NOTE: generates build warning: Change of Axiom foam.u2.filter.properties.DateTimeFilterView.date1 type from foam.core.Date to foam.core.DateTime in model foam.u2.filter.properties.DateTimeFilterView
+      // NOTE: generates build warning: Change of Axiom foam.u2.filter.properties.DateTimeFilterView.date1 type from foam.lang.Date to foam.lang.DateTime in model foam.u2.filter.properties.DateTimeFilterView
       class: 'DateTime',
       name: 'date1',
       documentation: `

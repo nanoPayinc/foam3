@@ -38,7 +38,7 @@ foam.CLASS({
       setErrorRate(errorRate);
     }
 
-    public UnreliableDAO(foam.core.X x, double errorRate, DAO delegate) {
+    public UnreliableDAO(foam.lang.X x, double errorRate, DAO delegate) {
       this(errorRate, delegate);
       setX(x);
     }

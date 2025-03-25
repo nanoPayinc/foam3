@@ -23,7 +23,7 @@ foam.CLASS({
   requires: [
     'foam.comics.DAOUpdateController',
     'foam.log.LogLevel',
-    'foam.nanos.controller.Memento',
+    'foam.core.controller.Memento',
     'foam.u2.ControllerMode',
     'foam.u2.DisplayMode'
   ],
@@ -124,7 +124,7 @@ foam.CLASS({
 
       /* Doesn't work because obj isn't known yet.
       this.startContext({data: this.data.obj})
-        .add(this.data.dao.of.getAxiomsByClass(foam.core.Action))
+        .add(this.data.dao.of.getAxiomsByClass(foam.lang.Action))
       .endContext()
       */
       this
@@ -145,7 +145,7 @@ foam.CLASS({
           .start()
             .start()
               .show(this.mode$.map((m) => m === this.DisplayMode.RW))
-              .add(this.data.cls_.getAxiomsByClass(foam.core.Action))
+              .add(this.data.cls_.getAxiomsByClass(foam.lang.Action))
             .end()
             .start()
               .show(this.mode$.map((m) => m === this.DisplayMode.RO))

@@ -1,0 +1,22 @@
+p({
+  "class":"foam.flow.DocumentMenu",
+  "id":"foamdocs",
+  "label":"FOAM Documentation",
+  "handler":{"class":"foam.core.menu.ViewMenu","view":{"class":"foam.core.doc.DocumentationView"}},
+  "parent":""
+})
+
+p({
+  "class":"foam.core.menu.Menu",
+  "id":"sign-in",
+  "authenticate":false,
+  "label":"Sign In",
+  "handler":{
+    "class":"foam.core.menu.ViewMenu",
+    "view":{
+      class: "foam.u2.borders.BaseUnAuthBorder",
+      children: [ {"class":"foam.core.auth.login.LoginView", "mode_":0} ]
+    }
+  },
+  "parent":""
+})

@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'PropertyExpr',
   extends: 'foam.mlang.AbstractExpr',
 
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   documentation: `
     An Expr whose value is a property. Even though Property implements Expr
@@ -40,13 +40,13 @@ foam.CLASS({
           class: 'foam.u2.view.ChoiceView',
           choices$: X.data.of$.map((of) => {
             return of
-              ? of.getAxiomsByClass(foam.core.Property).map((axiom) => [axiom, axiom.label])
+              ? of.getAxiomsByClass(foam.lang.Property).map((axiom) => [axiom, axiom.label])
               : [];
           })
         };
       },
-      javaType: 'foam.core.PropertyInfo',
-      javaInfoType: 'foam.core.AbstractObjectPropertyInfo',
+      javaType: 'foam.lang.PropertyInfo',
+      javaInfoType: 'foam.lang.AbstractObjectPropertyInfo',
     }
   ],
 

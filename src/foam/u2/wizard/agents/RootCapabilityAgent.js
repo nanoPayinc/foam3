@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.wizard.agents',
   name: 'RootCapabilityAgent',
-  implements: [ 'foam.core.ContextAgent' ],
+  implements: [ 'foam.lang.ContextAgent' ],
 
   documentation: `
     Set the root capability ID in context to a specific value.
@@ -22,7 +22,7 @@ foam.CLASS({
       name: 'rootCapability',
       class: 'String',
       adapt: function(o, n) {
-        if ( foam.nanos.crunch.Capability.isInstance(n) ) {
+        if ( foam.core.crunch.Capability.isInstance(n) ) {
           return n.id;
         }
         return n;

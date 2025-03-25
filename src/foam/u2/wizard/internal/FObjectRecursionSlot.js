@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.wizard.internal',
   name: 'FObjectRecursionSlot',
-  extends: 'foam.core.SimpleSlot',
+  extends: 'foam.lang.SimpleSlot',
   documentation: `
     Updates when propertyChange is published for any property of an FObject
     recursively.
@@ -17,7 +17,7 @@ foam.CLASS({
     being listened to; it is in the following format: { obj: [FObject] }
   `,
   requires: [
-    'foam.core.ExpressionSlot',
+    'foam.lang.ExpressionSlot',
     'foam.u2.wizard.internal.PropertyUpdate',
   ],
 
@@ -25,7 +25,7 @@ foam.CLASS({
     {
       name: 'obj',
       class: 'FObjectProperty',
-      of: 'foam.core.FObject'
+      of: 'foam.lang.FObject'
     },
     {
       name: 'parentRefs',
@@ -91,17 +91,17 @@ foam.CLASS({
     function set() { /* nop */ },
     function subToProps_(o) {
       this.cleanup();
-      var cleanup = foam.core.FObject.create();
+      var cleanup = foam.lang.FObject.create();
       this.cleanup_ = cleanup;
 
       if ( ! (o && o.cls_) ) return;
-      var props = o.cls_.getAxiomsByClass(foam.core.Property);
+      var props = o.cls_.getAxiomsByClass(foam.lang.Property);
 
       for ( let prop of props ) {
         if ( this.excludeAxioms.some(v => prop.cls_.id == v) ) continue;
         if ( this.excludeProperties.some(v => prop.name == v) ) continue;
         let prop$ = prop.toSlot(o);
-        if ( foam.core.FObjectProperty.isInstance(prop) ) {
+        if ( foam.lang.FObjectProperty.isInstance(prop) ) {
           if ( this.parentRefs.includes(prop$) ) continue;
 
           let propR$ = this.cls_.create({
@@ -118,11 +118,11 @@ foam.CLASS({
 
           continue;
         }
-        if ( foam.core.FObjectArray.isInstance(prop) ) {
-          let innerCleanup = foam.core.FObject.create();
+        if ( foam.lang.FObjectArray.isInstance(prop) ) {
+          let innerCleanup = foam.lang.FObject.create();
           let updateArray = arry => {
             innerCleanup.detach();
-            innerCleanup = foam.core.FObject.create();
+            innerCleanup = foam.lang.FObject.create();
             let i = 0;
             for ( let elem of arry ) {
               let elemR$ = this.cls_.create({

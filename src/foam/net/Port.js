@@ -11,7 +11,9 @@ foam.CLASS({
   documentation: 'Port DAO represents a global port map for an application. A port number can be relative to another port.',
 
   javaImports: [
-    'foam.core.X',
+    'foam.lang.FObject',
+    'foam.lang.PropertyInfo',
+    'foam.lang.X',
     'foam.dao.DAO',
     'foam.util.SafetyUtil',
     'java.lang.IllegalArgumentException'
@@ -38,10 +40,25 @@ foam.CLASS({
   javaCode: `
   public static int get(X x, String id) {
     String override = System.getProperty(id+".port");
-    if ( ! SafetyUtil.isEmpty(override) ) return Integer.parseInt(override);
+    if ( ! SafetyUtil.isEmpty(override) )
+      return Integer.parseInt(override);
+
     Port port = (Port) ((DAO) x.get("portDAO")).find_(x, id);
     if ( port == null ) {
-      throw new IllegalArgumentException("Port not found");
+      FObject service = (FObject) x.get(id);
+      if ( service != null ) {
+        PropertyInfo pInfo = (PropertyInfo) service.getClassInfo().getAxiomByName("port");
+        if ( pInfo != null ) {
+          Object p = pInfo.get(service);
+          if ( p instanceof Integer ) {
+            port = new Port();
+            port.setNumber(((Integer) p).intValue());
+          }
+        }
+      }
+      if ( port == null ) {
+        throw new IllegalArgumentException("Port not found for "+id);
+      }
     }
     if ( SafetyUtil.isEmpty(port.getRelativeTo()) ) return port.getNumber();
     return Port.get(x, port.getRelativeTo()) + port.getNumber();

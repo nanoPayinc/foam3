@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.wizard.internal',
   name: 'WizardletAutoSaveSlot',
-  extends: 'foam.core.SimpleSlot',
+  extends: 'foam.lang.SimpleSlot',
 
   requires: [
     'foam.u2.borders.LoadingLevel'
@@ -33,14 +33,14 @@ foam.CLASS({
       });
       var attach = function(delay, other) {
         this.cleanup();
-        this.cleanup_ = foam.core.FObject.create();
+        this.cleanup_ = foam.lang.FObject.create();
         this.cleanup_.onDetach(other.sub(() => {
           // Clear existing timeouts
           this.timeout_ && clearTimeout(this.timeout_);
           this.timeout_ = setTimeout(this.update.bind(this, other), delay);
         }));
       };
-      foam.core.ExpressionSlot.create({
+      foam.lang.ExpressionSlot.create({
         args: [this.delay$, this.other$],
         code: attach,
         obj: this

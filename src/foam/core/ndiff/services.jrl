@@ -1,0 +1,22 @@
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"ndiffDAO",
+  "serve":true,
+  "lazy":false,
+  "serviceScript": """
+    dao  = new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.ndiff.NDiff.getOwnClassInfo())
+      .setDecorator(new foam.core.ndiff.NDiffRuntimeDAO(x))
+      .setCluster(false)
+      .setRuler(false)
+      .setAuthorize(false)
+      .build();
+    return dao;
+  """,
+  "client":
+  """
+  {
+    "of":"foam.core.ndiff.NDiff"
+  }
+  """
+})

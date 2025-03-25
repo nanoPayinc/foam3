@@ -13,9 +13,9 @@ foam.CLASS({
   ],
 
   javaImports: [
-    'foam.core.X',
-    'foam.nanos.logger.PrefixLogger',
-    'foam.nanos.logger.Logger',
+    'foam.lang.X',
+    'foam.core.logger.PrefixLogger',
+    'foam.core.logger.Logger',
     'java.io.BufferedOutputStream',
     'java.io.DataOutputStream',
     'java.io.IOException',
@@ -36,7 +36,7 @@ foam.CLASS({
     {
       name: 'logger',
       class: 'FObjectProperty',
-      of: 'foam.nanos.logger.Logger',
+      of: 'foam.core.logger.Logger',
       visibility: 'HIDDEN',
       transient: true,
       javaCloneProperty: '//noop',

@@ -6,11 +6,11 @@
 
 package foam.dao;
 
-import foam.core.Detachable;
-import foam.core.FObject;
-import foam.core.X;
-import foam.nanos.auth.AuthorizationException;
-import foam.nanos.auth.Authorizer;
+import foam.lang.Detachable;
+import foam.lang.FObject;
+import foam.lang.X;
+import foam.core.auth.AuthorizationException;
+import foam.core.auth.Authorizer;
 
 public class AuthorizationSink
   extends ProxySink

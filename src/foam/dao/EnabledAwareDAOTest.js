@@ -7,12 +7,12 @@
 foam.CLASS({
   package: 'foam.dao',
   name: 'EnabledAwareDAOTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
 
   javaImports: [
-    'foam.core.FObject',
-    'foam.core.X',
-    'foam.nanos.auth.EnabledAwareDummy',
+    'foam.lang.FObject',
+    'foam.lang.X',
+    'foam.core.auth.EnabledAwareDummy',
     'java.util.List',
   ],
 

@@ -8,6 +8,7 @@ foam.CLASS({
   package: 'foam.glang',
   name: 'EndOfDay',
   extends: 'foam.glang.AbstractDateGlang',
+
   methods: [
     {
       name: 'f',

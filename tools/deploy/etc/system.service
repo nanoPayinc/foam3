@@ -1,5 +1,5 @@
 [Unit]
-Description=SYSTEM_NAME Platform
+Description=APP_NAME Platform
 After=network.target
 Requires=network.target
 StartLimitIntervalSec=30
@@ -9,10 +9,10 @@ StartLimitBurst=3
 Type=simple
 Restart=always
 RestartSec=1
-ExecStart=/opt/SYSTEM_NAME/bin/run.sh -AAPP_NAME -SSYSTEM_NAME -VVERSION -WWEB_PORT -Z0
+ExecStart=/opt/APP_NAME/bin/run.sh -NAPP_NAME -VVERSION -WWEB_PORT
 User=USER
 Group=GROUP
 
 [Install]
 WantedBy=multi-user.target
-Alias=SYSTEM_NAME.service
+Alias=APP_NAME.service

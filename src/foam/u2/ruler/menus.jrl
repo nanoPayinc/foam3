@@ -1,20 +1,20 @@
 p({
-  class:"foam.nanos.menu.Menu",
+  class:"foam.core.menu.Menu",
   id:"ruler",
   label: "Ruler",
   handler: {
-    class:"foam.nanos.menu.SubMenu"
+    class:"foam.core.menu.SubMenu"
   },
   parent:""
 })
 
 p({
-  "class": "foam.nanos.menu.Menu",
+  "class": "foam.core.menu.Menu",
   "id": "ruler.rulerlab",
   "label": "Lab",
   "keywords": ["rulerlab", "ruler lab", "ruler", "lab", "debug ruler", "debug rules"],
   "handler": {
-    "class": "foam.nanos.menu.ViewMenu",
+    "class": "foam.core.menu.ViewMenu",
     "view": {"class":"foam.u2.ruler.RulerLab"}
   },
   "parent":"ruler"

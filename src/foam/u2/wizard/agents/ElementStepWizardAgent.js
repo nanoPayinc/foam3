@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'ElementStepWizardAgent',
   extends: 'foam.u2.wizard.agents.StepWizardAgent',
   implements: [
-    'foam.core.ContextAgent',
+    'foam.lang.ContextAgent',
     'foam.mlang.Expressions'
   ],
   documentation: `Renders a wizardView using current controller in an Element`,

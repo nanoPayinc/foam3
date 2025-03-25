@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'ArgumentSwiftRefinement',
-  refines: 'foam.core.Argument',
+  refines: 'foam.lang.Argument',
   flags: ['swift'],
   requires: [
     'foam.swift.Argument',

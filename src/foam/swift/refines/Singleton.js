@@ -17,7 +17,7 @@ foam.CLASS({
       var classInfo = cls.getClass('ClassInfo_');
       classInfo.fields.push(this.Field.create({
         visibility: 'private',
-        type: foam.core.FObject.model_.swiftName + '?',
+        type: foam.lang.FObject.model_.swiftName + '?',
         name: 'instance',
       }));
       classInfo.getMethod('create').body = `

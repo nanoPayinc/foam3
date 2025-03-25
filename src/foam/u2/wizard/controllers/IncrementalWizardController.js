@@ -189,7 +189,7 @@ foam.CLASS({
     },
     {
       class: 'FObjectArray',
-      of: 'foam.core.Action',
+      of: 'foam.lang.Action',
       name: 'actionBar',
       getter: function () {
         const currentWizardlet = this.currentWizardlet;
@@ -211,7 +211,7 @@ foam.CLASS({
             // If the class matches we can copy the original NEXT action
             // Using "Action.isInstance" is not appropriate here because
             // this approach doesn't work for subclasses.
-            if ( action.cls_ == foam.core.Action ) {
+            if ( action.cls_ == foam.lang.Action ) {
               goNextAction = this.GO_NEXT.clone().copyFrom(action);
               goNextAction.buttonStyle = 'PRIMARY';
               continue;
@@ -381,7 +381,7 @@ foam.CLASS({
         }
 
         this.onWizardletCompleted(wizardlet);
-        this.activePosition = nextPosition;;
+        this.activePosition = nextPosition;
 
         // Re-calculate next position and next wizardlet
         // (in case an inline wizard was added while saving)

@@ -10,10 +10,10 @@ foam.CLASS({
   extends: 'foam.u2.View',
 
   requires: [
-    'foam.core.ArraySlot',
-    'foam.core.ConstantSlot',
-    'foam.core.ProxySlot',
-    'foam.core.SimpleSlot',
+    'foam.lang.ArraySlot',
+    'foam.lang.ConstantSlot',
+    'foam.lang.ProxySlot',
+    'foam.lang.SimpleSlot',
     'foam.layout.Section',
     'foam.u2.PropertyBorder',
     'foam.u2.DisplayMode',
@@ -144,7 +144,7 @@ foam.CLASS({
           return self.Rows.create()
             .callIf(showTitle && section$title, function() {
               if ( foam.Function.isInstance(self.section.title) ) {
-                const slot$ = foam.core.ExpressionSlot.create({
+                const slot$ = foam.lang.ExpressionSlot.create({
                   args: [ self.evaluateMessage$, self.data$ ],
                   obj$: self.data$,
                   code: section.title
@@ -158,7 +158,7 @@ foam.CLASS({
             })
             .callIf(section$subTitle, function() {
               if ( foam.Function.isInstance(self.section.subTitle) ) {
-                const slot$ = foam.core.ExpressionSlot.create({
+                const slot$ = foam.lang.ExpressionSlot.create({
                   args: [ self.evaluateMessage$, self.data$ ],
                   obj$: self.data$,
                   code: section.subTitle

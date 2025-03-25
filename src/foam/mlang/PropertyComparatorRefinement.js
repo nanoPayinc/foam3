@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.mlang',
   name: 'PropertyComparatorRefinement',
-  refines: 'foam.core.Property',
+  refines: 'foam.lang.Property',
 
   implements: [ 'foam.mlang.order.Comparator' ],
 

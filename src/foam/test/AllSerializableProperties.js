@@ -20,41 +20,41 @@ foam.CLASS({
   name: 'AllSerializableProperties',
   properties: [
     {
-      class: 'foam.core.Int',
+      class: 'foam.lang.Int',
       name: 'intProp'
     },
     {
-      class: 'foam.core.String',
+      class: 'foam.lang.String',
       name: 'stringProp'
     },
     {
-      class: 'foam.core.FObjectArray',
+      class: 'foam.lang.FObjectArray',
       of: 'foam.test.TestObj',
       name: 'fObjectArrayProp'
     },
     {
-      class: 'foam.core.Object',
+      class: 'foam.lang.Object',
       name: 'objectProp'
     },
     // {
-    //   class: 'foam.core.Function',
+    //   class: 'foam.lang.Function',
     //   name: 'functionProp'
     // },
     {
-      class: 'foam.core.StringArray',
+      class: 'foam.lang.StringArray',
       name: 'stringArray'
     },
     {
-      class: 'foam.core.Class',
+      class: 'foam.lang.Class',
       name: 'classProp'
     },
     {
-      class: 'foam.core.FObjectProperty',
+      class: 'foam.lang.FObjectProperty',
       of: 'foam.test.TestObj',
       name: 'fObjectPropertyProp'
     },
     {
-      class: 'foam.core.EMail',
+      class: 'foam.lang.EMail',
       name: 'emailProp'
     },
     {
@@ -62,80 +62,80 @@ foam.CLASS({
       name: 'viewSpecProp'
     },
     {
-      class: 'foam.core.Enum',
+      class: 'foam.lang.Enum',
       of: 'foam.test.TestEnum',
       name: 'enumProp'
     },
     {
-      class: 'foam.core.Date',
+      class: 'foam.lang.Date',
       name: 'dateProp'
     },
     {
-      class: 'foam.core.DateTime',
+      class: 'foam.lang.DateTime',
       name: 'dateTimeProp'
     },
     {
-      class: 'foam.core.Float',
+      class: 'foam.lang.Float',
       name: 'floatProp'
     },
     {
-      class: 'foam.core.Long',
+      class: 'foam.lang.Long',
       name: 'longProp'
     },
     {
-      class: 'foam.core.UnitValue',
+      class: 'foam.lang.UnitValue',
       name: 'currencyProp'
     },
     {
-      class: 'foam.core.Color',
+      class: 'foam.lang.Color',
       name: 'colorProp'
     },
     // {
-    //   class: 'foam.core.Reference',
+    //   class: 'foam.lang.Reference',
     //   name: 'reference'
     // },
     {
-      class: 'foam.core.Array',
+      class: 'foam.lang.Array',
       name: 'arrayProp'
     },
     {
-      class: 'foam.core.Map',
+      class: 'foam.lang.Map',
       name: 'mapProp'
     },
     {
-      class: 'foam.core.Byte',
+      class: 'foam.lang.Byte',
       name: 'byteProp'
     },
     {
-      class: 'foam.core.Short',
+      class: 'foam.lang.Short',
       name: 'shortProp'
     },
     {
-      class: 'foam.core.Double',
+      class: 'foam.lang.Double',
       name: 'doubleProp'
     },
     // {
-    //   class: 'foam.core.List',
+    //   class: 'foam.lang.List',
     //   name: 'listProp'
     // },
     {
-      class: 'foam.core.Image',
+      class: 'foam.lang.Image',
       name: 'imageProp'
     },
     {
-      class: 'foam.core.URL',
+      class: 'foam.lang.URL',
       name: 'urlProp'
     },
     {
-      class: 'foam.core.Password',
+      class: 'foam.lang.Password',
       name: 'passwordProp'
     },
     {
-      class: 'foam.core.PhoneNumber',
+      class: 'foam.lang.PhoneNumber',
       name: 'phoneNumberProp'
     },
     {
-      class: 'foam.core.Blob',
+      class: 'foam.lang.Blob',
       name: 'blobProp'
     },
   ],

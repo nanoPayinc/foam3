@@ -7,18 +7,20 @@
 foam.CLASS({
   package: 'foam.u2.mlang',
   name: 'Table',
-  extends: 'foam.dao.DAOSink',
+  extends: 'foam.dao.ArraySink',
 
   requires: [
-    'foam.dao.ArrayDAO',
+    'foam.dao.MDAO',
     'foam.u2.view.TableView'
   ],
 
   properties: [
     {
       name: 'dao',
-      expression: function(of) {
-        return this.ArrayDAO.create({of: of});
+      factory: function() {
+        var dao = this.MDAO.create({of: this.of});
+        this.array.forEach(a => dao.put(a));
+        return dao;
       }
     },
     {
@@ -27,9 +29,11 @@ foam.CLASS({
     },
     {
       name: 'view',
-      expression: function(of, dao, columns) {
-        if ( ! of ) return 'No results';
-        var tv = this.TableView.create({ data: dao });
+      expression: function(columns) {
+        if ( ! this.array.length ) return 'No results';
+        if ( ! this.of ) this.of = this.array[0].cls_;
+
+        var tv = this.TableView.create({ data: this.dao });
         if ( columns.length ) {
           tv.columns = columns.map(function(c) { return of.getAxiomByName(c) });
         }
@@ -38,17 +42,21 @@ foam.CLASS({
     },
     {
       class: 'StringArray',
-      name: 'columns',
+      name: 'columns'
     }
   ],
 
   methods: [
+    /*
     function put(o) {
       if ( ! this.of ) this.of = o.cls_
       this.SUPER(o);
-    },
+      },*/
     function toE(_, x) {
       return x.E().add(this.view$);
+    },
+    function addToE(e) {
+      e.add(this.view$);
     }
   ]
 });

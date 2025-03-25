@@ -1,0 +1,42 @@
+p({
+  "class":"foam.core.menu.Menu",
+  "id":"admin.customise-theme",
+  "label":"Customise Theme",
+  "handler":{
+    "class":"foam.core.menu.DAOMenu2",
+    "config":{
+      "class":"foam.comics.v2.DAOControllerConfig",
+      "daoKey":"spThemeDAO",
+      "browseController": {"class": "foam.core.theme.customisation.ThemeCustomisationBrowseController"}
+    }
+  },
+  "parent":"admin"
+})
+
+p({
+  "class":"foam.core.menu.Menu",
+  "id":"admin.theme-all",
+  "label":"Themes - All",
+  "handler":{
+    "class":"foam.core.menu.DAOMenu2",
+    "config":{
+      "class":"foam.comics.v2.DAOControllerConfig",
+      "daoKey":"themeDAO"
+    }
+  },
+  "parent":"admin"
+})
+
+p({
+  "class":"foam.core.menu.Menu",
+  "id":"admin.themedomain",
+  "label":"Theme Domains",
+  "handler": {
+    "class":"foam.core.menu.DAOMenu2",
+    "config": {
+      "class":"foam.comics.v2.DAOControllerConfig",
+      "daoKey":"themeDomainDAO"
+    }
+  },
+  "parent":"admin"
+})

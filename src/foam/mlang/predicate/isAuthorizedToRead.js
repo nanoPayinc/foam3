@@ -8,26 +8,26 @@ foam.CLASS({
   package: 'foam.mlang.predicate',
   name: 'isAuthorizedToRead',
   extends: 'foam.mlang.predicate.AbstractPredicate',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   documentation: 'Expression which returns true if the user has a given permission.',
 
   javaImports: [
-    'foam.core.FObject',
-    'foam.core.X',
-    'foam.nanos.auth.AuthorizationException'
+    'foam.lang.FObject',
+    'foam.lang.X',
+    'foam.core.auth.AuthorizationException'
   ],
 
   properties: [
     {
-      javaInfoType: 'foam.core.AbstractObjectPropertyInfo',
-      javaType: 'foam.core.X',
+      javaInfoType: 'foam.lang.AbstractObjectPropertyInfo',
+      javaType: 'foam.lang.X',
       flags: ['java'],
       name: 'userContext'
     },
     {
-      javaInfoType: 'foam.core.AbstractObjectPropertyInfo',
-      javaType: 'foam.nanos.auth.Authorizer',
+      javaInfoType: 'foam.lang.AbstractObjectPropertyInfo',
+      javaType: 'foam.core.auth.Authorizer',
       flags: ['java'],
       name: 'authorizer'
     }
@@ -47,7 +47,7 @@ foam.CLASS({
       },
       javaCode: `
         X x = (X) getUserContext();
-        foam.nanos.auth.Authorizer authorizer = getAuthorizer();
+        foam.core.auth.Authorizer authorizer = getAuthorizer();
         try {
           authorizer.authorizeOnRead(x, (FObject) obj);
         } catch ( AuthorizationException e ) {

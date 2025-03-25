@@ -5,7 +5,7 @@
  */
 package foam.dao;
 
-import foam.core.*;
+import foam.lang.*;
 
 /**
  * An unsafe MDAO which does not freeze objects on the way in

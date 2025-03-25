@@ -75,7 +75,7 @@ foam.CLASS({
         foam.assert(ps, 'Properties required.');
         for ( var i = 0; i < ps.length; i++ ) {
           foam.assert(
-              foam.core.Property.isInstance(ps[i]),
+              foam.lang.Property.isInstance(ps[i]),
               `Non-Property in 'properties' list:`,
               ps);
         }
@@ -83,7 +83,7 @@ foam.CLASS({
       },
       expression: function(of) {
         if ( ! of ) return [];
-        return this.of.getAxiomsByClass(foam.core.Property).
+        return this.of.getAxiomsByClass(foam.lang.Property).
           // TODO: this is a temporary fix, but DisplayMode.HIDDEN should be included and could be switched
           filter(function(p) {
             return ! ( p.hidden || p.visibility === foam.u2.DisplayMode.HIDDEN );
@@ -118,8 +118,8 @@ foam.CLASS({
           forEach(properties, function(p) {
             if ( ! foam.dao.OneToManyRelationshipProperty.isInstance(p) &&
               ! foam.dao.ManyToManyRelationshipProperty.isInstance(p) &&
-              ! foam.core.FObjectProperty.isInstance(p)
-              && ! foam.core.FObjectArray.isInstance(p) &&
+              ! foam.lang.FObjectProperty.isInstance(p)
+              && ! foam.lang.FObjectArray.isInstance(p) &&
               p.name !== 'desiredPassword' && p.name !== 'status'
               ) {
               this.start().addClass('property-item').add(p).end();

@@ -24,11 +24,11 @@ foam.CLASS({
       w.document.head.innerHTML = '<title>Translation Console</title>';
       w.document.$UID = foam.next$UID();
 
-      var window = foam.core.Window.create({window: w}, ctrl);
+      var window = foam.lang.Window.create({window: w}, ctrl);
       var v      = this.create({}, window);
       v.write(window.document);
 
-      foam.core.I18NString.GETTER__ = function(proto, prop, obj, key) {
+      foam.lang.I18NString.GETTER__ = function(proto, prop, obj, key) {
         if ( obj.sourceCls_ ) {
           var source      = obj.sourceCls_.id + '.' + obj.name + '.' + prop.name;
           var translation = v.translationService.getTranslation(v.locale, source, '');

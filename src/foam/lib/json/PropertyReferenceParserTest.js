@@ -7,26 +7,26 @@
 foam.CLASS({
   package: 'foam.lib.json',
   name: 'PropertyReferenceParserTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
 
   javaImports: [
     'foam.lib.parse.*',
-    'foam.nanos.auth.User'
+    'foam.core.auth.User'
   ],
 
   methods: [
     {
       name: 'runTest',
       javaCode: `
-        String input = "{\\"class\\":\\"__Property__\\",\\"forClass_\\":\\"foam.nanos.auth.User\\",\\"name\\":\\"id\\"}";
+        String input = "{\\"class\\":\\"__Property__\\",\\"forClass_\\":\\"foam.core.auth.User\\",\\"name\\":\\"id\\"}";
         PropertyReferenceParserTest_ValidPropertyReference(
           x, input, User.ID, "Parsed property reference successfully");
 
-        String input2 = "{\\"class\\":\\"__Property__\\",\\"forClass_\\":\\"foam.nanos.auth.User\\",\\"name\\":   \\"id\\"}";
+        String input2 = "{\\"class\\":\\"__Property__\\",\\"forClass_\\":\\"foam.core.auth.User\\",\\"name\\":   \\"id\\"}";
         PropertyReferenceParserTest_ValidPropertyReference(
           x, input2, User.ID, "Parsed property reference (ignore spaces) successfully");
 
-        String input3 = "{\\"class\\":\\"__Property__\\",\\"forClass_\\":\\"foam.nanos.auth.User\\",\\"name\\":\\"Not_exist_property\\"}";
+        String input3 = "{\\"class\\":\\"__Property__\\",\\"forClass_\\":\\"foam.core.auth.User\\",\\"name\\":\\"Not_exist_property\\"}";
         PropertyReferenceParserTest_ValidPropertyReference(
           x, input3, null, "Should return null parsing non-existent property reference");
 
@@ -50,7 +50,7 @@ foam.CLASS({
         },
         {
           name: 'expected',
-          javaType: 'foam.core.PropertyInfo'
+          javaType: 'foam.lang.PropertyInfo'
         },
         {
           name: 'message',

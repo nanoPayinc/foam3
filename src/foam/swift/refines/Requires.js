@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'RequiresSwiftRefinement',
-  refines: 'foam.core.Requires',
+  refines: 'foam.lang.Requires',
   flags: ['swift'],
   requires: [
     'foam.swift.Argument',
@@ -24,7 +24,7 @@ foam.CLASS({
   methods: [
     function writeToSwiftClass(cls, parentCls) {
       if ( ! parentCls.hasOwnAxiom(this.name) ) return;
-      if (foam.core.InterfaceModel.isInstance(this.__context__.lookup(this.path).model_)) {
+      if (foam.lang.InterfaceModel.isInstance(this.__context__.lookup(this.path).model_)) {
         return;
       }
       // TODO skip refines.

@@ -24,7 +24,7 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.core.Action',
+    'foam.lang.Action',
     'foam.u2.ActionReference',
     'foam.u2.borders.ScrollBorder',
     'foam.u2.dialog.DialogActionsView',
@@ -183,6 +183,10 @@ foam.CLASS({
       padding-top: 0.4rem;
     }
 
+    ^ .foam-u2-ProgressView {
+      height: 2px;
+    }
+
     @media only screen and (min-width: /*%DISPLAYWIDTH.MD%*/ 768px) {
       ^header {
         padding: 12px;
@@ -235,7 +239,7 @@ foam.CLASS({
     {
       class: 'Reference',
       targetDAOKey: 'menuDAO',
-      of: 'foam.nanos.menu.Menu',
+      of: 'foam.core.menu.Menu',
       name: 'helpMenu'
     },
     'help_',
@@ -321,7 +325,7 @@ foam.CLASS({
                 leadingActions.forEach(a => {
                   slots.push(a.action.createIsAvailable$(self.__subContext__, a.data));
                 });
-                let s = foam.core.ArraySlot.create({ slots: slots }, self);
+                let s = foam.lang.ArraySlot.create({ slots: slots }, self);
                 let anyAvailable = this.slot(function(slots) {
                   for ( let slot of slots ) {
                     if ( slot ) return true;
@@ -341,7 +345,7 @@ foam.CLASS({
             .end()
             .start()
               .addClass(this.myClass('header-center'))
-              .start({ class: 'foam.nanos.u2.navigation.ApplicationLogoView' })
+              .start({ class: 'foam.core.u2.navigation.ApplicationLogoView' })
                 .addClass(this.myClass('logo'))
               .end()
             .end()
@@ -368,6 +372,7 @@ foam.CLASS({
           .end()
           .add(this.slot(function(progressView) {
             return this.E()
+              .addClass(self.myClass('progressBar'))
               .tag(progressView, {
                 max$: self.progressMax$,
                 data$: self.progressValue$

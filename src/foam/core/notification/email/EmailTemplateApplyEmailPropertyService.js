@@ -1,0 +1,59 @@
+/**
+ * @license
+ * Copyright 2019 The FOAM Authors. All Rights Reserved.
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+foam.CLASS({
+  package: 'foam.core.notification.email',
+  name: 'EmailTemplateApplyEmailPropertyService',
+
+  documentation: 'Fills unset properties on an email with values from the emailTemplate.',
+
+  implements: [
+    'foam.core.notification.email.EmailPropertyService'
+  ],
+
+  javaImports: [
+    'foam.core.auth.User',
+    'foam.core.logger.Logger',
+    'foam.core.logger.Loggers',
+    'foam.util.SafetyUtil',
+    'java.util.Map'
+  ],
+
+  methods: [
+    {
+      name: 'apply',
+      type: 'foam.core.notification.email.EmailMessage',
+      documentation: 'application of template args to emailTemplate and then onto the emailMessage',
+      javaCode: `
+      Logger logger = Loggers.logger(x, this);
+
+      String templateName = (String)templateArgs.get("template");
+      if ( SafetyUtil.isEmpty(templateName) ) {
+        // logger.debug("Template undefined");
+        return emailMessage;
+      }
+
+      String locale = (String) templateArgs.get("locale");
+
+      // STEP 1) Find EmailTemplate
+      EmailTemplate emailTemplate = EmailTemplateSupport.findTemplate(x, templateName, group, locale, emailMessage.getSpid(), templateArgs);
+      if ( emailTemplate == null ) {
+        logger.info("WARN,EmailTemplate not found", templateName, group);
+        return emailMessage;
+      }
+
+      // STEP 2) Apply Template to emailMessage
+      try {
+        if ( emailTemplate.getEnabled() )
+          emailMessage = emailTemplate.apply(x, group, emailMessage, templateArgs);
+      } catch (RuntimeException e) {
+        logger.info("ERROR,EmailTemplate apply failed", templateName, "group", group, e.getMessage(), e);
+      }
+      return emailMessage;
+      `
+    }
+  ]
+});

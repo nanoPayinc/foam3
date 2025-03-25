@@ -1,0 +1,173 @@
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"ticketHistoryDAO",
+  "serve":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.dao.history.HistoryRecord.getOwnClassInfo())
+      .setSeqNo(true)
+      .setSeqPropertyName("seqNo")
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("ticketHistory")
+      .build();
+    """,
+  "client":"""
+    {"of":"foam.dao.history.HistoryRecord"}
+    """
+})
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "localTicketDAO",
+  "lazy": true,
+  "serve": false,
+  "serviceScript": """
+    dao = new foam.dao.NullDAO.Builder(x).setOf(foam.core.ticket.Ticket.getOwnClassInfo()).build();
+    dao = new foam.core.ticket.TicketOwnerDAO.Builder(x).setDelegate(dao).build();
+    dao = new foam.core.ticket.TicketAddCommentDAO.Builder(x).setDelegate(dao).build();
+    dao = new foam.dao.history.HistoryDAO(x, "ticketHistoryDAO", dao);
+    dao = new foam.core.ticket.CloseTicketCommandDAO.Builder(x).setDelegate(dao).build();
+
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.ticket.Ticket.getOwnClassInfo())
+      .setAuthorize(false)
+      .setPm(true)
+      .setOm(true)
+      .setFuid(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("tickets")
+      .setOrder(new foam.mlang.order.Comparator[] {
+        foam.mlang.MLang.DESC(
+          foam.core.ticket.Ticket.LAST_MODIFIED
+        )
+      })
+      .setDecorator(dao)
+      .setServiceProviderAware(true)
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] {foam.core.ticket.Ticket.ASSIGNED_TO_SUMMARY})
+      .addPropertyIndex(new foam.lang.PropertyInfo[] {foam.core.ticket.Ticket.CREATED_BY})
+      .addPropertyIndex(new foam.lang.PropertyInfo[] {foam.core.ticket.Ticket.LAST_MODIFIED})
+      .addPropertyIndex(new foam.lang.PropertyInfo[] {foam.core.ticket.Ticket.STATUS})
+      .addPropertyIndex(new foam.lang.PropertyInfo[] {foam.core.ticket.Ticket.TITLE})
+      .addPropertyIndex(new foam.lang.PropertyInfo[] {foam.core.ticket.Ticket.TYPE});
+  """
+})
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "ticketDAO",
+  "lazy": true,
+  "serve": true,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.ticket.Ticket.getOwnClassInfo())
+      .setAuthorize(true)
+      .setEnableInterfaceDecorators(false)
+      .setInnerDAO((foam.dao.DAO) x.get("localTicketDAO"))
+      .build();
+  """,
+  "client":
+  """
+  {
+    "of": "foam.core.ticket.Ticket",
+    "cache": false,
+    "decorators": [
+      {
+        "class":"foam.core.fs.FileArrayDAODecorator"
+      }
+    ]
+  }
+  """
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "localTicketStatusDAO",
+  "lazy": true,
+  "serve": false,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.ticket.TicketStatus.getOwnClassInfo())
+      .setAuthorize(false)
+      .setPm(true)
+      .setSeqNo(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("ticketStatuses")
+      .setOrder(new foam.mlang.order.Comparator[] {
+          foam.core.ticket.TicketStatus.ORDINAL
+      })
+      .build();
+  """
+})
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "ticketStatusDAO",
+  "lazy": true,
+  "serve": true,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.ticket.TicketStatus.getOwnClassInfo())
+      .setAuthorize(true)
+      .setEnableInterfaceDecorators(false)
+      .setInnerDAO((foam.dao.DAO) x.get("localTicketStatusDAO"))
+      .build();
+  """,
+  "client": "{\"of\":\"foam.core.ticket.TicketStatus\"}"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"ticketCommentHistoryDAO",
+  "serve":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.dao.history.HistoryRecord.getOwnClassInfo())
+      .setSeqNo(true)
+      .setSeqPropertyName("seqNo")
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("ticketCommentHistory")
+      .build();
+    """,
+  "client":"""
+    {"of":"foam.dao.history.HistoryRecord"}
+    """
+})
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "localTicketCommentDAO",
+  "lazy": true,
+  "serve": false,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.ticket.TicketComment.getOwnClassInfo())
+      .setAuthorize(false)
+      .setPm(true)
+      .setSeqNo(true)
+      .setOrder(new foam.mlang.order.Comparator[] {
+        foam.mlang.MLang.DESC(
+          foam.core.ticket.TicketComment.CREATED
+        )
+      })
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("ticketComments")
+      .setDecorator(
+        new foam.dao.history.HistoryDAO(x, "ticketCommentHistoryDAO",
+          new foam.core.ticket.TicketCommentOwnerDAO.Builder(x).setDelegate(
+            new foam.dao.NullDAO.Builder(x).setOf(foam.core.ticket.TicketComment.getOwnClassInfo()).build()).build())
+      )
+      .build();
+  """
+})
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "ticketCommentDAO",
+  "lazy": true,
+  "serve": true,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.ticket.TicketComment.getOwnClassInfo())
+      .setAuthorize(true)
+      .setEnableInterfaceDecorators(false)
+      .setInnerDAO((foam.dao.DAO) x.get("localTicketCommentDAO"))
+      .build();
+  """,
+  "client": "{\"of\":\"foam.core.ticket.TicketComment\"}"
+})

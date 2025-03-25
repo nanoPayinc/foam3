@@ -9,10 +9,10 @@ foam.CLASS({
   name: 'Issue',
 
   mixins: [
-    'foam.nanos.auth.CreatedAware',
-    'foam.nanos.auth.CreatedByAware',
-    'foam.nanos.auth.LastModifiedAware',
-    'foam.nanos.auth.LastModifiedByAware'
+    'foam.core.auth.CreatedAware',
+    'foam.core.auth.CreatedByAware',
+    'foam.core.auth.LastModifiedAware',
+    'foam.core.auth.LastModifiedByAware'
   ],
 
   properties:

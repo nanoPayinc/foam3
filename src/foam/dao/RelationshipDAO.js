@@ -32,8 +32,8 @@ foam.CLASS({
   documentation: 'Adapts a DAO based on a Relationship.',
 
   javaImports: [
-    'foam.nanos.auth.Subject',
-    'foam.nanos.auth.User'
+    'foam.core.auth.Subject',
+    'foam.core.auth.User'
   ],
 
   properties: [
@@ -52,7 +52,7 @@ foam.CLASS({
     {
       class: 'Object',
       name: 'targetProperty',
-      javaType: 'foam.core.PropertyInfo',
+      javaType: 'foam.lang.PropertyInfo',
       swiftType: 'PropertyInfo'
     },
     {
@@ -87,7 +87,7 @@ foam.CLASS({
         }
         return ((foam.dao.DAO) getX().get(getTargetDAOKey())).inX(getX());
       } catch ( NullPointerException e ) {
-        foam.nanos.logger.Logger logger = (foam.nanos.logger.Logger) getX().get("logger");
+        foam.core.logger.Logger logger = (foam.core.logger.Logger) getX().get("logger");
         logger.error("TargetDAOKey", getTargetDAOKey(), "not found.", e);
         throw e;
       }

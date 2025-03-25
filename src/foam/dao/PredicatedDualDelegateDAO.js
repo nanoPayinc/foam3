@@ -69,7 +69,7 @@ foam.CLASS({
       name: 'getDelegateFor',
       type: 'foam.dao.DAO',
       args: [
-        { name: 'obj', type: 'foam.core.FObject' },
+        { name: 'obj', type: 'foam.lang.FObject' },
       ],
       javaCode: `
         if ( getPredicate().f(obj) ) {

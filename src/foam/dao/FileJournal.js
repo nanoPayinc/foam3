@@ -15,9 +15,9 @@ foam.CLASS({
   ],
 
   javaImports: [
-    'foam.core.FObject',
+    'foam.lang.FObject',
     'foam.lib.json.JSONParser',
-    'foam.nanos.pm.PM',
+    'foam.core.pm.PM',
     'foam.util.SafetyUtil',
     'java.io.BufferedReader'
   ],
@@ -67,7 +67,7 @@ foam.CLASS({
 
               switch ( operation ) {
                 case 'p':
-                  foam.core.FObject old = dao.find(obj.getProperty("id"));
+                  foam.lang.FObject old = dao.find(obj.getProperty("id"));
                   dao.put(old != null ? mergeFObject(old.fclone(), obj) : obj);
                   break;
 

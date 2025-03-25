@@ -7,7 +7,7 @@
 package foam.util.concurrent;
 
 import java.util.Arrays;
-import foam.core.X;
+import foam.lang.X;
 
 /**
  * A Synchronous blocking implementation of the AssemblyLine interface.
@@ -84,11 +84,11 @@ public class SyncAssemblyLine
         try {
           job.endJob(isLast);
         } catch (Throwable t) {
-          foam.nanos.logger.Logger logger;
+          foam.core.logger.Logger logger;
           if ( x_ != null ) {
-            logger = (foam.nanos.logger.Logger) x_.get("logger");
+            logger = (foam.core.logger.Logger) x_.get("logger");
           } else {
-            logger = foam.nanos.logger.StdoutLogger.instance();
+            logger = foam.core.logger.StdoutLogger.instance();
           }
           logger.error(this.getClass().getSimpleName(), t.getMessage(), t);
         }

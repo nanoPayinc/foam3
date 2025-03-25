@@ -11,7 +11,7 @@ foam.CLASS({
   requires: [
     'foam.dao.CSVSink',
     'foam.dao.EasyDAO',
-    'foam.nanos.auth.Phone'
+    'foam.core.auth.Phone'
   ],
 
   properties: [
@@ -59,7 +59,7 @@ foam.CLASS({
         {
           class: 'FObjectProperty',
           name: 'fop',
-          of: 'foam.nanos.auth.Phone'
+          of: 'foam.core.auth.Phone'
         }
       ]
     }

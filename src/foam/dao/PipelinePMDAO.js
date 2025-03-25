@@ -10,18 +10,18 @@ foam.CLASS({
   extends: 'foam.dao.ProxyDAO',
 
   implements: [
-    'foam.nanos.boot.NSpecAware'
+    'foam.core.boot.CSpecAware'
   ],
 
   requires: [
-    'foam.nanos.pm.PM'
+    'foam.core.pm.PM'
   ],
 
   javaImports: [
-    'foam.core.X',
-    'foam.nanos.boot.NSpec',
-    'foam.nanos.pm.PipelinePMLocator',
-    'foam.nanos.pm.PM'
+    'foam.lang.X',
+    'foam.core.boot.CSpec',
+    'foam.core.pm.PipelinePMLocator',
+    'foam.core.pm.PM'
   ],
 
   properties: [
@@ -30,9 +30,9 @@ foam.CLASS({
       name: 'level'
     },
     {
-      name: 'nSpec',
+      name: 'cSpec',
       class: 'FObjectProperty',
-      type: 'foam.nanos.boot.NSpec'
+      type: 'foam.core.boot.CSpec'
     },
     {
       name: 'classType',
@@ -81,15 +81,15 @@ foam.CLASS({
   ],
 
   javaCode: `
-    public PipelinePMDAO(X x, NSpec nspec, DAO delegate, int level) {
+    public PipelinePMDAO(X x, CSpec nspec, DAO delegate, int level) {
       setX(x);
-      setNSpec(nspec);
+      setCSpec(nspec);
       setLevel(level);
       setDelegate(delegate);
       init_();
      }
 
-     public static DAO decorate(X x, NSpec nspec, DAO dao, int level) {
+     public static DAO decorate(X x, CSpec nspec, DAO dao, int level) {
        if ( dao instanceof PipelinePMDAO  ) return dao;
        if ( dao instanceof ProxyDAO ) {
          ProxyDAO proxy = (ProxyDAO) dao;
@@ -108,7 +108,7 @@ foam.CLASS({
       args: [ {name: 'name', type: 'String '} ],
       javaType: 'String',
       javaCode: `
-        String spec = ( getNSpec() == null ) ? "NOSPEC" : getNSpec().getName();
+        String spec = ( getCSpec() == null ) ? "NOSPEC" : getCSpec().getName();
         return spec + "." + name + "(" + String.format("%03d", getLevel()) + ")" + " " + getDelegate().getClass().getSimpleName();
       `
     },
@@ -254,14 +254,14 @@ If the delegate of that is also a ProxyDAO, creates a new PipelinePMDAO in the c
       extends: 'foam.dao.ProxyDAO',
 
       requires: [
-        'foam.nanos.pm.PM'
+        'foam.core.pm.PM'
       ],
 
       javaImports: [
-        'foam.core.X',
+        'foam.lang.X',
         'foam.mlang.order.Comparator',
         'foam.mlang.predicate.Predicate',
-        'foam.nanos.pm.PM'
+        'foam.core.pm.PM'
       ],
 
       javaCode: `

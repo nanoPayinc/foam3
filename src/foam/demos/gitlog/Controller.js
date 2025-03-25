@@ -208,7 +208,7 @@ foam.CLASS({
             // Per-Month Details
             forEach(authorCounts[a[0]], function(c, i) {
               var salary = 0;
-              try { salary = salaries[a[0]][i]; } catch (x) {}
+              try { salary = salaries[a[0]][i]; } catch (x) { console.log('***** Missing Salary for',  a[0]); }
               total       += c;
               allTotal    += allAuthorCounts[a[0]][i];
               salaryTotal += salary;
@@ -443,6 +443,7 @@ foam.CLASS({
       'Moorthy Rathinasamy': 'Moorthy Rathinasamy',
       'moorthy': 'Moorthy Rathinasamy',
       'Moorthy': 'Moorthy Rathinasamy',
+      'Mykola': 'Mykola Kolombet',
       'Mykola Kolombet': 'Mykola Kolombet',
       'Mykola97': 'Mykola Kolombet',
       'nanoArtur': 'Artur Linnik',
@@ -514,19 +515,19 @@ foam.CLASS({
         paths: [ 'tools', 'build', 'foam.js', 'xsd', 'src/foam/xsd' ]
       },
       {
-        name: 'NANOS',
+        name: 'CORE',
 //        name: 'Hybrid-Blockchain',
         keywords: [ 'saf', 'storeandforward', 'replay', 'crypt', 'medusa', 'socket', 'compact' ],
         paths: [ 'medusa', 'cluster', 'sf', 'nanopay/tx', 'nanopay/fx' ]
       },
       {
-        name: 'NANOS',
+        name: 'CORE',
         keywords: [ 'memento', 'graphbuilder', 'wizardlet' ],
         paths: [ 'analytic', 'foam/graph', 'foam/foobar', 'doc/templates', 'DocBrowser', 'foam/doc', 'Outputter' ]
       },
       {
 //        name: 'Core',
-        name: 'NANOS',
+        name: 'CORE',
         keywords: [ 'fscript' ],
         paths: [ ]
       },
@@ -541,33 +542,33 @@ foam.CLASS({
         paths: [ 'u2', 'xsd', 'comics', 'foamdev', 'demo', 'layout', 'google/flow', 'phonecat' ]
       },
       {
-        name: 'NANOS',
+        name: 'CORE',
 //        name: 'Hybrid-Blockchain',
         keywords: [ 'medusa', 'dao', 'json', 'mlang', 'docker' ],
         paths: [ 'medusa', 'dao', 'box', 'foam/net', 'mlang', 'formatter', 'json', 'Linked', 'util', 'SMF', 'docker', 'Docker', 'iso20022' ]
       },
       {
 //        name: 'Core',
-        name: 'NANOS',
+        name: 'CORE',
         keywords: [ ],
         paths: [ 'core', 'pattern' ]
       },
       {
-        name: 'NANOS',
+        name: 'CORE',
 //        name: 'Hybrid-Blockchain',
         keywords: [ 'pm', 'performance', 'bench' ],
         paths: [ 'pm', 'concurrent' ]
       },
       {
 //        name: 'CRUNCH',
-        name: 'NANOS',
+        name: 'CORE',
         keywords: [ 'crunch', 'capab' ],
         paths: [ 'crunch' ]
       },
       {
-        name: 'NANOS',
-        keywords: [ 'nanos' ],
-        paths: [ 'nanos', 'dashboard', 'parse', 'Email', 'foam/java', 'src/cronjobs', 'src/regions', 'src/services', 'doc/guides' ]
+        name: 'CORE',
+        keywords: [ 'core' ],
+        paths: [ 'core', 'dashboard', 'parse', 'Email', 'foam/java', 'src/cronjobs', 'src/regions', 'src/services', 'doc/guides' ]
       },
       {
         name: 'Test',
@@ -739,7 +740,7 @@ var commits = this.commits.filter(c => this.match(c, this.query, this.author, '/
             var subject = c.subjectLC = c.subject.toLowerCase();
             this.PROJECT_RULES.forEach(r => {
               if ( c.project ) return;
-              if ( r.name === 'NANOS' || r.name === 'Hybrid-Blockchain' || r.name === "FOOBAR" || r.name === "U2/U3" ) r.name = 'SR&ED';
+              if ( r.name === 'CORE' || r.name === 'Hybrid-Blockchain' || r.name === "FOOBAR" || r.name === "U2/U3" ) r.name = 'SR&ED';
               for ( var i = 0 ; i < r.keywords.length ; i++ ) {
                 var keyword = r.keywords[i];
                 if ( subject.indexOf(keyword) != -1 ) {
@@ -779,7 +780,8 @@ var commits = this.commits.filter(c => this.match(c, this.query, this.author, '/
     function init() {
       this.SUPER();
       // TODO: make this configurable
-      this.loadYear(2023);
+//      this.loadYear(2023);
+      this.loadYear(2024);
     },
 
     function loadYear(year) {

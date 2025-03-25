@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.mlang',
   name: 'ContextObject',
   extends: 'foam.mlang.AbstractExpr',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   documentation: 'An Expression that returns object in the context using key.',
 
@@ -38,8 +38,8 @@ foam.CLASS({
     return o;
   }
 
-  public foam.core.FObject fclone() { return this; }
-  public foam.core.FObject shallowClone() { return this; }
+  public foam.lang.FObject fclone() { return this; }
+  public foam.lang.FObject shallowClone() { return this; }
 
 /*
   // Can't be private because ContextObjects are currently created in journals
@@ -66,7 +66,7 @@ foam.CLASS({
         return o[this.key];
       },
       javaCode: `
-        return ((foam.core.X) obj).get(getKey());
+        return ((foam.lang.X) obj).get(getKey());
       `
     }
   ]

@@ -18,7 +18,7 @@ foam.CLASS({
     {
       name: 'pm',
       class: 'FObjectProperty',
-      of: 'foam.nanos.pm.PM'
+      of: 'foam.core.pm.PM'
     }
   ]
 });

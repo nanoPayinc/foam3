@@ -10,7 +10,7 @@ foam.CLASS({
   extends: 'foam.dao.AbstractSink',
 
   implements: [
-    'foam.core.Serializable'
+    'foam.lang.Serializable'
   ],
 
   documentation: 'An Abstract Sink baseclass which takes only one argument.',
@@ -18,7 +18,8 @@ foam.CLASS({
   properties: [
     {
       class: 'foam.mlang.ExprProperty',
-      name: 'arg1'
+      name: 'arg1',
+      hidden: true
     }
   ],
 
@@ -26,6 +27,7 @@ foam.CLASS({
     function toString() {
       return foam.String.constantize(this.cls_.name) +
           '(' + this.arg1.toString() + ')';
-    }
+    },
+    function toString() { return this.name + '(' + this.arg1 + ')'; },
   ]
 });

@@ -1,0 +1,39 @@
+/**
+ * @license
+ * Copyright 2018 The FOAM Authors. All Rights Reserved.
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+foam.CLASS({
+  package: 'foam.core.auth',
+  name: 'ClientLoginAuthService',
+
+  implements: [
+    'foam.core.auth.AuthService'
+  ],
+
+  documentation: 'ClientAuthService which uses custom AuthServiceClientBox as delegate',
+
+  requires: [
+    'foam.box.AuthServiceClientBox',
+    'foam.box.HTTPBox'
+  ],
+
+  properties: [
+    {
+      class: 'String',
+      name: 'serviceName'
+    },
+    {
+      class: 'Stub',
+      name: 'delegate',
+      of: 'foam.core.auth.AuthService',
+      factory: function() {
+        return this.AuthServiceClientBox.create({ delegate: this.HTTPBox.create({
+          method: 'POST',
+          url: this.serviceName
+        })});
+      }
+    }
+  ]
+});

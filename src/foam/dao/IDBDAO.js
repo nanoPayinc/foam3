@@ -278,7 +278,7 @@ foam.CLASS({
       var resultSink = sink || this.ArraySink.create();
       sink = this.decorateSink_(resultSink, skip, limit, order, predicate);
 
-      var sub      = foam.core.FObject.create();
+      var sub      = foam.lang.FObject.create();
       var detached = false;
       sub.onDetach(function() { detached = true; });
 

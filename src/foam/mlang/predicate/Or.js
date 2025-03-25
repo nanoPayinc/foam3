@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.mlang.predicate',
   name: 'Or',
   extends: 'foam.mlang.predicate.Nary',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   documentation: 'Logical Or n-ary Predicate.',
 

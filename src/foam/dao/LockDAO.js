@@ -15,14 +15,14 @@ foam.CLASS({
   `,
 
   requires: [
-    'foam.core.Lock'
+    'foam.lang.Lock'
   ],
 
   properties: [
     {
       name: 'lock',
       class: 'FObjectProperty',
-      of: 'foam.core.Lock',
+      of: 'foam.lang.Lock',
       factory: function () {
         return this.Lock.create();
       }

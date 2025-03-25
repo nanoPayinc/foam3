@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.mlang.predicate',
   name: 'Lt',
   extends: 'foam.mlang.predicate.Binary',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   documentation: 'Binary Predicate returns true iff arg1 is LESS THAN arg2.',
 

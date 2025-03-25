@@ -80,7 +80,7 @@ foam.CLASS({
       this
         .addClass(this.myClass()).enableClass('hidden', this.isHidden$)
         .start()
-          .style({ width: foam.core.Int.isInstance(this.size) ? this.size+'px' : this.size })
+          .style({ width: foam.lang.Int.isInstance(this.size) ? this.size+'px' : this.size })
           .start('svg')
             .attrs({ width: '100%', viewBox: '0 0 24 24', 'transform-origin': 'center', preserveAspectRatio: 'xMidYMid meet',
                     fill: this.color$

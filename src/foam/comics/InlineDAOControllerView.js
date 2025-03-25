@@ -51,7 +51,7 @@ foam.CLASS({
         }).
         start('span').
           show(this.mode$.map(function(m) { return m == foam.u2.DisplayMode.RW; })).
-          add(this.cls.getAxiomsByClass(foam.core.Action)).
+          add(this.cls.getAxiomsByClass(foam.lang.Action)).
         end();
     },
     function click(obj, id) {

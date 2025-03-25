@@ -12,9 +12,9 @@ foam.CLASS({
   documentation: 'ModeAlt Address View, suitable for almost all address property displays',
 
   requires: [
-    'foam.nanos.auth.Country',
+    'foam.core.auth.Country',
     'foam.u2.address.AddressWriteView',
-    'foam.nanos.auth.Address',
+    'foam.core.auth.Address',
     'foam.u2.DisplayMode'
   ],
 
@@ -34,7 +34,7 @@ foam.CLASS({
     },
     {
       class: 'FObjectProperty',
-      of: 'foam.nanos.auth.Address',
+      of: 'foam.core.auth.Address',
       name: 'data',
       factory: function() {
         return this.Address.create({}, this);
@@ -75,7 +75,7 @@ foam.CLASS({
               countrySelectionVisibility$: self.countrySelectionVisibility$
             })
           case self.DisplayMode.RO:
-            return this.E().startContext({data: self.data$ }).tag((self.data ?? foam.nanos.auth.Address).SUMMARY.__).endContext();
+            return this.E().startContext({data: self.data$ }).tag((self.data ?? foam.core.auth.Address).SUMMARY.__).endContext();
           case self.DisplayMode.HIDDEN:
             break;
           default:

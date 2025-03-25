@@ -1,0 +1,7 @@
+p({
+  "class":"foam.core.alarming.AlarmConfig",
+  "name":"Email template config",
+  "severity":1,
+  "monitorType":2,
+  "sendEmail":false
+})

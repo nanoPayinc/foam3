@@ -1,0 +1,14 @@
+p({
+  "class":"foam.core.menu.Menu",
+  "id":"cm",
+  "label":"CM - Computed Measures",
+  keywords: ["analytic", "cm", "compute", "measure"],
+  "handler":{
+  "class":"foam.core.menu.DAOMenu2",
+    "config":{
+      "class":"foam.comics.v2.DAOControllerConfig",
+      "daoKey":"cmDAO"
+    }
+  },
+  "parent":"analytics"
+})

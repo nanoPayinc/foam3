@@ -6,13 +6,13 @@
 
 package foam.box.socket;
 
-import foam.core.X;
-import foam.core.FObject;
+import foam.lang.X;
+import foam.lang.FObject;
 import foam.box.Box;
 import foam.box.Message;
 import foam.box.SessionServerBox;
-import foam.nanos.logger.Logger;
-import foam.nanos.http.ServiceWebAgent;
+import foam.core.logger.Logger;
+import foam.core.http.ServiceWebAgent;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;

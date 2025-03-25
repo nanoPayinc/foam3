@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'StringView',
   extends: 'foam.u2.view.ModeAltView',
 
-  documentation: 'A view for foam.core.String properties.',
+  documentation: 'A view for foam.lang.String properties.',
 
   requires: [
     'foam.u2.TextField',

@@ -7,11 +7,11 @@
 foam.CLASS({
   package: 'foam.mlang',
   name: 'DOTMQLTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
 
   javaImports: [
     'foam.comics.v2.userfeedback.UserFeedback',
-    'foam.nanos.auth.User',
+    'foam.core.auth.User',
     'static foam.mlang.MLang.MQL'
   ],
 

@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.u2.crunch.wizardflow',
   name: 'MaybeDAOPutAgent',
   implements: [
-    'foam.core.ContextAgent'
+    'foam.lang.ContextAgent'
   ],
   documentation: `
     Perform a DAO put when Capable wizards are complete to complete the flow

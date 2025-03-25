@@ -19,7 +19,7 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.core.Latch',
+    'foam.lang.Latch',
     'foam.dao.MDAO',
     'foam.i18n.Locale'
   ],

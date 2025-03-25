@@ -7,14 +7,14 @@
 foam.CLASS({
   package: 'foam.parse.test',
   name: 'QueryParserUserTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
   
   javaImports: [
   'foam.lib.parse.PStream',
   'foam.lib.parse.ParserContext',
   'foam.lib.parse.ParserContextImpl',
   'foam.lib.parse.StringPStream',
-  'foam.nanos.auth.User',
+  'foam.core.auth.User',
   'foam.mlang.predicate.Nary',
   'foam.mlang.predicate.Predicate',
   'foam.parse.*',
@@ -136,7 +136,7 @@ foam.CLASS({
       type: 'Boolean',
       args: [
         { name: 'query',type: 'String' },
-        { name: 'user',type: 'foam.nanos.auth.User' }
+        { name: 'user',type: 'foam.core.auth.User' }
       ],
       javaCode: `
         Predicate predicate = buildPredicate(query);

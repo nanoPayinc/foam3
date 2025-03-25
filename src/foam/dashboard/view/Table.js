@@ -10,7 +10,7 @@ foam.CLASS({
   extends: 'foam.u2.Element',
 
   requires: [
-    'foam.core.Model',
+    'foam.lang.Model',
     'foam.dao.ArrayDAO',
     'foam.dashboard.view.DashboardCitationView'
   ],

@@ -6,7 +6,7 @@
 package foam.lib.json;
 
 import foam.lib.parse.*;
-import foam.core.X;
+import foam.lang.X;
 
 /**
  * Attempt to parse with regular FObjectParser, but on parse failure,

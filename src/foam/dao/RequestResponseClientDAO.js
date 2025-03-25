@@ -21,7 +21,7 @@ foam.CLASS({
   extends: 'foam.dao.BaseClientDAO',
 
   requires: [
-    'foam.core.Serializable'
+    'foam.lang.Serializable'
   ],
 
   documentation: `A ClientDAO implementation which publishes its own events upon put/remove.
@@ -63,7 +63,7 @@ Suitable for usage against backends that don't support listen(), such as plain H
 
           if ( ! sink ) return result;
 
-          var sub = foam.core.FObject.create();
+          var sub = foam.lang.FObject.create();
           var detached = false;
           sub.onDetach(function() { detached = true; });
 
@@ -110,7 +110,7 @@ Suitable for usage against backends that don't support listen(), such as plain H
           this.on.reset.pub();
           return true;
         }
-//        ctrl.__subContext__.nSpecDAO.select(ns => { if ( ns.name.indexOf('DAO') == -1 ) return; try { var count = ctrl.__subContext__[ns.name].cmd(foam.dao.DAO.COUNT_LISTENERS_CMD); if ( count ) console.log(ns.name, count); } catch(x) {}});
+//        ctrl.__subContext__.cSpecDAO.select(ns => { if ( ns.name.indexOf('DAO') == -1 ) return; try { var count = ctrl.__subContext__[ns.name].cmd(foam.dao.DAO.COUNT_LISTENERS_CMD); if ( count ) console.log(ns.name, count); } catch(x) {}});
         if ( foam.dao.DAO.COUNT_LISTENERS_CMD === obj ) {
           // pub() returns the number of listeners
           return this.on.pub('ping');

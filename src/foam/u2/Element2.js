@@ -41,7 +41,7 @@ PORTING U2 to U3:
   - remove entity() support
   - remove addBefore()
   - remove insertAt_()
-  - remove insertBefore()
+  - remove insertBefore() (put back)
   - remove insertAfter()
   - remove slotE_()
   - remove initTooltip
@@ -156,21 +156,21 @@ foam.CLASS({
         var update_ = val => {
           var n;
 
-          if ( foam.core.Slot.isInstance(val) ) { console.warn('Unexpected Slot in update.'); }
-
           if ( val === undefined || val === null ) {
             n = foam.u2.Text.create({}, this);
           } else if ( this.isLiteral(val) ) {
-            n = foam.u2.Text.create({text: val}, this);
+            n = foam.u2.Text.create({text: '' + val}, this);
           } else if ( foam.u2.Element.isInstance(val) ) {
             n = val;
           } else if ( foam.Array.isInstance(val) ) {
             n = foam.u2.Element.create({nodeName:'span'}, this);
             n.add.apply(n, val);
+          } else if ( foam.lang.Slot.isInstance(val) ) {
+            n = this.cls_.create({ slot: val });
           } else if ( val.then ) {
             val.then(n => update_(n));
             return;
-          } /* else if ( foam.core.FObject.isInstance(val) ) {
+          } /* else if ( foam.lang.FObject.isInstance(val) ) {
             n = foam.u2.DetailView.create({data: val}, this);
           } */ else if ( val.toE ) {
             n = val.toE({}, this);
@@ -205,7 +205,9 @@ foam.CLASS({
   // element which would interfere in some circumstances (ie. table/tr, selection/option).
 
   properties: [
-    'fn', // a foam.core.DynamicFunction
+    'fn', // a foam.lang.DynamicFunction
+    'before',
+    'after',
     {
       name: 'element_',
       factory: function() { return this.document.createComment('dynamic'); }
@@ -224,6 +226,7 @@ foam.CLASS({
 
       // Before rendering, remove all children between dynamic and /dynamic
       this.fn.pre = () => {
+        this.before?.call?.(this);
         var endElement_ = this.endElement_;
 
         for ( var i = 0 ; i < this.childNodes.length ; i++ ) {
@@ -241,6 +244,11 @@ foam.CLASS({
 
         return this;
       };
+
+      this.fn.post = () => {
+        this.after?.call?.(this);
+      };
+
       this.onDetach(this.fn);
     },
 
@@ -259,16 +267,11 @@ foam.CLASS({
   extends: 'foam.u2.FunctionNode',
   implements: [ 'foam.dao.Sink' ],
 
-  axioms: [
-    {
-      class: 'foam.box.Remote',
-      clientClass: 'foam.dao.ClientSink'
-    }
-  ],
-
   properties: [
     'dao',
     'code',
+    'before',
+    'after',
     {
       class: 'Int',
       name: 'batch',
@@ -281,6 +284,7 @@ foam.CLASS({
     {
       name: 'fn',
       factory: function() {
+        var self = this;
         return this.dynamic(function(data_) {
           data_.forEach(d => {
             this.startContext({ data: d });
@@ -362,7 +366,7 @@ foam.CLASS({
   name: 'Element',
   extends: 'foam.u2.Node',
 
-  mixins: [ 'foam.core.Fluent' ],
+  mixins: [ 'foam.lang.Fluent' ],
 
   documentation: `
     DOM API Element. Root model for all U3 UI components.
@@ -384,7 +388,7 @@ foam.CLASS({
 `,
 
   requires: [
-    'foam.core.PromiseSlot',
+    'foam.lang.PromiseSlot',
     'foam.dao.MergedResetSink',
     'foam.u2.AttrSlot',
     'foam.u2.Entity',
@@ -436,21 +440,17 @@ foam.CLASS({
       factory: function() { return foam.u2.DefaultValidator.create(); }
     },
     {
-      documentation: `Keys which respond to keydown but not keypress`,
-      name: 'KEYPRESS_CODES',
-      value: { 8: true, 13: true, 27: true, 33: true, 34: true, 37: true, 38: true, 39: true, 40: true }
-    },
-    {
       name: 'NAMED_CODES',
       value: {
         '8':   'backspace',
         '13':  'enter',
-        '27':  'esc',
-        '37':  'left',
-        '38':  'up',
-        '39':  'right',
-        '40':  'down',
-        '127': 'del'
+        '27':  'escape',
+        '37':  'arrowleft',
+        '38':  'arrowup',
+        '39':  'arrowright',
+        '40':  'arrowdown',
+        '112': 'f1',
+        '127': 'delete'
       }
     }
   ],
@@ -502,6 +502,9 @@ foam.CLASS({
       }
     },
     {
+      name: 'extraStyle'
+    },
+    {
       name: 'parentNode',
       transient: true,
       postSet: function(o, n) { n.onDetach(this); }
@@ -540,7 +543,7 @@ foam.CLASS({
       class: 'String',
       name: 'namespace',
       factory: function() {
-        return this.__context__['namespace'] || this.nodeName === 'svg' ? 'http://www.w3.org/2000/svg' : '';
+        return this.__context__['namespace'] || (this.nodeName === 'svg' ? 'http://www.w3.org/2000/svg' : '');
       }
     },
     {
@@ -556,11 +559,6 @@ foam.CLASS({
     {
       name: 'childNodes',
       documentation: 'Children of this Element.',
-      factory: function() { return []; }
-    },
-    {
-      name: 'elListeners',
-      documentation: 'DOM listeners of this Element. Stored as topic then listener.',
       factory: function() { return []; }
     },
     {
@@ -659,6 +657,9 @@ foam.CLASS({
     },
 
     function render() {
+      // TODO: maybe a better approach would be to add a customizer() function which
+      // could call style() or anything else? KGR
+      if ( this.extraStyle ) this.style(this.extraStyle);
     },
 
     async function observeScrollHeight() {
@@ -677,15 +678,15 @@ foam.CLASS({
     },
 
     function evtToCharCode(evt) {
+      if ( ! evt.key ) return '';
+
       /* Maps an event keycode to a string */
       var s = '';
       if ( evt.altKey   ) s += 'alt-';
       if ( evt.ctrlKey  ) s += 'ctrl-';
       if ( evt.shiftKey && evt.type === 'keydown' ) s += 'shift-';
       if ( evt.metaKey  ) s += 'meta-';
-      s += evt.type === 'keydown' ?
-          this.NAMED_CODES[evt.which] || String.fromCharCode(evt.which) :
-          String.fromCharCode(evt.charCode);
+      s += evt.key.toLowerCase() || this.NAMED_CODES[evt.keyCode];
       return s;
     },
 
@@ -696,7 +697,7 @@ foam.CLASS({
         var count = 0;
         keyMap = {};
 
-        var as = cls.getAxiomsByClass(foam.core.Action);
+        var as = cls.getAxiomsByClass(foam.lang.Action);
 
         for ( var i = 0 ; i < as.length ; i++ ) {
           var a = as[i];
@@ -844,7 +845,7 @@ foam.CLASS({
     function show(opt_shown) {
       if ( opt_shown === undefined ) {
         this.shown = true;
-      } else if ( foam.core.Slot.isInstance(opt_shown) ) {
+      } else if ( foam.lang.Slot.isInstance(opt_shown) ) {
         this.onDetach(this.shown$.follow(opt_shown));
       } else {
         this.shown = opt_shown;
@@ -856,7 +857,7 @@ foam.CLASS({
     function hide(opt_hidden) {
       return this.show(
         opt_hidden === undefined              ? false :
-        foam.core.Slot.isInstance(opt_hidden) ? opt_hidden.map(function(s) { return ! s; }) :
+        foam.lang.Slot.isInstance(opt_hidden) ? opt_hidden.map(function(s) { return ! s; }) :
         ! opt_hidden);
     },
 
@@ -886,13 +887,13 @@ foam.CLASS({
       var prop = this.cls_.getAxiomByName(name);
 
       if ( prop &&
-           foam.core.Property.isInstance(prop) &&
+           foam.lang.Property.isInstance(prop) &&
            prop.attribute )
       {
         if ( typeof value === 'string' ) {
           // TODO: remove check when all properties have fromString()
           this[name] = prop.fromString ? prop.fromString(value) : value;
-        } else if ( foam.core.Slot.isInstance(value) ) {
+        } else if ( foam.lang.Slot.isInstance(value) ) {
           this.onDetach(this.slot(name).follow(value));
         } else {
           this[name] = value;
@@ -903,7 +904,7 @@ foam.CLASS({
           return this;
         }
 
-        if ( foam.core.Slot.isInstance(value) ) {
+        if ( foam.lang.Slot.isInstance(value) ) {
           this.slotAttr_(name, value);
         } else {
           foam.assert(foam.util.isPrimitive(value), 'Attribute value must be a primitive type.');
@@ -975,7 +976,6 @@ foam.CLASS({
         if ( cs[i] === oldE ) {
           cs[i] = newE;
           newE.parentNode = this;
-          debugger;
           oldE.element_.parentNode.replaceChild(oldE.element_, newE.element_);
 //          oldE.element_.outerHTML = '<' + this.nodeName + '></' + this.nodeName + '>';
           newE.load && newE.load();
@@ -985,23 +985,12 @@ foam.CLASS({
       }
     },
 
-    function addEventListener(topic, listener, opt_args) {
-      /* Add DOM listener. */
-      this.elListeners.push(topic, listener, opt_args);
-      this.addEventListener_(topic, listener, opt_args);
+    function addEventListener(topic, listener, opt_options) {
+      this.element_.addEventListener(topic, listener, opt_options || false);
     },
 
     function removeEventListener(topic, listener) {
-      /* Remove DOM listener. */
-      var ls = this.elListeners;
-      for ( var i = 0 ; i < ls.length ; i += 3 ) {
-        var t = ls[i], l = ls[i+1];
-        if ( t === topic && l === listener ) {
-          ls.splice(i, 3);
-          this.element_.removeEventListener(topic, listener);
-          return;
-        }
-      }
+      this.element_.removeEventListener(topic, listener);
     },
 
     function setID(id) {
@@ -1016,7 +1005,7 @@ foam.CLASS({
 
     function addClass(cls) { /* ...( Slot | String ) */
       if ( arguments.length > 1 ) {
-        for ( let i = 0; i < arguments.length; i++ ) {
+        for ( let i = 0 ; i < arguments.length ; i++ ) {
           this.addClass(arguments[i]);
         }
         return this;
@@ -1025,7 +1014,7 @@ foam.CLASS({
       var self = this;
       if ( cls === undefined ) {
         this.addClass_(null, this.myClass());
-      } else if ( foam.core.Slot.isInstance(cls) ) {
+      } else if ( foam.lang.Slot.isInstance(cls) ) {
         var lastValue = null;
         var l = function() {
           var v = cls.get();
@@ -1055,7 +1044,7 @@ foam.CLASS({
       function negate(a, b) { return b ? ! a : a; }
 
       // TODO: add type checking
-      if ( foam.core.Slot.isInstance(enabled) ) {
+      if ( foam.lang.Slot.isInstance(enabled) ) {
         var self = this;
         var value = enabled;
         var l = function() { self.enableClass(cls, value.get(), opt_negate); };
@@ -1113,7 +1102,7 @@ foam.CLASS({
       */
       for ( var key in map ) {
         var value = map[key];
-        if ( foam.core.Slot.isInstance(value) ) {
+        if ( foam.lang.Slot.isInstance(value) ) {
           this.slotStyle_(key, value);
         } else {
           this.style_(key, value);
@@ -1173,7 +1162,7 @@ foam.CLASS({
       if ( translationService ) {
         /* Add the translation of the supplied source to the Element as a String */
         let xmsgObj, translation;
-        if ( foam.core.Slot.isInstance(source) ) {
+        if ( foam.lang.Slot.isInstance(source) ) {
           translation = source.map(v => this.translationService.getTranslation(foam.locale, v, opt_default ||v))
           xmsgObj = {source$: source, data$: translation };
         } else {
@@ -1214,10 +1203,14 @@ foam.CLASS({
           this.addChild_(c[i], parentNode);
         return;
       }
+      if ( c.addToE ) {
+        c.addToE(this);
+        return;
+      }
       if ( c.toE ) {
         c = c.toE(null, this.__subSubContext__);
       }
-      if ( foam.core.DynamicFunction.isInstance(c) ) {
+      if ( foam.lang.DynamicFunction.isInstance(c) ) {
         this.addChild_(foam.u2.FunctionNode.create({fn: c, parentNode: this}, this), this);
         return;
       }
@@ -1225,7 +1218,7 @@ foam.CLASS({
         this.addChild_((this.__subContext__.data || this).dynamic(c), parentNode);
         return;
       }
-      if ( foam.core.Slot.isInstance(c) ) {
+      if ( foam.lang.Slot.isInstance(c) ) {
         c = foam.u2.SlotNode.create({slot: c}, this);
       }
         /*
@@ -1251,7 +1244,7 @@ foam.CLASS({
         c.parentNode = parentNode;
         this.appendChild_(c.element_);
         c.load && c.load();
-      } else if ( foam.core.FObject.isInstance(c) ) {
+      } else if ( foam.lang.FObject.isInstance(c) ) {
         this.addChild_(this);
         this.addChild_(foam.u2.DetailView.create({data: c}, this), this);
       }
@@ -1271,7 +1264,7 @@ foam.CLASS({
           // nop
         } else if ( c.toE ) {
           var e = c.toE(null, Y);
-          if ( foam.core.Slot.isInstance(e) ) {
+          if ( foam.lang.Slot.isInstance(e) ) {
             var v = this.slotE_(c);
             if ( Array.isArray(v) ) {
               for ( var j = 0 ; j < v.length ; j++ ) {
@@ -1319,15 +1312,6 @@ foam.CLASS({
       return this;
     },
 
-    // function addBefore(reference) { /*, vargs */
-    //   /* Add a variable number of children before the reference element. */
-    //   var children = [];
-    //   for ( var i = 1 ; i < arguments.length ; i++ ) {
-    //     children.push(arguments[i]);
-    //   }
-    //   return this.insertAt_(children, reference, true);
-    // },
-
     function setChildren(slot) {
       this.removeAllChildren();
       this.add(slot);
@@ -1370,10 +1354,12 @@ foam.CLASS({
      * @param {Boolean} update True if you'd like changes to each record to be put to
      * the DAO
      */
-    function select(dao, f, update) {
+    function select(dao, f, before, after) {
       this.add(foam.u2.DAOSelectNode.create({
         dao:  dao,
-        code: f
+        code: f,
+        before,
+        after,
       }, this));
       return this;
     },
@@ -1388,38 +1374,18 @@ foam.CLASS({
       return this.cls_.id + '(id=' + this.id + ', nodeName=' + this.nodeName + ')';
     },
 
-    // function insertAt_(children, reference, before) {
-    //   // (Element[], Element, Boolean)
-    //
-    //   var i = this.childNodes.indexOf(reference);
-    //
-    //   if ( i === -1 ) {
-    //     this.__context__.warn("Reference node isn't a child of this.");
-    //     return this;
-    //   }
-    //
-    //   if ( ! Array.isArray(children) ) children = [ children ];
-    //
-    //   var Y = this.__subSubContext__;
-    //   children = children.map(e => {
-    //     e = e.toE ? e.toE(null, Y) : e;
-    //     e.parentNode = this;
-    //     return e;
-    //   });
-    //
-    //   var index = before ? i : (i + 1);
-    //   this.childNodes.splice.apply(this.childNodes, [index, 0].concat(children));
-    //
-    //   /*
-    //   this.state.onInsertChildren.call(
-    //     this,
-    //     children,
-    //     reference,
-    //     before ? 'beforebegin' : 'afterend');
-    //     */
-    //
-    //   return this;
-    // },
+    function insertBefore(e, reference) {
+      /* Add a single element before another reference element. */
+      var i = this.childNodes.indexOf(reference);
+      if ( i == -1 ) return this;
+      e = e.toE ? e.toE(null, this.__subSubContext__) : e;
+      e.parentNode = this;
+      this.childNodes.splice(i, 0, e);
+      this.element_.insertBefore(e.element_, reference.element_);
+      e?.load();
+
+      return this;
+    },
 
     function addClass_(oldClass, newClass) {
       /* Replace oldClass with newClass. Called by cls(). */
@@ -1456,15 +1422,6 @@ foam.CLASS({
       this.css[key] = value;
       this.element_.style[key] = value;
       return this;
-    },
-
-    function addEventListener_(topic, listener, opt_args) {
-      this.element_.addEventListener(topic, listener, opt_args || false);
-    },
-
-    function removeEventListener_(topic, listener) {
-      var el = this.el_();
-      el && el.removeEventListener(topic, listener);
     }
   ],
 
@@ -1477,7 +1434,6 @@ foam.CLASS({
           to your $$DOC{ref:'foam.ui.View'}.
       `,
       code: function(evt) {
-        if ( evt.type === 'keydown' && ! this.KEYPRESS_CODES[evt.which] ) return;
         var action = this.keyMap_[this.evtToCharCode(evt)];
         if ( action ) {
           action();
@@ -1493,7 +1449,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'FObjectToERefinement',
-  refines: 'foam.core.FObject',
+  refines: 'foam.lang.FObject',
   methods: [
     function toE(args, X) {
       return foam.u2.ViewSpec.createView(
@@ -1507,7 +1463,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'PropertyViewRefinements',
-  refines: 'foam.core.Property',
+  refines: 'foam.lang.Property',
 
   requires: [
     'foam.u2.TextField'
@@ -1576,7 +1532,7 @@ foam.CLASS({
       name: 'onKey'
     },
     {
-      // Experimental Code to make it easier to add underlying Property View
+      // Makes it easier to add underlying Property View
       // Without wrapping in a PropertyBorder
       name: '__',
       transient: true,
@@ -1623,7 +1579,7 @@ foam.CLASS({
 
       const DisplayMode = foam.u2.DisplayMode;
 
-      return foam.core.ProxySlot.create({
+      return foam.lang.ProxySlot.create({
         delegate$: controllerMode$.map(controllerMode => {
           var visibility = controllerMode.getVisibilityValue(this);
 
@@ -1633,10 +1589,10 @@ foam.CLASS({
             visibility = foam.u2.DisplayMode[visibility];
 
           if ( DisplayMode.isInstance(visibility) )
-            return foam.core.ConstantSlot.create({value: visibility});
+            return foam.lang.ConstantSlot.create({value: visibility});
 
           if ( foam.Function.isInstance(visibility) ) {
-            var slot = foam.core.ExpressionSlot.create({
+            var slot = foam.lang.ExpressionSlot.create({
               obj$: data$,
               // Disallow RW DisplayMode when in View Controller Mode
               code: visibility
@@ -1652,7 +1608,7 @@ foam.CLASS({
             return slot;
           }
 
-          if ( foam.core.Slot.isInstance(visibility) ) return visibility;
+          if ( foam.lang.Slot.isInstance(visibility) ) return visibility;
 
           throw new Error('Property.visibility must be set to one of the following: (1) a value of DisplayMode, (2) a function that returns a value of DisplayMode, or (3) a slot whose value is a value of DisplayMode. Property ' + this.name + ' was set to ' + visibility + ' instead.');
         })
@@ -1695,7 +1651,7 @@ foam.CLASS({
           });
       });
 
-      return foam.core.ArraySlot.create({slots: [vis, perm]}).map((arr) => {
+      return foam.lang.ArraySlot.create({slots: [vis, perm]}).map((arr) => {
         // The || HIDDEN is required because slot.map() above which returns
         // a promise will generate an intermediate null value.
         return arr[0].restrictDisplayMode(arr[1] || DisplayMode.HIDDEN)
@@ -1708,7 +1664,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'StringDisplayWidthRefinement',
-  refines: 'foam.core.String',
+  refines: 'foam.lang.String',
   requires: [ 'foam.u2.view.StringView' ],
   properties: [
     {
@@ -1724,7 +1680,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'FormattedStringViewRefinement',
-  refines: 'foam.core.FormattedString',
+  refines: 'foam.lang.FormattedString',
   requires: [ 'foam.u2.FormattedTextField' ],
   properties: [
     {
@@ -1744,7 +1700,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'ArrayViewRefinement',
-  refines: 'foam.core.Array',
+  refines: 'foam.lang.Array',
   requires: [ 'foam.u2.view.ArrayView' ],
   properties: [
     [ 'view', { class: 'foam.u2.view.ArrayView' } ]
@@ -1754,7 +1710,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'PhoneNumberViewRefinement',
-  refines: 'foam.core.PhoneNumber',
+  refines: 'foam.lang.PhoneNumber',
   requires: [ 'foam.u2.view.StringView' ],
   properties: [
     {
@@ -1771,7 +1727,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'StringArrayViewRefinement',
-  refines: 'foam.core.StringArray',
+  refines: 'foam.lang.StringArray',
   requires: [ 'foam.u2.view.StringArrayView' ],
   properties: [
     [ 'view', { class: 'foam.u2.view.StringArrayView' } ]
@@ -1782,7 +1738,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'DateViewRefinement',
-  refines: 'foam.core.Date',
+  refines: 'foam.lang.Date',
   requires: [ 'foam.u2.view.DateView' ],
   properties: [
     [ 'view', { class: 'foam.u2.view.DateView' } ]
@@ -1793,7 +1749,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'DateTimeViewRefinement',
-  refines: 'foam.core.DateTime',
+  refines: 'foam.lang.DateTime',
   requires: [ 'foam.u2.view.DateTimeView' ],
   properties: [
     [ 'view', { class: 'foam.u2.view.DateTimeView' } ]
@@ -1804,7 +1760,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'TimeViewRefinement',
-  refines: 'foam.core.Time',
+  refines: 'foam.lang.Time',
   requires: [ 'foam.u2.view.TimeView' ],
   properties: [
     [ 'view', { class: 'foam.u2.view.TimeView' } ]
@@ -1815,7 +1771,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'FloatViewRefinement',
-  refines: 'foam.core.Float',
+  refines: 'foam.lang.Float',
   requires: [ 'foam.u2.view.FloatView' ],
   properties: [
     [ 'displayWidth', 12 ],
@@ -1827,7 +1783,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'IntViewRefinement',
-  refines: 'foam.core.Int',
+  refines: 'foam.lang.Int',
   requires: [ 'foam.u2.view.IntView' ],
   properties: [
     [ 'displayWidth', 10 ],
@@ -1839,7 +1795,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'UnitValueViewRefinement',
-  refines: 'foam.core.UnitValue',
+  refines: 'foam.lang.UnitValue',
   requires: [ 'foam.u2.view.CurrencyView' ],
   properties: [
     [ 'displayWidth', 15 ],
@@ -1851,7 +1807,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'BooleanViewRefinement',
-  refines: 'foam.core.Boolean',
+  refines: 'foam.lang.Boolean',
   requires: [ 'foam.u2.CheckBox' ],
   properties: [
     {
@@ -1874,7 +1830,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'ColorViewRefinement',
-  refines: 'foam.core.Color',
+  refines: 'foam.lang.Color',
 
   requires: [
     'foam.u2.MultiView',
@@ -1907,7 +1863,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'FObjectPropertyViewRefinement',
-  refines: 'foam.core.FObjectProperty',
+  refines: 'foam.lang.FObjectProperty',
 
   requires: [ 'foam.u2.view.FObjectPropertyView' ],
 
@@ -1936,7 +1892,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'FObjectArrayViewRefinement',
-  refines: 'foam.core.FObjectArray',
+  refines: 'foam.lang.FObjectArray',
 
   properties: [
     {
@@ -1955,7 +1911,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'MapViewRefinement',
-  refines: 'foam.core.Map',
+  refines: 'foam.lang.Map',
 
   properties: [
     {
@@ -1969,7 +1925,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'ClassViewRefinement',
-  refines: 'foam.core.Class',
+  refines: 'foam.lang.Class',
 
   properties: [
     [ 'view', { class: 'foam.u2.ClassView' } ]
@@ -1980,7 +1936,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'ReferenceViewRefinement',
-  refines: 'foam.core.Reference',
+  refines: 'foam.lang.Reference',
 
   requires: [ 'foam.u2.view.ReferencePropertyView' ],
 
@@ -1993,7 +1949,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'EnumViewRefinement',
-  refines: 'foam.core.Enum',
+  refines: 'foam.lang.Enum',
 
   requires: [ 'foam.u2.view.EnumView' ],
 
@@ -2007,7 +1963,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'ObjectViewRefinement',
-  refines: 'foam.core.Object',
+  refines: 'foam.lang.Object',
 
   requires: [ 'foam.u2.view.AnyView' ],
 
@@ -2020,7 +1976,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'CodeViewRefinement',
-  refines: 'foam.core.Code',
+  refines: 'foam.lang.Code',
 
   requires: [ 'foam.u2.view.CodeView' ],
 
@@ -2033,7 +1989,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'DurationViewRefinement',
-  refines: 'foam.core.Duration',
+  refines: 'foam.lang.Duration',
 
   requires: [
     'foam.u2.view.IntView',
@@ -2103,7 +2059,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'PasswordPropertyRefinement',
-  refines: 'foam.core.Password',
+  refines: 'foam.lang.Password',
 
   requires: [
     'foam.u2.view.PasswordView'
@@ -2220,7 +2176,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'ActionViewRefinement',
-  refines: 'foam.core.Action',
+  refines: 'foam.lang.Action',
 
   requires: [
     'foam.u2.ActionView'
@@ -2278,12 +2234,14 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'ModelU2Refinements',
-  refines: 'foam.core.Model',
+  refines: 'foam.lang.Model',
 
   properties: [
     {
       class: 'String',
       name: 'css',
+      label: 'CSS',
+      view: { class: 'foam.u2.tag.TextArea', rows: 20, cols: 80 },
       postSet: function(_, code) {
         var css = foam.u2.CSS.create({code: code});
         css.name = css.name + '-' + this.id;
@@ -2293,6 +2251,7 @@ foam.CLASS({
     {
       class: 'Boolean',
       name: 'inheritCSS',
+      hidden: true,
       value: true
     },
     {

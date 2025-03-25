@@ -6,10 +6,10 @@
 
 package foam.util.concurrent;
 
-import foam.core.Agency;
-import foam.core.ContextAgent;
-import foam.core.X;
-import foam.nanos.pm.PM;
+import foam.lang.Agency;
+import foam.lang.ContextAgent;
+import foam.lang.X;
+import foam.core.pm.PM;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -82,7 +82,7 @@ public class AsyncAssemblyLine
           try {
             job.endJob(isLast);
           } catch (Throwable t) {
-            ((foam.nanos.logger.Logger) x.get("logger")).error(this.getClass().getSimpleName(), agencyName_, t);
+            ((foam.core.logger.Logger) x.get("logger")).error(this.getClass().getSimpleName(), agencyName_, t);
           } finally {
             pm.log(x_);
           }

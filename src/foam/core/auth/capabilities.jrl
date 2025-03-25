@@ -1,0 +1,12 @@
+p({"class":"foam.core.auth.ServiceProvider","id":"*","description":"Spid for use on global rules."})
+p({
+  class:"foam.core.auth.ServiceProvider",
+  id:"foam",
+  name: "FOAM",
+  description: "Default FOAM spid",
+  enabled: true,
+  anonymousUser: 95250647,
+  permissionsGranted: [
+    "language.read.en-"
+  ]
+})

@@ -44,7 +44,7 @@ foam.CLASS({
 
     function outputJava(o) {
       o.indent();
-      o.out('private static final foam.core.ClassInfo classInfo_ = new foam.core.ClassInfoImpl()\n')
+      o.out('private static final foam.lang.ClassInfo classInfo_ = new foam.lang.ClassInfoImpl()\n')
       o.increaseIndent();
       o.indent();
       o.out('.setId("', this.id, '")');

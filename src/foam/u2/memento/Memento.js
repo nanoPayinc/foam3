@@ -73,7 +73,7 @@ foam.CLASS({
       documentation: 'The properties of "obj" that have the Property.memorable: true.',
       expression: function(obj) {
         return obj ?
-          this.obj.cls_.getAxiomsByClass(foam.core.Property).filter(p => p.memorable) :
+          this.obj.cls_.getAxiomsByClass(foam.lang.Property).filter(p => p.memorable) :
           [] ;
       }
     },
@@ -360,7 +360,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.memento',
   name: 'MemorablePropertyRefinement',
-  refines: 'foam.core.Property',
+  refines: 'foam.lang.Property',
 
   documentation: 'Add "memorable" Property to Property.',
 

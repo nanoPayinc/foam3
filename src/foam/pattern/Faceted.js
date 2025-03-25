@@ -71,7 +71,7 @@ foam.CLASS({
 
       cls.getFacetOf = function(of, X) {
         if ( ! of ) return this;
-        X = foam.core.FObject.isInstance(X) ? X.__context__ : X || foam.__context__;
+        X = foam.lang.FObject.isInstance(X) ? X.__context__ : X || foam.__context__;
 
         var name;
         var pkg;
@@ -94,7 +94,7 @@ foam.CLASS({
         if ( axiom.inherit && facet === this ) {
           const ofCls = foam.String.isInstance(of) ? X.maybeLookup(of) : of;
           if ( ! ofCls || ! ofCls.model_.extends ) return facet;
-          if ( ofCls == foam.core.FObject ) return facet;
+          if ( ofCls == foam.lang.FObject ) return facet;
           return this.getFacetOf(X.maybeLookup(ofCls.model_.extends)) || facet;
         }
         return facet;

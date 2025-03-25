@@ -40,8 +40,10 @@ foam.CLASS({
   package: 'foam.demos.olympics',
   name: 'Medal',
 
+  tableColumns: [ 'year', 'color', 'city', 'country', 'discipline', 'sport', 'event', 'gender', 'firstName', 'lastName' ],
+
   properties: [
-    { name: 'id', hidden: true },
+    { class: 'Int', name: 'id' },
     { class: 'Int', name: 'year', shortName: 'y' },
     {
       class: 'Enum',
@@ -49,6 +51,7 @@ foam.CLASS({
       name: 'color',
       shortName: 'c',
       aliases: [ 'colour', 'medal' ],
+      colorMap: { GOLD: 'gold', SILVER: 'silver', BRONZE: 'brown' },
       tableCellView: function(medal, e) {
         return e.E('span').addClass(medal.color.label).add(medal.color.label);
       },
@@ -63,17 +66,20 @@ foam.CLASS({
         }
       }
     },
-    { name: 'city', shortName: 'cy' },
-    { name: 'country', shortName: 'cn' },
-    { name: 'discipline', shortName: 'd', hidden: true },
-    { name: 'sport', shortName: 's' },
-    { name: 'event', shortName: 'e' },
-    { name: 'eventGender', shortName: 'eg', value: 'M', hidden: true },
+    { class: 'String', name: 'city',        shortName: 'cy' },
+    { class: 'String', name: 'country',     shortName: 'cn' },
+    { class: 'String', name: 'discipline',  shortName: 'd' },
+    { class: 'String', name: 'sport',       shortName: 's' },
+    { class: 'String', name: 'event',       shortName: 'e' },
+    { class: 'String', name: 'eventGender', shortName: 'eg', value: 'M', hidden: true },
     {
+      class: 'String',
       name: 'gender',
       shortName: 'g',
       aliases: [ 'sex' ],
       value: 'Men',
+      view: { class: 'foam.u2.view.ChoiceView', choices: [ 'Men', 'Women' ] },
+      colorMap: { Men: 'lightskyblue', Women: 'pink' },
       searchView: {
         class: 'foam.u2.search.GroupBySearchView',
         viewSpec: {
@@ -85,7 +91,13 @@ foam.CLASS({
         }
       }
     },
-    { name: 'firstName', shortName: 'f', aliases: [ 'fname', 'fn', 'first' ] },
-    { name: 'lastName', shortName: 'l', aliases: [ 'lname', 'ln', 'last' ] }
+    { class: 'String', name: 'firstName', shortName: 'f', aliases: [ 'fname', 'fn', 'first' ] },
+    { class: 'String', name: 'lastName',  shortName: 'l', aliases: [ 'lname', 'ln', 'last' ] },
+    { class: 'String', name: 'name',      shortName: 'n',
+      transient: true,
+      showInPropertyChoice: true,
+      expression: function(firstName, lastName) { return firstName + ' ' + lastName; },
+      javaGetter: 'return getFirstName() + " " + getLastName();'
+    },
   ]
 });

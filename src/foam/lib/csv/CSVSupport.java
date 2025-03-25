@@ -9,15 +9,15 @@ package foam.lib.csv;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import foam.core.ClassInfo;
-import foam.core.PropertyInfo;
-import foam.core.FObject;
+import foam.lang.ClassInfo;
+import foam.lang.PropertyInfo;
+import foam.lang.FObject;
 import foam.lib.parse.*;
 import foam.dao.Sink;
 
 
 public class CSVSupport
-  extends foam.core.ContextAwareSupport
+  extends foam.lang.ContextAwareSupport
 {
   protected Parser headParser = new Repeat(new CSVStringParser(), Literal.create(","));
 

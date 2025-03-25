@@ -10,8 +10,8 @@
   extends: 'foam.u2.View',
 
   requires: [
-    'foam.nanos.fs.fileDropZone.FileDropZone',
-    'foam.nanos.fs.fileDropZone.FilePreview'
+    'foam.core.fs.fileDropZone.FileDropZone',
+    'foam.core.fs.fileDropZone.FilePreview'
   ],
 
   css: `
@@ -32,7 +32,7 @@
 
   methods: [
     function render() {
-      let selectSlot = foam.core.SimpleSlot.create({ value: 0 });
+      let selectSlot = foam.lang.SimpleSlot.create({ value: 0 });
       this.SUPER();
       this
         .addClass(this.myClass())

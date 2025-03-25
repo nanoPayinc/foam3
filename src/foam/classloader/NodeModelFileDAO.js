@@ -36,7 +36,7 @@ foam.CLASS({
       var model;
 
       foam.CLASS = function(m) {
-        var cls = m.class ? foam.lookup(m.class) : foam.core.Model;
+        var cls = m.class ? foam.lookup(m.class) : foam.lang.Model;
         model = cls.create(m, self);
         foam.CLASS = foamCLASS;
       }

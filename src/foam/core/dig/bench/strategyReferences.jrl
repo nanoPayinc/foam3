@@ -1,0 +1,12 @@
+p({
+  "class": "foam.strategy.StrategyReference",
+  "id": "foam.core.dig.bench.DIGBenchmark",
+  "desiredModelId": "foam.core.bench.Benchmark",
+  "strategy": "foam.core.dig.bench.DIGBenchmark"
+})
+p({
+  "class": "foam.strategy.StrategyReference",
+  "id": "foam.core.dig.bench.DistributedDIGBenchmarkRunner",
+  "desiredModelId": "foam.core.bench.BenchmarkRunner",
+  "strategy": "foam.core.dig.bench.DistributedDIGBenchmarkRunner",
+})

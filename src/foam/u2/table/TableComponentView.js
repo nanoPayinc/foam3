@@ -10,9 +10,9 @@ foam.CLASS({
   extends: 'foam.u2.View',
 
   requires: [
-    'foam.nanos.column.ColumnConfigToPropertyConverter',
-    'foam.nanos.column.CommonColumnHandler',
-    'foam.nanos.column.ExpressionForArrayOfNestedPropertiesBuilder'
+    'foam.core.column.ColumnConfigToPropertyConverter',
+    'foam.core.column.CommonColumnHandler',
+    'foam.core.column.ExpressionForArrayOfNestedPropertiesBuilder'
   ],
 
   imports: ['columnConfigToPropertyConverter? as importedColumnConfigConverter'],
@@ -21,16 +21,16 @@ foam.CLASS({
     {
       name: 'columnHandler',
       class: 'FObjectProperty',
-      of: 'foam.nanos.column.CommonColumnHandler',
+      of: 'foam.core.column.CommonColumnHandler',
       factory: function() {
-        return foam.nanos.column.CommonColumnHandler.create({}, this);
+        return foam.core.column.CommonColumnHandler.create({}, this);
       }
     },
     {
       name: 'columnConfigToPropertyConverter',
       factory: function() {
         if ( ! this.importedColumnConfigConverter )
-          return foam.nanos.column.ColumnConfigToPropertyConverter.create();
+          return foam.core.column.ColumnConfigToPropertyConverter.create();
         return this.importedColumnConfigConverter;
       }
     },
@@ -59,7 +59,7 @@ foam.CLASS({
       return columns.filter( c => obj.allColumns.includes( obj.columnHandler.checkIfArrayAndReturnFirstLevelColumnName(c) ));
     },
     function returnPropertiesForColumns(obj, columns_) {
-      var propertyNamesToQuery = columns_.length === 0 ? columns_ : [ 'id' ].concat(obj.filterColumnsThatAllColumnsDoesNotIncludeForArrayOfColumns(obj, columns_).filter(c => ! foam.core.Action.isInstance(obj.of.getAxiomByName(obj.columnHandler.propertyNamesForColumnArray(c)))).map(c => obj.columnHandler.propertyNamesForColumnArray(c)));
+      var propertyNamesToQuery = columns_.length === 0 ? columns_ : [ 'id' ].concat(obj.filterColumnsThatAllColumnsDoesNotIncludeForArrayOfColumns(obj, columns_).filter(c => ! foam.lang.Action.isInstance(obj.of.getAxiomByName(obj.columnHandler.propertyNamesForColumnArray(c)))).map(c => obj.columnHandler.propertyNamesForColumnArray(c)));
       return obj.columnConfigToPropertyConverter.returnPropertyColumnMappings(obj.of, propertyNamesToQuery);
     },
     function shouldColumnBeSorted(c) {

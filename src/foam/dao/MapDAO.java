@@ -6,7 +6,7 @@
 
 package foam.dao;
 
-import foam.core.*;
+import foam.lang.*;
 import foam.mlang.order.Comparator;
 import foam.mlang.predicate.Predicate;
 import java.util.*;

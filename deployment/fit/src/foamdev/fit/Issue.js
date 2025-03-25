@@ -9,10 +9,10 @@ foam.CLASS({
   name: 'Issue',
 
   mixins: [
-    'foam.nanos.auth.CreatedAware',
-    'foam.nanos.auth.CreatedByAware',
-    'foam.nanos.auth.LastModifiedAware',
-    'foam.nanos.auth.LastModifiedByAware'
+    'foam.core.auth.CreatedAware',
+    'foam.core.auth.CreatedByAware',
+    'foam.core.auth.LastModifiedAware',
+    'foam.core.auth.LastModifiedByAware'
   ],
 
   tableColumns: [ 'id', 'summary', 'owner', 'state', 'starred', 'lastModified' ],
@@ -100,7 +100,7 @@ foam.CLASS({
     {
       type: 'Reference',
       name: 'owner',
-      of: 'foam.nanos.auth.User',
+      of: 'foam.core.auth.User',
       targetDAOKey: 'userDAO',
       subType: 'IssuePerson',
       help: 'Person to whom this issue is currently assigned.',

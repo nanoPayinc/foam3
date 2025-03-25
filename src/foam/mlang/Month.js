@@ -14,7 +14,7 @@ foam.CLASS({
                     new Month(-1) returns the first day of the previous month`,
 
   implements: [
-    'foam.core.Serializable'
+    'foam.lang.Serializable'
   ],
 
   javaImports:[

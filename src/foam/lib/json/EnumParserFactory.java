@@ -6,8 +6,8 @@
 
 package foam.lib.json;
 
-import foam.core.ClassInfo;
-import foam.core.PropertyInfo;
+import foam.lang.ClassInfo;
+import foam.lang.PropertyInfo;
 import foam.lib.parse.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;

@@ -1,18 +1,18 @@
 p({
-  "class": "foam.nanos.boot.NSpec",
+  "class": "foam.core.boot.CSpec",
   "name": "timeZoneDAO",
   "description": "A DAO which contains information about timezones in countries.",
   "serve": true,
   "serviceScript": """
     dao = new foam.dao.EasyDAO.Builder(x)
       .setPm(true)
-      .setAuthorizer(new foam.nanos.auth.GlobalReadAuthorizer("timezone"))
+      .setAuthorizer(new foam.core.auth.GlobalReadAuthorizer("timezone"))
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("timezones")
       .setOf(foam.time.TimeZone.getOwnClassInfo())
       .build()
-      .addPropertyIndex(new foam.core.PropertyInfo[] { foam.time.TimeZone.DISPLAY_NAME })
-      .addPropertyIndex(new foam.core.PropertyInfo[] { foam.time.TimeZone.COUNTRY_ID });
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.time.TimeZone.DISPLAY_NAME })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.time.TimeZone.COUNTRY_ID });
 
     return dao;
   """,

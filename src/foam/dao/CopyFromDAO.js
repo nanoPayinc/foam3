@@ -16,15 +16,15 @@ foam.CLASS({
   requires: [ 'foam.dao.ArraySink' ],
 
   javaImports: [
-    'foam.core.FObject',
-    'foam.core.PropertyInfo',
-    'foam.core.X',
+    'foam.lang.FObject',
+    'foam.lang.PropertyInfo',
+    'foam.lang.X',
     'foam.dao.*',
     'foam.mlang.order.Desc',
     'foam.mlang.order.ThenBy',
     'foam.mlang.predicate.Predicate',
     'foam.mlang.sink.Count',
-    'static foam.core.ContextAware.maybeContextualize'
+    'static foam.lang.ContextAware.maybeContextualize'
   ],
 
   classes: [

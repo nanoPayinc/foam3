@@ -18,7 +18,7 @@
   ],
 
   requires: [
-    'foam.nanos.crunch.CapabilityJunctionStatus'
+    'foam.core.crunch.CapabilityJunctionStatus'
   ],
 
   methods: [

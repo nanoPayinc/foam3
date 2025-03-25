@@ -10,8 +10,8 @@ foam.CLASS({
   extends: 'foam.dao.F3FileJournal',
 
   javaImports: [
-    'foam.core.ClassInfo',
-    'foam.core.FObject',
+    'foam.lang.ClassInfo',
+    'foam.lang.FObject',
     'foam.lib.formatter.JSONFObjectFormatter',
     'foam.util.concurrent.AbstractAssembly',
     'foam.util.SafetyUtil'
@@ -27,7 +27,7 @@ foam.CLASS({
     {
       name: 'put',
       type: 'FObject',
-      args: [ 'Context x', 'String prefix', 'DAO dao', 'foam.core.FObject obj' ],
+      args: [ 'Context x', 'String prefix', 'DAO dao', 'foam.lang.FObject obj' ],
       javaCode: `
         final Object                 id  = obj.getProperty("id");
         final ClassInfo              of  = dao.getOf();

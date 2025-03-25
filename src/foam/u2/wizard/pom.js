@@ -136,6 +136,7 @@ foam.POM({
     { name: "wao/CompositeWAO",                        flags: "web" },
     { name: "wao/ArrayFromPrerequisiteWAO",            flags: "web" },
     { name: "wao/AlternateFlowWAO",                    flags: "web" },
+    { name: "wao/NoLoadWAO",                           flags: "web" },
     { name: "wizardlet/Wizardlet",                     flags: "js|java" },
     { name: "wizardlet/BaseWizardlet",                 flags: "js|java" },
     { name: "wizardlet/ValidationFeedbackWizardlet",   flags: "js|java" },

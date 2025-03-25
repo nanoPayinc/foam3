@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'ConstantSwiftRefinement',
-  refines: 'foam.core.Constant',
+  refines: 'foam.lang.Constant',
   flags: ['swift'],
   requires: [
     'foam.swift.Field',

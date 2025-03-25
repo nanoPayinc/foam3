@@ -28,8 +28,8 @@ foam.CLASS({
 
   requires: [
     'foam.log.LogLevel',
-    'foam.nanos.crunch.AgentCapabilityJunction',
-    'foam.nanos.crunch.UserCapabilityJunction',
+    'foam.core.crunch.AgentCapabilityJunction',
+    'foam.core.crunch.UserCapabilityJunction',
     'foam.u2.crunch.wizardflow.CapabilityAdaptAgent',
     'foam.u2.crunch.wizardflow.CheckRootIdAgent',
     'foam.u2.crunch.wizardflow.GrantedEditAgent',
@@ -107,7 +107,7 @@ foam.CLASS({
       class: 'Boolean',
       name: 'debugMode',
       factory: function () {
-        // return this.ctrl.appConfig.mode == foam.nanos.app.Mode.DEVELOPMENT;
+        // return this.ctrl.appConfig.mode == foam.core.app.Mode.DEVELOPMENT;
         return false;
       }
     },
@@ -217,7 +217,7 @@ foam.CLASS({
         new BaseCapable object that will be discarded at the end of the sequence.
       `,
       code: function createTransientWizardSequence(x) {
-        const capable = foam.nanos.crunch.lite.BaseCapable.create();
+        const capable = foam.core.crunch.lite.BaseCapable.create();
         x = x || this.__subContext__;
         x = x.createSubContext({ capable });
         return this.createWizardSequence('no-capability-id', x)
@@ -291,7 +291,7 @@ foam.CLASS({
 
     // TODO: remove this during NP-8927
     function createUCJInlineWizardSequence (x) {
-      const capable = foam.nanos.crunch.lite.BaseCapable.create();
+      const capable = foam.core.crunch.lite.BaseCapable.create();
       x = x || this.__subContext__;
       x = x.createSubContext({ capable });
 
@@ -398,12 +398,23 @@ foam.CLASS({
         return false;
       }
       for ( const capable of intercept.capables ) {
-        for ( let i = 0; i < capable.capabilityIds.length; i++ ) {
+        let ignoreCapas = [];
+        for ( let i = 0; i < capable.capablePayloads?.length; i++ ) {
+          let payload = capable.capablePayloads[i];
+          // if payload already in a final state, skip
+          if ( payload?.status == 'GRANTED' ||
+            payload?.status == 'PENDING' ||
+            payload?.status == 'REJECTED' ) {
+            ignoreCapas.push(payload.capability);
+          }
+        }
+        let remainingCapas = capable.capabilityIds.filter(el => ! ignoreCapas.includes(el))
+        for ( let i = 0; i < remainingCapas.length; i++ ) {
           // for capable intercepts with multiple capability ids
           // only do put on last wizardlet
-          var doPut = i == capable.capabilityIds.length - 1;
+          var doPut = i == remainingCapas.length - 1;
           await this.doInlineIntercept(
-            wizardController, capable, capable.capabilityIds[i], intercept,
+            wizardController, capable, remainingCapas[i], intercept,
             { put: doPut }
           );
         }
@@ -435,7 +446,7 @@ foam.CLASS({
       opt_sequenceExtras
     ) {
       if ( ! capable ) {
-        capable = foam.nanos.crunch.lite.BaseCapable.create();
+        capable = foam.core.crunch.lite.BaseCapable.create();
       }
 
       let x = ( opt_x || wizardController.__subContext__ ).createSubContext({
@@ -458,7 +469,7 @@ foam.CLASS({
       if ( flags.put )  {
         options.onLastWizardletSaved = async x => {
           const targetDAO = x[opt_intercept.daoKey];
-          await targetDAO.put(capable);
+          let a = await targetDAO.put(capable);
         }
       }
 

@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'Eq',
   extends: 'foam.mlang.predicate.Binary',
 
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   documentation: 'Binary Predicate returns true iff arg1 EQUALS arg2.',
 

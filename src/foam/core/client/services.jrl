@@ -1,0 +1,20 @@
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"clientBuilderService",
+  "serve":true,
+  "authenticate": false,
+  "boxClass":"foam.core.client.ClientBuilderServiceSkeleton",
+  "serviceClass":"foam.core.client.BaseClientBuilderService",
+  "client":"""
+    {
+      "class": "foam.core.client.ClientClientBuilderService",
+      "delegate": {
+        "class": "foam.box.SessionClientBox",
+        "delegate": {
+          "class": "foam.box.HTTPBox",
+          "url": "service/clientBuilderService"
+        }
+      }
+    }
+  """
+})

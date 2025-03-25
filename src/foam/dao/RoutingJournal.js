@@ -117,7 +117,7 @@ while ( ! getReplayed() ) {
               line = line.trim().substring(2, length - 1);
 
               DAO newDAO = (foam.dao.DAO) x.get(service);
-              foam.core.FObject obj = parser.parseString(line);
+              foam.lang.FObject obj = parser.parseString(line);
               if ( obj == null ) {
                 getLogger().error("Parse error", getParsingErrorMessage(line), "line:", line);
                 continue;
@@ -125,7 +125,7 @@ while ( ! getReplayed() ) {
 
               switch (operation) {
                 case 'p':
-                  foam.core.FObject old = newDAO.inX(x).find(obj.getProperty("id"));
+                  foam.lang.FObject old = newDAO.inX(x).find(obj.getProperty("id"));
                   newDAO.inX(x).put(old != null ? mergeFObject(old, obj) : obj);
                   break;
 

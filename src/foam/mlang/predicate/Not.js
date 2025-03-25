@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.mlang.predicate',
   name: 'Not',
   extends: 'foam.mlang.predicate.AbstractPredicate',
-  implements: [ 'foam.core.Serializable', { path: 'foam.mlang.Expressions', flags: ['js'], java: false } ],
+  implements: [ 'foam.lang.Serializable', { path: 'foam.mlang.Expressions', flags: ['js'], java: false } ],
 
   documentation: 'Unary Predicate which negates the value of its argument.',
 

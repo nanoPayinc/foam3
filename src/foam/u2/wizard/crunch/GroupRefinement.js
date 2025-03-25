@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.wizard.crunch',
   name: 'GroupRefinement',
-  refines: 'foam.nanos.auth.Group',
+  refines: 'foam.core.auth.Group',
 
   properties: [
     {

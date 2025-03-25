@@ -13,25 +13,25 @@ foam.CLASS({
 NOTE: If MQL caching and context issues are fixed on the java side, this DAO can be replaced by FileredDAO setPredicate(MQLExpr("property:me"))`,
 
   javaImports: [
-    'foam.core.X',
-    'foam.nanos.auth.Subject',
-    'foam.nanos.auth.User',
+    'foam.lang.X',
+    'foam.core.auth.Subject',
+    'foam.core.auth.User',
     'static foam.mlang.MLang.EQ',
     'static foam.mlang.MLang.FALSE',
     'foam.mlang.predicate.Predicate',
-    'foam.nanos.logger.Logger'
+    'foam.core.logger.Logger'
   ],
 
   properties: [
     {
       class: 'Object',
-      of: 'foam.core.PropertyInfo',
+      of: 'foam.lang.PropertyInfo',
       name: 'propertyInfo'
     },
   ],
 
   javaCode: `
-  public FilteredBySubjectDAO(X x, foam.core.PropertyInfo pInfo, DAO delegate) {
+  public FilteredBySubjectDAO(X x, foam.lang.PropertyInfo pInfo, DAO delegate) {
     super(x, delegate);
     setPropertyInfo(pInfo);
   }
@@ -60,7 +60,7 @@ NOTE: If MQL caching and context issues are fixed on the java side, this DAO can
     },
     {
       name: 'find_',
-      javaCode: `foam.core.FObject ret = getDelegate().find_(x, id);
+      javaCode: `foam.lang.FObject ret = getDelegate().find_(x, id);
 if ( ret != null && buildPredicate(x).f(ret) ) return ret;
 return null;`
     },

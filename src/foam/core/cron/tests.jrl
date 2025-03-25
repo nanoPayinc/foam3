@@ -1,0 +1,4 @@
+p({"class":"foam.core.cron.test.CronScheduleTest","id":"CronScheduleTest"})
+p({"class":"foam.core.cron.test.IntervalScheduleTest","id":"IntervalScheduleTest"})
+p({"class":"foam.core.cron.test.TimeOfDayScheduleTest","id":"TimeOfDayScheduleTest"})
+p({"class":"foam.core.cron.test.OrScheduleTest","id":"OrScheduleTest"})

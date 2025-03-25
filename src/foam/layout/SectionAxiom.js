@@ -72,7 +72,7 @@ foam.CLASS({
   methods: [
     function createIsAvailableFor(data$, controllerMode$) {
       var self = this;
-      var slot = foam.core.ProxyExpressionSlot.create({
+      var slot = foam.lang.ProxyExpressionSlot.create({
         obj$: data$,
         code: this.isAvailable
       });
@@ -80,7 +80,7 @@ foam.CLASS({
 
       // Conditionally, add permission check, (permSlot)
       if ( this.permissionRequired ) {
-        var permSlot = foam.core.SimpleSlot.create({value: false});
+        var permSlot = foam.lang.SimpleSlot.create({value: false});
         var update = function() {
           var data = data$.get();
           if ( data && data.__subContext__.auth ) {
@@ -113,16 +113,16 @@ foam.CLASS({
           }
         });
       } else {
-        props = data.cls_.getAxiomsByClass(foam.core.Property)
+        props = data.cls_.getAxiomsByClass(foam.lang.Property)
           .filter(p => p.section === this.name);
       }
-      var propVisSlot = foam.core.ArraySlot.create({
+      var propVisSlot = foam.lang.ArraySlot.create({
         slots: props.map(
           p => p.createVisibilityFor(data$,
             controllerMode$ ||
             data.__subContext__.controllerMode$ ||
             (data.__subContext__.ctrl && data.__subContext__.ctrl.controllerMode$) ||
-            foam.core.ConstantSlot.create({value: foam.u2.ControllerMode.CREATE})
+            foam.lang.ConstantSlot.create({value: foam.u2.ControllerMode.CREATE})
           )
         )
       }).map(arr => arr.some(m => {
@@ -136,11 +136,11 @@ foam.CLASS({
           return data.cls_.getAxiomByName(a);
         });
       } else {
-        actions = data.cls_.getAxiomsByClass(foam.core.Action)
+        actions = data.cls_.getAxiomsByClass(foam.lang.Action)
           .filter(a => a.section === this.name);
       }
 
-      var actionAvailSlot = foam.core.ArraySlot.create({
+      var actionAvailSlot = foam.lang.ArraySlot.create({
         slots: actions.map(
           a => a.createIsAvailable$(data.__subContext__, data)
         )
@@ -148,7 +148,7 @@ foam.CLASS({
         return isAvailable;
       }));
 
-      var atLeastOnePropertyOrActionAvailableSlot = foam.core.ArraySlot.create({
+      var atLeastOnePropertyOrActionAvailableSlot = foam.lang.ArraySlot.create({
         slots: [
           propVisSlot,
           actionAvailSlot
@@ -159,8 +159,8 @@ foam.CLASS({
 
       availabilitySlots.push(atLeastOnePropertyOrActionAvailableSlot);
 
-      var simpleSlot = foam.core.SimpleSlot.create();
-      var arrSlot = foam.core.ArraySlot.create({slots: availabilitySlots}).map(arr => {
+      var simpleSlot = foam.lang.SimpleSlot.create();
+      var arrSlot = foam.lang.ArraySlot.create({slots: availabilitySlots}).map(arr => {
         var ret =  arr.every(b => b);
         if ( ret != simpleSlot.get() ) simpleSlot.set(ret); 
         return ret;
@@ -180,7 +180,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.layout',
   name: 'PropertySectionRefine',
-  refines: 'foam.core.Property',
+  refines: 'foam.lang.Property',
 
   properties: [
     {
@@ -195,7 +195,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.layout',
   name: 'ActionSectionRefine',
-  refines: 'foam.core.Action',
+  refines: 'foam.lang.Action',
 
   properties: [
     {
@@ -209,7 +209,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.layout',
   name: 'ModelSectionRefine',
-  refines: 'foam.core.Model',
+  refines: 'foam.lang.Model',
 
   properties: [
     {

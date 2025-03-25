@@ -16,7 +16,7 @@ foam.CLASS({
     },
     {
       class: 'FObjectArray',
-      of: 'foam.core.FObject',
+      of: 'foam.lang.FObject',
       name: 'loaders_',
       transient: true,
       postSet: function(_, n) {

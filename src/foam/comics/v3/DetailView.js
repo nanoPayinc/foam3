@@ -57,15 +57,15 @@ foam.CLASS({
   classes: [
     {
       name: 'Stack',
-      extends: 'foam.nanos.u2.navigation.Stack',
+      extends: 'foam.core.u2.navigation.Stack',
       imports: ['detailView'],
       methods: [
         function push(v, p) {
           let ctx;
           if ( foam.u2.stack.StackBlock.isInstance(v) && v.parent) {
-            ctx = foam.core.FObject.isInstance(v.parent) ? v.parent.__subContext__: v.parent;
+            ctx = foam.lang.FObject.isInstance(v.parent) ? v.parent.__subContext__: v.parent;
           } else {
-            ctx = (foam.core.FObject.isInstance(p) ? p.__subContext__: p) ?? v.__subContext__;
+            ctx = (foam.lang.FObject.isInstance(p) ? p.__subContext__: p) ?? v.__subContext__;
           }
           if ( this.detailView && this.detailView.stack.pos == this.detailView.__subContext__.stackPos ) {
             console.warn('***** Pushing inside detail view. Audit and maybe remove');
@@ -143,9 +143,10 @@ foam.CLASS({
         return this.data ? this.data.id : null;
       },
       adapt: function(_, id) {
-        if (id && foam.core.MultiPartID.isInstance(this.config.of.ID)) {
+        if ( id && foam.lang.MultiPartID.isInstance(this.config.of.ID) ) {
           id = this.config.of.ID.of.FROM_STRING(id, this.config.of.ID);
         }
+
         return id;
       }
     },
@@ -195,6 +196,7 @@ foam.CLASS({
         }
       });
     },
+
     function render() {
       var self = this;
       this.stack?.setTitle(this.viewTitle$, this);
@@ -203,8 +205,8 @@ foam.CLASS({
       this.onDetach(this.dynamic(function(currentData_, actionsOverrides){
         d?.detach?.();
         d = self.stack.setTrailingContainer(
-          this.E().style({ display: 'contents' }).start(foam.u2.ButtonGroup, { 
-              // overrides: { size: 'SMALL' }, 
+          this.E().style({ display: 'contents' }).start(foam.u2.ButtonGroup, {
+              // overrides: { size: 'SMALL' },
               overlaySpec: { obj: self, icon: '/images/Icon_More_Resting.svg', showDropdownIcon: false  }
             }, this.buttonGroup_$)
             .addClass(this.myClass('buttonGroup'))
@@ -232,18 +234,18 @@ foam.CLASS({
       }))
       this.dynamic(function(route, data) {
         if ( ! data ) return;
-        /* 
+        /*
           Only handle routing if detailView is currently visible as otherwise route changes
           are probably caused by sub views
         */
         if ( route && this.stack.pos == this.__subContext__.stackPos ) {
           let axiom = self.data[foam.String.constantize(route)];
-          if ( foam.core.Action.isInstance(axiom) ) {
+          if ( foam.lang.Action.isInstance(axiom) ) {
             axiom.maybeCall(self.__subContext__.createSubContext({ action: axiom }), self.data);
             return;
           }
           // PropertyBorder handles routing so dont clear that as it hasn't been rendered yet
-          if ( ! foam.core.Property.isInstance(axiom) ) {
+          if ( ! foam.lang.Property.isInstance(axiom) ) {
             // Otherwise just clear route for now
             self.routeToMe();
           }
@@ -259,7 +261,7 @@ foam.CLASS({
         .end();
     }
   ],
-  
+
   listeners: [
     {
       name: 'getActionsOverrides',
@@ -284,11 +286,12 @@ foam.CLASS({
         this.actionsOverrides = actionsOverrides;
       }
     },
+
     async function populatePrimaryAction() {
       if ( ! this.currentData_ ) return;
       let data = this.currentData_;
       var self = this;
-      var allActions = this.of.getAxiomsByClass(foam.core.Action).filter(v => ! foam.comics.v3.ComicsAction.isInstance(v));
+      var allActions = this.of.getAxiomsByClass(foam.lang.Action).filter(v => ! foam.comics.v3.ComicsAction.isInstance(v));
       var defaultAction = allActions.filter((a) => a.isDefault);
       var acArray = [...defaultAction, ...allActions];
       this.actionArray = allActions;
@@ -302,7 +305,7 @@ foam.CLASS({
             b = aSlot.get();
           }
           if (b) { res = a; break; }
-        }  
+        }
         this.primary = res;
         this.actionArray = this.actionArray.filter(v => v !== res);
       }
@@ -321,12 +324,12 @@ foam.CLASS({
       delay: 100,
       code: function() {
         let self = this;
-        let id = this.data?.id ?? this.idOfRecord;
+        let id   = this.data?.id ?? this.idOfRecord;
         self.config.unfilteredDAO.inX(self.__subContext__).find(id).then(d => {
           if ( ! d ) {
             this.daoController.route = '';
             return;
-          } 
+          }
           self.data = d;
           self.data.setPrivate_('__context__', self.data.__context__.createSubContext({ controllerMode: this.controllerMode$ }));
           if ( this.controllerMode == 'EDIT' ) this.edit();
@@ -346,7 +349,7 @@ foam.CLASS({
       internalIsEnabled: function(config, data) {
         if ( config.CRUDEnabledActionsAuth && config.CRUDEnabledActionsAuth.isEnabled ) {
           try {
-            let permissionString = config.CRUDEnabledActionsAuth.enabledActionsAuth.permissionFactory(foam.nanos.dao.Operation.UPDATE, data);
+            let permissionString = config.CRUDEnabledActionsAuth.enabledActionsAuth.permissionFactory(foam.core.dao.Operation.UPDATE, data);
 
             return this.auth?.check(null, permissionString) && this.data;
           } catch(e) {
@@ -374,7 +377,7 @@ foam.CLASS({
       internalIsEnabled: function(config, data) {
         if ( config.CRUDEnabledActionsAuth && config.CRUDEnabledActionsAuth.isEnabled ) {
           try {
-            let permissionString = config.CRUDEnabledActionsAuth.enabledActionsAuth.permissionFactory(foam.nanos.dao.Operation.CREATE, data);
+            let permissionString = config.CRUDEnabledActionsAuth.enabledActionsAuth.permissionFactory(foam.core.dao.Operation.CREATE, data);
 
             return this.auth?.check(null, permissionString);
           } catch(e) {
@@ -470,7 +473,7 @@ foam.CLASS({
       internalIsEnabled: function(config, data) {
         if ( config.CRUDEnabledActionsAuth && config.CRUDEnabledActionsAuth.isEnabled ) {
           try {
-            let permissionString = config.CRUDEnabledActionsAuth.enabledActionsAuth.permissionFactory(foam.nanos.dao.Operation.REMOVE, data);
+            let permissionString = config.CRUDEnabledActionsAuth.enabledActionsAuth.permissionFactory(foam.core.dao.Operation.REMOVE, data);
 
             return this.auth?.check(null, permissionString);
           } catch(e) {

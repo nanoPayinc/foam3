@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'StepWizardConfig',
 
   implements: [
-    'foam.core.ContextAware'
+    'foam.lang.ContextAware'
   ],
 
   properties: [

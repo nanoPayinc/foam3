@@ -22,9 +22,9 @@ foam.CLASS({
   `,
 
   requires: [
-    'foam.core.ArraySlot',
-    'foam.core.ConstantSlot',
-    'foam.core.SimpleSlot',
+    'foam.lang.ArraySlot',
+    'foam.lang.ConstantSlot',
+    'foam.lang.SimpleSlot',
     'foam.u2.borders.ExpandableBorder',
     'foam.u2.DisplayMode',
     'foam.u2.tag.CircleIndicator'
@@ -69,8 +69,18 @@ foam.CLASS({
     },
 
     function render() {
-      var self = this;
-      var prop = this.prop = this.prop.clone(this.__subContext__).copyFrom(this.config);
+      var self    = this;
+      var oldProp = this.prop;
+      var prop    = this.prop = this.prop.clone(this.__subContext__).copyFrom(this.config);
+
+      if ( ! prop.name ) {
+        // Needed because some properties aren't bootstrapped properly and don't nave
+        // 'name' in instance_.
+        // Ex.: package, flags, extends, refines, javaExtends, order
+        prop.name = oldProp.name;
+      }
+
+      this.addClass(this.myClass(prop.name));
 
       this.SUPER();
 
@@ -83,7 +93,7 @@ foam.CLASS({
       // TODO: Required checks on props are ignored if validateObj returns undefined. Bug? - Sarthak
       /* Future Version:
       var errorSlot = prop.validators && prop.validationTextVisible ?
-        foam.core.Validation.orValidators(data, prop.validators) :
+        foam.lang.Validation.orValidators(data, prop.validators) :
         this.ConstantSlot.create({ value: null });
       */
 
@@ -94,12 +104,17 @@ foam.CLASS({
           if ( ! this.data ) return;
           // Re-find current prop when data changes since data might be a subclass of old data which might have different validation
           // requirements
-          let currentProp = this.data.cls_.getAxiomByName(prop.name).clone();
+          let currentProp = this.data.cls_.getAxiomByName(prop.name);
+          if ( ! currentProp ) {
+            console.log('**** PropertyBorder:', prop.name, 'not found in', this.data.cls_.id);
+            return;
+          }
+          currentProp = currentProp.clone();
           var slot;
 
           // ???: Would it make more sense to combine these in Property as validateObj_?
           if ( currentProp.validateObj && currentProp.internalValidateObj ) {
-            slot = foam.core.ExpressionSlot.create({
+            slot = foam.lang.ExpressionSlot.create({
               args: [ this.data.slot(currentProp.validateObj), this.data.slot(currentProp.internalValidateObj) ],
               // The commented out version will cause both internal and external errors to be displayed.
               // code: function (e1, e2) { return e1 ? e1 + ' ' + ( e2 || '' ) : e2; }
@@ -109,7 +124,7 @@ foam.CLASS({
           } else {
             slot = currentProp.validateObj ?
               this.data.slot(currentProp.validateObj) :
-              this.data.slot(currentProp.internalValidateObj);
+              ( currentProp.internalValidateObj ? this.data.slot(currentProp.internalValidateObj) : this.SimpleSlot.create({ value: false }));
           }
 
           errorSlot.follow(slot);
@@ -125,15 +140,17 @@ foam.CLASS({
         this.controllerMode$);
 
       // Boolean version of modeSlot for use with show()
-      var visibilitySlot = modeSlot.map(m => m != foam.u2.DisplayMode.HIDDEN)
-
-      var colorSlot = this.data$.dot(prop.name).map(v => !! v);
-
-      var labelSlot = this.slot(function(prop$reserveLabelSpace, prop$label){
+      var visibilitySlot = modeSlot.map(m => m != foam.u2.DisplayMode.HIDDEN);
+      var colorSlot      = this.data$.dot(prop.name).map(v => ! prop.isDefaultValue(v));
+      var labelSlot      = this.slot(function(prop$reserveLabelSpace, prop$label) {
         let el = this.E().addClass(this.myClass('label'), this.myClass('label' + '-' + prop.name), 'p-light');
         return prop$label ?
           el.call(prop.labelFormatter, [data, prop]) :
           ( prop$reserveLabelSpace ? el : this.E().style({ display: 'contents' }) )
+      });
+      var supportingLabelSlot = this.slot(function(prop$supportingLabel) {
+        let el = this.E().addClass(this.myClass('supportingLabel'), this.myClass('supportingLabel' + '-' + prop.name), 'p-legal');
+        return prop$supportingLabel ? el.add(prop$supportingLabel) : this.E().style({ display: 'contents' }) 
       });
 
       var viewSlot = prop.view$.map(v => {
@@ -146,7 +163,7 @@ foam.CLASS({
         return this.E().addClass(self.myClass('view')).add(e).enableClass('error', errorSlot.and(colorSlot));
       });
 
-      this.layout(prop, visibilitySlot, modeSlot, labelSlot, viewSlot, colorSlot, errorSlot);
+      this.layout(prop, visibilitySlot, modeSlot, labelSlot, viewSlot, colorSlot, errorSlot, supportingLabelSlot);
     }
   ]
 });
@@ -177,15 +194,22 @@ foam.CLASS({
       line-height: 1;
       min-height: 1em;
       width: 100%;
-      color: $grey600;
+      color: $grey700;
+    }
+    ^supportingLabel {
+      display: contents;
+      line-height: 1;
+      min-height: 1em;
+      width: 100%;
+      color: $grey500;
     }
     ^errorText {
       display: flex;
       align-items: center;
       /*
-        Have to use this style here since nanos uses CSS resets to
+        Have to use this style here since core uses CSS resets to
         set 1 rem = 10px instead of the default 16px
-        May cause weird styling outside nanos
+        May cause weird styling outside core
       */
       min-height: 1.25em;
       font-size: small;
@@ -221,13 +245,14 @@ foam.CLASS({
   `,
 
   methods: [
-    function layout(prop, visibilitySlot, modeSlot, labelSlot, viewSlot, colorSlot, errorSlot) {
+    function layout(prop, visibilitySlot, modeSlot, labelSlot, viewSlot, colorSlot, errorSlot, supportingLabelSlot) {
       var self = this;
 
       this.
         addClass().
         show(visibilitySlot).
         add(labelSlot).
+        add(supportingLabelSlot).
         start().
           addClass(this.myClass('propHolder')).
           start('span').

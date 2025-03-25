@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.util.retry',
   name: 'RetryLimitReachedException',
-  extends: 'foam.core.FOAMException',
+  extends: 'foam.lang.FOAMException',
   javaGenerateConvenienceConstructor: false,
 
   javaCode: `

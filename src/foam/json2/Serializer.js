@@ -75,7 +75,7 @@ foam.CLASS({
             out.s(v.toString());
             out.end();
           } else if ( type == foam.Object ) {
-            if ( foam.core.FObject.isSubClass(v) ) { // Is an actual class
+            if ( foam.lang.FObject.isSubClass(v) ) { // Is an actual class
               if ( v.id.indexOf('AnonymousClass') == 0 ) {
                 throw new Error("Anonymous Class support dropped.");
                 this.output(x, v.model_);
@@ -103,7 +103,7 @@ foam.CLASS({
                 out.end();
               }
             }
-          } else if ( type == foam.core.FObject ) {
+          } else if ( type == foam.lang.FObject ) {
             if ( v.outputJSON2 ) v.outputJSON2(x, this, out);
             else {
               out.obj();

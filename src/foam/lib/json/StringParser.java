@@ -36,14 +36,6 @@ public class StringParser
     }
   };
 
-  /**
-   * Cache of already parsed Strings. Used to avoid wasting memory by
-   * generating multiple versions of the same String.
-   *
-   * TODO: move to own helper class.
-   **/
-  protected final static Map cache_ = new ConcurrentHashMap();
-
   final static Parser delimiterParser = new Alt(
     Literal.create("\"\"\""),
     Literal.create("\""),
@@ -104,44 +96,7 @@ public class StringParser
       ps = ps.tail();
     }
 
-    // Internalize small strings so we don't end up with millions of distinct
-    // but equivalent strings, especially the empty string.
-    return ps.setValue(cache(sb));
+    // inter()'ed objects are GC'ed, so safe to do here
+    return ps.setValue(sb.toString().intern());
   }
-
-  public static String cache(StringBuilder sb) {
-    if ( sb.length() > 40 ) return sb.toString();
-
-    String s = sb.toString();
-    if ( s.length() < 5 ) return s.intern();
-
-    String s2 = (String) cache_.get(s);
-    if ( s2 == null ) {
-      cache_.put(s, s);
-      return s;
-    }
-
-    return s2;
-  }
-
-  /**
-   This would be better, but doesn't work because StringBuilder doesn't
-   implement equals() and hashcode() properly.
-  public String cache(StringBuilder sb) {
-//    if ( s.length() < 6 ) return s.toString().intern();
-
-    if ( sb.length() > 20 ) return sb.toString();
-
-    String s = (String) cache_.get(sb);
-
-    if ( s == null ) {
-      s = sb.toString();
-      if ( s.length < 5 ) s = s.intern();
-
-      cache_.put(new StringBuilder(sb), s);
-    }
-
-    return s;
-  }
-  */
 }

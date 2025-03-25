@@ -1,0 +1,59 @@
+p({
+  class:"foam.core.boot.CSpec",
+  name:"eventRecordDAO",
+  serve:true,
+  serviceScript:"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.er.EventRecord.getOwnClassInfo())
+      .setFuid(true)
+      .setSAF(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("eventRecords")
+      .setWaitReplay(false)
+      .setPm(true)
+      .setDecorator(
+        new foam.core.er.EventRecordResponseDAO.Builder(x).setDelegate(
+          new foam.core.er.EventRecordDAO.Builder(x).setDelegate(new foam.dao.NullDAO(x, foam.core.er.EventRecord.getOwnClassInfo())).build()).build())
+      .setFixedSize(new foam.dao.FixedSizeDAO.Builder(x)
+        .setComparator(foam.mlang.MLang.DESC(foam.core.er.EventRecord.CREATED))
+        .setSize(100000)
+        .build())
+      .setOrder(new foam.mlang.order.Comparator[] { foam.mlang.MLang.DESC(foam.core.er.EventRecord.CREATED) })
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.er.EventRecord.CREATED })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.er.EventRecord.CODE })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.er.EventRecord.EVENT })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.er.EventRecord.HOSTNAME })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.er.EventRecord.PARTNER })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.er.EventRecord.SEVERITY })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.er.EventRecord.SOURCE });
+  """,
+  "client":"""
+    {
+      "of":"foam.core.er.EventRecord"
+    }
+  """
+})
+
+p({
+  class:"foam.core.boot.CSpec",
+  name:"eventRecordResponseDAO",
+  serve:true,
+  serviceScript:"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.er.EventRecordResponse.getOwnClassInfo())
+      .setFuid(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("eventRecordResponses")
+      .setPm(true)
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.er.EventRecord.CODE })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.er.EventRecord.EVENT })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.er.EventRecord.PARTNER });
+  """,
+  "client":"""
+    {
+      "of":"foam.core.er.EventRecordResponse"
+    }
+  """
+})

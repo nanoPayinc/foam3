@@ -1,5 +1,5 @@
 p({
-  class: "foam.nanos.script.Script",
+  class: "foam.core.script.Script",
   id: "main",
   code:
   """
@@ -8,7 +8,7 @@ p({
 
   appConfig = x.get("appConfig");
 
-  if ( appConfig.getMode() != foam.nanos.app.Mode.DEVELOPMENT ) {
+  if ( appConfig.getMode() != foam.core.app.Mode.DEVELOPMENT ) {
     print("Can only be run in DEVELOPMENT mode.");
     return;
   }
@@ -21,7 +21,7 @@ p({
 
   Interpreter shell   = new Interpreter(console);
 
-  shell.eval("import foam.core.*;");
+  shell.eval("import foam.lang.*;");
   shell.eval("import foam.mlang.MLang;");
   shell.eval("import foam.dao.*;");
   shell.set("x", x);

@@ -13,14 +13,14 @@ foam.CLASS({
   documentation: 'Numeric unique ID generator',
 
   javaImports: [
-    'foam.core.Detachable',
-    'foam.core.FObject',
-    'foam.core.X',
-    'foam.core.PropertyInfo',
+    'foam.lang.Detachable',
+    'foam.lang.FObject',
+    'foam.lang.X',
+    'foam.lang.PropertyInfo',
     'foam.dao.AbstractSink',
     'foam.dao.DAO',
-    'foam.nanos.logger.Logger',
-    'foam.nanos.logger.Loggers',
+    'foam.core.logger.Logger',
+    'foam.core.logger.Loggers',
     'static foam.util.UIDSupport.*',
     'java.util.concurrent.atomic.AtomicLong',
     'java.util.concurrent.atomic.AtomicBoolean'
@@ -53,8 +53,8 @@ foam.CLASS({
       class: 'FObjectProperty',
       name: 'propertyInfo',
       hidden: true,
-      javaType: 'foam.core.PropertyInfo',
-      javaInfoType: 'foam.core.AbstractObjectPropertyInfo'
+      javaType: 'foam.lang.PropertyInfo',
+      javaInfoType: 'foam.lang.AbstractObjectPropertyInfo'
     }
   ],
 
@@ -105,7 +105,7 @@ foam.CLASS({
       name: 'assertLongId',
       javaThrows: [ 'java.lang.UnsupportedOperationException' ],
       javaCode: `
-        if ( ! ( getPropertyInfo() instanceof foam.core.AbstractLongPropertyInfo ) ) {
+        if ( ! ( getPropertyInfo() instanceof foam.lang.AbstractLongPropertyInfo ) ) {
           throw new UnsupportedOperationException(
             "NUIDGenerator: not supported on " + getSalt() + " without id property");
         }

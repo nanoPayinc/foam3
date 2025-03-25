@@ -4,7 +4,7 @@
  */
 package foam.dao.index;
 
-import foam.core.Indexer;
+import foam.lang.Indexer;
 import foam.dao.Sink;
 import foam.mlang.order.Comparator;
 import foam.mlang.order.Desc;

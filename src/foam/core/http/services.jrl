@@ -1,0 +1,56 @@
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "ping",
+  "lazy": false,
+  "authenticate": false,
+  "serviceClass": "foam.core.http.PingService"
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "uptime",
+  "lazy": false,
+  "authenticate": false,
+  "serviceClass": "foam.core.http.UptimeWebAgent"
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "trace",
+  "authenticate": false,
+  "parameters": true,
+  "serviceClass": "foam.core.http.TraceWebAgent"
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "services",
+  "serviceClass": "foam.core.http.ServicesWebAgent"
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "classes",
+  "serviceClass": "foam.core.http.ClassesWebAgent"
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "threads",
+  "serviceClass": "foam.core.http.ThreadsWebAgent"
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "login",
+  "serviceClass": "foam.core.http.ShowSessionWebAgent"
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "memory",
+  "serviceScript": """
+    memoryWebAgent = new foam.core.http.MemoryWebAgent();
+    return new foam.core.http.RefreshWebAgent(memoryWebAgent);
+  """
+})

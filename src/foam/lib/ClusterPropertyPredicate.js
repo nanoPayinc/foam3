@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'ClusterPropertyPredicate',
   implements: [ 'foam.lib.PropertyPredicate'],
   javaImports: [
-    'foam.nanos.auth.AuthService'
+    'foam.core.auth.AuthService'
   ],
   
   methods: [

@@ -1,5 +1,5 @@
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"xliffTranslationDAO",
   "serve":true,
   "serviceScript":
@@ -20,7 +20,7 @@ p({
 })
 
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"localeDAO",
   "description":"Locale DAO",
   "serve":true,
@@ -28,14 +28,14 @@ p({
   "serviceScript":
   """
     return new foam.dao.EasyDAO.Builder(x)
-      .setAuthorizer(new foam.nanos.auth.GlobalReadAuthorizer("locale"))
+      .setAuthorizer(new foam.core.auth.GlobalReadAuthorizer("locale"))
       .setJournalName("locales")
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setOf(foam.i18n.Locale.getOwnClassInfo())
       .build()
-      .addPropertyIndex(new foam.core.Indexer[] { foam.i18n.Locale.LOCALE })
-      .addPropertyIndex(new foam.core.Indexer[] { foam.i18n.Locale.THEME_ID })
-      .addPropertyIndex(new foam.core.Indexer[] { foam.i18n.Locale.VARIANT });
+      .addPropertyIndex(new foam.lang.Indexer[] { foam.i18n.Locale.LOCALE })
+      .addPropertyIndex(new foam.lang.Indexer[] { foam.i18n.Locale.THEME_ID })
+      .addPropertyIndex(new foam.lang.Indexer[] { foam.i18n.Locale.VARIANT });
   """,
   "client":
   """
@@ -46,7 +46,7 @@ p({
 })
 
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"translationService",
   "description":"Translation Service",
   "serve":true,

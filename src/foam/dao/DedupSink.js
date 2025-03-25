@@ -32,9 +32,9 @@ foam.CLASS({
         }
       },
       javaCode: `if ( getResults() == null ) setResults(new java.util.HashSet<>());
-            if ( ! getResults().contains(((foam.core.FObject)obj).getProperty("id")) ) {
+            if ( ! getResults().contains(((foam.lang.FObject)obj).getProperty("id")) ) {
               getDelegate().put(obj, sub);
-              getResults().add(((foam.core.FObject)obj).getProperty("id"));
+              getResults().add(((foam.lang.FObject)obj).getProperty("id"));
             }`
     }
   ]

@@ -27,7 +27,7 @@ foam.CLASS({
       class: 'String',
       name: 'cls',
       label: 'class',
-      value: 'foam.nanos.auth.User',
+      value: 'foam.core.auth.User',
       validateObj: function(cls) {
         return foam.maybeLookup(cls) ? null : 'Invalid class';
       }
@@ -47,7 +47,7 @@ id,firstName,lastName,email,phone.number,address.city,address.postalCode,lastLog
       view: { class: 'foam.comics.v2.DAOBrowserView' },
       expression: function(cls) {
         return this.EasyDAO.create({
-          of: foam.maybeLookup(cls) || foam.nanos.auth.User,
+          of: foam.maybeLookup(cls) || foam.core.auth.User,
           daoType: 'MDAO'
         });
       }

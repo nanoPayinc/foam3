@@ -1,5 +1,5 @@
 p({
-  "class": "foam.nanos.boot.NSpec",
+  "class": "foam.core.boot.CSpec",
   "name": "ipGeolocationInfoDAO",
   "serviceScript":
   """
@@ -10,19 +10,14 @@ p({
       .setAuthorize(false)
       .setPm(true)
       .build()
-      .addPropertyIndex(new foam.core.PropertyInfo[] { foam.net.ipgeo.IPGeolocationInfo.IP });
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.net.ipgeo.IPGeolocationInfo.IP });
   """
 })
 
-
-
 p({
-  "class":"foam.nanos.boot.NSpec",
-  "name":"maxmindConfig",
+  "class":"foam.core.boot.CSpec",
+  "name":"ipGeolocationService",
   "service":{
-    "class":"foam.net.ipgeo.MaxmindConfig",
-    "accountId":"1111111",
-    "licenseKey":"2222222abc",
-    "path":"../var/maxmind/"
+    "class":"foam.net.ipgeo.IPGeolocationService"
   }
 })

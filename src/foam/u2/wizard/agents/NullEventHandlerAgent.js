@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.wizard.agents',
   name: 'NullEventHandlerAgent',
-  implements: [ 'foam.core.ContextAgent' ],
+  implements: [ 'foam.lang.ContextAgent' ],
 
   exports: ['handleEvent'],
 

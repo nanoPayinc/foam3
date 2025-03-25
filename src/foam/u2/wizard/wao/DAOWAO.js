@@ -13,9 +13,9 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.core.Slot',
+    'foam.lang.Slot',
     'foam.mlang.expr.Dot',
-    'foam.core.Property',
+    'foam.lang.Property',
   ],
   flags: ['web'],
 
@@ -122,7 +122,7 @@ foam.CLASS({
         throw new Error('Unexpected case in DAOWAO.setValue');
       }
       if ( ! lastObject ) return false;
-      if ( foam.core.Slot.isInstance(lastObject[lastKey]) ) {
+      if ( foam.lang.Slot.isInstance(lastObject[lastKey]) ) {
         lastObject[lastKey] = data$;
       } else {
         lastObject[lastKey] = data;

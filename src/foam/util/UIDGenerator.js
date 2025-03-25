@@ -11,8 +11,8 @@ foam.CLASS({
   flags: ['java'],
 
   javaImports: [
-    'foam.core.X',
-    'foam.nanos.logger.Loggers',
+    'foam.lang.X',
+    'foam.core.logger.Loggers',
     'static foam.util.UIDSupport.*'
   ],
 
@@ -130,7 +130,7 @@ foam.CLASS({
           long id = Long.parseLong(generate(), 16);
           return id;
         } catch (Exception e) {
-          foam.nanos.logger.Loggers.logger(getX(), this).error("Failed to generate numeric uid", e);
+          foam.core.logger.Loggers.logger(getX(), this).error("Failed to generate numeric uid", e);
           throw e;
         }
       `

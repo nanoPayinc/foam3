@@ -38,8 +38,8 @@ foam.CLASS({
       if ( typeof o !== 'object' )                return foam.mlang.Constant.create({ value: o });
       if ( o instanceof Date )                    return foam.mlang.Constant.create({ value: o });
       if ( Array.isArray(o) )                     return foam.mlang.Constant.create({ value: o });
-      if ( foam.core.AbstractEnum.isInstance(o) ) return foam.mlang.Constant.create({ value: o });
-      if ( foam.core.FObject.isInstance(o) ) {
+      if ( foam.lang.AbstractEnum.isInstance(o) ) return foam.mlang.Constant.create({ value: o });
+      if ( foam.lang.FObject.isInstance(o) ) {
            // TODO: Not all mlang expressions actually implement Expr
            // so we're just going to check for o.f
            //  ! foam.mlang.Expr.isInstance(o) )
@@ -49,7 +49,7 @@ foam.CLASS({
       if ( o.class && this.__context__.maybeLookup(o.class) ) {
         return this.adaptValue(this.__context__.lookup(o.class).create(o, this.__subContext__));
       }
-      if ( foam.core.FObject.isSubClass(o) ) {
+      if ( foam.lang.FObject.isSubClass(o) ) {
         return foam.mlang.Constant.create({ value: o });
       }
 

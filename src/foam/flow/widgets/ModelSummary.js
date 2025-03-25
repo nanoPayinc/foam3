@@ -38,7 +38,7 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.core.PromiseSlot',
+    'foam.lang.PromiseSlot',
     'foam.flow.widgets.ModelType',
     'foam.u2.Element',
     'foam.u2.view.ReadOnlyEnumView'
@@ -55,8 +55,8 @@ foam.CLASS({
       of: 'foam.flow.widgets.ModelType',
       expression: function (of) {
         const typeMapping = [
-          [foam.core.AbstractInterface, this.ModelType.INTERFACE],
-          [foam.core.AbstractEnum, this.ModelType.ENUM]
+          [foam.lang.AbstractInterface, this.ModelType.INTERFACE],
+          [foam.lang.AbstractEnum, this.ModelType.ENUM]
         ];
         for ( let mapping of typeMapping ) {
           if ( mapping[0].isSubClass(of) ) return mapping[1];
@@ -94,7 +94,7 @@ foam.CLASS({
     {
       name: 'tables',
       factory: () => ({
-        'foam.core.Constant': {
+        'foam.lang.Constant': {
           headings: ['Name', 'Documentation', 'Value'],
           adapt: cons => [cons.name, cons.documentation, cons.value]
         }

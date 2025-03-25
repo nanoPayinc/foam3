@@ -15,8 +15,8 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.nanos.controller.AppStyles',
-    'foam.nanos.controller.Fonts',
+    'foam.core.controller.AppStyles',
+    'foam.core.controller.Fonts',
     'foam.u2.borders.Block'
   ],
 
@@ -32,7 +32,7 @@ foam.CLASS({
       w.document.body.innerHTML = '<title>Wizard Inspector</title>';
       w.document.$UID = foam.next$UID();
 
-      var window = foam.core.Window.create({window: w}, opt_x || ctrl);
+      var window = foam.lang.Window.create({window: w}, opt_x || ctrl);
       var v      = this.create(opt_args || {}, window);
       v.write(window.document);
     }

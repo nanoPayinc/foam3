@@ -12,7 +12,7 @@ foam.CLASS({
   imports: [ 'breadcrumbs', 'stack' ],
 
   requires: [
-    'foam.core.Action',
+    'foam.lang.Action',
     'foam.u2.view.OverlayActionListView',
     'foam.u2.ActionReference'
   ],
@@ -53,7 +53,7 @@ foam.CLASS({
     },
     {
       class: 'FObjectArray',
-      of: 'foam.core.Action',
+      of: 'foam.lang.Action',
       name: 'actionArray'
     }
   ],

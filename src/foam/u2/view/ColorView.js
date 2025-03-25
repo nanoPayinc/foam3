@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'ColorView',
   extends: 'foam.u2.view.ModeAltView',
 
-  documentation: 'A view for foam.core.Color properties.',
+  documentation: 'A view for foam.lang.Color properties.',
 
   requires: [
     'foam.u2.TextField',

@@ -13,7 +13,7 @@ foam.CLASS({
   ],
 
   javaImports: [
-    'foam.core.*',
+    'foam.lang.*',
     'java.util.List',
     'java.util.Date',
     'java.text.*'
@@ -113,7 +113,8 @@ foam.CLASS({
             Null: function(value) {}
           }, function(value) {
             this.outputValue_(value.toString());
-        }),
+          }
+        ),
       javaCode: `
         if ( value instanceof String ) {
           if ( ((String)value).contains(",") )
@@ -126,6 +127,9 @@ foam.CLASS({
           } else {
             getSb().append(value.toString());
           }
+        } else if ( value instanceof String[] ) {
+          // TODO: escape | character in values
+          outputValue(String.join("|", (String[]) value));
         } else if ( value == null ) {
         } else {
           outputValue_(value.toString());
@@ -163,7 +167,7 @@ foam.CLASS({
         this.props
           .map((name) => this.of.getAxiomByName(name))
           .forEach((p) => {
-            if ( foam.core.Property.isInstance(p) ) p.toCSVLabel.call(p, x, this);
+            if ( foam.lang.Property.isInstance(p) ) p.toCSVLabel.call(p, x, this);
           });
         this.newLine_();
         this.isFirstRow = false;
@@ -185,7 +189,7 @@ foam.CLASS({
         this.props
           .map((name) => this.of.getAxiomByName(name))
           .forEach((p) => {
-            if ( foam.core.Property.isInstance(p) ) p.toCSV.call(p, x, obj, this);
+            if ( foam.lang.Property.isInstance(p) ) p.toCSV.call(p, x, obj, this);
           });
         this.newLine_();
       },

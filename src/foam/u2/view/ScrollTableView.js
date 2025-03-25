@@ -28,7 +28,7 @@
   ],
 
   requires: [
-    'foam.core.Lock',
+    'foam.lang.Lock',
     'foam.dao.FnSink',
     'foam.mlang.sink.Count',
     'foam.u2.layout.Cols',
@@ -37,7 +37,7 @@
     'foam.u2.stack.StackBlock',
     'foam.u2.view.TableView',
     'foam.comics.v2.DAOControllerConfig',
-    'foam.nanos.controller.Memento'
+    'foam.core.controller.Memento'
   ],
 
   css: `
@@ -127,7 +127,7 @@
     'columns',
     {
       class: 'FObjectArray',
-      of: 'foam.core.Action',
+      of: 'foam.lang.Action',
       name: 'contextMenuActions'
     },
     {
@@ -284,7 +284,7 @@
     {
       name: 'lock',
       class: 'FObjectProperty',
-      of: 'foam.core.Lock',
+      of: 'foam.lang.Lock',
       factory: function () {
         return this.Lock.create();
       }
@@ -309,11 +309,11 @@
         var m = this.memento;
         for ( var i = 0 ; i < 2 ; i++ ) {
           if ( ! m ) {
-            m = foam.nanos.controller.Memento.create({ value: '', parent: this.memento });
+            m = foam.core.controller.Memento.create({ value: '', parent: this.memento });
             this.memento.tail = m;
           } else {
             if ( ! m.tail )
-              m.tail = foam.nanos.controller.Memento.create({ value: '', parent: m });
+              m.tail = foam.core.controller.Memento.create({ value: '', parent: m });
             m = m.tail;
           }
         }
@@ -394,7 +394,7 @@
           }));
         } else if ( this.table_.memento.tail.tail && this.table_.memento.tail.tail.head ) {
           var id = this.table_.memento.tail.tail.head;
-          if ( ! foam.core.MultiPartID.isInstance(this.data.of.ID) ) {
+          if ( ! foam.lang.MultiPartID.isInstance(this.data.of.ID) ) {
             id = this.data.of.ID.fromString(id);
           } else {
             id = this.data.of.ID.of.create();

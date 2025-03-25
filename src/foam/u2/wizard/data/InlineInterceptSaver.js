@@ -21,7 +21,7 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.nanos.crunch.lite.Capable'
+    'foam.core.crunch.lite.Capable'
   ],
 
   methods: [

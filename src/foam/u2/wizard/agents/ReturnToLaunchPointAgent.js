@@ -21,7 +21,7 @@ foam.CLASS({
   ],
 
   implements: [
-    'foam.core.ContextAgent'
+    'foam.lang.ContextAgent'
   ],
 
   methods: [

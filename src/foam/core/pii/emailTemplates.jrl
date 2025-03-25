@@ -1,0 +1,37 @@
+p({
+  "class": "foam.core.notification.email.EmailTemplate",
+  "id": "foam-core-pii-report-EmailTemplate-en",
+  "name": "foam-core-pii-report-EmailTemplate",
+  "group": "*",
+  "locale": "en",
+  "displayName": "{{appName}}",
+  "subject": "Personal Identifiable Information Report",
+  "body": """
+Dear {{user.legalName}}<br>
+Please find your Personal Identifiable Information data attached.<br>
+<br>
+Application: {{appName}}<br>
+User: {{user.legalName}}<br>
+User Status: {{user.lifecycleState}}<br>
+Report generated: {{ticket.created}}<br>
+  """
+})
+p({
+  "class": "foam.core.notification.email.EmailTemplate",
+  "id": "foam-core-pii-report-kv-EmailTemplate-en",
+  "name": "foam-core-pii-report-kv-EmailTemplate",
+  "group": "*",
+  "locale": "en",
+  "displayName": "{{appName}}",
+  "subject": "Personal Identifiable Information Key-Value Report",
+  "body": """
+<b>Personal Identifiable Information Report</b>
+<br>
+Application: {{appName}}<br>
+User: {{user.legalName}}<br>
+User status: {{user.lifecycleState}}<br>
+Report generated: {{ticket.created}}<br>
+<br>
+{{keyValueData}}
+  """
+})

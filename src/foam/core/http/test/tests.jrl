@@ -1,0 +1,4 @@
+p({
+  class: "foam.core.http.test.DIGBroadcastWebAgentTest",
+  id: "DIGBroadcastWebAgentTest"
+})

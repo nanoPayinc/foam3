@@ -1,0 +1,30 @@
+/**
+ * @license
+ * Copyright 2021 The FOAM Authors. All Rights Reserved.
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+foam.CLASS({
+  package: 'foam.core.dig.exception',
+  name: 'TemporaryExternalAPIException',
+  extends: 'foam.core.dig.exception.DigErrorMessage',
+
+  javaCode: `
+    public TemporaryExternalAPIException(String message) {
+      super(message);
+    }
+  `,
+
+  properties: [
+    {
+      class: 'String',
+      name: 'status',
+      value: '400'
+    },
+    {
+      class: 'String',
+      name: 'errorCode',
+      value: '1011'
+    }
+  ]
+});

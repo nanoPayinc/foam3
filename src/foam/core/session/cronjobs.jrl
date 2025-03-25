@@ -1,0 +1,19 @@
+p({
+  class: "foam.core.cron.Cron",
+  schedule:{
+    class:"foam.core.cron.IntervalSchedule",
+    duration:{
+      class:"foam.core.cron.TimeHMS",
+      minute:5
+    },
+    start:1669885200000
+  },
+  id: "expireSessionsCron",
+  description: "Expire sessions based on ttl",
+  code:
+  """
+    import foam.core.session.cron.ExpireSessionsCron;
+    cron = new ExpireSessionsCron();
+    cron.execute(x);
+  """
+})

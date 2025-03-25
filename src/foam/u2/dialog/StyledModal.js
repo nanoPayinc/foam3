@@ -110,7 +110,7 @@ foam.CLASS({
     },
     {
       class: 'FObjectArray',
-      of: 'foam.core.Action',
+      of: 'foam.lang.Action',
       name: 'actionArray',
       documentation: 'Can be used to specify additional actions. Designed to be used when there are no primary/secondaryActions'
     },

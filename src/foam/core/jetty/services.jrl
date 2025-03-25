@@ -1,0 +1,24 @@
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"jettyThreadPoolConfig",
+  "lazy": false,
+  "service":{"class":"foam.core.jetty.JettyThreadPoolConfig"}
+})
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "jettyIPAccessDAO",
+  "serve": true,
+  "lazy": false,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.jetty.IPAccess.getOwnClassInfo())
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("jettyIPAccess")
+      .build();
+  """,
+  "client": """
+  {
+    "of":"foam.core.jetty.IPAccess"
+  }
+  """
+})

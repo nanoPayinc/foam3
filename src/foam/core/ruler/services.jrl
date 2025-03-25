@@ -1,0 +1,108 @@
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "ruleThreadPool",
+  "lazy": false,
+  "serve": false,
+  "serviceScript": `
+    return new foam.core.pool.ThreadPoolAgency.Builder(x)
+      .setPrefix("rule")
+      .build();
+  `
+})
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "ruleDAO",
+  "serve": true,
+  "serviceScript": """
+    dao = new foam.dao.EasyDAO.Builder(x)
+      .setEnableInterfaceDecorators(false)
+      .setServiceProviderAware(true)
+      .setOf(foam.core.ruler.Rule.getOwnClassInfo())
+      .setInnerDAO(x.get("localRuleDAO"))
+      .setRuler(false)
+      .setPermissioned(true)
+      .build();
+
+    dao = new foam.dao.ValidatingDAO(x, dao);
+
+    return dao;
+  """,
+  "client": """
+    {
+      "of": "foam.core.ruler.Rule"
+    }
+  """
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "localRuleDAO",
+  "serviceScript":
+  """
+    dao = new foam.dao.EasyDAO.Builder(x)
+      .setPm(true)
+      .setOf(foam.core.ruler.Rule.getOwnClassInfo())
+      .setGuid(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("rules")
+      .setContextualize(true)
+      .setValidated(true)
+      .setRuler(true)
+      .setRulerDaoKey("localRuleDAO")
+      .setAuthorize(false)
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.ruler.Rule.DAO_KEY })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.ruler.Rule.NAME })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.ruler.Rule.ENABLED });
+
+    return dao;
+  """
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "ruleGroupDAO",
+  "serve": true,
+  "serviceScript": """
+    ed = new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.ruler.RuleGroup.getOwnClassInfo())
+      .setGuid(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("ruleGroups")
+      .setRuler(false)
+      .setPm(true)
+      .setOrder(new foam.mlang.order.Comparator[] { foam.mlang.MLang.DESC(foam.core.ruler.RuleGroup.PRIORITY) })
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.ruler.RuleGroup.PRIORITY });
+
+    return new foam.dao.ValidatingDAO(x, ed);
+  """,
+  "client": """
+    {
+      "of": "foam.core.ruler.RuleGroup"
+    }
+  """
+})
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"ruleHistoryDAO",
+  "serve":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.ruler.RuleHistory.getOwnClassInfo())
+      .setSeqNo(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("ruleHistory")
+      .setSAF(true)
+      .setRuler(false)
+      .setPm(true)
+      .setFixedSize(new foam.dao.FixedSizeDAO.Builder(x)
+        .setComparator(foam.mlang.MLang.DESC(foam.core.ruler.RuleHistory.CREATED))
+        .setSize(100000)
+        .build())
+      .build()
+      .addPropertyIndex(new foam.lang.Indexer[] { foam.core.ruler.RuleHistory.CREATED })
+      .addPropertyIndex(new foam.lang.Indexer[] { foam.core.ruler.RuleHistory.EXPIRATION_DATE, foam.core.ruler.RuleHistory.STATUS });
+    """,
+    "client":"{\"of\":\"foam.core.ruler.RuleHistory\"}"
+})

@@ -1,0 +1,77 @@
+p({
+  "class":"foam.core.menu.Menu",
+  "id":"integration",
+  "label":"Integration",
+  "handler":{
+    "class":"foam.core.menu.SubMenu"
+  },
+  "parent":""
+})
+
+p({
+  "class":"foam.core.menu.Menu",
+  "id":"dig",
+  "label":"DIG - Data Integration Gateway",
+  "handler":{
+    "class":"foam.core.menu.DAOMenu2",
+    "config":{
+      "class":"foam.comics.v2.DAOControllerConfig",
+      "daoKey":"digDAO",
+      "browseTitle": "DIG API Calls",
+      "createTitle": "Create a DIG API Call"
+    }
+  },
+  "parent":"integration"
+})
+p({
+  "class": "foam.core.menu.Menu",
+  "id": "dug",
+  "label": "DUG - Data Update Gateway",
+  "handler": {
+    "class": "foam.core.menu.DAOMenu2",
+    "config": {
+      "class": "foam.comics.v2.DAOControllerConfig",
+      "daoKey": "ruleDAO",
+      "browseTitle": "DUG Webhooks",
+      "createTitle": "Create a New Webhook",
+      "predicate": {
+        "class": "foam.mlang.predicate.IsInstanceOf",
+        "of": "foam.core.dig.DUGRule"
+      },
+      "of": "foam.core.dig.DUGRule"
+    }
+  },
+  "parent": "integration"
+})
+
+p({
+  "class":"foam.core.menu.Menu",
+  "id":"dug-digest",
+  "label":"DUG - Digest Config",
+  "handler":{
+    "class":"foam.core.menu.DAOMenu2",
+    "config":{
+      "class":"foam.comics.v2.DAOControllerConfig",
+      "daoKey":"dugDigestConfigDAO"
+    }
+  },
+  "parent":"integration"
+})
+
+p({
+  "class":"foam.core.menu.Menu",
+  "id":"sugar",
+  "label":"SUGAR - Service API",
+  "handler":{
+    "class":"foam.core.menu.DAOMenu2",
+    "config":{
+      "class":"foam.comics.v2.DAOControllerConfig",
+      "daoKey":"sugarDAO",
+      "browseTitle": "SUGAR API Calls",
+      "createTitle": "Create a Service API Call"
+    }
+  },
+  "parent":"integration"
+})
+
+p({"class":"foam.core.menu.Menu","id":"integration.model-doc","label":"UML API Models","handler":{"class":"foam.core.menu.ViewMenu","view":{"class":"foam.doc.ModelBrowser"}},"parent":"integration"})

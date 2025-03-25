@@ -70,24 +70,26 @@ foam.CLASS({
     'foam.dao.SyncDAO',
     'foam.dao.TimingDAO',
     'foam.dao.JournalType',
-    'foam.nanos.auth.ServiceProviderAware',
-    'foam.nanos.auth.ServiceProviderAwareDAO',
-    'foam.nanos.crunch.box.CrunchClientBox',
-    'foam.nanos.logger.Logger',
-    'foam.nanos.logger.LoggingDAO',
-    'foam.nanos.theme.SubdomainAwareDAO'
+    'foam.core.auth.ServiceProviderAware',
+    'foam.core.auth.ServiceProviderAwareDAO',
+    'foam.core.crunch.box.CrunchClientBox',
+    'foam.core.logger.Logger',
+    'foam.core.logger.LoggingDAO',
+    'foam.core.theme.SubdomainAwareDAO'
   ],
 
   imports: [ 'document', 'log' ],
 
   javaImports: [
-    'foam.core.Indexer',
-    'foam.core.PropertyInfo',
+    'foam.lang.Indexer',
+    'foam.lang.PropertyInfo',
+    'foam.lang.X',
     'foam.dao.index.AddIndexCommand',
-    'foam.nanos.boot.NSpec',
-    'foam.nanos.logger.PrefixLogger',
-    'foam.nanos.logger.Logger',
-    'foam.nanos.logger.Loggers',
+    'foam.core.boot.CSpec',
+    'foam.core.logger.PrefixLogger',
+    'foam.core.logger.Logger',
+    'foam.core.logger.Loggers',
+    'foam.util.SafetyUtil',
     'java.util.ArrayList',
     'java.util.Arrays',
     'java.util.List'
@@ -117,9 +119,9 @@ foam.CLASS({
         return this.of && this.of.id;
       },
       javaFactory: `
-      NSpec nspec = getNSpec();
+      CSpec nspec = getCSpec();
       if ( nspec != null ) return nspec.getName();
-      Loggers.logger(getX(), this).warning("NSpec not found");
+      Loggers.logger(getX(), this).warning("CSpec not found");
       if ( getOf() != null ) {
         String id = getOf().getId();
         String name = id.substring(id.lastIndexOf('.') + 1);
@@ -131,10 +133,10 @@ foam.CLASS({
      `
     },
     {
-      name: 'nSpec',
+      name: 'cSpec',
       class: 'FObjectProperty',
-      type: 'foam.nanos.boot.NSpec',
-      javaFactory: 'return getX().get(NSpec.class);',
+      type: 'foam.core.boot.CSpec',
+      javaFactory: 'return getX().get(CSpec.class);',
       javaPostSet: 'if ( val != null ) setName(val.getName());',
     },
     {
@@ -152,7 +154,7 @@ foam.CLASS({
         // TODO: replace logger instantiation once javaFactory issue above is fixed
         Logger logger = (Logger) getX().get("logger");
         if ( logger == null ) {
-          logger = foam.nanos.logger.StdoutLogger.instance();
+          logger = foam.core.logger.StdoutLogger.instance();
         }
 
         logger = new PrefixLogger(new Object[] {
@@ -174,8 +176,8 @@ foam.CLASS({
               delegate = fixedSizeDAO;
             }
             // hook for NDiff-related stuff downstream
-            // code in JDAO.js is looking for nSpecName set in a subX
-            delegate = getJournalDelegate(getX().put(foam.nanos.boot.NSpec.NSPEC_CTX_KEY, getNSpec()), delegate);
+            // code in JDAO.js is looking for cSpecName set in a subX
+            delegate = getJournalDelegate(getX().put(foam.core.boot.CSpec.NSPEC_CTX_KEY, getCSpec()), delegate);
           }
         }
 
@@ -187,7 +189,9 @@ foam.CLASS({
             setProperty(getSeqPropertyName()).
             setStartingValue(getSeqStartingValue()).
             build();
-        } else if ( getGuid() ) {
+        }
+
+        if ( getGuid() ) {
           delegate = new foam.dao.GUIDDAO(getX(), delegate);
         }
 
@@ -207,13 +211,13 @@ foam.CLASS({
         }
 
         if ( getSubdomainAware() ) {
-          delegate = new foam.nanos.theme.SubdomainAwareDAO.Builder(getX())
+          delegate = new foam.core.theme.SubdomainAwareDAO.Builder(getX())
             .setDelegate(delegate)
             .build();
         }
 
         if ( getServiceProviderAware() ) {
-          delegate = new foam.nanos.auth.ServiceProviderAwareDAO.Builder(getX())
+          delegate = new foam.core.auth.ServiceProviderAwareDAO.Builder(getX())
             .setDelegate(delegate)
             .build();
 
@@ -255,7 +259,7 @@ foam.CLASS({
         delegate_ = new ProxyDAO.Builder(getX()).setDelegate(delegate).build();
 
         if ( getApprovableAware() ) {
-          var delegateBuilder = new foam.nanos.approval.ApprovableAwareDAO
+          var delegateBuilder = new foam.core.approval.ApprovableAwareDAO
             .Builder(getX())
             .setDaoKey(getName())
             .setOf(getOf())
@@ -274,29 +278,29 @@ foam.CLASS({
           if ( getValidator() != null )
             delegate = new foam.dao.ValidatingDAO(getX(), delegate, getValidator());
           else
-            delegate = new foam.dao.ValidatingDAO(getX(), delegate, foam.core.ValidatableValidator.instance());
+            delegate = new foam.dao.ValidatingDAO(getX(), delegate, foam.lang.ValidatableValidator.instance());
         }
 
         if ( getRuler() ) {
           String name = foam.util.SafetyUtil.isEmpty(getRulerDaoKey()) ? getName() : getRulerDaoKey();
-          delegate = new foam.nanos.ruler.RulerDAO(getX(), delegate, name);
+          delegate = new foam.core.ruler.RulerDAO(getX(), delegate, name);
         }
 
         if ( getCreatedAware() ) {
-          delegate = new foam.nanos.auth.CreatedAwareDAO.Builder(getX()).setDelegate(delegate).build();
-          indexes.add((foam.core.PropertyInfo) getOf().getAxiomByName("created"));
+          delegate = new foam.core.auth.CreatedAwareDAO.Builder(getX()).setDelegate(delegate).build();
+          indexes.add((foam.lang.PropertyInfo) getOf().getAxiomByName("created"));
         }
         if ( getCreatedByAware() )
-          delegate = new foam.nanos.auth.CreatedByAwareDAO.Builder(getX()).setDelegate(delegate).build();
+          delegate = new foam.core.auth.CreatedByAwareDAO.Builder(getX()).setDelegate(delegate).build();
 
         if ( getLastModifiedAware() )
-          delegate = new foam.nanos.auth.LastModifiedAwareDAO.Builder(getX()).setDelegate(delegate).build();
+          delegate = new foam.core.auth.LastModifiedAwareDAO.Builder(getX()).setDelegate(delegate).build();
 
         if ( getLastModifiedByAware() )
-          delegate = new foam.nanos.auth.LastModifiedByAwareDAO.Builder(getX()).setDelegate(delegate).build();
+          delegate = new foam.core.auth.LastModifiedByAwareDAO.Builder(getX()).setDelegate(delegate).build();
 
         if ( getCapable() )
-          delegate = new foam.nanos.crunch.lite.CapableDAO.Builder(getX())
+          delegate = new foam.core.crunch.lite.CapableDAO.Builder(getX())
             .setDaoKey(getName())
             .setDelegate(delegate)
             .setAllowActionRequiredPuts(getAllowActionRequiredPuts())
@@ -315,7 +319,7 @@ foam.CLASS({
         }
 
         if ( getAuthorize() ) {
-          delegate = new foam.nanos.auth.AuthorizationDAO.Builder(getX())
+          delegate = new foam.core.auth.AuthorizationDAO.Builder(getX())
             .setDelegate(delegate)
             .setAuthorizer(getAuthorizer())
             .build();
@@ -325,23 +329,23 @@ foam.CLASS({
           delegate = new foam.dao.history.HistoryDAO(getX(), getHistoryDAOKey(), delegate);
         }
 
-        if ( getNSpec() != null &&
-             getNSpec().getServe() &&
+        if ( getCSpec() != null &&
+             getCSpec().getServe() &&
              ! getAuthorize() &&
              ! getReadOnly() )
           logger.warning("EasyDAO", getName(), "Served DAO should be Authorized, or ReadOnly");
 
         if ( getLifecycleAware() ) {
-          delegate = new foam.nanos.auth.LifecycleAwareDAO.Builder(getX())
+          delegate = new foam.core.auth.LifecycleAwareDAO.Builder(getX())
             .setDelegate(delegate)
             .setName(getPermissionPrefix())
             .build();
-          indexes.add((foam.core.PropertyInfo) getOf().getAxiomByName("lifecycleState"));
+          indexes.add((foam.lang.PropertyInfo) getOf().getAxiomByName("lifecycleState"));
         }
 
         if ( getPermissioned() &&
-            ( getNSpec() != null && getNSpec().getServe() ) )
-          delegate = new foam.nanos.auth.PermissionedPropertyDAO.Builder(getX()).setDelegate(delegate).build();
+            ( getCSpec() != null && getCSpec().getServe() ) )
+          delegate = new foam.core.auth.PermissionedPropertyDAO.Builder(getX()).setDelegate(delegate).build();
 
         if ( getNoSelect() )
           delegate = new foam.dao.NoSelectDAO(getX());
@@ -350,18 +354,18 @@ foam.CLASS({
           delegate = new foam.dao.ReadOnlyDAO.Builder(getX()).setDelegate(delegate).build();
 
         if ( getLogging() )
-          delegate = new foam.nanos.logger.LoggingDAO.Builder(getX()).setNSpec(getNSpec()).setDelegate(delegate).build();
+          delegate = new foam.core.logger.LoggingDAO.Builder(getX()).setCSpec(getCSpec()).setDelegate(delegate).build();
 
         if ( ( foam.util.SafetyUtil.equals("true", System.getProperty("PIPELINEPMDAO", "false")) && getPipelinePm() ) &&
             getMdao() != null &&
             ( delegate instanceof ProxyDAO ) )
-            delegate = foam.dao.PipelinePMDAO.decorate(getX(), getNSpec(), delegate, 1);
+            delegate = foam.dao.PipelinePMDAO.decorate(getX(), getCSpec(), delegate, 1);
 
         if ( getOm() )
-          delegate = new foam.nanos.om.DAOOMLogger.Builder(getX()).setNSpec(getNSpec()).setDelegate(delegate).build();
+          delegate = new foam.core.om.DAOOMLogger.Builder(getX()).setCSpec(getCSpec()).setDelegate(delegate).build();
 
         if ( getPm() )
-          delegate = new foam.dao.PMDAO.Builder(getX()).setNSpec(getNSpec()).setDelegate(delegate).build();
+          delegate = new foam.dao.PMDAO.Builder(getX()).setCSpec(getCSpec()).setDelegate(delegate).build();
 
         for ( Indexer i : indexes ) {
           AddIndexCommand cmd = new AddIndexCommand();
@@ -429,9 +433,10 @@ foam.CLASS({
       class: 'Property'
     },
     {
-      documentation: 'Enable local in-memory caching of the DAO',
+      // For a full-cache set both ttlPurgeTime and ttlSelectPurgeTime to 0
       class: 'Boolean',
       name: 'cache',
+      documentation: 'Enable local in-memory caching of the DAO',
       generateJava: false
     },
     {
@@ -442,23 +447,25 @@ foam.CLASS({
       generateJava: false
     },
     {
-      documentation: 'Set polling property for the caching DAO',
       class: 'FObjectProperty',
-      of: 'foam.core.Property',
       name: 'pollingProperty',
+      documentation: 'Set polling property for the caching DAO',
+      of: 'foam.lang.Property',
       generateJava: false
     },
     {
-      documentation: 'Time to wait before purging cache on find().',
+      // Default is changed to 15000 (15s) in ClientBuilder
       class: 'Long',
       name: 'ttlPurgeTime',
+      documentation: 'Time to wait before purging cache on find().',
       units: 'ms',
       generateJava: false
     },
     {
-      documentation: 'Time to wait before purging cache on select().',
+      // Default is changed to 15000 (15s) in ClientBuilder
       class: 'Long',
       name: 'ttlSelectPurgeTime',
+      documentation: 'Time to wait before purging cache on select().',
       units: 'ms',
       generateJava: false
     },
@@ -476,14 +483,13 @@ foam.CLASS({
     },
     {
       class: 'Object',
-      type: 'foam.nanos.auth.Authorizer',
+      type: 'foam.core.auth.Authorizer',
       name: 'authorizer',
       javaFactory: `
-      if ( foam.nanos.auth.Authorizable.class.isAssignableFrom(getOf().getObjClass()) ) {
-        return new foam.nanos.auth.AuthorizableAuthorizer(getPermissionPrefix());
-      } else {
-        return new foam.nanos.auth.StandardAuthorizer(getPermissionPrefix());
+      if ( foam.core.auth.Authorizable.class.isAssignableFrom(getOf().getObjClass()) ) {
+        return new foam.core.auth.AuthorizableAuthorizer(getPermissionPrefix());
       }
+      return new foam.core.auth.StandardAuthorizer(getPermissionPrefix());
       `
     },
     {
@@ -532,7 +538,7 @@ foam.CLASS({
     {
       documentation: 'Validator for the validatingDAO decorator',
       class: 'FObjectProperty',
-      of: 'foam.core.Validator',
+      of: 'foam.lang.Validator',
       name: 'validator'
     },
     {
@@ -543,7 +549,7 @@ foam.CLASS({
     },
     {
       documentation: 'Keep a history of all state changes to the DAO',
-      class: 'foam.core.Enum',
+      class: 'foam.lang.Enum',
       of: 'foam.dao.JournalType',
       name: 'journalType',
       value: 'NO_JOURNAL'
@@ -563,6 +569,19 @@ foam.CLASS({
       of: 'foam.dao.Journal',
       generateJava: false,
       name: 'journal'
+    },
+    {
+      class: 'foam.lang.Enum',
+      of: 'foam.dao.DatabaseType',
+      name: 'databaseType',
+      value: 'NONE'
+    },
+    {
+      class: 'String',
+      name: 'databaseTableName',
+      javaFactory: `
+      return getJournalName();
+      `
     },
     {
       documentation: 'Enable logging on the DAO',
@@ -683,19 +702,22 @@ foam.CLASS({
         // TODO: This should come from the server via a lookup from a NamedBox.
         var box = this.TimeoutBox.create({
           delegate: this.remoteListenerSupport ?
-            this.WebSocketBox.create({ uri: this.serviceName }) :
-            this.HTTPBox.create({ url: this.serviceName })
+            this.WebSocketBox.create({uri: this.serviceName}) :
+            this.HTTPBox.create({url: this.serviceName})
         });
+
         if ( this.crunchBoxEnabled ) {
-          box = this.CrunchClientBox.create({ delegate: box });
+          box = this.CrunchClientBox.create({delegate: box});
         }
+
         if ( this.retryBoxMaxAttempts != 0 ) {
           box = this.RetryBox.create({
             maxAttempts: this.retryBoxMaxAttempts,
-            delegate: box,
+            delegate: box
           });
         }
-        return this.SessionClientBox.create({ delegate: box });
+
+        return this.SessionClientBox.create({delegate: box});
       }
     },
     {
@@ -721,7 +743,7 @@ foam.CLASS({
     },
     {
       class: 'FObjectArray',
-      of: 'foam.core.FObject',
+      of: 'foam.lang.FObject',
       generateJava: false,
       name: 'decorators'
     },
@@ -732,7 +754,7 @@ foam.CLASS({
     },
     {
       class: 'FObjectArray',
-      of: 'foam.core.PropertyInfo',
+      of: 'foam.lang.PropertyInfo',
       name: 'index'
     },
     {
@@ -749,7 +771,7 @@ foam.CLASS({
       documentation: 'Decorate with a ServiceProviderAwareDAO',
       name: 'serviceProviderAware',
       class: 'Boolean',
-      javaFactory: 'return foam.nanos.auth.ServiceProviderAware.class.isAssignableFrom(getOf().getObjClass());'
+      javaFactory: 'return foam.core.auth.ServiceProviderAware.class.isAssignableFrom(getOf().getObjClass());'
     },
     {
       name: 'subdomainAware',
@@ -758,32 +780,32 @@ foam.CLASS({
     {
       name: 'lifecycleAware',
       class: 'Boolean',
-      javaFactory: 'return getEnableInterfaceDecorators() && foam.nanos.auth.LifecycleAware.class.isAssignableFrom(getOf().getObjClass());'
+      javaFactory: 'return getEnableInterfaceDecorators() && foam.core.auth.LifecycleAware.class.isAssignableFrom(getOf().getObjClass());'
     },
     {
       name: 'createdAware',
       class: 'Boolean',
-      javaFactory: 'return getEnableInterfaceDecorators() && foam.nanos.auth.CreatedAware.class.isAssignableFrom(getOf().getObjClass());'
+      javaFactory: 'return getEnableInterfaceDecorators() && foam.core.auth.CreatedAware.class.isAssignableFrom(getOf().getObjClass());'
     },
     {
       name: 'createdByAware',
       class: 'Boolean',
-      javaFactory: 'return getEnableInterfaceDecorators() && foam.nanos.auth.CreatedByAware.class.isAssignableFrom(getOf().getObjClass());'
+      javaFactory: 'return getEnableInterfaceDecorators() && foam.core.auth.CreatedByAware.class.isAssignableFrom(getOf().getObjClass());'
     },
     {
       name: 'lastModifiedAware',
       class: 'Boolean',
-      javaFactory: 'return getEnableInterfaceDecorators() && foam.nanos.auth.LastModifiedAware.class.isAssignableFrom(getOf().getObjClass());'
+      javaFactory: 'return getEnableInterfaceDecorators() && foam.core.auth.LastModifiedAware.class.isAssignableFrom(getOf().getObjClass());'
     },
     {
       name: 'lastModifiedByAware',
       class: 'Boolean',
-      javaFactory: 'return getEnableInterfaceDecorators() && foam.nanos.auth.LastModifiedByAware.class.isAssignableFrom(getOf().getObjClass());'
+      javaFactory: 'return getEnableInterfaceDecorators() && foam.core.auth.LastModifiedByAware.class.isAssignableFrom(getOf().getObjClass());'
     },
     {
       name: 'capable',
       class: 'Boolean',
-      javaFactory: 'return getEnableInterfaceDecorators() && foam.nanos.crunch.lite.Capable.class.isAssignableFrom(getOf().getObjClass());'
+      javaFactory: 'return getEnableInterfaceDecorators() && foam.core.crunch.lite.Capable.class.isAssignableFrom(getOf().getObjClass());'
     },
     {
       name: 'allowActionRequiredPuts',
@@ -814,7 +836,7 @@ foam.CLASS({
         (ie. ApprovableAwareDAO) completely and since ApprovableAware interface implements
         LifecycleAware the lifecycleState property on the object will not be changed to ACTIVE.
       `,
-      javaFactory: 'return getEnableInterfaceDecorators() && foam.nanos.approval.ApprovableAware.class.isAssignableFrom(getOf().getObjClass());'
+      javaFactory: 'return getEnableInterfaceDecorators() && foam.core.approval.ApprovableAware.class.isAssignableFrom(getOf().getObjClass());'
     },
     {
       name: 'approvableAwareEnabled',
@@ -853,7 +875,7 @@ foam.CLASS({
         // TODO: replace logger instantiation once javaFactory issue above is fixed
         Logger logger = (Logger) getX().get("logger");
         if ( logger == null ) {
-          logger = foam.nanos.logger.StdoutLogger.instance();
+          logger = foam.core.logger.StdoutLogger.instance();
         }
 
         logger = new PrefixLogger(new Object[] {
@@ -875,19 +897,24 @@ foam.CLASS({
     },
     {
       name: 'getJournalDelegate',
-      args: [
-        {
-          type: 'Context',
-          name: 'x'
-        },
-        {
-          type: 'foam.dao.DAO',
-          name: 'delegate'
-        }
-      ],
+      args: 'Context x, foam.dao.DAO delegate',
       type: 'foam.dao.DAO',
       javaCode: `
-        if ( getJournalType().equals(JournalType.SINGLE_JOURNAL) ) {
+        if ( getDatabaseType() != DatabaseType.NONE &&
+             ! SafetyUtil.isEmpty(getDatabaseTableName()) &&
+             getInnerDAO() == null &&
+             ! getWriteOnly() &&
+             ! getReadOnly() &&
+             ! getNullify() ) {
+
+          DDAO ddao = new DDAO(x);
+          ddao.setDatabaseType(getDatabaseType());
+          ddao.setDatabaseTableName(getDatabaseTableName());
+          ddao.setJournalName(getJournalName());
+          ddao.setWaitReplay(getWaitReplay());
+          ddao.setDelegate(delegate);
+          delegate = ddao;
+        } else if ( getJournalType().equals(JournalType.SINGLE_JOURNAL) ) {
           if ( getWriteOnly() ) {
             delegate = new foam.dao.WriteOnlyJDAO(x, delegate, getOf(), getJournalName());
           } else {
@@ -984,10 +1011,12 @@ foam.CLASS({
 
             var cache = this.mdao;
             if ( this.dedup ) cache = this.DeDupDAO.create({delegate: cache});
-            if ( Array.isArray(this.order) && this.order.length > 0 ) cache = this.OrderedDAO.create({
-              delegate: cache,
-              comparator: foam.compare.toCompare(this.order)
-            });
+            if ( Array.isArray(this.order) && this.order.length > 0 ) {
+              cache = this.OrderedDAO.create({
+                delegate: cache,
+                comparator: foam.compare.toCompare(this.order)
+              });
+            }
 
             // Full cache
             dao = this.CachingDAO.create({
@@ -997,22 +1026,22 @@ foam.CLASS({
               pollingInterval: this.pollingInterval,
               pollingProperty: this.pollingProperty
             });
-          }
+          } else {
+            // TTL find cache
+            if ( this.ttlPurgeTime > 0 )  {
+              dao = this.TTLCachingDAO.create({
+                delegate: dao,
+                purgeTime: this.ttlPurgeTime
+              });
+            }
 
-          // TTL find cache
-          if ( this.ttlPurgeTime > 0 )  {
-            dao = this.TTLCachingDAO.create({
-              delegate: dao,
-              purgeTime: this.ttlPurgeTime
-            });
-          }
-
-          // TTL select cache
-          if ( this.ttlSelectPurgeTime > 0 ) {
-            dao = this.TTLSelectCachingDAO.create({
-              delegate: dao,
-              purgeTime: this.ttlSelectPurgeTime
-            });
+            // TTL select cache
+            if ( this.ttlSelectPurgeTime > 0 ) {
+              dao = this.TTLSelectCachingDAO.create({
+                delegate: dao,
+                purgeTime: this.ttlSelectPurgeTime
+              });
+            }
           }
         }
       }
@@ -1113,7 +1142,7 @@ foam.CLASS({
 
       if ( this.logging ) {
         dao = this.LoggingDAO.create({
-          nSpec: this.nSpec,
+          cSpec: this.cSpec,
           delegate: dao
         });
       }
@@ -1157,7 +1186,7 @@ foam.CLASS({
     {
       name: 'addPropertyIndex',
       type: 'foam.dao.EasyDAO',
-      args: 'foam.core.Indexer... indexers',
+      args: 'foam.lang.Indexer... indexers',
       code: function addPropertyIndex() {
         this.mdao && this.mdao.addPropertyIndex.apply(this.mdao, arguments);
         return this;
@@ -1215,7 +1244,7 @@ foam.CLASS({
         {
           documentation: 'Decorator in the EasyDAO chain to place in relation to',
           name: 'location',
-          javaType: 'foam.core.ClassInfo'
+          javaType: 'foam.lang.ClassInfo'
         },
         {
           documentation: 'If true, decorator chain placed before the dao instead of inbetween the supplied dao and mdao',

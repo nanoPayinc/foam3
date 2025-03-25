@@ -1,0 +1,27 @@
+p({
+  class:"foam.core.cron.Cron",
+  schedule:{class:"foam.core.cron.IntervalSchedule",duration:{class:"foam.core.cron.TimeHMS",minute:5},start:1708022100170},
+  reattemptSchedule:{class:"foam.core.cron.IntervalSchedule",duration:{class:"foam.core.cron.TimeHMS",minute:5},start:1708022013552},
+  id:"updateCMs",
+  description:"Update expired CMs.",
+  clusterable: false,
+  priority:4,
+  code:"""
+import foam.core.cm.CM;
+import foam.mlang.MLang;
+
+dao = x.get(\"cmDAO\");
+
+a = dao.
+  where(MLang.LT(CM.EXPIRY, new java.util.Date())).
+  where(MLang.EQ(CM.ENABLED, true)).
+  select().getArray();
+
+for ( int i = 0 ; i < a.size() ; i++ ) {
+  try {
+    a.get(i).executeAndReschedule(x);
+  } catch (Throwable t) {
+  }
+}
+"""
+})

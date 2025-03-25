@@ -12,11 +12,11 @@ foam.CLASS({
   properties: [
     {
       class: 'FObjectArray',
-      of: 'foam.nanos.crunch.Capability',
+      of: 'foam.core.crunch.Capability',
       name: 'capabilities',
       factory: () => [
         {
-          class: 'foam.nanos.crunch.Capability',
+          class: 'foam.core.crunch.Capability',
           id: 'Entry',
           wizardConfig: {
             class: 'foam.u2.crunch.EasyCrunchWizard',
@@ -24,16 +24,16 @@ foam.CLASS({
           }
         },
         {
-          class: 'foam.nanos.crunch.Capability',
+          class: 'foam.core.crunch.Capability',
           id: `HasData`,
-          of: 'foam.core.StringHolder'
+          of: 'foam.lang.StringHolder'
         },
         {
-          class: 'foam.nanos.crunch.Capability',
+          class: 'foam.core.crunch.Capability',
           id: `WantsData`,
-          of: 'foam.core.StringHolder',
+          of: 'foam.lang.StringHolder',
           wizardlet: {
-            class: 'foam.nanos.crunch.ui.CapabilityWizardlet',
+            class: 'foam.core.crunch.ui.CapabilityWizardlet',
             wao: {
               class: 'foam.u2.wizard.wao.SplitWAO',
               loader: {
@@ -47,7 +47,7 @@ foam.CLASS({
     },
     {
       class: 'FObjectArray',
-      of: 'foam.nanos.crunch.CapabilityCapabilityJunction',
+      of: 'foam.core.crunch.CapabilityCapabilityJunction',
       name: 'capabilityCapabilityJunctions',
       factory: () => [
         ['Entry','WantsData'],

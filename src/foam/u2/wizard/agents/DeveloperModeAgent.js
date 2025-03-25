@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.wizard.agents',
   name: 'DeveloperModeAgent',
-  implements: [ 'foam.core.ContextAgent' ],
+  implements: [ 'foam.lang.ContextAgent' ],
 
   imports: [
     'subject',
@@ -19,7 +19,7 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.nanos.crunch.UserCapabilityJunction'
+    'foam.core.crunch.UserCapabilityJunction'
   ],
 
   properties: [

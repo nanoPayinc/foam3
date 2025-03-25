@@ -1,0 +1,8 @@
+p({
+  class: "foam.core.notification.test.DAONotificationTest",
+  id: "DAONotificationTest"
+})
+p({
+  class: "foam.core.notification.test.EmailNotificationTest",
+  id: "EmailNotificationTest"
+})

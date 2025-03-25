@@ -1,0 +1,44 @@
+/**
+ * @license
+ * Copyright 2018 The FOAM Authors. All Rights Reserved.
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+
+foam.CLASS({
+  package: 'foam.core.auth',
+  name: 'ClientAgentAuthService',
+
+  implements: [
+    'foam.core.auth.AgentAuthService'
+  ],
+
+  requires: [
+    'foam.box.HTTPBox',
+    'foam.box.SessionClientBox'
+  ],
+
+  properties: [
+    {
+      class: 'String',
+      name: 'serviceName'
+    },
+    {
+      class: 'Stub',
+      name: 'delegate',
+      of: 'foam.core.auth.AgentAuthService',
+      factory: function() {
+        return this.SessionClientBox.create({delegate:this.HTTPBox.create({
+          method: 'POST',
+          url: this.serviceName
+        })});
+      },
+      swiftFactory: `
+return SessionClientBox_create(["delegate": HTTPBox_create([
+  "method": "POST",
+  "url": serviceName
+])])
+      `
+    }
+  ]
+});

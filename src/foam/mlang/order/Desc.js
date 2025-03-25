@@ -10,7 +10,7 @@ foam.CLASS({
 
   implements: [
     'foam.mlang.order.Comparator',
-    'foam.core.Serializable',
+    'foam.lang.Serializable',
     'foam.dao.SQLStatement'
   ],
 
@@ -27,7 +27,7 @@ foam.CLASS({
         if ( type.isInstance(ret) ) {
           return ret;
         }
-        return foam.core.FObjectProperty.ADAPT.value.call(this, o, n, prop);
+        return foam.lang.FObjectProperty.ADAPT.value.call(this, o, n, prop);
       },
       javaJSONParser: 'foam.lib.json.ExprParser.instance()'
     }

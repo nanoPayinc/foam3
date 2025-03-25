@@ -10,7 +10,7 @@ foam.CLASS({
   extends: 'foam.u2.detail.AbstractSectionedDetailView',
 
   requires: [
-    'foam.core.ArraySlot',
+    'foam.lang.ArraySlot',
     'foam.u2.borders.CardBorder',
     'foam.u2.detail.SectionView',
     'foam.u2.Tab',
@@ -91,13 +91,13 @@ foam.CLASS({
                   .forEach(availableSections, function(s) {
                     if ( s.title ) {
                       var title$ = foam.Function.isInstance(s.title) ?
-                        foam.core.ExpressionSlot.create({
+                        foam.lang.ExpressionSlot.create({
                           obj: self.data,
                           code: s.title
                         }) :
                         s.title$;
 
-                      var tab = foam.core.SimpleSlot.create({}, self);
+                      var tab = foam.lang.SimpleSlot.create({}, self);
                       this
                         .start(self.Tab, { label$: title$ || self.defaultSectionLabel }, tab)
                             .tag(s.view, {

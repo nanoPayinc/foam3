@@ -15,7 +15,7 @@ foam.CLASS({
   properties: [
     {
       name: 'axiomClass',
-      value: 'foam.core.Property'
+      value: 'foam.lang.Property'
     }
   ],
 
@@ -38,7 +38,7 @@ foam.CLASS({
     },
     function toFriendlyType(p) {
       var propCls = p.cls_.id;
-      const prefix = 'foam.core.';
+      const prefix = 'foam.lang.';
       if ( propCls.startsWith(prefix) ) {
         propCls = propCls.slice(prefix.length);
       }

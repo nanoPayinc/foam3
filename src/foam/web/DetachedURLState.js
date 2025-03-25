@@ -54,7 +54,7 @@ foam.CLASS({
     },
     {
       name: 'bindingsMap_',
-      documentation: 'Map of {<key>: foam.core.Slot} comprising state.',
+      documentation: 'Map of {<key>: foam.lang.Slot} comprising state.',
       factory: function() { return {}; }
     },
     {
@@ -66,7 +66,7 @@ foam.CLASS({
     {
       name: 'unboundMap_',
       documentation: `Map of {<key>: <deserialized value>} that contains
-          bindings loaded from hash, but not bound to a foam.core.Slot.`,
+          bindings loaded from hash, but not bound to a foam.lang.Slot.`,
       factory: function() { return {}; }
     },
     {

@@ -22,9 +22,9 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.nanos.crunch.AgentCapabilityJunction',
-    'foam.nanos.crunch.CapabilityJunctionStatus',
-    'foam.nanos.crunch.UserCapabilityJunction',
+    'foam.core.crunch.AgentCapabilityJunction',
+    'foam.core.crunch.CapabilityJunctionStatus',
+    'foam.core.crunch.UserCapabilityJunction',
     'foam.u2.crunch.Style',
     'foam.u2.Tooltip',
     'foam.u2.view.ReadOnlyEnumView'
@@ -62,7 +62,7 @@ foam.CLASS({
       name: 'associatedEntity',
       expression: function(data, subject) {
         if ( ! data || ! subject ) return '';
-        return data.associatedEntity === foam.nanos.crunch.AssociatedEntity.USER ? subject.user : subject.realUser;
+        return data.associatedEntity === foam.core.crunch.AssociatedEntity.USER ? subject.user : subject.realUser;
       }
     },
     {

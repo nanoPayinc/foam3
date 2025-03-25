@@ -144,8 +144,7 @@ foam.CLASS({
     },
 
     function open() {
-      this.document.body.insertAdjacentHTML('beforeend', this.outerHTML);
-      this.load();
+      this.write();
     }
   ],
 

@@ -7,10 +7,10 @@
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'AbstractMethodSwiftRefinement',
-  refines: 'foam.core.AbstractMethod',
+  refines: 'foam.lang.AbstractMethod',
   flags: ['swift'],
   requires: [
-    'foam.core.Argument',
+    'foam.lang.Argument',
     'foam.swift.Argument as SwiftArgument',
     'foam.swift.Field',
     'foam.swift.Method',
@@ -181,7 +181,7 @@ foam.CLASS({
     },
     function getSwiftCode(parentCls) {
       if (this.swiftCode) return this.swiftCode;
-      if (foam.core.internal.InterfaceMethod.isInstance(
+      if (foam.lang.internal.InterfaceMethod.isInstance(
           parentCls.getSuperAxiomByName(this.name))) {
         return 'fatalError()';
       }
@@ -198,12 +198,12 @@ foam.CLASS({
       var parentMethod = parentCls.getSuperAxiomByName(this.name);
       if (!parentMethod) return false;
 
-      var InterfaceMethod = foam.core.internal.InterfaceMethod;
+      var InterfaceMethod = foam.lang.internal.InterfaceMethod;
 
       if (InterfaceMethod.isInstance(parentMethod)) {
         // Find the interface that the method belongs to and determine if a
         // parent implements this interface.
-        var methodInterface = parentCls.getAxiomsByClass(foam.core.Implements).find(function(i) {
+        var methodInterface = parentCls.getAxiomsByClass(foam.lang.Implements).find(function(i) {
           return foam.lookup(i.path).getAxiomsByClass(InterfaceMethod).find(function(m) {
             return m === parentMethod;
           })
@@ -267,7 +267,7 @@ class MInfo: MethodInfo {
   let args: [MethodArg] = [] //TODO
   let classInfo: ClassInfo
   init(_ ci: ClassInfo) { classInfo = ci }
-  public func getSlot(_ obj: <%=foam.core.FObject.model_.swiftName%>?) -> <%=foam.swift.core.Slot.model_.swiftName%>? {
+  public func getSlot(_ obj: <%=foam.lang.FObject.model_.swiftName%>?) -> <%=foam.swift.core.Slot.model_.swiftName%>? {
     let obj = obj as! <%=parentCls.model_.swiftName%>
     return obj.<%=this.swiftSlotName%>
   }

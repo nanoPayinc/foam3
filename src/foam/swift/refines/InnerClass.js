@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'InnerClassSwiftRefinement',
-  refines: 'foam.core.InnerClass',
+  refines: 'foam.lang.InnerClass',
   flags: ['swift'],
   requires: [
     'foam.swift.Method',

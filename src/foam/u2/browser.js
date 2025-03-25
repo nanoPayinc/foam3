@@ -138,13 +138,13 @@ foam.CLASS({
 
         // Otherwise search for plausible string-valued candidates.
         // Disallow hidden properties and 'id'.
-        var props = of.getAxiomsByClass(foam.core.Property);
+        var props = of.getAxiomsByClass(foam.lang.Property);
         var candidates = [];
         for ( var i = 0; i < props.length; i++ ) {
           var p = props[i];
           if ( ! p.hidden && p.name !== 'id' &&
-              (foam.core.Property.isInstance(p) ||
-               foam.core.String.isInstance(p)) ) {
+              (foam.lang.Property.isInstance(p) ||
+               foam.lang.String.isInstance(p)) ) {
             candidates.push(p);
           }
         }

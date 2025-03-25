@@ -7,18 +7,14 @@
 foam.POM({
     name: 'foam-full',
     version: 3,
-    envVars: [
-      { name: 'NAME', value: 'foam'}
-    ],
     excludes: [ 'node_modules' ],
     projects: [
       { name: 'src/pom' },
-      { name: 'src/foam/nanos/pom' },
-      { name: 'src/foam/nanos/analytics/mixpanel/pom' },
+      { name: 'src/foam/core/pom' },
+      { name: 'src/foam/core/analytics/mixpanel/pom' },
       { name: 'src/foam/net/ipgeo/pom' },
       { name: 'src/foam/u2/wizard/pom' },
       { name: 'src/foam/u2/address/pom' },
-      { name: 'src/foam/flow/laminar/pom' },
       { name: 'src/io/c9/ace/pom' },
       { name: 'webroot/pom' }
     ],
@@ -29,8 +25,9 @@ foam.POM({
       'com.google.apis:google-api-services-drive:v3-rev72-1.22.0',
       'com.google.apis:google-api-services-sheets:v4-rev567-1.22.0',
       'com.google.oauth-client:google-oauth-client-jetty:1.22.0 -org.mortbay.jetty',
+      'com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10',
       'com.twilio.sdk:twilio:7.50.1',
-      'commons-codec:commons-codec:1.15',
+      'commons-codec:commons-codec:1.18.0',
       'commons-io:commons-io:2.13.0',
       'commons-lang:commons-lang:2.6',
       'commons-net:commons-net:3.6',
@@ -44,6 +41,7 @@ foam.POM({
       'org.apache.commons:commons-lang3:3.12.0',
       'org.apache.commons:commons-pool2:2.6.2',
       'org.apache.commons:commons-text:1.10.0',
+      'org.apache.pdfbox:pdfbox:2.0.27',
       'org.apache.xmlgraphics:batik-codec:1.17',
       'org.apache.xmlgraphics:batik-transcoder:1.17',
       'org.bouncycastle:bcpg-jdk18on:1.76',
@@ -63,8 +61,8 @@ foam.POM({
       'org.eclipse.jetty.websocket:websocket-jetty-server:11.0.23',
       'org.glassfish:javax.json:1.1.4',
       'org.java-websocket:Java-WebSocket:1.5.0',
+      'org.jsoup:jsoup:1.15.1', // HTML Parser
       'org.jtwig:jtwig-core:5.87.0.RELEASE',
-      'org.mongodb:mongodb-driver:3.4.2',
       'org.postgresql:postgresql:42.3.8',
       'nl.martijndwars:web-push:5.1.1', // https://github.com/web-push-libs/webpush-java
       'com.eatthepath:fast-uuid:0.2.0',

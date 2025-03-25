@@ -1,0 +1,79 @@
+/**
+ * @license
+ * Copyright 2020 The FOAM Authors. All Rights Reserved.
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+foam.CLASS({
+  package: 'foam.core.crunch.ruler',
+  name: 'AuthorizeUCJStatusOnPut',
+  implements: [ 'foam.core.ruler.RuleAction' ],
+  tags: [ 'security' ],
+
+  javaImports: [
+    'foam.lang.ContextAgent',
+    'foam.lang.X',
+    'foam.core.auth.AuthService',
+    'foam.core.crunch.Capability',
+    'foam.core.crunch.UserCapabilityJunction',
+    'foam.core.logger.Logger',
+    'java.util.HashMap',
+    'static foam.core.crunch.CapabilityJunctionStatus.*'
+  ],
+
+  documentation: `
+    This rule prevents a UCJ status from being set above ACTION_REQUIRED if the
+    user in context does not have 'service.crunchService.unsafeSetStatus'.
+  `,
+
+  constants: [
+    {
+      type: 'String',
+      name: 'PERMISSION',
+      value: 'service.crunchService.unsafeSetStatus'
+    }
+  ],
+
+  methods: [
+    {
+      name: 'applyAction',
+      javaCode: `
+        Logger logger = (Logger) x.get("logger");
+        String className = getClass().getSimpleName();
+
+        agency.submit(x, new ContextAgent() {
+          X systemX = ruler.getX();
+          @Override
+          public void execute(X x) {
+            var ol = (UserCapabilityJunction) oldObj;
+            var nu = (UserCapabilityJunction) obj;
+            var auth = (AuthService) x.get("auth");
+
+            logger.debug(className, "start", nu);
+
+            if ( nu.getStatus() == AVAILABLE ||
+              nu.getStatus() == ACTION_REQUIRED
+            ) {
+              // TODO: Update code when decision is made about isRenewable
+              return;
+            }
+
+            if ( ol == null ) {
+              if ( ! auth.check(x, PERMISSION) ) {
+                nu.setStatus(ACTION_REQUIRED);
+                logger.debug(className, "permission denied", PERMISSION, nu);
+              }
+              return;
+            }
+
+            if ( ! auth.check(x, PERMISSION) ) {
+              nu.setStatus(ol.getStatus());
+              logger.debug(className, "permission denied", PERMISSION, nu);
+            }
+
+          }
+        }, "authorize ucj status on put");
+      `
+    }
+  ]
+});

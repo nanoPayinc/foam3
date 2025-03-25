@@ -6,7 +6,7 @@
 
 package foam.dao;
 
-import foam.core.FObject;
+import foam.lang.FObject;
 import foam.dao.index.*;
 import foam.dao.Sink;
 import foam.mlang.order.Comparator;
@@ -23,11 +23,11 @@ public class MaterializedDAOIndex
   }
 
   public Object put(Object state, FObject value) {
-    foam.nanos.logger.StdoutLogger.instance().info("MaterializedDAOIndex.put",value);
+    foam.core.logger.StdoutLogger.instance().info("MaterializedDAOIndex.put",value);
     try {
       return dao_.indexPut(state, value);
     } catch (Throwable t) {
-      foam.nanos.logger.StdoutLogger.instance().info("MaterializedDAOIndex.put",value, t);
+      foam.core.logger.StdoutLogger.instance().info("MaterializedDAOIndex.put",value, t);
       throw new RuntimeException(t);
     }
   }

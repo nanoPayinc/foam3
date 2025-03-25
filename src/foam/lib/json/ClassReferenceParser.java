@@ -6,7 +6,7 @@
 
 package foam.lib.json;
 
-import foam.core.ClassInfo;
+import foam.lang.ClassInfo;
 import foam.lib.parse.*;
 
 public class ClassReferenceParser
@@ -57,7 +57,7 @@ public class ClassReferenceParser
     // ClassInfo of the modelled class if found, otherwise return null.
     //
     // Eg.,
-    // When parsing "foam.nanos.auth.User", returns User.getOwnClassInfo().
+    // When parsing "foam.core.auth.User", returns User.getOwnClassInfo().
     //
     // And when parsing "java.lang.Object", returns null
     // because java.lang.Object is not a modelled class.

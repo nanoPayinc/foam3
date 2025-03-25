@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'ThenBy',
 
   implements: [
-    'foam.core.Serializable',
+    'foam.lang.Serializable',
     'foam.mlang.order.Comparator'
   ],
 

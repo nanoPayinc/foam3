@@ -1,0 +1,38 @@
+p({
+  "class":"foam.core.ruler.Rule",
+  "id":"foam-core-pii-PIIReportTicketRule",
+  "name":"PIIReportTicketRule",
+  "documentation":"Generate PII Report",
+  "enabled":true,
+  "saveHistory":false,
+  "ruleGroup": "auth",
+  "daoKey": "localTicketDAO",
+  "operation": 0,
+  "lifecycleState": 1,
+  "predicate": {
+    class: "foam.core.ruler.predicate.FScriptRulePredicate",
+    query: 'n instanceof foam.core.pii.PIIReportTicket && n.status == "OPEN"'
+  },
+  action: {
+    "class": "foam.core.pii.PIIReportTicketRuleAction"
+  }
+})
+p({
+  "class":"foam.core.ruler.Rule",
+  "id":"foam-core-pii-PIIReportTicketSendRule",
+  "name":"PIIReportTicketSendRule",
+  "documentation":"Generate PII Report email and send",
+  "enabled":true,
+  "saveHistory":false,
+  "ruleGroup": "auth",
+  "daoKey": "localTicketDAO",
+  "operation": 1,
+  "lifecycleState": 1,
+  "predicate": {
+    class: "foam.core.ruler.predicate.FScriptRulePredicate",
+    query: 'n instanceof foam.core.pii.PIIReportTicket && o.status != n.status && n.status == "CLOSED"'
+  },
+  action: {
+    "class": "foam.core.pii.PIIReportTicketSendRuleAction"
+  }
+})

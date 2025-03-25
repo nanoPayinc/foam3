@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.wizard.wizardflow',
   name: 'SubDSL',
-  extends: 'foam.core.Fluent',
+  extends: 'foam.lang.Fluent',
 
   imports: [
     'sequence'

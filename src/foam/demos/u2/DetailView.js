@@ -163,7 +163,7 @@ foam.CLASS({
       this.SUPER();
       var self = this, data = this.data;
 
-//      this.add(this.data.cls_.getAxiomsByClass(foam.core.Property).filter(p => ! p.hidden));
+//      this.add(this.data.cls_.getAxiomsByClass(foam.lang.Property).filter(p => ! p.hidden));
 
       this.
         start(LabelledSection, {title: 'User'}).

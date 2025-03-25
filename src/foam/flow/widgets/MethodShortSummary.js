@@ -13,7 +13,7 @@ foam.CLASS({
   `,
 
   properties: [
-    ['axiomClass', 'foam.core.Method'],
+    ['axiomClass', 'foam.lang.Method'],
     ['ownAxioms', true]
   ],
 
@@ -58,7 +58,7 @@ foam.CLASS({
     },
     function toFriendlyType(p) {
       var propCls = p.cls_.id;
-      const prefix = 'foam.core.';
+      const prefix = 'foam.lang.';
       if ( propCls.startsWith(prefix) ) {
         propCls = propCls.slice(prefix.length);
       }

@@ -8,7 +8,7 @@
 foam.CLASS({
   package: 'foam.box',
   name: 'SessionIDProperty',
-  extends: 'foam.core.String',
+  extends: 'foam.lang.String',
 
   properties: [
     {

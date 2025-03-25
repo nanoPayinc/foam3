@@ -6,7 +6,7 @@
 package foam.lib.json;
 
 import foam.lib.parse.*;
-import foam.core.*;
+import foam.lang.*;
 
 public class UnknownReferenceParser
   extends ProxyParser

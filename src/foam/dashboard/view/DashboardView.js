@@ -17,7 +17,7 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.nanos.menu.Menu'
+    'foam.core.menu.Menu'
   ],
 
   css: `

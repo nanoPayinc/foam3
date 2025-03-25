@@ -8,12 +8,12 @@ foam.CLASS({
   package: 'foam.mlang.predicate',
   name: 'IsClassOf',
   extends: 'foam.mlang.predicate.AbstractPredicate',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   documentation: 'Predicate which checks if the class of object is a specified class.',
 
   javaCode: `
-  public IsClassOf(foam.core.ClassInfo of) {
+  public IsClassOf(foam.lang.ClassInfo of) {
     setOf(of);
   }
   `,
@@ -47,7 +47,7 @@ foam.CLASS({
     {
       name: 'ruleF',
       type: 'Boolean',
-      args: 'Context x, foam.core.FObject o, foam.core.FObject n',
+      args: 'Context x, foam.lang.FObject o, foam.lang.FObject n',
       code: 'return this.f(n);',
       javaCode: 'return f(n);'
     },

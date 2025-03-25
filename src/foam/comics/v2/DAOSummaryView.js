@@ -118,7 +118,7 @@ foam.CLASS({
           if ( ! this.idOfRecord )
             return '';
           var id = '' + this.idOfRecord;
-          if ( id && foam.core.MultiPartID.isInstance(this.config.of.ID) ) {
+          if ( id && foam.lang.MultiPartID.isInstance(this.config.of.ID) ) {
             id = id.substr(1, id.length - 2).replaceAll(':', '=');
           }
           return id;
@@ -158,7 +158,7 @@ foam.CLASS({
       isEnabled: function(config, data) {
         if ( config.CRUDEnabledActionsAuth && config.CRUDEnabledActionsAuth.isEnabled ) {
           try {
-            let permissionString = config.CRUDEnabledActionsAuth.enabledActionsAuth.permissionFactory(foam.nanos.dao.Operation.UPDATE, data);
+            let permissionString = config.CRUDEnabledActionsAuth.enabledActionsAuth.permissionFactory(foam.core.dao.Operation.UPDATE, data);
 
             return this.auth.check(null, permissionString);
           } catch(e) {
@@ -193,7 +193,7 @@ foam.CLASS({
       isEnabled: function(config, data) {
         if ( config.CRUDEnabledActionsAuth && config.CRUDEnabledActionsAuth.isEnabled ) {
           try {
-            let permissionString = config.CRUDEnabledActionsAuth.enabledActionsAuth.permissionFactory(foam.nanos.dao.Operation.CREATE, data);
+            let permissionString = config.CRUDEnabledActionsAuth.enabledActionsAuth.permissionFactory(foam.core.dao.Operation.CREATE, data);
 
             return this.auth.check(null, permissionString);
           } catch(e) {
@@ -228,7 +228,7 @@ foam.CLASS({
       isEnabled: function(config, data) {
         if ( config.CRUDEnabledActionsAuth && config.CRUDEnabledActionsAuth.isEnabled ) {
           try {
-            let permissionString = config.CRUDEnabledActionsAuth.enabledActionsAuth.permissionFactory(foam.nanos.dao.Operation.REMOVE, data);
+            let permissionString = config.CRUDEnabledActionsAuth.enabledActionsAuth.permissionFactory(foam.core.dao.Operation.REMOVE, data);
 
             return this.auth.check(null, permissionString);
           } catch(e) {
@@ -347,7 +347,7 @@ foam.CLASS({
     },
 
     async function populatePrimaryAction(of, data) {
-      var allActions = of.getAxiomsByClass(foam.core.Action);
+      var allActions = of.getAxiomsByClass(foam.lang.Action);
       var defaultAction = allActions.filter((a) => a.isDefault);
       var acArray = defaultAction.length >= 1
         ? defaultAction

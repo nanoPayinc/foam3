@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'TopicSwiftRefinement',
-  refines: 'foam.core.Topic',
+  refines: 'foam.lang.Topic',
   flags: ['swift'],
   methods: [
     function writeToSwiftClass(cls, parentCls) {

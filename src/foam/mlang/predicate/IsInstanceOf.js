@@ -8,12 +8,12 @@ foam.CLASS({
   package: 'foam.mlang.predicate',
   name: 'IsInstanceOf',
   extends: 'foam.mlang.predicate.AbstractPredicate',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   documentation: 'Predicate which checks if objects are instances of the specified class.',
 
   javaCode: `
-    public IsInstanceOf(foam.core.ClassInfo of) {
+    public IsInstanceOf(foam.lang.ClassInfo of) {
       setOf(of);
     }
   `,
@@ -22,7 +22,7 @@ foam.CLASS({
     {
       class: 'Class',
       name: 'of',
-      javaType: 'foam.core.ClassInfo',
+      javaType: 'foam.lang.ClassInfo',
       view: {
         class: 'foam.u2.view.StrategizerChoiceView',
         desiredModelId: 'foam.Class'
@@ -49,7 +49,7 @@ foam.CLASS({
     {
       name: 'ruleF',
       type: 'Boolean',
-      args: 'Context x, foam.core.FObject o, foam.core.FObject n',
+      args: 'Context x, foam.lang.FObject o, foam.lang.FObject n',
       code: 'return this.f(n);',
       javaCode: 'return f(n);'
     },

@@ -34,6 +34,7 @@ foam.CLASS({
       class: 'foam.u2.ViewSpec',
       name: 'writeView'
     },
+    'realView',
     'prop',
     'args',
     {
@@ -62,6 +63,7 @@ foam.CLASS({
       var self = this;
       var callFromProperty = function() {
         self.prop && this.fromProperty && this.fromProperty(self.prop);
+        self.realView = this;
       };
       this.SUPER();
       this.addClass().add(this.slot(function(mode) {
@@ -90,6 +92,11 @@ foam.CLASS({
             console.warn('Unrecognized mode: ' + mode);
         }
       }));
+    },
+
+    function focus() {
+      if ( this.realView ) this.realView.focus();
+      return this;
     },
 
     function fromProperty(prop) {

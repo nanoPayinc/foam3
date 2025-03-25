@@ -16,7 +16,7 @@ foam.INTERFACE({
         { name: 'x',      type: 'Context' },
         { name: 'prefix', type: 'String' },
         { name: 'dao',    type: 'DAO' },
-        { name: 'obj',    type: 'foam.core.FObject' }
+        { name: 'obj',    type: 'foam.lang.FObject' }
       ]
     },
     {
@@ -26,7 +26,7 @@ foam.INTERFACE({
         { name: 'x',      type: 'Context' },
         { name: 'prefix', type: 'String' },
         { name: 'dao',    type: 'DAO' },
-        { name: 'obj',    type: 'foam.core.FObject' }
+        { name: 'obj',    type: 'foam.lang.FObject' }
       ]
     },
     {

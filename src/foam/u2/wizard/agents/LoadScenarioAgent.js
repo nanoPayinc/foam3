@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.wizard.agents',
   name: 'LoadScenarioAgent',
-  implements: [ 'foam.core.ContextAgent' ],
+  implements: [ 'foam.lang.ContextAgent' ],
 
   documentation: `
     Loads a wizard scenario - a wizard defined by "fake" capabilities
@@ -37,14 +37,14 @@ foam.CLASS({
       x = x.createSubContext({
         capabilityDAO: this.OrDAO.create({
           primary: this.ArrayDAO.create({
-            of: 'foam.nanos.crunch.Capability',
+            of: 'foam.core.crunch.Capability',
             array: scenario.capabilities
           }),
           delegate: x.capabilityDAO
         }),
         prerequisiteCapabilityJunctionDAO: this.OrDAO.create({
           primary: this.ArrayDAO.create({
-            of: 'foam.nanos.crunch.CapabilityCapabilityJunction',
+            of: 'foam.core.crunch.CapabilityCapabilityJunction',
             array: scenario.capabilityCapabilityJunctions
           }),
           delegate: x.prerequisiteCapabilityJunctionDAO

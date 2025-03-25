@@ -7,13 +7,13 @@
 foam.CLASS({
   package: 'foam.dao.test',
   name: 'FileRollCmdTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
 
   javaImports: [
     'foam.dao.F3FileJournal',
     'foam.dao.FileRollCmd',
-    'foam.nanos.fs.FileSystemStorage',
-    'foam.nanos.fs.Storage',
+    'foam.core.fs.FileSystemStorage',
+    'foam.core.fs.Storage',
     'foam.util.SafetyUtil',
     'java.io.File',
     'java.io.IOException'

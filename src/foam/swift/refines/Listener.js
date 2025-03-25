@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'ListenerSwfitRefinement',
-  refines: 'foam.core.Listener',
+  refines: 'foam.lang.Listener',
   flags: ['swift'],
   requires: [
     'foam.swift.Field',

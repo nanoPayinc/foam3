@@ -7,11 +7,11 @@
 foam.CLASS({
   package: 'foam.layout',
   name: 'PathPropertyHolder',
-  extends: 'foam.core.Property',
+  extends: 'foam.lang.Property',
   documentation: `A property for holding paths to sub-properties in FObjectProperties. 
   Used by Section and SectionView to render properties of FObjectProperties`,
 
-  requires: ['foam.core.ProxySlot'],
+  requires: ['foam.lang.ProxySlot'],
   properties: [
     {
       name: 'value',
@@ -65,7 +65,7 @@ foam.CLASS({
         delegate$: data$.map(data => {
           let propData$ = data$.dot(self.parentSlotPath);
           let p = self.parent$get(data)?.[foam.String.constantize(self.name)];
-          return p ? p.createVisibilityFor(propData$, controllerMode$) : foam.core.ConstantSlot.create({ value: foam.u2.DisplayMode.HIDDEN });
+          return p ? p.createVisibilityFor(propData$, controllerMode$) : foam.lang.ConstantSlot.create({ value: foam.u2.DisplayMode.HIDDEN });
         })
       });
     },

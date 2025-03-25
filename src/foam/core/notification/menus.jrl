@@ -1,0 +1,83 @@
+p({
+  "class":"foam.core.menu.Menu",
+  "id":"notification",
+  "label":"Notifications",
+  "handler":{
+    "class":"foam.core.menu.SubMenu"
+  }
+})
+
+p({
+  "class":"foam.core.menu.Menu",
+  "id":"notification.notificationtemplates",
+  "label":"Notification Templates",
+  "keywords": ["notification","template","pwa"],
+  "handler":{
+    "class":"foam.core.menu.DAOMenu2",
+    "config":{
+      "class":"foam.comics.v2.DAOControllerConfig",
+      "daoKey":"notificationTemplateDAO",
+      of: "foam.core.notification.Notification",
+      browseTitle:"Notification Templates"
+    }
+  },
+  "parent":"notification"
+})
+
+p({
+  class: "foam.core.menu.Menu",
+  id: "notification.notifications",
+  label: "Notifications",
+  handler: {
+    class: "foam.core.menu.DAOMenu2",
+    config: {
+      class: "foam.comics.v2.DAOControllerConfig",
+      daoKey: "notificationDAO",
+      of: "foam.core.notification.Notification",
+      browseTitle: "Notifications",
+      createPredicate: {class:"foam.mlang.predicate.True"},
+      editPredicate: {class:"foam.mlang.predicate.True"},
+      deletePredicate: {class:"foam.mlang.predicate.True"}
+    }
+  },
+  parent:"notification"
+})
+p({
+  class: "foam.core.menu.Menu",
+  id: "notification.notificationsettingdefaults",
+  label: "Default Notification Settings",
+  handler: {
+    class: "foam.core.menu.DAOMenu2",
+    config: {
+      class: "foam.comics.v2.DAOControllerConfig",
+      daoKey: "notificationSettingDefaultsDAO",
+      of: "foam.core.notification.NotificationSetting",
+      browseTitle: "Default Notification Settings",
+      createTitle: "Create Default Notification Setting",
+      createPredicate: {class:"foam.mlang.predicate.True"},
+      editPredicate: {class:"foam.mlang.predicate.True"},
+      deletePredicate: {class:"foam.mlang.predicate.True"}
+    }
+  },
+  parent:"notification"
+})
+
+p({
+  class: "foam.core.menu.Menu",
+  id: "notification.notificationsettingusers",
+  label: "User Notification Settings",
+  handler: {
+    class: "foam.core.menu.DAOMenu2",
+    config: {
+      class: "foam.comics.v2.DAOControllerConfig",
+      daoKey: "notificationSettingDAO",
+      of: "foam.core.notification.NotificationSetting",
+      browseTitle: "User Notification Settings",
+      createTitle: "Create User Notification Setting",
+      createPredicate: {class:"foam.mlang.predicate.True"},
+      editPredicate: {class:"foam.mlang.predicate.True"},
+      deletePredicate: {class:"foam.mlang.predicate.True"}
+    }
+  },
+  parent:"notification"
+})

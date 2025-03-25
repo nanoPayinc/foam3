@@ -7,14 +7,14 @@
  foam.CLASS({
   package: 'foam.u2.crunch.wizardflow.lite',
   name: 'CheckGrantedAgent',
-  implements: [ 'foam.core.ContextAgent' ],
+  implements: [ 'foam.lang.ContextAgent' ],
 
   documentation: `
     Check if a capable requirement is already granted
   `,
 
   requires: [
-    'foam.nanos.crunch.CapabilityJunctionStatus'
+    'foam.core.crunch.CapabilityJunctionStatus'
   ],
 
   imports: [

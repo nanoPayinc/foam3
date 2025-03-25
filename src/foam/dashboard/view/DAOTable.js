@@ -122,7 +122,7 @@ foam.CLASS({
     },
     {
       class: 'Reference',
-      of: 'foam.nanos.menu.Menu',
+      of: 'foam.core.menu.Menu',
       name: 'viewMoreMenuItem',
       documentation: `
       If set, this will cause viewMoreAction() to instead open the given

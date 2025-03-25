@@ -83,9 +83,9 @@ foam.CLASS({
         if ( ! of ) return [];
 
         // Returns array of properties with searchView and not hidden
-        return of.getAxiomsByClass(foam.core.Property)
+        return of.getAxiomsByClass(foam.lang.Property)
           .filter((prop) => prop.searchView && ! prop.hidden)
-          .map(foam.core.Property.NAME.f);
+          .map(foam.lang.Property.NAME.f);
       }
     },
     {

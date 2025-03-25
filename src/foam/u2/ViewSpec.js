@@ -18,7 +18,7 @@
 foam.CLASS({
   package: 'foam.u2',
   name: 'ViewSpec',
-  extends: 'foam.core.FObjectProperty',
+  extends: 'foam.lang.FObjectProperty',
 
   documentation: `
     Set a ViewFactory to be a string containing a class name,
@@ -30,7 +30,7 @@ foam.CLASS({
     {
       installInClass: function(cls) {
         var Element;
-        var FObject = foam.core.FObject;
+        var FObject = foam.lang.FObject;
         var Str     = foam.String;
 
         cls.createView = function(spec, args, self, ctx, disableWarning) {
@@ -48,7 +48,7 @@ foam.CLASS({
             return spec.copyFrom(args);
           }
 
-          if ( foam.core.Slot.isInstance(spec) )
+          if ( foam.lang.Slot.isInstance(spec) )
             return spec;
 
           if ( spec && spec.toE )
@@ -63,7 +63,7 @@ foam.CLASS({
             if ( spec.create ) {
               ret = spec.create(args, ctx);
             } else {
-              var cls = foam.core.FObject.isSubClass(spec.class) ? spec.class : ctx.lookup(spec.class);
+              var cls = foam.lang.FObject.isSubClass(spec.class) ? spec.class : ctx.lookup(spec.class);
               if ( ! cls ) {
                 foam.assert(false, 'ViewSpec specifies unknown class: ', spec.class);
               }

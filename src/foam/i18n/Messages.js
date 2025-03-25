@@ -167,7 +167,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.i18n',
   name: 'MessagesExtension',
-  refines: 'foam.core.Model',
+  refines: 'foam.lang.Model',
 
   properties: [
     {

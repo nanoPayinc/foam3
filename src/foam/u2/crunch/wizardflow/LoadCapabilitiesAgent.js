@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.crunch.wizardflow',
   name: 'LoadCapabilitiesAgent',
-  implements: [ 'foam.core.ContextAgent' ],
+  implements: [ 'foam.lang.ContextAgent' ],
 
   documentation: `
     Calls crunchService to fetch the necessary prerequisie capabilities.
@@ -32,7 +32,7 @@ foam.CLASS({
     {
       name: 'subject',
       class: 'FObjectProperty',
-      of: 'foam.nanos.auth.Subject',
+      of: 'foam.core.auth.Subject',
       documentation: `
         The requested subject associated to the ucj. Should only be set
         when used by a permissioned back-office user.

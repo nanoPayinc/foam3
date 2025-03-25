@@ -7,10 +7,10 @@
 foam.CLASS({
   package: 'foam.u2.md',
   name: 'AppController',
-  extends: 'foam.nanos.controller.ApplicationController',
+  extends: 'foam.core.controller.ApplicationController',
 
   requires: [
-    'foam.core.Latch',
+    'foam.lang.Latch',
     'foam.u2.layout.MDDAOController',
     'foam.u2.layout.MDLoginView',
     'foam.u2.layout.MDNotificationMessage',
@@ -69,8 +69,8 @@ foam.CLASS({
 
   properties: [
     {
-      class: 'foam.core.FObjectProperty',
-      of: 'foam.core.Latch',
+      class: 'foam.lang.FObjectProperty',
+      of: 'foam.lang.Latch',
       name: 'themeInstalled',
       documentation: 'A latch used to wait on theme installation.',
       factory: function() {
@@ -95,7 +95,7 @@ foam.CLASS({
       this.__subContext__.register(this.ActionView,            'foam.u2.ActionView');
       this.__subContext__.register(this.MDDAOController,       'foam.comics.v2.DAOBrowseControllerView');
       this.__subContext__.register(this.MDDAOController,       'foam.comics.BrowserView');
-      this.__subContext__.register(this.MDLoginView,           'foam.nanos.auth.login.LoginView');
+      this.__subContext__.register(this.MDLoginView,           'foam.core.auth.login.LoginView');
       this.__subContext__.register(this.MDNotificationMessage, 'foam.u2.dialog.NotificationMessage');
 
       this.themeInstalled.resolve();

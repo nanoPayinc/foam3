@@ -65,7 +65,7 @@ foam.CLASS({
 
   methods: [
     function method(m) {
-      if ( ! foam.core.FObject.isInstance(m) ) m = this.Method.create(m)
+      if ( ! foam.lang.FObject.isInstance(m) ) m = this.Method.create(m)
       this.methods.push(m);
       return this;
     },
@@ -80,7 +80,7 @@ foam.CLASS({
       });
     },
     function field(f) {
-      if ( ! foam.core.FObject.isInstance(f) ) f = this.Field.create(f);
+      if ( ! foam.lang.FObject.isInstance(f) ) f = this.Field.create(f);
       this.fields.push(f);
       return this;
     },

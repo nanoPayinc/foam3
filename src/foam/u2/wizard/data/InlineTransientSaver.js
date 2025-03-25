@@ -28,8 +28,8 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.core.MapHolder',
-    'foam.nanos.crunch.lite.Capable'
+    'foam.lang.MapHolder',
+    'foam.core.crunch.lite.Capable'
   ],
 
   properties: [
@@ -44,7 +44,7 @@ foam.CLASS({
     {
       class: 'FObjectArray',
       // of: 'foam.util.FluentSpec',
-      of: 'foam.core.FObject',
+      of: 'foam.lang.FObject',
       name: 'sequenceExtras'
     }
   ],

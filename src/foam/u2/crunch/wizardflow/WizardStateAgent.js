@@ -21,8 +21,8 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.nanos.crunch.Capability',
-    'foam.nanos.crunch.ui.CapabilityWizardlet'
+    'foam.core.crunch.Capability',
+    'foam.core.crunch.ui.CapabilityWizardlet'
   ],
 
   methods: [

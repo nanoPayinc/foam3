@@ -21,7 +21,7 @@ foam.CLASS({
   extends: 'foam.dao.ReadOnlyDAO',
 
   javaImports: [
-    'foam.core.FObject',
+    'foam.lang.FObject',
     'foam.dao.DAO',
     'foam.dao.ProxySink'
   ],

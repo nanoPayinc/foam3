@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.wizard.wizardlet',
   name: 'ValidationFeedbackWizardlet',
-  extends: 'foam.nanos.crunch.ui.CapabilityWizardlet',
+  extends: 'foam.core.crunch.ui.CapabilityWizardlet',
 
   requires: [
     'foam.u2.wizard.axiom.WizardAction'

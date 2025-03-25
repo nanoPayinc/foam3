@@ -7,14 +7,14 @@
 foam.CLASS({
   package: 'foam.u2.crunch',
   name: 'FlatteningCapabilityWizardlet',
-  extends: 'foam.nanos.crunch.ui.CapabilityWizardlet',
-  implements: [ 'foam.nanos.crunch.ui.PrerequisiteAwareWizardlet' ],
+  extends: 'foam.core.crunch.ui.CapabilityWizardlet',
+  implements: [ 'foam.core.crunch.ui.PrerequisiteAwareWizardlet' ],
   documentation: `
     Displays prerequisite capabilities in the same wizardlet.
   `,
 
   requires: [
-    'foam.core.ArraySlot'
+    'foam.lang.ArraySlot'
   ],
 
   properties: [
@@ -58,11 +58,11 @@ foam.CLASS({
     {
       name: 'delegates',
       class: 'FObjectArray',
-      of: 'foam.nanos.crunch.ui.CapabilityWizardlet',
+      of: 'foam.core.crunch.ui.CapabilityWizardlet',
       postSet: function (o, n) {
         if ( this.delegatesSub_ ) this.delegatesSub_.detach();
         if ( ! n ) return;
-        this.delegatesSub_ = foam.core.FObject.create();
+        this.delegatesSub_ = foam.lang.FObject.create();
         this.delegatesSub_.onDetach(this.ArraySlot.create({
           slots: n.map(delegate => delegate.indicator$)
         }).map(function (indicators) {
@@ -151,7 +151,7 @@ foam.CLASS({
       name: 'getDataUpdateSub',
       code: function () {
         // ???: Replace subs with slots to use ArraySlot here
-        var s = foam.core.FObject.create();
+        var s = foam.lang.FObject.create();
         s.onDetach(this.SUPER().sub(() => {
           s.pub(true);
         }));

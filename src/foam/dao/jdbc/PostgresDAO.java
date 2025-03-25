@@ -6,14 +6,14 @@
 
 package foam.dao.jdbc;
 
-import foam.core.ClassInfo;
-import foam.core.FObject;
-import foam.core.PropertyInfo;
-import foam.core.X;
+import foam.lang.ClassInfo;
+import foam.lang.FObject;
+import foam.lang.PropertyInfo;
+import foam.lang.X;
 import foam.dao.Sink;
 import foam.mlang.order.Comparator;
 import foam.mlang.predicate.Predicate;
-import foam.nanos.logger.Logger;
+import foam.core.logger.Logger;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Iterator;

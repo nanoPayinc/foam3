@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.wizard.wizardflow',
   name: 'AddCapabilityHierarchy',
-  implements: ['foam.core.ContextAgent'],
+  implements: ['foam.lang.ContextAgent'],
   imports: [
     'wizardlets'
   ],
@@ -52,7 +52,7 @@ foam.CLASS({
 
     function createSequence_TRANSIENT (x) {
       if ( ! this.__subContext__.capable$ ) {
-        const capable = foam.nanos.crunch.lite.BaseCapable.create();
+        const capable = foam.core.crunch.lite.BaseCapable.create();
         x = x || this.__subContext__;
         x = x.createSubContext({ capable });
       }
@@ -74,7 +74,7 @@ foam.CLASS({
 
     function createSequence_UCJ (x, waoSetting) {
       if ( ! this.__subContext__.capable$ ) {
-        const capable = foam.nanos.crunch.lite.BaseCapable.create();
+        const capable = foam.core.crunch.lite.BaseCapable.create();
         x = x || this.__subContext__;
         x = x.createSubContext({ capable });
       }

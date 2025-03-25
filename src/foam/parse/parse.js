@@ -1060,7 +1060,7 @@ foam.CLASS({
 
       if ( ! lastError ) return "No error.";
 
-//      return "Error at", lastError[0].pos, lastError[0].getIntroString());;
+//      return "Error at", lastError[0].pos, lastError[0].getIntroString());
 
       // Determine valid characters
       var validChars = [];
@@ -1228,7 +1228,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.parse',
   name: 'ModelGrammarsRefinement',
-  refines: 'foam.core.Model',
+  refines: 'foam.lang.Model',
   properties: [
     {
       class: 'AxiomArray',

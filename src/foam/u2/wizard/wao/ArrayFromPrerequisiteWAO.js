@@ -16,7 +16,7 @@
     'capabilityToPrerequisite'
   ],
   requires: [
-    'foam.nanos.crunch.CapabilityJunctionPayload'
+    'foam.core.crunch.CapabilityJunctionPayload'
   ],
 
   documentation: `
@@ -84,7 +84,7 @@
 
       // TODO: Need to figure out a better way to handle grabbing selectedData from MinMaxCapabilityWizardlets
       // or to grab the data of the wizardlets listed in selectedData
-      if ( foam.nanos.crunch.ui.MinMaxCapabilityWizardlet.isInstance(prereqWizardlet) ){
+      if ( foam.core.crunch.ui.MinMaxCapabilityWizardlet.isInstance(prereqWizardlet) ){
         prereqWizardlet = this.grabSelectedWizardletFromMinMax(prereqWizardlet);
 
       }

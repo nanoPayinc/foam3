@@ -10,7 +10,7 @@ foam.CLASS({
   implements: [ 'foam.dao.history.HistoryRecordService' ],
 
   javaImports: [
-    'foam.core.X',
+    'foam.lang.X',
     'foam.dao.ArraySink',
     'foam.dao.DAO',
     'foam.mlang.order.Desc',

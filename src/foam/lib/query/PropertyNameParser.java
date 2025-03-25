@@ -21,8 +21,8 @@ public class PropertyNameParser
 
     String name = start.substring(ps);
 
-    foam.core.PropertyInfo prop =
-      (foam.core.PropertyInfo)((foam.core.ClassInfo)x.get("classInfo")).getAxiomByName(name);
+    foam.lang.PropertyInfo prop =
+      (foam.lang.PropertyInfo)((foam.lang.ClassInfo)x.get("classInfo")).getAxiomByName(name);
 
     return ps.setValue(prop);
   }

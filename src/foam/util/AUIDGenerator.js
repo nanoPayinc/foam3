@@ -13,7 +13,7 @@ foam.CLASS({
   documentation: 'Alpha-numeric unique ID generator',
 
   javaImports: [
-    'foam.core.X',
+    'foam.lang.X',
     'static foam.util.UIDSupport.*'
   ],
 

@@ -3,7 +3,7 @@
 ### Server
 1. Create foam.Interface for Service
 
-Eg: https://github.com/foam-framework/foam3/blob/master/src/foam/nanos/auth/AuthService.js
+Eg: https://github.com/foam-framework/foam3/blob/master/src/foam/core/auth/AuthService.js
 
 If your method returns a value to the client, make sure to include
 "async: true" so that the client gets the return value.
@@ -22,11 +22,11 @@ the skeleton's responsibility to then marshal these return values or exceptions 
 
  Eg:
 
- `p({"class":"foam.nanos.boot.NSpec", "name":"auth", "lazy":true, "serve":true, "authenticate": false, "boxClass":"foam.nanos.auth.AuthServiceSkeleton", "serviceClass":"foam.nanos.auth.UserAndGroupAuthService", "client":"{\"class\":\"foam.nanos.auth.ClientAuthService\"}"})`
+ `p({"class":"foam.core.boot.CSpec", "name":"auth", "lazy":true, "serve":true, "authenticate": false, "boxClass":"foam.core.auth.AuthServiceSkeleton", "serviceClass":"foam.core.auth.UserAndGroupAuthService", "client":"{\"class\":\"foam.core.auth.ClientAuthService\"}"})`
 
 ### CLIENT SIDE
 4. Create stub for Service on the client side
-Eg: https://github.com/foam-framework/foam3/blob/master/src/foam/nanos/auth/ClientAuthService.js,
+Eg: https://github.com/foam-framework/foam3/blob/master/src/foam/core/auth/ClientAuthService.js,
 or id you don't require any special client behaviour, just add the "client: true" property to your foam.INTERFACE.
 
 A stub does the reverse job of the skeleton. It implements the provided interface, but when called, it marshals the method name and parameters into a network call which is then sent to the server to be received by the skeleton, and then subsequently, by the actual server implementation. The stub then parses the result created by the skeleton and converts them into method return values.

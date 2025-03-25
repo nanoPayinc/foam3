@@ -8,15 +8,11 @@ foam.CLASS({
   package: 'foam.dao',
   name: 'PipeSink',
   extends: 'foam.dao.ProxySink',
-  axioms: [
-    {
-      class: 'foam.box.Remote',
-      clientClass: 'foam.dao.ClientSink'
-    }
-  ],
+
   properties: [
     'dao'
   ],
+
   methods: [
     function reset(sub) {
       this.SUPER(sub);

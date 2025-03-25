@@ -100,7 +100,7 @@ foam.CLASS({
           .end()
           .start()
             .addClass(this.myClass('header-center'))
-            .tag({ class: 'foam.nanos.u2.navigation.ApplicationLogoView' })
+            .tag({ class: 'foam.core.u2.navigation.ApplicationLogoView' })
           .end()
         .end()
         .start(this.ScrollBorder)

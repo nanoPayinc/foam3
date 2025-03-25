@@ -1,0 +1,20 @@
+p({
+  "class":"foam.core.ticket.TicketStatus",
+  "id":"OPEN",
+  "label":"Open",
+  "ordinal":0
+})
+
+p({
+  "class":"foam.core.ticket.TicketStatus",
+  "id":"EXPIRED",
+  "label":"Expired",
+  "ordinal":95
+})
+
+p({
+  "class":"foam.core.ticket.TicketStatus",
+  "id":"CLOSED",
+  "label":"Closed",
+  "ordinal":99
+})

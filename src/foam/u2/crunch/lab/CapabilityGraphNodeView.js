@@ -13,15 +13,9 @@ foam.CLASS({
     'foam.u2.crunch.CapabilityFeatureView'
   ],
 
-  imports: [
-    'memento'
-  ],
-
   css: `
+    foreignObject^{pointer-events:none;}
     ^div {
-      top: 15px;
-      left: 15px;
-
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -70,8 +64,8 @@ foam.CLASS({
     function render() {
       var self = this;
       var dims = {
-        width:  '' + (this.size[0] + 30),
-        height: '' + (this.size[1] + 30),
+        width:  '' + this.size[0],
+        height: '' + this.size[1],
       };
       var capability = this.data;
       var ucj = null;
@@ -83,10 +77,7 @@ foam.CLASS({
         .attrs({
           ...dims,
         })
-        .start('div')
-          .attrs({
-            xmlns: 'http://www.w3.org/1999/xhtml',
-          })
+        .start('div', { namespace: 'http://www.w3.org/1999/xhtml' })
           .addClass(this.myClass('div'))
           .style({
             width: this.size[0],

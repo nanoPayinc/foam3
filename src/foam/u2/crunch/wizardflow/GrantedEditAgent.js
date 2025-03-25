@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.u2.crunch.wizardflow',
   name: 'GrantedEditAgent',
   implements: [
-    'foam.core.ContextAgent'
+    'foam.lang.ContextAgent'
   ],
   documentation: `
     Reconfigures wizard for approval when editing granted capabilities
@@ -21,7 +21,7 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.nanos.crunch.CapabilityJunctionStatus',
+    'foam.core.crunch.CapabilityJunctionStatus',
     'foam.u2.crunch.wizardflow.ApprovalRequestAgent',
     'foam.u2.crunch.wizardflow.LoadCapabilitiesAgent',
     'foam.u2.crunch.wizardflow.WAOSettingAgent',
@@ -32,7 +32,7 @@ foam.CLASS({
     {
       name: 'subject',
       class: 'FObjectProperty',
-      of: 'foam.nanos.auth.Subject',
+      of: 'foam.core.auth.Subject',
       documentation: `
         The requested subject associated to the ucj. Should only be set
         when used by a permissioned back-office user.

@@ -10,7 +10,7 @@ foam.CLASS({
 
   requires: [
     'foam.dao.MDAO',
-    'foam.nanos.analytics.Candlestick'
+    'foam.core.analytics.Candlestick'
   ],
 
   properties :[
@@ -135,7 +135,7 @@ foam.CLASS({
           curValue  += Math.random()*5 - 2.5;
           curValue2 += Math.random()*5 - 2.5;
         }
-        Promise.all(data.map(d => self.dao.put(foam.nanos.analytics.Candlestick.create(d)))).then(function() {
+        Promise.all(data.map(d => self.dao.put(foam.core.analytics.Candlestick.create(d)))).then(function() {
           console.log('DONE');
 //          alert('DONE');
         })

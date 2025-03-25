@@ -10,30 +10,30 @@ foam.CLASS({
 
   constants: {
     TYPES: {
-      'xs:boolean'      : 'foam.core.Boolean',
-      'xs:date'         : 'foam.core.Date',
-      'xs:dateTime'     : 'foam.core.Date',
-      'xs:decimal'      : 'foam.core.Double',
-      'xs:string'       : 'foam.core.String',
-      'xs:time'         : 'foam.core.Date',
-      'xs:base64Binary' : 'foam.core.String',
-      'xs:int'          : 'foam.core.Int',
-      'xs:long'         : 'foam.core.Long',
-      'xs:short'        : 'foam.core.Int',
-      'xs:double'       : 'foam.core.Double',
-      'xs:float'        : 'foam.core.Float',
-      'xsd:boolean'     : 'foam.core.Boolean',
-      'xsd:date'        : 'foam.core.Date',
-      'xsd:dateTime'    : 'foam.core.Date',
-      'xsd:decimal'     : 'foam.core.Double',
-      'xsd:string'      : 'foam.core.String',
-      'xsd:time'        : 'foam.core.Date',
-      'xsd:base64Binary': 'foam.core.String',
-      'xsd:int'         : 'foam.core.Int',
-      'xsd:long'        : 'foam.core.Long',
-      'xsd:short'       : 'foam.core.Int',
-      'xsd:float'       : 'foam.core.Float',
-      'xsd:double'      : 'foam.core.Double'
+      'xs:boolean'      : 'foam.lang.Boolean',
+      'xs:date'         : 'foam.lang.Date',
+      'xs:dateTime'     : 'foam.lang.Date',
+      'xs:decimal'      : 'foam.lang.Double',
+      'xs:string'       : 'foam.lang.String',
+      'xs:time'         : 'foam.lang.Date',
+      'xs:base64Binary' : 'foam.lang.String',
+      'xs:int'          : 'foam.lang.Int',
+      'xs:long'         : 'foam.lang.Long',
+      'xs:short'        : 'foam.lang.Int',
+      'xs:double'       : 'foam.lang.Double',
+      'xs:float'        : 'foam.lang.Float',
+      'xsd:boolean'     : 'foam.lang.Boolean',
+      'xsd:date'        : 'foam.lang.Date',
+      'xsd:dateTime'    : 'foam.lang.Date',
+      'xsd:decimal'     : 'foam.lang.Double',
+      'xsd:string'      : 'foam.lang.String',
+      'xsd:time'        : 'foam.lang.Date',
+      'xsd:base64Binary': 'foam.lang.String',
+      'xsd:int'         : 'foam.lang.Int',
+      'xsd:long'        : 'foam.lang.Long',
+      'xsd:short'       : 'foam.lang.Int',
+      'xsd:float'       : 'foam.lang.Float',
+      'xsd:double'      : 'foam.lang.Double'
     }
   },
 
@@ -72,7 +72,7 @@ foam.CLASS({
     function addJavaAssertValue(m) {
       if ( ! m.properties ) m.properties = [];
 
-      if ( m.extends === 'foam.core.String' ) {
+      if ( m.extends === 'foam.lang.String' ) {
         m.properties.push({
           name: 'javaAssertValue',
           factory: function () {
@@ -98,7 +98,7 @@ foam.CLASS({
             return toReturn;
           }
         });
-      } else if ( m.extends === 'foam.core.Float' ) {
+      } else if ( m.extends === 'foam.lang.Float' ) {
         m.properties.push({
           name: 'javaAssertValue',
           factory: function () {
@@ -166,7 +166,7 @@ foam.CLASS({
     function addAssertValue(m) {
       if ( ! m.properties ) m.properties = [];
 
-      if ( m.extends === 'foam.core.String' ) {
+      if ( m.extends === 'foam.lang.String' ) {
         m.properties.push({
           name: 'assertValue',
           value: function (value, prop) {
@@ -178,7 +178,7 @@ foam.CLASS({
               throw new Error(prop.name);
           }
         });
-      } else if ( m.extends === 'foam.core.Float' ) {
+      } else if ( m.extends === 'foam.lang.Float' ) {
         m.properties.push({
           name: 'assertValue',
           value: function (value, prop) {
@@ -322,7 +322,7 @@ foam.CLASS({
         if ( st ) {
           // all the types to be joined need to be the same type
           this.simpleTypes[m.name] = st;
-          if ( st === 'foam.core.Enum' ) {
+          if ( st === 'foam.lang.Enum' ) {
             var e = this.enums.get(mt);
             m.values = m.values || [];
             m.values = m.values.concat(e.values);
@@ -428,8 +428,8 @@ foam.CLASS({
         }
 
         // check if enum
-        if ( this.simpleTypes[child.getAttribute('type')] === 'foam.core.Enum' ) {
-          property.class = 'foam.core.Enum';
+        if ( this.simpleTypes[child.getAttribute('type')] === 'foam.lang.Enum' ) {
+          property.class = 'foam.lang.Enum';
           property.of = this.package + '.' + child.getAttribute('type');
         }
 
@@ -558,15 +558,15 @@ foam.CLASS({
       */
 
       // check if enum
-      if ( this.simpleTypes[doc.getAttribute('type')] === 'foam.core.Enum' ) {
-        property.class = 'foam.core.Enum'
+      if ( this.simpleTypes[doc.getAttribute('type')] === 'foam.lang.Enum' ) {
+        property.class = 'foam.lang.Enum'
       }
 
       // change classType to appropriate array class if maxOccurs is greater than 1
       if ( maxOccurs > 1 || maxOccurs === 'unbounded' ) {
         if ( property.class === 'FObjectProperty' ) {
           property.class = 'FObjectArray';
-        } else if ( this.simpleTypes[doc.getAttribute('type')] == 'foam.core.String' ||
+        } else if ( this.simpleTypes[doc.getAttribute('type')] == 'foam.lang.String' ||
                     property.class === 'String' ) {
           property.class = 'StringArray'
         } else {
@@ -577,7 +577,7 @@ foam.CLASS({
       // add "of" property if class is FObjectProperty or FObjectArray
       if ( property.class === 'FObjectProperty' ||
            property.class === 'FObjectArray' ||
-           property.class === 'foam.core.Enum' ) {
+           property.class === 'foam.lang.Enum' ) {
         property.of = this.package + '.' + doc.getAttribute('type');
       }
 
@@ -675,7 +675,7 @@ foam.CLASS({
             if ( grandChild.localName === 'restriction' ) {
               // check for enum
               if ( this.checkForEnum(grandChild) ) {
-                this.simpleTypes[name] = 'foam.core.Enum';
+                this.simpleTypes[name] = 'foam.lang.Enum';
               } else {
                 var a = grandChild.attributes['0']
                 if ( a.localName === 'base' ) this.simpleTypes[name] = this.TYPES[a.value];
@@ -684,7 +684,7 @@ foam.CLASS({
 
             if ( grandChild.localName === 'union' ) {
               // REVIEW: no other assumption can be made
-              this.simpleTypes[name] = 'foam.core.Enum';
+              this.simpleTypes[name] = 'foam.lang.Enum';
             }
           }
         } else if ( child.localName === 'complexType' ) {

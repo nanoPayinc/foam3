@@ -16,7 +16,7 @@ foam.CLASS({
   `,
 
   requires: [
-    'foam.core.ArraySlot',
+    'foam.lang.ArraySlot',
     'foam.u2.detail.SectionView',
     'foam.u2.view.ChoiceView'
   ],

@@ -29,7 +29,7 @@ foam.CLASS({
   `,
 
   requires: [
-    'foam.nanos.ruler.Rule',
+    'foam.core.ruler.Rule',
     'foam.u2.DAOList',
   ],
 

@@ -11,7 +11,7 @@ foam.CLASS({
   implements: [ 'foam.mlang.Expressions' ],
 
   imports: [
-    'nSpecDAO',
+    'cSpecDAO',
     'ruleDAO',
     'ruleGroupDAO',
   ],
@@ -21,10 +21,10 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.nanos.boot.NSpec',
-    'foam.nanos.ruler.Rule',
-    'foam.nanos.ruler.Ruled',
-    'foam.nanos.ruler.RuleGroup',
+    'foam.core.boot.CSpec',
+    'foam.core.ruler.Rule',
+    'foam.core.ruler.Ruled',
+    'foam.core.ruler.RuleGroup',
     'foam.u2.DAOList',
     'foam.u2.borders.SideViewBorder',
     'foam.u2.ruler.ExprComparator',
@@ -48,14 +48,14 @@ foam.CLASS({
     {
       class: 'foam.dao.DAOProperty',
       name: 'daoDAO',
-      expression: function (nSpecDAO) {
-        return nSpecDAO.where(this.ENDS_WITH(this.NSpec.ID, 'DAO'));
+      expression: function (cSpecDAO) {
+        return cSpecDAO.where(this.ENDS_WITH(this.CSpec.ID, 'DAO'));
       }
     },
     {
       class: 'Reference',
       name: 'daoKey',
-      of: 'foam.nanos.boot.NSpec',
+      of: 'foam.core.boot.CSpec',
       view: function (_, X) {
         const self = X.data;
         return {

@@ -17,7 +17,7 @@ foam.CLASS({
 
   javaImports: [
     'foam.flow.Document',
-    'foam.nanos.fs.Storage',
+    'foam.core.fs.Storage',
     'java.nio.charset.StandardCharsets',
     'java.util.HashSet',
     'java.util.Set',
@@ -36,10 +36,10 @@ foam.CLASS({
     {
       class: 'Object',
       name: 'storage',
-      javaType: 'foam.nanos.fs.Storage',
+      javaType: 'foam.core.fs.Storage',
       javaFactory: `
-return new foam.nanos.fs.FallbackStorage(
-  new foam.nanos.fs.FileSystemStorage(System.getProperty("DOCUMENT_HOME")) {
+return new foam.core.fs.FallbackStorage(
+  new foam.core.fs.FileSystemStorage(System.getProperty("DOCUMENT_HOME")) {
     @Override
     public OutputStream getOutputStream(String name) {
       var path = getPath(name);
@@ -52,7 +52,7 @@ return new foam.nanos.fs.FallbackStorage(
       }
     }
   },
-  new foam.nanos.fs.ResourceStorage("documents")
+  new foam.core.fs.ResourceStorage("documents")
 );`
     }
   ],
@@ -71,28 +71,47 @@ Set<String> paths = null;
 try {
   paths = storage.getAvailableFiles("", "*.flow");
 } catch (Throwable t) {
-  foam.nanos.logger.Logger logger = (foam.nanos.logger.Logger) x.get("logger");
+  foam.core.logger.Logger logger = (foam.core.logger.Logger) x.get("logger");
   logger.warning(t.getMessage());
   paths = new HashSet<String>();
 }
 
 for ( String path : paths ) {
   if ( sub.getDetached() ) break;
-
-  foam.flow.Document obj = new foam.flow.Document();
   String id = path.substring(0, path.lastIndexOf(".flow"));
-
-  obj.setId(id);
-
-  // TODO: We could parse the markup on the server to get the embedded title.
-
-  obj.setMarkup(new String(storage.getBytes(path), StandardCharsets.UTF_8));
+  var obj = loadDocument(id);
   decorated.put(obj, sub);
 }
 
 decorated.eof();
 
 return sink;`
+    },
+    {
+      name: 'loadDocument',
+      type: 'foam.flow.Document',
+      args: [
+        {
+          name: 'id',
+          type: 'Object'
+        }
+      ],
+      javaCode: `
+        var obj       = new foam.flow.Document();
+        var sanitized = verifyId(id);
+        var storage   = getStorage();
+        var path      = id + ".flow";
+
+        obj.setId(sanitized);
+        var content = new String(storage.getBytes(path), StandardCharsets.UTF_8);
+        if (content.startsWith("<title>") && content.indexOf("</title>") != -1) {
+          obj.setTitle(content.substring(7, content.indexOf("</title>")));
+        }
+
+        obj.setMarkup(content);
+
+        return obj;
+      `
     },
     {
       name: 'verifyId',
@@ -135,21 +154,7 @@ return obj;`
     },
     {
       name: 'find_',
-      javaCode: `
-// TODO: Escape/sanitize file name
-String idStr = verifyId(id);
-
-Storage storage = getStorage();
-String path = idStr + ".flow";
-
-foam.flow.Document obj = new foam.flow.Document();
-obj.setId(idStr);
-
-// TODO: We could parse the markup on the server to get the embedded title.
-
-obj.setMarkup(new String(storage.getBytes(path), StandardCharsets.UTF_8));
-
-return obj;`
+      javaCode: `return loadDocument(id);`
     }
   ]
 });

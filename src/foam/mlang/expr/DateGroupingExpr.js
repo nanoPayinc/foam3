@@ -9,14 +9,14 @@ foam.CLASS({
   name: 'DateGroupingExpr',
   extends: 'foam.mlang.AbstractExpr',
 
-  implements: [ 'foam.core.Serializable', 'foam.mlang.order.Comparator' ],
+  implements: [ 'foam.lang.Serializable', 'foam.mlang.order.Comparator' ],
 
   documentation: `
     An expr whose value is the date/month/year of a date grouping.
   `,
 
   javaImports: [
-    'foam.nanos.auth.CreatedAware',
+    'foam.core.auth.CreatedAware',
     'java.util.Arrays',
     'java.util.Comparator',
     'java.util.Date',

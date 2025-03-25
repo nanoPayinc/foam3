@@ -19,7 +19,7 @@ foam.CLASS({
   javaImports: [
     'foam.dao.ArraySink',
     'foam.dao.DAO',
-    'foam.nanos.logger.Loggers',
+    'foam.core.logger.Loggers',
     'foam.util.UIDSupport',
     'java.util.HashMap',
     'java.util.Map',

@@ -12,7 +12,7 @@ foam.CLASS({
   documentation: 'Ticket Detail View',
 
   requires: [
-    'foam.nanos.auth.User',
+    'foam.core.auth.User',
     'foam.u2.PopupView',
     'foam.support.model.TicketMessage',
     'foam.support.view.ReplyView',

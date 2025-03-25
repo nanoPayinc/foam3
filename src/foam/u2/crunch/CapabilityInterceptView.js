@@ -15,10 +15,10 @@ foam.CLASS({
 
   requires: [
     'foam.log.LogLevel',
-    'foam.nanos.crunch.AgentCapabilityJunction',
-    'foam.nanos.crunch.Capability',
-    'foam.nanos.crunch.CapabilityJunctionStatus',
-    'foam.nanos.crunch.UserCapabilityJunction',
+    'foam.core.crunch.AgentCapabilityJunction',
+    'foam.core.crunch.Capability',
+    'foam.core.crunch.CapabilityJunctionStatus',
+    'foam.core.crunch.UserCapabilityJunction',
     'foam.u2.crunch.CapabilityCardView',
     'foam.u2.layout.Rows'
   ],

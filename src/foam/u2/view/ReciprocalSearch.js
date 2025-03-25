@@ -10,7 +10,7 @@ foam.CLASS({
   extends: 'foam.u2.View',
 
   requires: [
-    'foam.core.SimpleSlot',
+    'foam.lang.SimpleSlot',
     'foam.u2.search.SearchManager',
     'foam.u2.search.TextSearchView',
     'foam.u2.view.SearchViewWrapper'
@@ -105,9 +105,9 @@ foam.CLASS({
           });
         }
 
-        return of.getAxiomsByClass(foam.core.Property)
+        return of.getAxiomsByClass(foam.lang.Property)
           .filter((prop) => prop.searchView && ! prop.hidden)
-          .map(foam.core.Property.NAME.f);
+          .map(foam.lang.Property.NAME.f);
       }
     },
     {
@@ -172,7 +172,7 @@ foam.CLASS({
       if ( this.memento ) {
         m = this.memento.tail || this.memento;
         if ( ! m.tail ) {
-          m.tail = foam.nanos.controller.Memento.create();
+          m.tail = foam.core.controller.Memento.create();
         }
         m = this.memento.tail || this.memento;
         this.currentMemento_ = this.memento.tail;
@@ -232,7 +232,7 @@ foam.CLASS({
 
             if ( self.memento && m ) {
               if ( ! m.tail )
-                m.tail = foam.nanos.controller.Memento.create();
+                m.tail = foam.core.controller.Memento.create();
               counter--;
               if ( counter != 0 )
                 m = m.tail;

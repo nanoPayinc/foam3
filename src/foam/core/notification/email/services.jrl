@@ -1,0 +1,233 @@
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "templateEngine",
+  "serve": false,
+  "serviceClass": "foam.core.notification.email.EmailTemplateEngine"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"localEmailTemplateDAO",
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.notification.email.EmailTemplate.getOwnClassInfo())
+      .setGuid(true)
+      .setAuthorize(false)
+      .setPm(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("emailTemplates")
+      .build();
+  """
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"emailTemplateDAO",
+  "serve":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.notification.email.EmailTemplate.getOwnClassInfo())
+      .setInnerDAO((foam.dao.DAO) x.get("localEmailTemplateDAO"))
+      .setRuler(false)
+      .build();
+  """,
+  "client":"{\"of\":\"foam.core.notification.email.EmailTemplate\"}"
+})
+
+// not lazy as needed by notification system during startup.
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"localEmailMessageDAO",
+  "lazy":false,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.notification.email.EmailMessage.getOwnClassInfo())
+      .setAuthorize(false)
+      .setFuid(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("emailMessages")
+      .setWaitReplay(false)
+      .setSAF(true)
+      .setServiceProviderAware(false)
+      .setFixedSize(new foam.dao.FixedSizeDAO.Builder(x)
+        .setComparator(foam.mlang.MLang.DESC(foam.core.notification.email.EmailMessage.CREATED) )
+        .setSize(100000)
+        .build())
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] {foam.core.notification.email.EmailMessage.CREATED});
+  """
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"emailMessageDAO",
+  "serve":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.notification.email.EmailMessage.getOwnClassInfo())
+      .setInnerDAO((foam.dao.DAO) x.get("localEmailMessageDAO"))
+      .setRuler(false)
+      .setEnableInterfaceDecorators(false)
+      .setServiceProviderAware(false)
+      .setOrder(new foam.mlang.order.Comparator[] { new foam.mlang.order.Desc.Builder(x).setArg1(foam.core.notification.email.EmailMessage.CREATED).build() })
+      .build();
+  """,
+  "client":"{\"of\":\"foam.core.notification.email.EmailMessage\"}"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"localEmailMessageReceivedDAO",
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.notification.email.EmailMessage.getOwnClassInfo())
+      .setFuid(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("emailMessagesReceived")
+      .setServiceProviderAware(false)
+      .setSAF(true)
+      .setFixedSize(new foam.dao.FixedSizeDAO.Builder(x)
+        .setComparator(foam.mlang.MLang.DESC(foam.core.notification.email.EmailMessage.CREATED) )
+        .setSize(100000)
+        .build())
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] {foam.core.notification.email.EmailMessage.CREATED});
+  """
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"emailMessageReceivedDAO",
+  "serve":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.notification.email.EmailMessage.getOwnClassInfo())
+      .setInnerDAO((foam.dao.DAO) x.get("localEmailMessageReceivedDAO"))
+      .setRuler(false)
+      .setEnableInterfaceDecorators(false)
+      .setServiceProviderAware(false)
+      .setOrder(new foam.mlang.order.Comparator[] { new foam.mlang.order.Desc.Builder(x).setArg1(foam.core.notification.email.EmailMessage.CREATED).build() })
+      .build();
+  """,
+  "client":"{\"of\":\"foam.core.notification.email.EmailMessage\"}"
+})
+
+// NOTE: clustered
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"localEmailMessageProcessedDAO",
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.notification.email.EmailMessage.getOwnClassInfo())
+      .setFuid(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("emailMessagesProcessed")
+      .setServiceProviderAware(false)
+      .setFixedSize(new foam.dao.FixedSizeDAO.Builder(x)
+        .setComparator(foam.mlang.MLang.DESC(foam.core.notification.email.EmailMessage.CREATED) )
+        .setSize(100000)
+        .build())
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] {foam.core.notification.email.EmailMessage.CREATED});
+  """
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"emailMessageProcessedDAO",
+  "serve":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.notification.email.EmailMessage.getOwnClassInfo())
+      .setInnerDAO((foam.dao.DAO) x.get("localEmailMessageProcessedDAO"))
+      .setRuler(false)
+      .setEnableInterfaceDecorators(false)
+      .setServiceProviderAware(false)
+      .setOrder(new foam.mlang.order.Comparator[] { new foam.mlang.order.Desc.Builder(x).setArg1(foam.core.notification.email.EmailMessage.CREATED).build() })
+      .build();
+  """,
+  "client":"{\"of\":\"foam.core.notification.email.EmailMessage\"}"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"emailPropertyService",
+  "serviceScript": """
+    import foam.lang.FObject;
+    import foam.core.notification.email.ApplyBaseArgumentsEmailPropertyService;
+    import foam.core.notification.email.EmailTemplateApplyEmailPropertyService;
+    import foam.core.notification.email.ChainedPropertyService;
+    import foam.core.notification.email.EmailConfigEmailPropertyService;
+    import foam.core.notification.email.EmailPropertyService;
+    import foam.core.notification.email.GroupEmailTemplateService;
+    import foam.core.notification.email.EmailMessageValidationPropertyService;
+
+    EmailPropertyService[] eps = new EmailPropertyService[5];
+    eps[0] = new ApplyBaseArgumentsEmailPropertyService.Builder(x).build();
+    eps[1] = new EmailTemplateApplyEmailPropertyService.Builder(x).build();
+    eps[2] = new GroupEmailTemplateService.Builder(x).build();
+    eps[3] = new EmailConfigEmailPropertyService.Builder(x).build();
+    eps[4] = new EmailMessageValidationPropertyService.Builder(x).build();
+    return new ChainedPropertyService.Builder(x).setData(eps).build();
+  """
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"emailConfigDAO",
+  "serve":true,
+  "authorize":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.notification.email.EmailConfig.getOwnClassInfo())
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("emailConfig")
+      .build();
+  """,
+  "client":"{\"of\":\"foam.core.notification.email.EmailConfig\"}"
+})
+
+p({
+  class:"foam.core.boot.CSpec",
+  name:"emailServiceConfigDAO",
+  serve:true,
+  serviceScript:"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.notification.email.EmailServiceConfig.getOwnClassInfo())
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("emailServiceConfig")
+      .build();
+  """,
+  "client":"{\"of\":\"foam.core.notification.email.EmailServiceConfig\"}"
+})
+
+p({
+  class:"foam.core.boot.CSpec",
+  name:"smtpAgent",
+  lazy: false,
+  service:{
+    class:"foam.core.notification.email.SMTPAgent",
+    id: 'smtp'
+  }
+})
+
+p({
+  class:"foam.core.boot.CSpec",
+  name:"emailFolderAgent",
+  lazy: false,
+  service:{
+    class:"foam.core.notification.email.EmailFolderAgent",
+    id: 'imap',
+    protocol: 'imaps'
+  }
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"pop3",
+  "lazy":true,
+  "serve":true,
+  "boxClass":"foam.core.notification.email.POP3EmailSkeleton",
+  "serviceClass":"foam.core.notification.email.POP3EmailService",
+  "client":"{ \"class\":\"foam.core.notification.email.ClientPOP3EmailService\", \"delegate\": { \"class\":\"foam.box.HTTPBox\", \"url\":\"service/pop3\" } }"
+})

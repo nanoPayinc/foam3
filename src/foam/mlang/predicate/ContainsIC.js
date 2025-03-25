@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.mlang.predicate',
   name: 'ContainsIC',
   extends: 'foam.mlang.predicate.Binary',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   documentation: 'Predicate returns true iff second arg found in first array argument, ignoring case.',
 

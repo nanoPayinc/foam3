@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'PromisedMethodSwiftRefinement',
-  refines: 'foam.core.PromisedMethod',
+  refines: 'foam.lang.PromisedMethod',
   flags: ['swift'],
   properties: [
     {
@@ -26,7 +26,7 @@ ${this.swiftType != 'void' ? 'return ' : ''}${this.swiftThrows ? 'try ' : ''}sel
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'PromisedSwiftRefinement',
-  refines: 'foam.core.Promised',
+  refines: 'foam.lang.Promised',
   flags: ['swift'],
   properties: [
     {

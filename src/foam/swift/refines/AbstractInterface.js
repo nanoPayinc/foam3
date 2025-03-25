@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'AbstractInterfaceSwiftRefinement',
-  refines: 'foam.core.AbstractInterface',
+  refines: 'foam.lang.AbstractInterface',
   flags: ['swift'],
   axioms: [
     {
@@ -39,7 +39,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'ImplementsSwiftRefinement',
-  refines: 'foam.core.Implements',
+  refines: 'foam.lang.Implements',
   flags: ['swift'],
   methods: [
     function writeToSwiftClass(cls, parentCls) {
@@ -52,12 +52,12 @@ foam.CLASS({
       // we need to implement all methods.
       if ( ! foam.swift.SwiftClass.isInstance(cls) ) return;
       var of = foam.lookup(this.path);
-      var interfaceMethods = of.getOwnAxiomsByClass(foam.core.Method)
+      var interfaceMethods = of.getOwnAxiomsByClass(foam.lang.Method)
         .filter(foam.util.flagFilter(['swift']))
         .filter(function(m) {
           return m.swiftSupport;
         });
-      var implementedMethods = parentCls.getOwnAxiomsByClass(foam.core.Method);
+      var implementedMethods = parentCls.getOwnAxiomsByClass(foam.lang.Method);
       var missingMethods = interfaceMethods.filter(function(m) {
         return !implementedMethods.find(function(m2) {
           return m.name == m2.name;
@@ -66,12 +66,12 @@ foam.CLASS({
 
       missingMethods.forEach(function(m) {
         if (m.getSwiftOverride(parentCls)) return;
-        var method = foam.core.Method.create(m);
+        var method = foam.lang.Method.create(m);
         method.swiftCode = m.swiftCode;
         method.writeToSwiftClass_(cls, parentCls);
       });
 
-      of.getAxiomsByClass(foam.core.Implements).forEach(function(i) {
+      of.getAxiomsByClass(foam.lang.Implements).forEach(function(i) {
         i.writeToSwiftClass_(cls, parentCls);
       });
     }

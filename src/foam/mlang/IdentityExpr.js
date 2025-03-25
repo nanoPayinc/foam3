@@ -18,8 +18,8 @@ foam.CLASS({
         return o.model_.ID && o.model_ID.get(o) || o;
       },
       javaCode: `
-      if ( obj instanceof foam.core.FObject ) {
-        foam.core.PropertyInfo id = (foam.core.PropertyInfo) ((foam.core.FObject) obj).getClassInfo().getAxiomByName("id");
+      if ( obj instanceof foam.lang.FObject ) {
+        foam.lang.PropertyInfo id = (foam.lang.PropertyInfo) ((foam.lang.FObject) obj).getClassInfo().getAxiomByName("id");
         if ( id != null ) return id.get(obj);
       }
       return obj;

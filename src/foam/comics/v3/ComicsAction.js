@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.comics.v3',
   name: 'ComicsAction',
-  extends: 'foam.core.Action',
+  extends: 'foam.lang.Action',
   documentation: `
     Creates a distinction for actions that are used by comics. Can be used to override default
     CRUD behaviour. 
@@ -76,7 +76,7 @@ foam.CLASS({
       var running      = this.getRunning$(data);
       var internalSlot = this.createSlotFor_(x, data, this.internalIsEnabled, 'enabled');
       var slot         = data.data ? this.createSlotFor_(x, data.data, this.isEnabled, 'enabled') :
-                         foam.core.ConstantSlot.create({ value: false });
+                         foam.lang.ConstantSlot.create({ value: false });
       return running.not().and(internalSlot).and(slot);
     },
 
@@ -84,7 +84,7 @@ foam.CLASS({
     function createIsAvailable$(x, data) {
       var internalSlot = this.createSlotFor_(x, data, this.internalIsAvailable, 'available');
       let slot         = data.data ? this.createSlotFor_(x, data.data, this.isAvailable, 'available') :
-                         foam.core.ConstantSlot.create({ value: false });
+                         foam.lang.ConstantSlot.create({ value: false });
       return internalSlot.and(slot);
     },
 

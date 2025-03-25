@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'org.chartjs',
   name: 'ChartJSPropertyFormatterRefinement',
-  refines: 'foam.core.Property',
+  refines: 'foam.lang.Property',
 
   properties: [
     {
@@ -21,7 +21,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'org.chartjs',
   name: 'ChartJSDateFormatterRefinement',
-  refines: 'foam.core.Date',
+  refines: 'foam.lang.Date',
 
   properties: [
     {
@@ -43,7 +43,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'org.chartjs',
   name: 'ChartJSDateTimeFormatterRefinement',
-  refines: 'foam.core.DateTime',
+  refines: 'foam.lang.DateTime',
 
   properties: [
     {

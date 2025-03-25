@@ -26,7 +26,7 @@ foam.CLASS({
       class: 'Reference',
       targetDAOKey: 'countryDAO',
       name: 'countryId',
-      of: 'foam.nanos.auth.Country'
+      of: 'foam.core.auth.Country'
     }
   ],
 

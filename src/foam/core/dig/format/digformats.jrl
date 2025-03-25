@@ -1,0 +1,47 @@
+p({
+  "class":"foam.core.dig.format.DigFormat",
+  "id":"JSON",
+  "name":"JSON",
+  "driverCSpec":"jsonDigDriver",
+  "format": 2
+})
+
+p({
+  "class":"foam.core.dig.format.DigFormat",
+  "id":"JSONJ",
+  "name":"JSON/J",
+  "driverCSpec":"jsonjDigDriver",
+  "format": 3
+})
+
+p({
+  "class":"foam.core.dig.format.DigFormat",
+  "id":"CSV",
+  "name":"CSV",
+  "driverCSpec":"csvDigDriver",
+  "format": 0
+})
+
+p({
+  "class":"foam.core.dig.format.DigFormat",
+  "id":"CSVSHEETS",
+  "name":"CSV/Sheets",
+  "driverCSpec":"csvSheetsDigDriver",
+  "format": 0
+})
+
+p({
+  "class":"foam.core.dig.format.DigFormat",
+  "id":"HTML",
+  "name":"HTML",
+  "driverCSpec":"htmlDigDriver",
+  "format": 1
+})
+
+p({
+  "class":"foam.core.dig.format.DigFormat",
+  "id":"XML",
+  "name":"XML",
+  "driverCSpec":"xmlDigDriver",
+  "format": 4
+})

@@ -109,7 +109,7 @@ foam.CLASS({
       if ( this.prop ) {
         var errorSlot = this.prop.validateObj && this.prop.validationTextVisible ?
           this.__context__.data.slot(this.prop.validateObj) :
-          foam.core.ConstantSlot.create({ value: null });
+          foam.lang.ConstantSlot.create({ value: null });
 
         this
           .start().addClass('validation-error')

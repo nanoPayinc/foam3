@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.mlang.predicate',
   name: 'OlderThan',
   extends: 'foam.mlang.predicate.Unary',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
   properties: [
     {
       class: 'Long',

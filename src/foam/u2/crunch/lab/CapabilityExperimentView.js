@@ -110,7 +110,7 @@ foam.CLASS({
           .end()
           .endContext()
           .add(this.slot(function (sequenceReferenceId, sequenceModifications) {
-            return this.E().add(foam.core.PromiseSlot.create({
+            return this.E().add(foam.lang.PromiseSlot.create({
               promise: (async () => {
                 const sequenceReference = await self.sequenceReferenceId$find;
                 if ( ! sequenceReference ) return self.E();

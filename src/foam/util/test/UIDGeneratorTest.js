@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.util.test',
   name: 'UIDGeneratorTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
 
   javaImports: [
     'foam.dao.DAO',

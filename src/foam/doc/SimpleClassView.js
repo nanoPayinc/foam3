@@ -14,8 +14,8 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.core.Implements',
-    'foam.core.Model',
+    'foam.lang.Implements',
+    'foam.lang.Model',
     'foam.doc.dao.AxiomDAO',
     'foam.doc.AxiomListView',
     'foam.doc.AxiomSummaryView',
@@ -41,6 +41,10 @@ foam.CLASS({
       expression: function(data) {
         return this.AxiomDAO.create({modelIds: [data.id]});
       }
+    },
+    {
+      class: 'Boolean',
+      name: 'showUML'
     }
   ],
 
@@ -54,7 +58,7 @@ foam.CLASS({
       var exts  = [];
       var m     = cls;
 
-      while ( m.id != 'foam.core.FObject' ) {
+      while ( m.id != 'foam.lang.FObject' ) {
         m = foam.lookup(m.model_.extends);
         exts.push(m);
       }
@@ -71,6 +75,11 @@ foam.CLASS({
           add('Class ').
           add(model.name).
         end().
+        callIf(this.showUML, function() {
+          this.start().
+            tag({class: 'foam.doc.UMLDiagram', data: cls}).
+          end();
+        }).
         callIf(model.documentation, function() {
           this.start('b').
             add(model.documentation).

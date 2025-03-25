@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'GenSwift',
   flags: ['swift','node'],
   requires: [
-    'foam.core.Model',
+    'foam.lang.Model',
     'foam.swift.Enum',
     'foam.swift.EnumValue',
     'foam.swift.SwiftClass',
@@ -28,8 +28,8 @@ foam.CLASS({
     {
       name: 'coreModels',
       value: [
-        'foam.core.Detachable',
-        'foam.core.EventProxy',
+        'foam.lang.Detachable',
+        'foam.lang.EventProxy',
         'foam.mlang.order.Comparator',
         'foam.mlang.predicate.Predicate',
         'foam.swift.core.ConstantSlot',
@@ -75,9 +75,9 @@ foam.CLASS({
       name: 'blacklist',
       value: [
         'FObject',
-        'foam.core.AbstractInterface',
+        'foam.lang.AbstractInterface',
         'foam.swift.ui.AbstractGenIBOutletDetailView',
-        'foam.core.Property',
+        'foam.lang.Property',
         'foam.dao.index.TreeIndex',
         'foam.swift.SwiftClass',
         'foam.swift.Method',
@@ -123,10 +123,10 @@ foam.CLASS({
           if (!models[model]) {
             models[model] = 1;
             var cls = foam.lookup(model);
-            cls.getAxiomsByClass(foam.core.Requires).filter(axiomFilter).forEach(function(r) {
+            cls.getAxiomsByClass(foam.lang.Requires).filter(axiomFilter).forEach(function(r) {
               queue.push(r.path);
             });
-            cls.getAxiomsByClass(foam.core.Implements).filter(axiomFilter).forEach(function(r) {
+            cls.getAxiomsByClass(foam.lang.Implements).filter(axiomFilter).forEach(function(r) {
               queue.push(r.path);
             });
             if (cls.model_.extends) queue.push(cls.model_.extends);

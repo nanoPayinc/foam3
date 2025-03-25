@@ -19,6 +19,7 @@ foam.CLASS({
   package: 'foam.dao',
   name: 'ResetSink',
   extends: 'foam.dao.ProxySink',
+
   methods: [
     {
       name: 'put',
@@ -38,6 +39,7 @@ foam.CLASS({
   package: 'foam.dao',
   name: 'MergedResetSink',
   extends: 'foam.dao.ResetSink',
+
   methods: [
     {
       name: 'reset',
@@ -45,6 +47,7 @@ foam.CLASS({
       javaCode: `doReset(sub);`
     }
   ],
+
   listeners: [
     {
       name: 'doReset',
@@ -70,11 +73,16 @@ foam.CLASS({
   name: 'ClientDAO',
   extends: 'foam.dao.BaseClientDAO',
 
+  documentation: `
+    A Client Stub for the DAO interface used to call DAO's on a remote Server.
+    Extends the generated BaseClientDAO class but then adds some DAO specific behaviours.
+    Usually RequestREsponseClientDAO, which subclasses this class, is used instead because it doesn't attempt to network listen() requests.
+  `,
+
   requires: [
     'foam.box.SkeletonBox',
-    'foam.core.Serializable',
-    'foam.dao.ArraySink',
-    'foam.dao.ClientSink'
+    'foam.lang.Serializable',
+    'foam.dao.ArraySink'
   ],
 
   methods: [
@@ -118,7 +126,7 @@ foam.CLASS({
 
             if ( ! sink ) return result;
 
-            var sub = foam.core.FObject.create();
+            var sub      = foam.lang.FObject.create();
             var detached = false;
             sub.onDetach(function() { detached = true; });
 
@@ -175,11 +183,15 @@ return sink
     {
       name: 'listen_',
       code: function listen_(x, sink, predicate) {
-        this.SUPER(null, sink, predicate);
-        return foam.core.FObject.create();
+        if ( sink ) {
+          // RemoteSink handles registering a Skeleton callback instead of trying
+          // to send the Sink across the network.
+          this.SUPER(null, foam.dao.RemoteSink.create({delegate: sink}), predicate);
+        }
+        return foam.lang.FObject.create();
       },
       javaCode: `super.listen_(null, sink, predicate);`,
       swiftCode: `return try super.listen_(nil, sink, predicate)`
-    },
+    }
   ]
 });

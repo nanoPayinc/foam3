@@ -3,7 +3,7 @@ To test the JDBCDAO functionality:
 
 1- Add the following declaration to the services.jrl file:
 
-p({"class":"foam.nanos.boot.NSpec", "name":"JDBCConnectionSpec", "lazy":false, "serve":false, "class":"foam.nanos.boot.NSpec", "service":{"class":"foam.dao.jdbc.JDBCConnectionSpec", "databaseServer":"mysql", "hostName":"localhost", "databaseName":"testSQLDAO", "userName":"foam_user", "userPassword":"foam_password"} })
+p({"class":"foam.core.boot.CSpec", "name":"JDBCConnectionSpec", "lazy":false, "serve":false, "class":"foam.core.boot.CSpec", "service":{"class":"foam.dao.jdbc.JDBCConnectionSpec", "databaseServer":"mysql", "hostName":"localhost", "databaseName":"testSQLDAO", "userName":"foam_user", "userPassword":"foam_password"} })
 
 
 2- Add a declaration to the JDBC connector, for example in gradle:
@@ -59,7 +59,7 @@ foam.CLASS({
 
 7- Create a sub-context for the JDBC DAO:
 
-foam.core.X xcopy = x.put("JDBCDataSource", source);
+foam.lang.X xcopy = x.put("JDBCDataSource", source);
 
 
 8- Crerate a new JDBC DAO with the sub-context containing the data source:
@@ -109,7 +109,7 @@ foam.core.X xcopy = x.put("JDBCDataSource", source);
 
 
  foam.dao.jdbc.JDBCPooledDataSource source = new foam.dao.jdbc.JDBCPooledDataSource(x);
- foam.core.X xcopy = x.put("JDBCDataSource", source);
+ foam.lang.X xcopy = x.put("JDBCDataSource", source);
   
  companyJDBCDAO = new foam.dao.jdbc.MySQLDAO(xcopy, foam.dao.jdbc.TestCompany.getOwnClassInfo());
  employeeJDBCDAO = new foam.dao.jdbc.MySQLDAO(xcopy, foam.dao.jdbc.TestEmployee.getOwnClassInfo());

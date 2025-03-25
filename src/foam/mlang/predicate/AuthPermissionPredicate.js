@@ -15,9 +15,9 @@
   `,
 
   javaImports: [
-    'foam.core.X',
-    'foam.nanos.auth.AuthService',
-    'foam.nanos.logger.Loggers'
+    'foam.lang.X',
+    'foam.core.auth.AuthService',
+    'foam.core.logger.Loggers'
   ],
 
   properties: [

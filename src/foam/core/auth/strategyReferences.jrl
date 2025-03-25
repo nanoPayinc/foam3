@@ -1,0 +1,6 @@
+p({
+  "class":"foam.strategy.StrategyReference",
+  "id":"foam_core_auth_Credential",
+  "desiredModelId":"foam.core.auth.Credential",
+  "strategy":"foam.core.auth.Credential"
+})

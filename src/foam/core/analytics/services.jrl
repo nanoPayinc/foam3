@@ -1,0 +1,46 @@
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "analyticEventDAO",
+  "serve": true,
+  "authenticate": false,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setFixedSize(new foam.dao.FixedSizeDAO.Builder(x)
+        .setComparator(foam.mlang.MLang.DESC(foam.core.analytics.AnalyticEvent.TIMESTAMP))
+        .setSize(1000000)
+        .build())
+      .setOf(foam.core.analytics.AnalyticEvent.getOwnClassInfo())
+      .setPm(true)
+      .setFuid(true)
+      .setAuthorize(true)
+      .setSAF(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("analyticEvents")
+      .setWaitReplay(false)
+      .setDecorator(
+        new foam.core.analytics.AnalyticEventOMDAO.Builder(x).setDelegate(
+        new foam.core.analytics.AnalyticEventTimestampDAO.Builder(x).setDelegate(
+        new foam.dao.NullDAO(x, foam.core.analytics.AnalyticEvent.getOwnClassInfo())).build()).build())
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.analytics.AnalyticEvent.NAME })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.analytics.AnalyticEvent.SESSION_ID })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.analytics.AnalyticEvent.TIMESTAMP })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.analytics.AnalyticEvent.TRACE_ID })
+      .orderBy(foam.mlang.MLang.DESC(foam.core.analytics.AnalyticEvent.TIMESTAMP));
+  """,
+  "client":
+  """
+  {
+    "of":"foam.core.analytics.AnalyticEvent"
+  }
+  """
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"postToWindow",
+  "serve":true,
+  "lazyClient": false,
+  "authenticate":false,
+  "client":"{ \"class\": \"foam.core.analytics.PostToWindow\" }"
+})

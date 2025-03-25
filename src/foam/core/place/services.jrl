@@ -1,0 +1,33 @@
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"googlePlaceServiceConfigureDAO",
+  "serve":true,
+  "serviceScript":`
+    return new foam.dao.EasyDAO.Builder(x)
+      .setFuid(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("googlePlaceServiceConfigures")
+      .setOf(foam.core.place.google.GooglePlaceServiceConfigure.getOwnClassInfo())
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.place.google.GooglePlaceServiceConfigure.SPID } );
+    `,
+  "client":"{\"of\":\"foam.core.place.google.GooglePlaceServiceConfigure\"}"
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "placeService",
+  "authenticate": true,
+  "serve": true,
+  "boxClass":"foam.core.place.PlaceServiceSkeleton",
+  "serviceClass": "foam.core.place.google.GooglePlaceService",
+  "client": """
+      {
+        "class":"foam.core.place.ClientPlaceService",
+        "delegate": {
+          "class": "foam.box.HTTPBox",
+          "url": "service/placeService"
+        }
+      }
+  """
+})

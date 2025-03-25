@@ -15,8 +15,7 @@ foam.CLASS({
 
   requires: [
     'foam.dao.DAOSink',
-    'foam.dao.PromisedDAO',
-    'foam.dao.QuickSink'
+    'foam.dao.PromisedDAO'
   ],
 
   imports: [ 'merged' ],
@@ -57,8 +56,27 @@ foam.CLASS({
     },
 
     function select_(x, sink, skip, limit, order, predicate) {
-      if ( foam.dao.AnonymousSink.isInstance(sink) )
-        return this.SUPER(x, sink, skip, limit, order, predicate);
+      if ( ! foam.lang.Serializable.isInstance(sink) ) {
+        // console.log('************************ TTL CACHING NON SERIALIZABLE SINK:', sink);
+        return this.select_(x, foam.dao.ArraySink.create(), skip, limit, order, predicate).then(a => {
+          // TODO: the below code should be a method on ArraySink
+          var items    = a.array;
+          var sub      = foam.lang.FObject.create();
+          var detached = false;
+
+          sub.onDetach(function() { detached = true; });
+
+          for ( var i = 0 ; i < items.length ; i++ ) {
+            if ( detached ) break;
+
+            sink.put(items[i], sub);
+          }
+
+          sink.eof();
+
+          return sink;
+        });
+      }
 
       if ( predicate && predicate.partialEval ) predicate = predicate.partialEval();
 
@@ -66,20 +84,20 @@ foam.CLASS({
       var key  = [sink, skip, limit, order, predicate].toString();
 
       if ( this.cache[key] ) {
-        // console.log('************************ TTL CACHED: ', key);
+        // console.log('************************ TTL CACHED:', key);
         return Promise.resolve(this.cache[key]);
       }
 
       return new Promise(function (resolve, reject) {
         self.delegate.select_(x, sink, skip, limit, order, predicate).then(s => {
           self.cache[key] = s;
-          // console.log('************************ TTL CACHING: ', key);
+          // console.log('************************ TTL CACHING:', key);
           // TODO: check if cache is > maxCacheSize and remove oldest entry if it is
           self.purgeCache();
           resolve(s);
         },
         e => {
-          // console.log('************************ TTL ERROR: ', e);
+          // console.log('************************ TTL ERROR:', e);
           self.cache = {};
           reject(e);
         });
@@ -93,8 +111,7 @@ foam.CLASS({
       return this.delegate.remove_(x, o);
     },
 
-    /** removeAll is executed on the cache and the source, ensuring both
-      are up to date. */
+    /** removeAll is executed on the cache and the source, ensuring both are up to date. */
     function removeAll_(x, skip, limit, order, predicate) {
       this.cache = {};
       this.delegate.removeAll_(x, skip, limit, order, predicate);

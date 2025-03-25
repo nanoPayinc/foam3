@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'InterfaceMethodSwiftRefinement',
-  refines: 'foam.core.internal.InterfaceMethod',
+  refines: 'foam.lang.internal.InterfaceMethod',
   flags: ['swift'],
   requires: [
     'foam.swift.ProtocolMethod',

@@ -7,8 +7,8 @@
 
 import java.util.*;
 
-import foam.core.X;
-import foam.core.XFactory;
+import foam.lang.X;
+import foam.lang.XFactory;
 
 public class ErrorReportingPStreamFactory implements XFactory {
   private final ErrorReportingPStream eps;

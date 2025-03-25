@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.wizard.crunch',
   name: 'EditBehaviourRefinement',
-  refines: 'foam.nanos.crunch.edit.AbstractEditBehaviour',
+  refines: 'foam.core.crunch.edit.AbstractEditBehaviour',
 
   properties: [
     {

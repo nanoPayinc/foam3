@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.dao',
   name: 'CopyOnWriteDAOJavaTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
 
   properties: [
     {

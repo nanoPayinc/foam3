@@ -10,12 +10,12 @@ TabbedModelDocumentation allows you to display information about a model, and
 allow the user to select between properties, methods, and a summary of the model.
 
 <code>
-<foam class="foam.flow.widgets.TabbedModelDocumentation" defaultTab="properties" of="foam.nanos.cron.Cron" />
+<foam class="foam.flow.widgets.TabbedModelDocumentation" defaultTab="properties" of="foam.core.cron.Cron" />
 </code>
 
 The above code would display the following:
 
-<foam class="foam.flow.widgets.TabbedModelDocumentation" defaultTab="properties" of="foam.nanos.cron.Cron" />
+<foam class="foam.flow.widgets.TabbedModelDocumentation" defaultTab="properties" of="foam.core.cron.Cron" />
 
 <h2>PropertyShortSummary</h2>
 
@@ -27,12 +27,12 @@ For example, say you were documenting cron jobs and wanted to display
 a few properties `Cron` has related to scheduling.
 
 <code>
-<foam class="foam.flow.widgets.PropertyShortSummary" of="foam.nanos.cron.Cron" whitelist="['schedule','scheduledTime']" />
+<foam class="foam.flow.widgets.PropertyShortSummary" of="foam.core.cron.Cron" whitelist="['schedule','scheduledTime']" />
 </code>
 
 The above code would display the following:
 
-<foam class="foam.flow.widgets.PropertyShortSummary" of="foam.nanos.cron.Cron" whitelist="['schedule','scheduledTime']" />
+<foam class="foam.flow.widgets.PropertyShortSummary" of="foam.core.cron.Cron" whitelist="['schedule','scheduledTime']" />
 
 <h2>ModelSummary</h2>
 
@@ -43,12 +43,12 @@ If we wanted to generate the ModelSummary for CRON, we could use the
 following snippet:
 
 <code>
-<foam class="foam.flow.widgets.ModelSummary" of="foam.nanos.cron.Cron" visibleModelProps="id,documentation" />
+<foam class="foam.flow.widgets.ModelSummary" of="foam.core.cron.Cron" visibleModelProps="id,documentation" />
 </code>
 
 The above code would display the following:
 
-<foam class="foam.flow.widgets.ModelSummary" of="foam.nanos.cron.Cron" visibleModelProps="id,documentation" />
+<foam class="foam.flow.widgets.ModelSummary" of="foam.core.cron.Cron" visibleModelProps="id,documentation" />
 
 
 <h2>EnumSummary</h2>
@@ -56,12 +56,12 @@ The above code would display the following:
 EnumSummary is used to document an enum.
 
 <code>
-<foam class="foam.flow.widgets.EnumSummary" of="foam.nanos.crunch.AssociatedEntity" />
+<foam class="foam.flow.widgets.EnumSummary" of="foam.core.crunch.AssociatedEntity" />
 </code>
 
 The above code would display the following:
 
-<foam class="foam.flow.widgets.EnumSummary" of="foam.nanos.crunch.AssociatedEntity" />
+<foam class="foam.flow.widgets.EnumSummary" of="foam.core.crunch.AssociatedEntity" />
 
 <h2>ApiShortSummary</h2>
 

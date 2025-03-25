@@ -17,8 +17,8 @@ foam.CLASS({
   exports: [ 'data as objData' ],
 
   requires: [
-    'foam.core.Action',
-    'foam.core.Property',
+    'foam.lang.Action',
+    'foam.lang.Property',
     'foam.layout.Section',
     'foam.layout.SectionAxiom'
   ],
@@ -51,7 +51,7 @@ foam.CLASS({
     },
     {
       class: 'FObjectArray',
-      of: 'foam.core.Property',
+      of: 'foam.lang.Property',
       name: 'propertyWhitelist',
       documentation: `
         If this array is not empty, only the properties listed in it will be
@@ -65,7 +65,7 @@ foam.CLASS({
       factory: null,
       adapt: function(o, newValue, p) {
         if ( Array.isArray(newValue) ) {
-          let arr = foam.core.FObjectArray.ADAPT.value.call(this, o, newValue, p);
+          let arr = foam.lang.FObjectArray.ADAPT.value.call(this, o, newValue, p);
           return arr.map((a, idx) => {
             return a.clone().copyFrom({ order: idx });
           });
@@ -81,7 +81,7 @@ foam.CLASS({
         foam.assert(ps, 'Properties required.');
         for ( var i = 0; i < ps.length; i++ ) {
           foam.assert(
-            foam.core.Property.isInstance(ps[i]),
+            foam.lang.Property.isInstance(ps[i]),
             `Non-Property in 'properties' list:`,
             ps);
         }

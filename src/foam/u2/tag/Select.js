@@ -30,6 +30,7 @@ foam.CLASS({
       overflow: hidden;
       padding-top: 1px;
       padding-bottom: 1px;
+      padding-right: 22px;
       text-overflow: ellipsis;
       width: 100%;
     }

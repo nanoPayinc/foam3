@@ -26,7 +26,7 @@ foam.CLASS({
       `,
       adapt: function(o, n, p) {
         n = foam.Number.isInstance(n) ? { columns: n } : n;
-        return foam.core.FObjectProperty.ADAPT.value.call(this, o, n, p);
+        return foam.lang.FObjectProperty.ADAPT.value.call(this, o, n, p);
       },
       value: { columns: 12 }
     },
@@ -37,7 +37,7 @@ foam.CLASS({
       documentation: `Can be used to change the property's grid placement in RW mode`,
       adapt: function(o, n, p) {
         n = foam.Number.isInstance(n) ? { columns: n } : n;
-        return foam.core.FObjectProperty.ADAPT.value.call(this, o, n, p);
+        return foam.lang.FObjectProperty.ADAPT.value.call(this, o, n, p);
       },
       expression: function(columns) { return columns; }
     },

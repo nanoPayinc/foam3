@@ -1,0 +1,157 @@
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"localCronJobDAO",
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.cron.Cron.getOwnClassInfo())
+      .setGuid(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("cronjobs")
+      .setDecorator(
+          new foam.core.script.ScriptRunnerDAO(
+            new foam.core.cron.CronScheduleDAO.Builder(x)
+              .setDelegate(new foam.dao.NullDAO(x, foam.core.cron.Cron.getOwnClassInfo()))
+              .build())
+          )
+      .setPm(true)
+      .setOrder(new foam.mlang.order.Comparator[] {
+        new foam.mlang.order.Desc.Builder(x).setArg1(foam.core.cron.Cron.ENABLED).build(),
+        new foam.mlang.order.Desc.Builder(x).setArg1(foam.core.cron.Cron.LAST_RUN).build()
+      })
+      .setCluster(false)
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.cron.Cron.SCHEDULED_TIME })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.cron.Cron.STATUS })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.cron.Cron.LAST_RUN })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.cron.Cron.ENABLED });
+  """
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"cronJobDAO",
+  "serve":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.cron.Cron.getOwnClassInfo())
+      .setInnerDAO(x.get("localCronJobDAO"))
+      .setCluster(false)
+      .build();
+  """,
+  "client":"""
+    {
+      "of":"foam.core.cron.Cron",
+      "cache": false
+    }
+  """
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"cronJobEventDAO",
+  "serve":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.script.ScriptEvent.getOwnClassInfo())
+      .setGuid(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("cronjobevents")
+      .setWriteOnly(true)
+      .setFixedSize(new foam.dao.FixedSizeDAO.Builder(x)
+        .setComparator(foam.mlang.MLang.DESC(foam.core.script.ScriptEvent.LAST_RUN))
+        .setSize(10000)
+        .build())
+      .setCluster(false)
+      .setOrder(new foam.mlang.order.Comparator[] {
+        new foam.mlang.order.Desc.Builder(x).setArg1(foam.core.script.ScriptEvent.LAST_RUN).build()
+      })
+      .setRuler(false)
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.script.ScriptEvent.OWNER })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.script.ScriptEvent.LAST_RUN });
+  """,
+  "client":"{\"of\":\"foam.core.script.ScriptEvent\"}"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"cronScheduler",
+  "lazy":false,
+  "serviceScript":"""
+    return new foam.core.cron.CronScheduler();
+  """
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"schedulableDAO",
+  "serve":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.cron.Schedulable.getOwnClassInfo())
+      .setGuid(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("schedulables")
+      .setDecorator(new foam.core.script.ScriptRunnerDAO(
+        new foam.core.cron.CronScheduleDAO.Builder(x)
+          .setDelegate(new foam.dao.NullDAO(x, foam.core.cron.Schedulable.getOwnClassInfo()))
+          .build()))
+      .setPm(true)
+      .setOrder(new foam.mlang.order.Comparator[] {
+        new foam.mlang.order.Desc.Builder(x).setArg1(foam.core.script.Script.ENABLED).build(),
+        new foam.mlang.order.Desc.Builder(x).setArg1(foam.core.script.Script.LAST_RUN).build()
+      })
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.cron.Cron.SCHEDULED_TIME })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.script.Script.STATUS })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.script.Script.LAST_RUN })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.script.Script.ENABLED });
+  """,
+  "client":"{\"of\":\"foam.core.cron.Schedulable\"}"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"schedulableEventDAO",
+  "serve":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.script.ScriptEvent.getOwnClassInfo())
+      .setGuid(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("schedulableEvents")
+      .setWriteOnly(true)
+      .setFixedSize(new foam.dao.FixedSizeDAO.Builder(x)
+        .setComparator(foam.mlang.MLang.DESC(foam.core.script.ScriptEvent.LAST_RUN))
+        .setSize(10000)
+        .build())
+      .setCluster(false)
+      .setOrder(new foam.mlang.order.Comparator[] {
+        new foam.mlang.order.Desc.Builder(x).setArg1(foam.core.script.ScriptEvent.LAST_RUN).build()
+      })
+      .setRuler(false)
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.script.ScriptEvent.OWNER })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.script.ScriptEvent.LAST_RUN });
+  """,
+  "client":"{\"of\":\"foam.core.script.ScriptEvent\"}"
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "nextDateService",
+  "description": "A service that returns the next date of a schedule",
+  "serve": true,
+  "authenticate": false,
+  "serviceClass": "foam.core.cron.NextDate",
+  "boxClass": "foam.core.cron.NextDateServiceSkeleton",
+  "client": """
+    {
+      "class": "foam.core.cron.ClientNextDateService",
+      "delegate": {
+          "class": "foam.box.HTTPBox",
+          "url": "service/nextDateService"
+        }
+    }
+  """
+})

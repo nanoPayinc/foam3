@@ -1,0 +1,13 @@
+p({
+  "class":"foam.core.menu.Menu",
+  "id":"pii-report",
+  "label":"PII Report",
+  "tooltip":"Personal Identifiable Information Report",
+  "handler":{
+    "class":"foam.core.menu.ViewMenu","view":{
+      "class":"foam.core.pii.PIIReportRequestView"
+    }
+  },
+  "order":10000,
+  "parent":"settings"
+})

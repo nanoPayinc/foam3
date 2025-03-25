@@ -26,7 +26,7 @@ foam.CLASS({
     {
       buildJavaClass: function(cls) {
         cls.extras.push(`
-          public NullDAO(foam.core.X x, foam.core.ClassInfo of) {
+          public NullDAO(foam.lang.X x, foam.lang.ClassInfo of) {
             setX(x);
             setOf(of);
           }

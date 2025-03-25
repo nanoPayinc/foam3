@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.lib.json',
   name: 'StringToStringArrayParserTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
 
   javaImports: [
     'foam.lib.parse.*'

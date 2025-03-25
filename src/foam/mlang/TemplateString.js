@@ -10,9 +10,9 @@ foam.CLASS({
   extends: 'foam.mlang.AbstractExpr',
   javaImports: [
     'foam.lib.parse.*',
-    'foam.core.AbstractStringPropertyInfo',
-    'foam.core.FObject',
-    'foam.core.PropertyInfo',
+    'foam.lang.AbstractStringPropertyInfo',
+    'foam.lang.FObject',
+    'foam.lang.PropertyInfo',
     'java.util.ArrayList'
   ],
   properties: [

@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'IntView',
   extends: 'foam.u2.view.ModeAltView',
 
-  documentation: 'A view for foam.core.Int properties.',
+  documentation: 'A view for foam.lang.Int properties.',
 
   requires: [
     'foam.u2.IntView',

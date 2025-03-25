@@ -7,8 +7,8 @@
 package foam.dao.jdbc;
 
 import foam.dao.AbstractDAO;
-import foam.core.*;
-import foam.nanos.logger.Logger;
+import foam.lang.*;
+import foam.core.logger.Logger;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;

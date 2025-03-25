@@ -38,7 +38,7 @@ foam.CLASS({
     {
       name: 'javaInfoType',
       flags: ['java'],
-      value: 'foam.core.AbstractDAOPropertyPropertyInfo'
+      value: 'foam.lang.AbstractDAOPropertyPropertyInfo'
     },
     {
       name: 'adapt',
@@ -69,7 +69,7 @@ foam.CLASS({
 
           return dao;
         }
-        return foam.core.FObjectProperty.ADAPT.value.call(this, o, v, prop);
+        return foam.lang.FObjectProperty.ADAPT.value.call(this, o, v, prop);
       }
     }
   ],

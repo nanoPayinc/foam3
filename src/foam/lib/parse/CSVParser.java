@@ -8,7 +8,7 @@ package foam.lib.parse;
 
 public class CSVParser
   extends    foam.lib.parse.ProxyParser
-  implements foam.core.Detachable
+  implements foam.lang.Detachable
 {
 
   boolean detached_ = false;
@@ -16,7 +16,7 @@ public class CSVParser
     detached_ = true;
   }
 
-  public CSVParser(foam.core.ClassInfo info, foam.dao.Sink sink) {
+  public CSVParser(foam.lang.ClassInfo info, foam.dao.Sink sink) {
     Parser escapedQuote = Literal.create("\"\"");
     Parser quotedText = new Seq1(1,
       Literal.create("\""),
@@ -40,15 +40,15 @@ public class CSVParser
       new Repeat(new Chars("\n\r"))
     );
 
-    foam.core.Detachable detach = this;
+    foam.lang.Detachable detach = this;
 
     setDelegate(new Parser() {
       public PStream parse(PStream ps, ParserContext px) {
 
         java.util.Map<String, foam.lib.csv.FromCSVSetter> propMap =
           new java.util.HashMap<>();
-        info.getAxiomsByClass(foam.core.PropertyInfo.class)
-          .forEach(p -> ((foam.core.PropertyInfo) p)
+        info.getAxiomsByClass(foam.lang.PropertyInfo.class)
+          .forEach(p -> ((foam.lang.PropertyInfo) p)
               .fromCSVLabelMapping(propMap));
 
         ps = csvRow.parse(ps, px);
@@ -61,7 +61,7 @@ public class CSVParser
           if ( ps == null ) break;
           Object[] values = (Object[]) ps.value();
           try {
-            foam.core.FObject obj = (foam.core.FObject) info.newInstance();
+            foam.lang.FObject obj = (foam.lang.FObject) info.newInstance();
             for ( int i = 0 ; i < Math.min(values.length, headers.length) ; i++ ) {
               propMap.get((String)headers[i]).set(obj, (String) values[i]);
             }

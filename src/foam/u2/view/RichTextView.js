@@ -21,7 +21,7 @@ foam.CLASS({
   extends: 'foam.u2.View',
 
   requires: [
-    'foam.nanos.menu.LinkMenu',
+    'foam.core.menu.LinkMenu',
     'foam.u2.ToggleActionView',
     'foam.u2.view.RichTextValidator'
   ],

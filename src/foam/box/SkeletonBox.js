@@ -52,7 +52,7 @@ foam.CLASS({
           var args   = message.object.args.slice();
 
           // TODO: This is pretty hackish.  Context-Oriented methods should just be modeled.
-          // TODO: at least check that the javaType is foam.core.X
+          // TODO: at least check that the javaType is foam.lang.X
           if ( method && method.args && method.args[0] && method.args[0].name == 'x' ) {
             var x = this.__context__.createSubContext({
               message: message

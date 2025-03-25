@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.u2.wizard.agents',
   name: 'CreateControllerAgent',
   implements: [
-    'foam.core.ContextAgent',
+    'foam.lang.ContextAgent',
     'foam.mlang.Expressions'
   ],
   documentation: 'Creates WizardController',

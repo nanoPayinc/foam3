@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.u2.crunch.wizardflow',
   name: 'DebugAgent',
   implements: [
-    'foam.core.ContextAgent'
+    'foam.lang.ContextAgent'
   ],
   documentation: `
     You are in development mode. This context agent adds a debug section to

@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.mlang.predicate',
   name: 'Has',
   extends: 'foam.mlang.predicate.Unary',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   documentation: 'Unary Predicate that returns true iff the given property has a value other than null, undefined, \'\', or [].',
 

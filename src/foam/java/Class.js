@@ -148,7 +148,7 @@ foam.CLASS({
     },
 
     function field(f) {
-      if ( ! foam.core.FObject.isInstance(f) ) {
+      if ( ! foam.lang.FObject.isInstance(f) ) {
         f = ( f.class ? this.__context__.lookup(f.class) : foam.java.Field ).create(f, this);
       }
 

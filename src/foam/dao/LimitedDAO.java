@@ -6,7 +6,7 @@
 
 package foam.dao;
 
-import foam.core.X;
+import foam.lang.X;
 import foam.mlang.predicate.And;
 import foam.mlang.predicate.Predicate;
 import foam.mlang.order.Comparator;

@@ -239,7 +239,7 @@ foam.CLASS({
         var data = JSON.parse(payload);
 
         var detached = false;
-        var sub = foam.core.FObject.create();
+        var sub = foam.lang.FObject.create();
         sub.onDetach(function() { detached = true; });
 
         for ( var key in data ) {

@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'ActionSwiftRefinement',
-  refines: 'foam.core.Action',
+  refines: 'foam.lang.Action',
   flags: ['swift'],
   requires: [
     'foam.swift.Field',

@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.u2.wizard.agents',
   name: 'AlternateFlowAgent',
   implements: [
-    'foam.core.ContextAgent',
+    'foam.lang.ContextAgent',
     'foam.mlang.Expressions'
   ],
 
@@ -18,7 +18,7 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.nanos.crunch.CapabilityJunctionStatus',
+    'foam.core.crunch.CapabilityJunctionStatus',
     'foam.u2.wizard.WizardPosition'
   ],
 

@@ -35,6 +35,8 @@ foam.CLASS({
       javaCode: `if ( getValue() == null || ((Comparable)getArg1().f(obj)).compareTo(getValue()) > 0 ) {
             setValue(getArg1().f(obj));
           }`
-    }
+    },
+    function toSummary() { return this.value; },
+    function addToE(e) { e.add(this.value); }
   ]
 });

@@ -6,8 +6,8 @@
 
 package foam.dao;
 
-import foam.core.ClassInfo;
-import foam.core.FObject;
+import foam.lang.ClassInfo;
+import foam.lang.FObject;
 
 public class CopyAdapter
   implements foam.dao.MaterializedAdapter

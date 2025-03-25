@@ -12,7 +12,7 @@ foam.CLASS({
   documentation: `Serialize to JSON and back to FObject to simulate network and storage transfer, to troubleshoot cloning, or lack of cloning issue, and also inline updates to Arrays.`,
 
   javaImports: [
-    'foam.core.FObject',
+    'foam.lang.FObject',
     'foam.lib.formatter.FObjectFormatter',
     'foam.lib.formatter.JSONFObjectFormatter',
     'foam.lib.json.JSONParser',

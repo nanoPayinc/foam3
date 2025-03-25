@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.wizard.wizardflow',
   name: 'RemoveWizardlets',
-  implements: ['foam.core.ContextAgent'],
+  implements: ['foam.lang.ContextAgent'],
 
   properties: [
     {

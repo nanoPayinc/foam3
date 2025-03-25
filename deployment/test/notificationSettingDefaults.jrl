@@ -1,5 +1,5 @@
 p({
-  class:"foam.nanos.notification.EmailSetting",
+  class:"foam.core.notification.EmailSetting",
   "id":"66D852A07901",
   "spid":"test"
 })

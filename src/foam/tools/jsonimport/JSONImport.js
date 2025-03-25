@@ -14,7 +14,7 @@ foam.CLASS({
     {
       class: 'String',
       name: 'package',
-      value: 'foam.nanos'
+      value: 'foam.core'
     },
     {
       class: 'String',

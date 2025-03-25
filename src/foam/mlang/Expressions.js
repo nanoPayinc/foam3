@@ -13,6 +13,7 @@ foam.CLASS({
   documentation: 'Convenience mix-in for requiring all mlangs.',
 
   requires: [
+    'foam.dao.ArraySink',
     'foam.mlang.Constant',
     'foam.mlang.expr.Add',
     'foam.mlang.expr.Divide',
@@ -137,8 +138,8 @@ foam.CLASS({
     function SUM(arg1) { return this.Sum.create({ arg1: arg1 }); },
     function AVG(arg1) { return this.Average.create({ arg1: arg1 }); },
     function ABS(arg1) { return this.Absolute.create({ delegate: arg1 }); },
+    function ARRAY() { return this.ArraySink.create() },
     function MUX(cond, a, b) { return this.Mux.create({ cond: cond, a: a, b: b }); },
-    function PARTITION_BY(arg1, delegate) { return this.Partition.create({ arg1: arg1, delegate: delegate }); },
     function SEQ() { return this._nary_("Sequence", arguments); },
     function PROJECTION(exprs) {
       return this.Projection.create({

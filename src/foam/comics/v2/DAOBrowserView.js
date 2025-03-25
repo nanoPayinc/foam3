@@ -230,7 +230,7 @@ foam.CLASS({
       name: 'importModal',
       factory: function() {
         return {
-          class: 'foam.nanos.google.api.sheets.views.modal.ImportFromGoogleSheetsForm',
+          class: 'foam.core.google.api.sheets.views.modal.ImportFromGoogleSheetsForm',
           of: this.config.of,
           dao: this.serviceName || this.data.delegate.serviceName
         };

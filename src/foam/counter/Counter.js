@@ -11,7 +11,7 @@ foam.CLASS({
   documentation: `Generic model that can be used by multiples daos for reporting purposes(e.g. groupby).`,
 
   implements: [
-    'foam.nanos.auth.CreatedAware'
+    'foam.core.auth.CreatedAware'
   ],
 
   properties: [

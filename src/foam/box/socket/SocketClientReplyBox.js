@@ -13,7 +13,7 @@ foam.CLASS({
 
   javaImports: [
     'foam.box.Box',
-    'foam.core.X',
+    'foam.lang.X',
     'java.net.Socket'
   ],
 
@@ -51,9 +51,9 @@ foam.CLASS({
         Box box = ((SocketConnectionBoxManager) x.get("socketConnectionBoxManager")).getReplyBox(x, socket.getRemoteSocketAddress().toString());
         box.send(msg);
       } else {
-        foam.nanos.logger.Logger logger = (foam.nanos.logger.Logger) x.get("logger");
+        foam.core.logger.Logger logger = (foam.core.logger.Logger) x.get("logger");
         if ( logger == null ) {
-          logger = foam.nanos.logger.StdoutLogger.instance();
+          logger = foam.core.logger.StdoutLogger.instance();
         }
         logger.error(this.getClass().getSimpleName(), "send,Socket not found", "replyBoxId", getReplyBoxId(), "message abandoned", msg, new Exception("Socket not found."));
       }

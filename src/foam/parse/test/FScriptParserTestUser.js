@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.parse.test',
   name: 'FScriptParserTestUser',
-  extends: 'foam.nanos.auth.User',
+  extends: 'foam.core.auth.User',
 
   properties: [
 //    {

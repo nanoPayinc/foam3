@@ -16,11 +16,11 @@ foam.CLASS({
   `,
 
   javaImports: [
-    'foam.nanos.auth.ServiceProvider',
-    'foam.nanos.crunch.Capability',
-    'foam.nanos.crunch.CapabilityJunctionStatus',
-    'foam.nanos.crunch.UserCapabilityJunction',
-    'foam.nanos.logger.Logger'
+    'foam.core.auth.ServiceProvider',
+    'foam.core.crunch.Capability',
+    'foam.core.crunch.CapabilityJunctionStatus',
+    'foam.core.crunch.UserCapabilityJunction',
+    'foam.core.logger.Logger'
   ],
 
   properties: [
@@ -36,7 +36,7 @@ foam.CLASS({
     {
       name: 'entity',
       class: 'Enum',
-      of: 'foam.nanos.crunch.AssociatedEntity'
+      of: 'foam.core.crunch.AssociatedEntity'
     }
   ],
 
@@ -45,7 +45,7 @@ foam.CLASS({
       name: 'f',
       args: 'Object obj',
       javaCode: `
-          foam.core.X x = getX();
+          foam.lang.X x = getX();
           UserCapabilityJunction ucj = (UserCapabilityJunction) obj;
           if ( ucj.getStatus() == CapabilityJunctionStatus.GRANTED ) {
             Capability c = (Capability) getCapabilityDAO().find(ucj.getTargetId());

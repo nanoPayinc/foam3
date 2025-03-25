@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.mlang.sink',
   name: 'Explain',
   extends: 'foam.dao.ProxySink',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   documentation: 'Pseudo-Sink which outputs a human-readable description of an MDAO\'s execution plan for evaluating it.',
 

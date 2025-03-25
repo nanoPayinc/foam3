@@ -60,7 +60,7 @@ foam.CLASS({
         {
           name: 'sinkSub',
           factory: function() {
-            var sub = foam.core.FObject.create();
+            var sub = foam.lang.FObject.create();
             // TODO(markdittmer): Notify remote DAO of detachment.
             sub.onDetach(this.unregisterSelf);
             return sub;

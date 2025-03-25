@@ -13,9 +13,8 @@ foam.CLASS({
 
   requires: [
     'foam.box.SkeletonBox',
-    'foam.core.Serializable',
-    'foam.dao.ArraySink',
-    'foam.dao.ClientSink'
+    'foam.lang.Serializable',
+    'foam.dao.ArraySink'
   ],
 
   methods: [
@@ -84,7 +83,7 @@ return sink
     //   name: 'listen_',
     //   code: function listen_(x, sink, predicate) {
     //     this.SUPER(null, sink, predicate);
-    //     return foam.core.FObject.create();
+    //     return foam.lang.FObject.create();
     //   },
     //   javaCode: `super.listen_(null, sink, predicate);`,
     //   swiftCode: `return try super.listen_(nil, sink, predicate)`

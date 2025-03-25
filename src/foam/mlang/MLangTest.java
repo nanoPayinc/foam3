@@ -6,12 +6,12 @@
 
 package foam.mlang;
 
-import foam.core.X;
-import foam.nanos.auth.*;
+import foam.lang.X;
+import foam.core.auth.*;
 import static foam.mlang.MLang.*;
 
 public class MLangTest
-  extends foam.nanos.test.Test
+  extends foam.core.test.Test
 {
   public void runTest(X x) {
     // Test INSTANCE_OF

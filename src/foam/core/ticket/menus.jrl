@@ -1,0 +1,14 @@
+p({
+  "class":"foam.core.menu.Menu",
+  "id":"admin.tickets",
+  "label":"Tickets",
+  "handler":{
+    "class":"foam.core.menu.DAOMenu2",
+    "config":{
+      "class":"foam.comics.v2.DAOControllerConfig",
+      "daoKey":"ticketDAO",
+      "browseTitle":"Tickets"
+    }
+  },
+  "parent":"admin"
+})

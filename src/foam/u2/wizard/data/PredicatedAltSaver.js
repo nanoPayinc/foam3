@@ -23,7 +23,7 @@
 
   requires: [
     'foam.u2.wizard.axiom.AlternateFlowAction',
-    'foam.nanos.crunch.CapabilityJunctionStatus'
+    'foam.core.crunch.CapabilityJunctionStatus'
   ],
 
   properties: [

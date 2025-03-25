@@ -18,7 +18,7 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.core.Action',
+    'foam.lang.Action',
     'foam.log.LogLevel',
     'foam.u2.detail.SectionView',
     'foam.u2.dialog.Popup',

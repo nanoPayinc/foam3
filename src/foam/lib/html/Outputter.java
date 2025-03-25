@@ -6,10 +6,10 @@
 
 package foam.lib.html;
 
-import foam.core.ClassInfo;
-import foam.core.Detachable;
-import foam.core.FObject;
-import foam.core.PropertyInfo;
+import foam.lang.ClassInfo;
+import foam.lang.Detachable;
+import foam.lang.FObject;
+import foam.lang.PropertyInfo;
 import foam.dao.AbstractSink;
 import foam.lib.json.OutputterMode;
 import foam.util.SafetyUtil;
@@ -42,6 +42,7 @@ public class Outputter
   protected OutputterMode      mode_;
   protected boolean            outputHeaders_;
   protected boolean            isHeadersOutput_ = false;
+  protected boolean            nbspEnabled_ = true;
 
   public Outputter() {
     this(OutputterMode.FULL);
@@ -83,6 +84,10 @@ public class Outputter
     this.outputHeaders_ = outputHeaders;
   }
 
+  public void setNbspEnabled(boolean enabled) {
+    nbspEnabled_ = enabled;
+  }
+
   public String stringify(FObject obj) {
     if ( stringWriter_ == null ) {
       stringWriter_ = new StringWriter();
@@ -102,8 +107,10 @@ public class Outputter
   }
 
   protected void outputString(String s) {
-    if ( SafetyUtil.isEmpty(s) ) return;
-    writer_.append(escape(s));
+    if ( SafetyUtil.isEmpty(s) )
+      outputNBSP();
+    else
+      writer_.append(escape(s));
   }
 
   protected void outputNumber(Number value) {
@@ -162,19 +169,23 @@ int j = 0;
       try {
         output(prop.get(obj));
       } catch (Throwable t) {
-        output("nbsp;<!-- error -->");
+        outputNBSP();
+        output("<!-- error -->");
       }
       writer_.append("</td>");
     }
     writer_.append("</tr>");
   }
 
+  public void outputNBSP() {
+    if ( nbspEnabled_ ) writer_.append("&nbps;");
+  }
+
   public void output(Object value) {
     if ( value == null ) {
-      outputString("&nbsp;");
+      outputNBSP();
     } else if ( value instanceof String ) {
-      String str = (String) value;
-      outputString(SafetyUtil.isEmpty(str) ? "&nbsp;" : str);
+      outputString((String) value);
     } else if ( value instanceof Number ) {
       outputNumber((Number) value);
     } else if ( value instanceof Boolean ) {

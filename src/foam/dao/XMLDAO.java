@@ -1,8 +1,8 @@
 package foam.dao;
 
-import foam.core.ClassInfo;
-import foam.core.FObject;
-import foam.core.XMLSupport;
+import foam.lang.ClassInfo;
+import foam.lang.FObject;
+import foam.lang.XMLSupport;
 import org.w3c.dom.Document;
 
 import javax.xml.XMLConstants;

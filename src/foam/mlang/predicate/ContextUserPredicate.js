@@ -10,13 +10,13 @@ foam.CLASS({
 
   extends: 'foam.mlang.predicate.AbstractPredicate',
 
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   documentation: 'Check arg1 predicate against the subject.user in the context.',
 
   javaImports: [
-    'foam.core.X',
-    'foam.nanos.auth.Subject'
+    'foam.lang.X',
+    'foam.core.auth.Subject'
   ],
 
   properties: [

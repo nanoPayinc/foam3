@@ -1,0 +1,4 @@
+p({
+  class:"foam.core.ruler.predicate.test.FScriptRulePredicateTest",
+  id:"FScriptRulePredicateTest"
+})

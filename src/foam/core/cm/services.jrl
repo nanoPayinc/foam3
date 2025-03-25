@@ -1,0 +1,19 @@
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"cmDAO",
+  "serve":true,
+  "serviceScript":"""
+    dao = new foam.dao.EasyDAO.Builder(x)
+      .setPm(true)
+      .setCluster(false)
+      .setPipelinePm(false)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("cms")
+      .setOf(foam.core.cm.CM.getOwnClassInfo())
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.cm.CM.EXPIRY });
+
+    return new foam.core.cm.CMUpdateDAO(x, dao);
+  """,
+  "client":"""{"of":"foam.core.cm.CM"}"""
+})

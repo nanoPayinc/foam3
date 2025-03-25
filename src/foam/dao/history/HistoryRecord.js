@@ -45,7 +45,7 @@ foam.CLASS({
     },
     {
       class: 'FObjectProperty',
-      of: 'foam.nanos.auth.Subject',
+      of: 'foam.core.auth.Subject',
       name: 'subject',
       documentation: `References subject that made update. TODO: remove references when subject becomes serializable`,
       visibility: 'RO',
@@ -56,8 +56,8 @@ foam.CLASS({
         this.agent= n.realUser.toSummary();
       },
       javaSetter: `
-        foam.nanos.auth.User user = (foam.nanos.auth.User) val.getUser();
-        foam.nanos.auth.User agent = (foam.nanos.auth.User) val.getRealUser();
+        foam.core.auth.User user = (foam.core.auth.User) val.getUser();
+        foam.core.auth.User agent = (foam.core.auth.User) val.getRealUser();
         setUserId(user.getId());
         setUser(user.toSummary());
         setAgentId(agent.getId());
@@ -66,13 +66,13 @@ foam.CLASS({
     },
     {
       class: 'Reference',
-      of: 'foam.nanos.auth.User',
+      of: 'foam.core.auth.User',
       name: 'userId',
       visibility: 'RO'
     },
     {
       class: 'Reference',
-      of: 'foam.nanos.auth.User',
+      of: 'foam.core.auth.User',
       name: 'agentId',
       visibility: 'RO'
     },

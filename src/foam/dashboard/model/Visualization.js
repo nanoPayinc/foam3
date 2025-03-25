@@ -31,7 +31,7 @@ foam.CLASS({
       // than having a property for "order" and one for
       // "ascending/descending"
       class: 'FObjectProperty',
-      type: 'foam.core.Property',
+      type: 'foam.lang.Property',
       name: 'order',
       view: { class: 'foam.u2.view.ExprView' },
       hidden: true

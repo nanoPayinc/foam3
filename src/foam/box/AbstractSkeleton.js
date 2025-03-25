@@ -17,7 +17,7 @@ foam.CLASS({
       documentation: 'Return context stored in message if present, otherwise getX().',
       type: 'Context',
       args: [ { name: 'msg', type: 'foam.box.Message' } ],
-      javaCode: `foam.core.X x = (foam.core.X) msg.getLocalAttributes().get("x");
+      javaCode: `foam.lang.X x = (foam.lang.X) msg.getLocalAttributes().get("x");
 return x == null ? getX() : x;`
     },
     {
@@ -56,5 +56,14 @@ return x == null ? getX() : x;`
       args: [ { type: 'Object', name: 'o' } ],
       javaCode: `return ((Number) o).shortValue();`
     }
-  ]
+  ],
+
+  javaCode: `
+    public <T> T[] toArray(Object o, T[] a) {
+      if ( o == null || ! o.getClass().isArray() ) return null;
+
+      Object[] arr = (Object[]) o;
+      return (T[]) java.util.Arrays.copyOf(arr, arr.length, a.getClass());
+    }
+  `
 });

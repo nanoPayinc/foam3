@@ -66,7 +66,7 @@ foam.CLASS({
     },
     {
       name: 'unknownExportDriverRegistry',
-      factory: function() { return foam.nanos.export.ExportDriverRegistry.create(); }
+      factory: function() { return foam.core.export.ExportDriverRegistry.create(); }
     },
     'exportData',
     'exportObj',
@@ -124,7 +124,7 @@ foam.CLASS({
           .tag(this.DATA_TYPE.__)
           .add(this.slot(function (exportDriver) {
             return this.E()
-              .show(exportDriver && exportDriver.cls_.getAxiomsByClass(foam.core.Property).some(p => ! p.hidden))
+              .show(exportDriver && exportDriver.cls_.getAxiomsByClass(foam.lang.Property).some(p => ! p.hidden))
               .start({class: 'foam.u2.detail.VerticalDetailView', data: exportDriver}).end();
           }))
           .start()

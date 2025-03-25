@@ -1,0 +1,9 @@
+p({
+  class:"foam.core.ruler.RuleGroup",
+  id:"Referrals"
+})
+
+p({
+  class:"foam.core.ruler.RuleGroup",
+  id:"ReferralFee"
+})

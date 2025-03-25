@@ -1,0 +1,43 @@
+p({
+    "class": "foam.core.boot.CSpec",
+    "name": "oauth",
+    "lazy": true,
+    "serve": false,
+    "serviceClass": "foam.core.oauth.OAuthWebAgent",
+    "authenticate": false,
+    "pm": true
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"oAuthProviderDAO",
+  "lazy":true,
+  "serve":true,
+  "authenticate": false,
+  "serviceScript":`
+    return new foam.dao.EasyDAO.Builder(x)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("oauthProviders")
+      .setPermissioned(true)
+      .setAuthorizer(new foam.core.auth.GlobalReadAuthorizer("oauthProvider"))
+      .setOf(foam.core.oauth.OAuthProvider.getOwnClassInfo())
+      .build();
+    `,
+  "client":"{\"of\":\"foam.core.oauth.OAuthProvider\"}"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"oAuthCredentialDAO",
+  "lazy":true,
+  "serve":true,
+  "authenticate": true,
+  "serviceScript":`
+    return new foam.dao.EasyDAO.Builder(x)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("oauthCredentials")
+      .setOf(foam.core.oauth.OAuthCredential.getOwnClassInfo())
+      .build();
+    `,
+  "client":"{\"of\":\"foam.core.oauth.OAuthCredential\"}"
+})

@@ -6,12 +6,12 @@
 
  package foam.lib.formatter;
 
-import foam.core.ClassInfo;
-import foam.core.ContextAware;
-import foam.core.FEnum;
-import foam.core.FObject;
-import foam.core.PropertyInfo;
-import foam.core.X;
+import foam.lang.ClassInfo;
+import foam.lang.ContextAware;
+import foam.lang.FEnum;
+import foam.lang.FObject;
+import foam.lang.PropertyInfo;
+import foam.lang.X;
 import foam.lib.PropertyPredicate;
 import java.util.*;
 
@@ -48,7 +48,11 @@ public interface FObjectFormatter
 
   public void output(float val);
 
+  public void output(float val, int precision);
+
   public void output(double val);
+
+  public void output(double val, int precision);
 
   public void output(boolean val);
 

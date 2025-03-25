@@ -58,7 +58,7 @@ foam.CLASS({
     },
     {
       class: 'FObjectArray',
-      of: 'foam.core.FObject',
+      of: 'foam.lang.FObject',
       documentation: 'stores an array of buttons, menus or actionReferences',
       name: 'data'
     },
@@ -97,7 +97,7 @@ foam.CLASS({
     },
     function addActionReference(action, data, opts = {}) {
       // Convienience method to add ActionReference
-      let actRef = this.ActionReference.create({ action, ...( foam.core.Slot.isInstance(data) ? {data$: data} : {data: data} ) });
+      let actRef = this.ActionReference.create({ action, ...( foam.lang.Slot.isInstance(data) ? {data$: data} : {data: data} ) });
       this.tag(actRef, opts);
       return this
     }

@@ -27,7 +27,7 @@ foam.CLASS({
   properties: [
     {
       class: 'FObjectProperty',
-      of: 'foam.core.FObject',
+      of: 'foam.lang.FObject',
       name: 'data'
     },
     {

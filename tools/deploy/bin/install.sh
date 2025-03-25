@@ -1,11 +1,15 @@
 #!/bin/bash
 
+# TODO:
+# - configuration to set deployment root /opt
+# - configuration to not split deployment between /mnt and /opt
+# - configuration for group name and id
+
 APP_NAME=
-SYSTEM_NAME=
 VERSION=
 USER=
 USER_ID=
-WEB_PORT=8443
+WEB_PORT=0
 FOAM_TARBALL=
 FOAM_REMOTE_OUTPUT=/tmp/tar_extract
 BACKUP=true
@@ -31,27 +35,25 @@ function usage {
     echo "Usage: $0 [OPTIONS]"
     echo ""
     echo "Options are:"
-    echo "  -A <app-name>     : Application name, also prefix of jar file"
-    echo "  -B <true | false> : disable Backup "
-    echo "  -C <true | false> : Enable clustering"
-    echo "  -D <path>         : Remote location of tarball"
-    echo "  -O <path>         : Remote directory tarball is extracted to, default to ~/tar_extract"
-    echo "  -S name           : systemd service name"
-    echo "  -U name           : User and Group name"
-    echo "  -V version        : application version"
-    echo "  -W port           : Web port"
-    echo "  -Y userId         : User and Group ID"
+    echo "  -B <true | false> : Backup"
+    echo "  -C <true | false> : Configure as Medusa mediator"
+    echo "  -T <path>         : Remote location of tarball"
+    echo "  -E <path>         : Remote directory tarball is extracted to, default to /tmp/tar_extract"
+    echo "  -N <app-name>     : Application name, also prefix of jar file"
+    echo "  -U user name      : Configure to run application under this user (and group)"
+    echo "  -Y user id        : Confiugre to run application under this user id (and group id)"
+    echo "  -V version        : Application version"
+    echo "  -W port           : Configure application Web port"
     echo ""
 }
 
-while getopts "A:B:C:D:O:S:U:V:W:Y:" opt ; do
+while getopts "B:C:E:N:T:U:V:W:Y:" opt ; do
     case $opt in
-        A) APP_NAME=${OPTARG};;
         B) BACKUP=${OPTARG};;
         C) CLUSTER=${OPTARG};;
-        D) FOAM_TARBALL=${OPTARG};;
-        O) FOAM_REMOTE_OUTPUT=$OPTARG;;
-        S) SYSTEM_NAME=${OPTARG};;
+        E) FOAM_REMOTE_OUTPUT=$OPTARG;;
+        N) APP_NAME=${OPTARG};;
+        T) FOAM_TARBALL=${OPTARG};;
         U) USER=${OPTARG};;
         V) VERSION=${OPTARG};;
         W) WEB_PORT=${OPTARG};;
@@ -60,9 +62,9 @@ while getopts "A:B:C:D:O:S:U:V:W:Y:" opt ; do
    esac
 done
 
-FOAM_ROOT=/opt/${SYSTEM_NAME}
-FOAM_HOME=/opt/${SYSTEM_NAME}-${VERSION}
-MNT_HOME=/mnt/${SYSTEM_NAME}
+FOAM_ROOT=/opt/${APP_NAME}
+FOAM_HOME=/opt/${APP_NAME}-${VERSION}
+MNT_HOME=/mnt/${APP_NAME}
 SHARED_HOME=${MNT_HOME}
 UNIQUE_HOME=${MNT_HOME}/$HOSTNAME
 FILES_HOME=${MNT_HOME}/files
@@ -72,7 +74,7 @@ JOURNAL_HOME=${UNIQUE_HOME}/journals
 CONF_HOME=${UNIQUE_HOME}/conf
 BACKUP_HOME=${UNIQUE_HOME}/backups
 VAR_HOME=${UNIQUE_HOME}/var
-SYSTEM_SERVICE_FILE=/lib/systemd/system/$SYSTEM_NAME.service
+SYSTEM_SERVICE_FILE=/lib/systemd/system/$APP_NAME.service
 GROUP=$USER
 GROUP_ID=$USER_ID
 
@@ -127,12 +129,12 @@ function backupFiles {
 
 function cleanupFiles {
     if [ -d ${FOAM_HOME}/lib ]; then
-        sudo rm -rf ${FOAM_HOME/lib/ }
+        sudo rm -rf ${FOAM_HOME}/lib
     fi
 }
 
 function installFiles {
-    echo "INFO :: [$HOSTNAME] Installing ${SYSTEM_NAME} to ${FOAM_HOME}"
+    echo "INFO :: [$HOSTNAME] Installing ${APP_NAME} to ${FOAM_HOME}"
 
     if [ ! -d $FOAM_HOME ]; then
         mkdir -p ${FOAM_HOME}
@@ -178,11 +180,12 @@ function installFiles {
 
     if [ ! -f "${CONF_HOME}/shrc.custom" ]; then
         echo '#!/bin/bash' > ${CONF_HOME}/shrc.custom
-        echo '  JAVA_OPTS="${JAVA_OPTS} -Xmx4096m"' >> ${CONF_HOME}/shrc.custom
         if [[ ${CLUSTER} = "true" ]]; then
-            echo '  JAVA_OPTS="${JAVA_OPTS} -DCLUSTER=true"' >> ${CONF_HOME}/shrc.custom
+            echo 'JAVA_OPTS="${JAVA_OPTS} -DCLUSTER=true"' >> ${CONF_HOME}/shrc.custom
+            echo 'JAVA_OPTS="${JAVA_OPTS} -Xmx8096m"' >> ${CONF_HOME}/shrc.custom
+        else
+            echo 'JAVA_OPTS="${JAVA_OPTS} -Xmx4096m"' >> ${CONF_HOME}/shrc.custom
         fi
-        echo '#DEBUG_DEV=1"' >> ${CONF_HOME}/shrc.custom
     fi
     chown -R $USER:$GROUP ${CONF_HOME}
     chmod -R 750 ${CONF_HOME}
@@ -225,14 +228,14 @@ function setupUser {
     if [[ $IS_LINUX -eq 1 ]]; then
         id -u $USER > /dev/null
         if [ $? -eq 1 ]; then
-            echo "INFO :: [$HOSTNAME] User foam not found, creating user foam"
+            echo "INFO :: [$HOSTNAME] User $USER not found, creating user"
             groupadd --force --gid $GROUP_ID $GROUP
             useradd -g $USER --uid $USER_ID -m -s /bin/false $USER
             usermod -L $USER
         fi
 
         # test and set umask
-        USER_HOME="$(grep foam /etc/passwd | cut -d':' -f6)"
+        USER_HOME="$(grep "$USER" /etc/passwd | cut -d':' -f6)"
         BASHRC="$USER_HOME/.bashrc"
         if [ ! -f "$BASHRC" ]; then
             touch "$BASHRC"
@@ -315,36 +318,44 @@ function setupSymLink {
 
 function setupSystemd {
     echo "INFO :: [$HOSTNAME] Running Systemd setup"
-    systemctl list-units | grep ${SYSTEM_NAME}.service &> /dev/null
+    if [[ ${CLUSTER} = "true" ]]; then
+        # Allow mediator to offline gracefully 
+        touch /tmp/OFFLINE;
+        sleep 5;
+        rm /tmp/OFFLINE;
+    fi
+
+    systemctl list-units | grep ${APP_NAME}.service &> /dev/null
     if [ $? -eq 0 ]; then
-        sudo systemctl stop $SYSTEM_NAME
-        sudo systemctl disable $SYSTEM_NAME
+        sudo systemctl stop $APP_NAME
+        sudo systemctl disable $APP_NAME
     fi
 
     if [ -h ${SYSTEM_SERVICE_FILE} ]; then
         sudo rm "${SYSTEM_SERVICE_FILE}"
     fi
 
-    SERVICE_FILE="${FOAM_HOME}/etc/${SYSTEM_NAME}.service"
-    sudo -- sh -c "cd ${FOAM_HOME}/etc; cp system.service ${SYSTEM_NAME}.service; chown ${USER}:${GROUP} ${SYSTEM_NAME}.service"
+    SERVICE_FILE="${FOAM_HOME}/etc/${APP_NAME}.service"
+    sudo -- sh -c "cd ${FOAM_HOME}/etc; cp system.service ${APP_NAME}.service; chown ${USER}:${GROUP} ${APP_NAME}.service"
     sed -i -e "s/APP_NAME/${APP_NAME}/g" ${SERVICE_FILE}
-    sed -i -e "s/SYSTEM_NAME/${SYSTEM_NAME}/g" ${SERVICE_FILE}
+    sed -i -e "s/APP_NAME/${APP_NAME}/g" ${SERVICE_FILE}
     sed -i -e "s/VERSION/${VERSION}/g" ${SERVICE_FILE}
     sed -i -e "s/USER/${USER}/g" ${SERVICE_FILE}
     sed -i -e "s/GROUP/${GROUP}/g" ${SERVICE_FILE}
     sed -i -e "s/WEB_PORT/${WEB_PORT}/g" ${SERVICE_FILE}
+    sed -i -e "s/CLUSTER/${CLUSTER}/g" ${SERVICE_FILE}
 
     sudo ln -s ${SERVICE_FILE} ${SYSTEM_SERVICE_FILE}
 
     sudo systemctl daemon-reload
-    sudo systemctl enable ${SYSTEM_NAME}
+    sudo systemctl enable ${APP_NAME}
 }
 
 function restart {
-    sudo systemctl restart ${SYSTEM_NAME}
+    sudo systemctl restart ${APP_NAME}
 }
 
-echo "INFO :: [$HOSTNAME] Installing ${SYSTEM_NAME} on remote server"
+echo "INFO :: [$HOSTNAME] Installing ${APP_NAME} on remote server"
 
 if [ ! -f ${FOAM_TARBALL} ]; then
     echo "ERROR :: [$HOSTNAME] Tarball ${FOAM_TARBALL} doesn't exist on remote server"

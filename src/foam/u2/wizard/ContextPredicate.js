@@ -8,7 +8,7 @@
   package: 'foam.u2.wizard',
   name: 'ContextPredicate',
   extends: 'foam.mlang.predicate.AbstractPredicate',
-  implements: ['foam.core.Serializable'],
+  implements: ['foam.lang.Serializable'],
 
   documentation: `
     Predicate to check if (or property of) a context object matches some value.

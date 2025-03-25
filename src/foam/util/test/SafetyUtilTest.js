@@ -7,10 +7,10 @@
 foam.CLASS({
   package: 'foam.util.test',
   name: 'SafetyUtilTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
 
   javaImports: [
-    'foam.nanos.auth.User',
+    'foam.core.auth.User',
     'foam.util.SafetyUtil',
   ],
   documentation: 'test utility functions',

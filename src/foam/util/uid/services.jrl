@@ -1,5 +1,5 @@
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"globalSearchService",
   "description":"FUID Global Search Service",
   "serve":true,
@@ -14,7 +14,7 @@ p({
 })
 
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"fuidKeyDAO",
   "lazy":false,
   "serve":true,
@@ -26,7 +26,7 @@ p({
       .setJournalName("fuidKeys")
       .setCluster(false)
       .build()
-      .addPropertyIndex(new foam.core.PropertyInfo[] { foam.util.uid.FuidKey.KEY });
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.util.uid.FuidKey.KEY });
   """,
   "client": """
     {

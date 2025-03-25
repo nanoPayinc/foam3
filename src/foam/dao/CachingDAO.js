@@ -35,7 +35,7 @@ foam.CLASS({
     'foam.dao.DAOSink',
     'foam.dao.PromisedDAO',
     'foam.dao.PurgeRecordCmd',
-    'foam.dao.QuickSink'
+    'foam.dao.ProxySink'
   ],
 
   imports: [
@@ -93,7 +93,7 @@ foam.CLASS({
     },
     {
       class: 'FObjectProperty',
-      of: 'foam.core.Property',
+      of: 'foam.lang.Property',
       name: 'pollingProperty'
     }
   ],
@@ -107,11 +107,11 @@ foam.CLASS({
       }
 
       var proxy = this.src$proxy;
-      proxy.listen(this.QuickSink.create({
-        putFn:    this.onSrcPut,
-        removeFn: this.onSrcRemove,
-        resetFn:  this.onSrcReset
-      }));
+      proxy.listen(this.ProxySink.create({delegate: {
+        put:    this.onSrcPut,
+        remove: this.onSrcRemove,
+        reset:  this.onSrcReset
+      }}));
 
       if ( this.pollingInterval > 0 ) {
         this.setInterval(this.poll, this.pollingInterval);
@@ -193,15 +193,13 @@ foam.CLASS({
         .orderBy(this.DESC(self.pollingProperty))
         .limit(1)
         .select().then(function(data) {
-          if ( data.array.length === 1 ) {
-            self.src
-              .where(self.GT(self.pollingProperty, self.pollingProperty.f(data.array[0])))
-              .select(self.QuickSink.create({ putFn: self.onSrcPut }));
-          } else {
-            // if there was nothing in the cache to delegate dao to
-            // begin with, should also poll from src to get newly added objs
-            self.src.select(self.QuickSink.create({ putFn: self.onSrcPut }))
-          }
+          // if there was nothing in the cache to delegate dao to
+          // begin with, should also poll from src to get newly added objs
+          var dao = data.array.length === 1 ?
+              self.src.where(self.GT(self.pollingProperty, self.pollingProperty.f(data.array[0]))) :
+              self.src ;
+
+          dao.select(self.ProxySink.create({delegate: {put: self.onSrcPut}}));
         });
     }
   ]

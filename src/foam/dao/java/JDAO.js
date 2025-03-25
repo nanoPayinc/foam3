@@ -14,9 +14,9 @@ foam.CLASS({
 In this current implementation setDelegate must be called last.`,
 
   javaImports: [
-    'foam.core.Agency',
-    'foam.core.ContextAgent',
-    'foam.core.X',
+    'foam.lang.Agency',
+    'foam.lang.ContextAgent',
+    'foam.lang.X',
     'foam.dao.CompositeJournal',
     'foam.dao.DAO',
     'foam.dao.F3FileJournal',
@@ -25,13 +25,13 @@ In this current implementation setDelegate must be called last.`,
     'foam.dao.NullJournal',
     'foam.dao.ReadOnlyF3FileJournal',
     'foam.dao.WriteOnlyF3FileJournal',
-    'foam.nanos.boot.NSpec',
-    'foam.nanos.ndiff.NDiffJournal'
+    'foam.core.boot.CSpec',
+    'foam.core.ndiff.NDiffJournal'
   ],
 
   javaCode: `
     // TODO: These convenience constructors should be removed and done using the facade pattern.
-    public JDAO(X x, foam.core.ClassInfo classInfo, String filename) {
+    public JDAO(X x, foam.lang.ClassInfo classInfo, String filename) {
       this(x, new MDAO(classInfo), filename, false);
     }
 
@@ -95,7 +95,7 @@ In this current implementation setDelegate must be called last.`,
             var delegate = val;
 
             // Runtime Journal
-            X runtimeStorageX = getX().put(foam.nanos.fs.Storage.class, getX().get(foam.nanos.fs.FileSystemStorage.class));
+            X runtimeStorageX = getX().put(foam.core.fs.Storage.class, getX().get(foam.core.fs.FileSystemStorage.class));
             if ( getCluster() ) {
               setJournal(new NullJournal.Builder(runtimeStorageX).build());
             } else {
@@ -127,26 +127,26 @@ In this current implementation setDelegate must be called last.`,
               .setFilename(getFilename() + ".0")
               .build();
 
-            // if NSpec present in X then go through NDiff
+            // if CSpec present in X then go through NDiff
             // (set up in EasyDAO's decorator chain)
-            NSpec nspec = (NSpec)getX().get(NSpec.NSPEC_CTX_KEY);
+            CSpec nspec = (CSpec)getX().get(CSpec.NSPEC_CTX_KEY);
 
-            String nSpecName = getFilename();
+            String cSpecName = getFilename();
 
             if ( nspec != null ) {
-              nSpecName = nspec.getName();
+              cSpecName = nspec.getName();
               journals = new Journal[] {
                 // replays the repo journal
                 new NDiffJournal.Builder(getX())
                 .setDelegate(journal0)
-                .setNSpecName(nSpecName)
+                .setCSpecName(cSpecName)
                 .setRuntimeOrigin(false)
                 .build(),
 
                 // replays the runtime journal
                 new NDiffJournal.Builder(getX())
                 .setDelegate(getJournal())
-                .setNSpecName(nSpecName)
+                .setCSpecName(cSpecName)
                 .setRuntimeOrigin(true)
                 .build()
               };

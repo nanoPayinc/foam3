@@ -130,7 +130,7 @@ foam.CLASS({
         return nu;
       },
       factory: function() {
-        var props = this.data.of.getAxiomsByClass(foam.core.Property)
+        var props = this.data.of.getAxiomsByClass(foam.lang.Property)
             .filter(function(p) { return ! p.hidden; });
         return props.sort(function(a, b) {
           return a.LABEL.compare(a, b);

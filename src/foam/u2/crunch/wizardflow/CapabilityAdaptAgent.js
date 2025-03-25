@@ -12,7 +12,7 @@ foam.CLASS({
     Capability object from capabilityDAO.
   `,
 
-  implements: [ 'foam.core.ContextAgent' ],
+  implements: [ 'foam.lang.ContextAgent' ],
 
   imports: [
     'rootCapability as unadaptedRootCapability',
@@ -24,7 +24,7 @@ foam.CLASS({
     {
       name: 'rootCapability',
       class: 'FObjectProperty',
-      of: 'foam.nanos.crunch.Capability'
+      of: 'foam.core.crunch.Capability'
     }
   ],
 

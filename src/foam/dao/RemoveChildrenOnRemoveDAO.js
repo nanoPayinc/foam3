@@ -17,12 +17,12 @@ foam.CLASS({
     {
       class: 'Object',
       name: 'sourceKey',
-      javaType: 'foam.core.PropertyInfo',
+      javaType: 'foam.lang.PropertyInfo',
     },
     {
       class: 'Object',
       name: 'targetKey',
-      javaType: 'foam.core.PropertyInfo',
+      javaType: 'foam.lang.PropertyInfo',
     },
     {
       class: 'String',
@@ -52,7 +52,7 @@ foam.CLASS({
     {
       buildJavaClass: function(cls) {
         cls.extras.push(`
-      public RemoveChildrenOnRemoveDAO(foam.core.X x, foam.dao.DAO delegate, foam.core.PropertyInfo sourceKey, foam.core.PropertyInfo targetKey, String targetDAOKey) {
+      public RemoveChildrenOnRemoveDAO(foam.lang.X x, foam.dao.DAO delegate, foam.lang.PropertyInfo sourceKey, foam.lang.PropertyInfo targetKey, String targetDAOKey) {
       setSourceKey(sourceKey);
       setTargetKey(targetKey);
       setTargetDAOKey(targetDAOKey);

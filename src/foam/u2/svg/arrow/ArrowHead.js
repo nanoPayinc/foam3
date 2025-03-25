@@ -12,7 +12,7 @@ foam.CLASS({
   properties: [
     {
       name: 'nodeName',
-      value: 'G'
+      value: 'g'
     },
     {
       class: 'FObjectProperty',

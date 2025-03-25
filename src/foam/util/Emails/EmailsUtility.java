@@ -1,11 +1,11 @@
 package foam.util.Emails;
 
-import foam.core.X;
+import foam.lang.X;
 import foam.dao.DAO;
-import foam.nanos.auth.User;
-import foam.nanos.logger.PrefixLogger;
-import foam.nanos.logger.Logger;
-import foam.nanos.notification.email.EmailMessage;
+import foam.core.auth.User;
+import foam.core.logger.PrefixLogger;
+import foam.core.logger.Logger;
+import foam.core.notification.email.EmailMessage;
 import foam.util.SafetyUtil;
 import java.util.HashMap;
 import java.util.Map;

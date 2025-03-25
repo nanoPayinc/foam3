@@ -5,7 +5,7 @@
  */
 
 foam.LIB({
-  name: 'foam.core.FObject',
+  name: 'foam.lang.FObject',
   flags: ['swift'],
   methods: [
     function toSwiftClass() {
@@ -155,7 +155,7 @@ foam.LIB({
         body: 'return ' + this.model_.swiftName + '.classInfo_',
       }));
 
-      var exports = this.getOwnAxiomsByClass(foam.core.Export)
+      var exports = this.getOwnAxiomsByClass(foam.lang.Export)
           .filter(function(p) {
             return !this.getSuperAxiomByName(p.name);
           }.bind(this));
@@ -174,7 +174,7 @@ foam.LIB({
 
       // make implement identifiable if has id property
       if ( this.hasOwnAxiom('id') ) {
-        cls.implements = cls.implements.concat(foam.core.Identifiable.model_.swiftName);
+        cls.implements = cls.implements.concat(foam.lang.Identifiable.model_.swiftName);
         cls.methods.push(foam.swift.Method.create({
           name: 'getPrimaryKey',
           visibility: 'public',

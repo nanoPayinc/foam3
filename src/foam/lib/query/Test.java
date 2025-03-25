@@ -19,7 +19,7 @@ public class Test {
     PStream ps = sps;
 
     ParserContext x = new ParserContextImpl();
-    x.set("X", foam.core.EmptyX.instance());
+    x.set("X", foam.lang.EmptyX.instance());
 
     ps = parser.parse(ps, x);
 

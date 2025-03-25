@@ -108,7 +108,7 @@ wao: {
   loader: {
     class: 'foam.u2.wizard.data.CreateLoader',
     spec: {
-      class: 'foam.nanos.cron.TimeHMS',
+      class: 'foam.core.cron.TimeHMS',
       hour: 1,
       minute: 2,
       second: 3

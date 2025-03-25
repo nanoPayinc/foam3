@@ -15,7 +15,7 @@ foam.CLASS({
     {
       name:  'name',
       label: 'Store Name',
-      class:  'foam.core.String'
+      class:  'foam.lang.String'
     }
   ],
 

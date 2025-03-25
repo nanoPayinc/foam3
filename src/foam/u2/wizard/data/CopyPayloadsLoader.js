@@ -19,7 +19,7 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.nanos.crunch.CapabilityJunctionPayload'
+    'foam.core.crunch.CapabilityJunctionPayload'
   ],
 
   properties: [

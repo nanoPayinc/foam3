@@ -17,14 +17,14 @@ foam.CLASS({
   ],
 
   javaImports: [
-    'foam.core.FObject',
+    'foam.lang.FObject',
   ],
 
   methods: [
     {
       name: 'put',
       type: 'FObject',
-      args: [ 'Context x', 'String prefix', 'DAO dao', 'foam.core.FObject obj' ],
+      args: [ 'Context x', 'String prefix', 'DAO dao', 'foam.lang.FObject obj' ],
       javaCode: `
         final Object               id  = obj.getProperty("id");
 
@@ -44,7 +44,7 @@ foam.CLASS({
     {
       name: 'remove',
       type: 'FObject',
-      args: [ 'Context x', 'String prefix', 'DAO dao', 'foam.core.FObject obj' ],
+      args: [ 'Context x', 'String prefix', 'DAO dao', 'foam.lang.FObject obj' ],
       javaCode: `
       final Object id = obj.getProperty("id");
 

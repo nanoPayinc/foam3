@@ -7,22 +7,22 @@
 foam.CLASS({
   package: 'foam.lib.json',
   name: 'ClassReferenceParserTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
 
   javaImports: [
     'foam.lib.parse.*',
-    'foam.nanos.auth.User'
+    'foam.core.auth.User'
   ],
 
   methods: [
     {
       name: 'runTest',
       javaCode: `
-        String input = "{\\"class\\":\\"__Class__\\",\\"forClass_\\":\\"foam.nanos.auth.User\\"}";
+        String input = "{\\"class\\":\\"__Class__\\",\\"forClass_\\":\\"foam.core.auth.User\\"}";
         ClassReferenceParserTest_StringWithValidClassReference(
           x, input, User.getOwnClassInfo(), "Parsed long form modelled Class reference parser successfully");
 
-        String input2 = "\\"foam.nanos.auth.User\\"";
+        String input2 = "\\"foam.core.auth.User\\"";
         ClassReferenceParserTest_StringWithValidClassReference(
           x, input2, User.getOwnClassInfo(), "Parsed short form modelled Class reference parser successfully");
 

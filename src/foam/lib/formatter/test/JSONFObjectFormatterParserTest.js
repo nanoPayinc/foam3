@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.lib.formatter.test',
   name: 'JSONFObjectFormatterParserTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
 
   documentation: 'Test formatting and parsing json',
 
@@ -37,7 +37,7 @@ foam.CLASS({
       formatter = new JSONFObjectFormatter();
       formatter.setOutputDefaultClassNames(false);
       formatter.setOutputDefaultValues(true);
-      var rg = new foam.nanos.ruler.RuleGroup();
+      var rg = new foam.core.ruler.RuleGroup();
       rg.setId(this.getClass().getSimpleName());
       // predicate defaults to TRUE
       formatter.output(rg);
@@ -56,7 +56,7 @@ foam.CLASS({
       formatter = new JSONFObjectFormatter();
       // formatter.setOutputDefaultClassNames(true); - default
       formatter.setOutputDefaultValues(true);
-      rg = new foam.nanos.ruler.RuleGroup();
+      rg = new foam.core.ruler.RuleGroup();
       rg.setId(this.getClass().getSimpleName());
       // predicate defaults to TRUE
       formatter.output(rg);
@@ -74,7 +74,7 @@ foam.CLASS({
       formatter = new JSONFObjectFormatter();
       // formatter.setOutputDefaultClassNames(true); - default
       // formatter.setOutputDefaultValues(false); - default
-      rg = new foam.nanos.ruler.RuleGroup();
+      rg = new foam.core.ruler.RuleGroup();
       rg.setId(this.getClass().getSimpleName());
       // predicate defaults to TRUE
       formatter.output(rg);
@@ -92,7 +92,7 @@ foam.CLASS({
       formatter = new JSONFObjectFormatter();
       formatter.setOutputDefaultClassNames(false);
       // formatter.setOutputDefaultValues(false); - default
-      rg = new foam.nanos.ruler.RuleGroup();
+      rg = new foam.core.ruler.RuleGroup();
       rg.setId(this.getClass().getSimpleName());
       // predicate defaults to TRUE
       formatter.output(rg);

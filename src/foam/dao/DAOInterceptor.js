@@ -11,7 +11,7 @@ foam.INTERFACE({
   methods: [
     {
       name: 'write',
-      type: 'foam.core.FObject',
+      type: 'foam.lang.FObject',
       async: true,
       args: [
         {
@@ -34,7 +34,7 @@ foam.INTERFACE({
     },
     {
       name: 'read',
-      type: 'foam.core.FObject',
+      type: 'foam.lang.FObject',
       async: true,
       args: [
         {
@@ -53,7 +53,7 @@ foam.INTERFACE({
     },
     {
       name: 'remove',
-      type: 'foam.core.FObject',
+      type: 'foam.lang.FObject',
       async: true,
       args: [
         {

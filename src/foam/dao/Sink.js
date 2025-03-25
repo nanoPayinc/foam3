@@ -20,7 +20,7 @@ foam.INTERFACE({
         },
         {
           name: 'sub',
-          type: 'foam.core.Detachable'
+          type: 'foam.lang.Detachable'
         }
       ]
     },
@@ -33,7 +33,7 @@ foam.INTERFACE({
         },
         {
           name: 'sub',
-          type: 'foam.core.Detachable'
+          type: 'foam.lang.Detachable'
         }
       ]
     },
@@ -45,7 +45,7 @@ foam.INTERFACE({
       args: [
         {
           name: 'sub',
-          type: 'foam.core.Detachable'
+          type: 'foam.lang.Detachable'
         }
       ]
     }

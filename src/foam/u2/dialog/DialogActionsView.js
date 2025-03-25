@@ -57,7 +57,7 @@ foam.CLASS({
           data.forEach(a => {
             slots.push(a.action.createIsAvailable$(self.__subContext__, a.data));
           });
-          let s = foam.core.ArraySlot.create({ slots: slots }, self);
+          let s = foam.lang.ArraySlot.create({ slots: slots }, self);
           let anyAvailable = this.slot(function(slots) {
             for ( let slot of slots ) {
               if ( slot ) return true;

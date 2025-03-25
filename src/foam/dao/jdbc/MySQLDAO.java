@@ -6,9 +6,9 @@
 
 package foam.dao.jdbc;
 
-import foam.core.*;
+import foam.lang.*;
 import foam.dao.Sink;
-import foam.nanos.logger.Logger;
+import foam.core.logger.Logger;
 import foam.mlang.order.Comparator;
 import foam.mlang.predicate.Predicate;
 

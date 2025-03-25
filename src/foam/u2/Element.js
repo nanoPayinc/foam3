@@ -398,13 +398,6 @@ foam.CLASS({
       3. an implementation of the 'cleanup' method.
   `,
 
-  axioms: [
-    {
-      class: 'foam.box.Remote',
-      clientClass: 'foam.dao.ClientSink'
-    }
-  ],
-
   properties: [
     {
       class: 'foam.dao.DAOProperty',
@@ -512,7 +505,7 @@ foam.CLASS({
 
   requires: [
     {
-      path: 'foam.core.PromiseSlot',
+      path: 'foam.lang.PromiseSlot',
       flags: ['js']
     },
     {
@@ -730,7 +723,7 @@ foam.CLASS({
       flags: ['js'],
       transient: true,
       topics: [],
-      delegates: foam.u2.ElementState.getOwnAxiomsByClass(foam.core.Method).
+      delegates: foam.u2.ElementState.getOwnAxiomsByClass(foam.lang.Method).
         map(function(m) { return m.name; }),
       factory: function() { return this.INITIAL; },
       postSet: function(oldState, state) {
@@ -950,7 +943,7 @@ foam.CLASS({
         var count = 0;
         keyMap = {};
 
-        var as = cls.getAxiomsByClass(foam.core.Action);
+        var as = cls.getAxiomsByClass(foam.lang.Action);
 
         for ( var i = 0 ; i < as.length ; i++ ) {
           var a = as[i];
@@ -1105,7 +1098,7 @@ foam.CLASS({
     function show(opt_shown) {
       if ( opt_shown === undefined ) {
         this.shown = true;
-      } else if ( foam.core.Slot.isInstance(opt_shown) ) {
+      } else if ( foam.lang.Slot.isInstance(opt_shown) ) {
         this.onDetach(this.shown$.follow(opt_shown));
       } else {
         this.shown = opt_shown;
@@ -1117,7 +1110,7 @@ foam.CLASS({
     function hide(opt_hidden) {
       return this.show(
           opt_hidden === undefined              ? false :
-          foam.core.Slot.isInstance(opt_hidden) ? opt_hidden.map(function(s) { return ! s; }) :
+          foam.lang.Slot.isInstance(opt_hidden) ? opt_hidden.map(function(s) { return ! s; }) :
           ! opt_hidden);
     },
 
@@ -1147,13 +1140,13 @@ foam.CLASS({
       var prop = this.cls_.getAxiomByName(name);
 
       if ( prop &&
-           foam.core.Property.isInstance(prop) &&
+           foam.lang.Property.isInstance(prop) &&
            prop.attribute )
       {
         if ( typeof value === 'string' ) {
           // TODO: remove check when all properties have fromString()
           this[name] = prop.fromString ? prop.fromString(value) : value;
-        } else if ( foam.core.Slot.isInstance(value) ) {
+        } else if ( foam.lang.Slot.isInstance(value) ) {
           this.onDetach(this.slot(name).follow(value));
         } else {
           this[name] = value;
@@ -1164,7 +1157,7 @@ foam.CLASS({
           return this;
         }
 
-        if ( foam.core.Slot.isInstance(value) ) {
+        if ( foam.lang.Slot.isInstance(value) ) {
           this.slotAttr_(name, value);
         } else {
           foam.assert(foam.util.isPrimitive(value), 'Attribute value must be a primitive type.');
@@ -1344,7 +1337,7 @@ foam.CLASS({
       var self = this;
       if ( cls === undefined ) {
         this.addClass_(null, this.myClass());
-      } else if ( foam.core.Slot.isInstance(cls) ) {
+      } else if ( foam.lang.Slot.isInstance(cls) ) {
         var lastValue = null;
         var l = function() {
           var v = cls.get();
@@ -1374,7 +1367,7 @@ foam.CLASS({
       function negate(a, b) { return b ? ! a : a; }
 
       // TODO: add type checking
-      if ( foam.core.Slot.isInstance(enabled) ) {
+      if ( foam.lang.Slot.isInstance(enabled) ) {
         var self = this;
         var value = enabled;
         var l = function() { self.enableClass(cls, value.get(), opt_negate); };
@@ -1424,7 +1417,7 @@ foam.CLASS({
       */
       for ( var key in map ) {
         var value = map[key];
-        if ( foam.core.Slot.isInstance(value) ) {
+        if ( foam.lang.Slot.isInstance(value) ) {
           this.slotStyle_(key, value);
         } else {
           this.style_(key, value);
@@ -1493,7 +1486,7 @@ foam.CLASS({
       if ( translationService ) {
         /* Add the translation of the supplied source to the Element as a String */
         let xmsgObj, translation;
-        if ( foam.core.Slot.isInstance(source) ) {
+        if ( foam.lang.Slot.isInstance(source) ) {
           translation = source.map(v => this.translationService.getTranslation(foam.locale, v, opt_default || v))
           xmsgObj = {source$: source, data$: translation };
         } else {
@@ -1551,15 +1544,20 @@ foam.CLASS({
         // Remove null values
         if ( c === undefined || c === null ) {
           // nop
-        } else if ( foam.Function.isInstance(c) ) {
+        } else if ( c.addToE ) {
+          var e = this.E();
+          c.addToE(e);
+          c = e;
+          es.push(e);
+        }  else if ( foam.Function.isInstance(c) ) {
           this.add_([(parentNode.__context__.data || parentNode).dynamic({code: c, self: this})], parentNode);
-        } else if ( foam.core.DynamicFunction.isInstance(c) ) {
+        } else if ( foam.lang.DynamicFunction.isInstance(c) ) {
           //this.add('TODO DYNAMIC FUNCTION');
           c.pre  = () => { this.removeAllChildren(); };
           c.self = this;
         } else if ( c.toE ) {
           var e = c.toE(null, Y);
-          if ( foam.core.Slot.isInstance(e) ) {
+          if ( foam.lang.Slot.isInstance(e) ) {
             var v = this.slotE_(e);
             if ( Array.isArray(v) ) {
               for ( var j = 0 ; j < v.length ; j++ ) {
@@ -1761,7 +1759,7 @@ foam.CLASS({
     function forEach(array, fn) {
       foam.Function.assertNotArrow(fn);
 
-      if ( foam.core.Slot.isInstance(array) ) {
+      if ( foam.lang.Slot.isInstance(array) ) {
         this.add(array.map(a => this.E().forEach(a, fn)));
       } else {
         array.forEach(fn.bind(this));
@@ -2066,7 +2064,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'FObjectToERefinement',
-  refines: 'foam.core.FObject',
+  refines: 'foam.lang.FObject',
   methods: [
     function toE(args, X) {
       X = X || globalThis.ctrl || foam.__context__;
@@ -2081,7 +2079,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'PropertyViewRefinements',
-  refines: 'foam.core.Property',
+  refines: 'foam.lang.Property',
 
   requires: [
     'foam.u2.TextField'
@@ -2201,7 +2199,7 @@ foam.CLASS({
 
       const DisplayMode = foam.u2.DisplayMode;
 
-      return foam.core.ProxySlot.create({
+      return foam.lang.ProxySlot.create({
         delegate$: controllerMode$.map(controllerMode => {
           var visibility = controllerMode.getVisibilityValue(this);
 
@@ -2211,10 +2209,10 @@ foam.CLASS({
             visibility = foam.u2.DisplayMode[visibility];
 
           if ( DisplayMode.isInstance(visibility) )
-            return foam.core.ConstantSlot.create({value: visibility});
+            return foam.lang.ConstantSlot.create({value: visibility});
 
           if ( foam.Function.isInstance(visibility) ) {
-            var slot = foam.core.ExpressionSlot.create({
+            var slot = foam.lang.ExpressionSlot.create({
               obj$: data$,
               // Disallow RW DisplayMode when in View Controller Mode
               code: visibility
@@ -2230,7 +2228,7 @@ foam.CLASS({
             return slot;
           }
 
-          if ( foam.core.Slot.isInstance(visibility) ) return visibility;
+          if ( foam.lang.Slot.isInstance(visibility) ) return visibility;
 
           throw new Error('Property.visibility must be set to one of the following: (1) a value of DisplayMode, (2) a function that returns a value of DisplayMode, or (3) a slot whose value is a value of DisplayMode. Property ' + this.name + ' was set to ' + visibility + ' instead.');
         })
@@ -2273,7 +2271,7 @@ foam.CLASS({
           });
       });
 
-      return foam.core.ArraySlot.create({slots: [vis, perm]}).map((arr) => {
+      return foam.lang.ArraySlot.create({slots: [vis, perm]}).map((arr) => {
         // The || HIDDEN is required because slot.map() above which returns
         // a promise will generate an intermediate null value.
         return arr[0].restrictDisplayMode(arr[1] || DisplayMode.HIDDEN)
@@ -2286,7 +2284,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'StringDisplayWidthRefinement',
-  refines: 'foam.core.String',
+  refines: 'foam.lang.String',
   requires: [ 'foam.u2.view.StringView' ],
   properties: [
     {
@@ -2302,7 +2300,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'FormattedStringViewRefinement',
-  refines: 'foam.core.FormattedString',
+  refines: 'foam.lang.FormattedString',
   requires: [ 'foam.u2.FormattedTextField' ],
   properties: [
     {
@@ -2321,7 +2319,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'ArrayViewRefinement',
-  refines: 'foam.core.Array',
+  refines: 'foam.lang.Array',
   requires: [ 'foam.u2.view.ArrayView' ],
   properties: [
     [ 'view', { class: 'foam.u2.view.ArrayView' } ]
@@ -2331,7 +2329,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'EMailViewRefinement',
-  refines: 'foam.core.EMail',
+  refines: 'foam.lang.EMail',
   requires: [ 'foam.u2.view.StringView' ],
   properties: [
     {
@@ -2347,7 +2345,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'PhoneNumberViewRefinement',
-  refines: 'foam.core.PhoneNumber',
+  refines: 'foam.lang.PhoneNumber',
   requires: [ 'foam.u2.view.StringView' ],
   properties: [
     {
@@ -2364,7 +2362,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'StringArrayViewRefinement',
-  refines: 'foam.core.StringArray',
+  refines: 'foam.lang.StringArray',
   requires: [ 'foam.u2.view.StringArrayView' ],
   properties: [
     [ 'view', { class: 'foam.u2.view.StringArrayView' } ]
@@ -2375,7 +2373,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'DateViewRefinement',
-  refines: 'foam.core.Date',
+  refines: 'foam.lang.Date',
   requires: [ 'foam.u2.view.DateView' ],
   properties: [
     [ 'view', { class: 'foam.u2.view.DateView' } ]
@@ -2386,7 +2384,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'DateTimeViewRefinement',
-  refines: 'foam.core.DateTime',
+  refines: 'foam.lang.DateTime',
   requires: [ 'foam.u2.view.DateTimeView' ],
   properties: [
     [ 'view', { class: 'foam.u2.view.DateTimeView' } ]
@@ -2397,7 +2395,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'TimeViewRefinement',
-  refines: 'foam.core.Time',
+  refines: 'foam.lang.Time',
   requires: [ 'foam.u2.view.TimeView' ],
   properties: [
     [ 'view', { class: 'foam.u2.view.TimeView' } ]
@@ -2408,7 +2406,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'FloatViewRefinement',
-  refines: 'foam.core.Float',
+  refines: 'foam.lang.Float',
   requires: [ 'foam.u2.view.FloatView' ],
   properties: [
     [ 'displayWidth', 12 ],
@@ -2420,7 +2418,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'IntViewRefinement',
-  refines: 'foam.core.Int',
+  refines: 'foam.lang.Int',
   requires: [ 'foam.u2.view.IntView' ],
   properties: [
     [ 'displayWidth', 10 ],
@@ -2432,7 +2430,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'UnitValueViewRefinement',
-  refines: 'foam.core.UnitValue',
+  refines: 'foam.lang.UnitValue',
   requires: [ 'foam.u2.view.CurrencyView' ],
   properties: [
     [ 'displayWidth', 15 ],
@@ -2444,7 +2442,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'BooleanViewRefinement',
-  refines: 'foam.core.Boolean',
+  refines: 'foam.lang.Boolean',
   requires: [ 'foam.u2.CheckBox' ],
   properties: [
     {
@@ -2467,7 +2465,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'ColorViewRefinement',
-  refines: 'foam.core.Color',
+  refines: 'foam.lang.Color',
   requires: [
     'foam.u2.MultiView',
     'foam.u2.TextField',
@@ -2493,7 +2491,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'FObjectPropertyViewRefinement',
-  refines: 'foam.core.FObjectProperty',
+  refines: 'foam.lang.FObjectProperty',
   requires: [ 'foam.u2.view.FObjectPropertyView' ],
   properties: [
     {
@@ -2520,7 +2518,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'FObjectArrayViewRefinement',
-  refines: 'foam.core.FObjectArray',
+  refines: 'foam.lang.FObjectArray',
   properties: [
     {
       name: 'view',
@@ -2538,7 +2536,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'MapViewRefinement',
-  refines: 'foam.core.Map',
+  refines: 'foam.lang.Map',
   properties: [
     {
       name: 'view',
@@ -2551,7 +2549,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'ClassViewRefinement',
-  refines: 'foam.core.Class',
+  refines: 'foam.lang.Class',
   properties: [
     [ 'view', { class: 'foam.u2.ClassView' } ]
   ]
@@ -2561,7 +2559,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'ReferenceViewRefinement',
-  refines: 'foam.core.Reference',
+  refines: 'foam.lang.Reference',
   requires: [ 'foam.u2.view.ReferencePropertyView' ],
   properties: [
     [ 'view', { class: 'foam.u2.view.ReferencePropertyView' } ]
@@ -2572,7 +2570,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'EnumViewRefinement',
-  refines: 'foam.core.Enum',
+  refines: 'foam.lang.Enum',
   requires: [ 'foam.u2.view.EnumView' ],
   properties: [
     [ 'view', { class: 'foam.u2.view.EnumView' } ],
@@ -2584,7 +2582,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'ObjectViewRefinement',
-  refines: 'foam.core.Object',
+  refines: 'foam.lang.Object',
   requires: [ 'foam.u2.view.AnyView' ],
   properties: [
     [ 'view', { class: 'foam.u2.view.AnyView' } ]
@@ -2595,7 +2593,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'CodeViewRefinement',
-  refines: 'foam.core.Code',
+  refines: 'foam.lang.Code',
   requires: [ 'foam.u2.view.CodeView' ],
   properties: [
     [ 'view', { class: 'foam.u2.view.CodeView' } ]
@@ -2606,7 +2604,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'DurationViewRefinement',
-  refines: 'foam.core.Duration',
+  refines: 'foam.lang.Duration',
   requires: [
     'foam.u2.view.IntView',
     'foam.u2.view.TableCellFormatterReadView'
@@ -2669,7 +2667,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'PasswordPropertyRefinement',
-  refines: 'foam.core.Password',
+  refines: 'foam.lang.Password',
   requires: [
     'foam.u2.view.PasswordView'
   ],
@@ -2687,7 +2685,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'ImageViewRefinement',
-  refines: 'foam.core.Image',
+  refines: 'foam.lang.Image',
   requires: [ 'foam.u2.tag.Image' ],
   properties: [
     [ 'view', { class: 'foam.u2.tag.Image' } ]
@@ -2790,7 +2788,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'ActionViewRefinement',
-  refines: 'foam.core.Action',
+  refines: 'foam.lang.Action',
 
   requires: [
     'foam.u2.ActionView'
@@ -2848,7 +2846,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'ModelU2Refinements',
-  refines: 'foam.core.Model',
+  refines: 'foam.lang.Model',
 
   properties: [
     {

@@ -18,7 +18,7 @@
 foam.CLASS({
   package: 'foam.dao',
   name: 'SQLException',
-  extends: 'foam.core.Exception'
+  extends: 'foam.lang.Exception'
 });
 
 
@@ -273,7 +273,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.dao',
   name: 'DateToSQLRefinement',
-  refines: 'foam.core.Date',
+  refines: 'foam.lang.Date',
   methods: [
     function toSQL() {
       var v1 = this.value || 0;

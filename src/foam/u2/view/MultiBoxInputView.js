@@ -15,7 +15,7 @@ foam.CLASS({
       when incorrectCode is set to true.
       `,
   requires: [
-    'foam.core.ArraySlot',
+    'foam.lang.ArraySlot',
     'foam.u2.TextField'
   ],
 

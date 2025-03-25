@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'StubMethodSwiftRefinement',
-  refines: 'foam.core.StubMethod',
+  refines: 'foam.lang.StubMethod',
   flags: ['swift'],
   properties: [
     {
@@ -61,7 +61,7 @@ throw FoamError(o ?? "Failed to cast response to <%=this.swiftName%> as <%=this.
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'StubNotificationSwiftRefinement',
-  refines: 'foam.core.StubNotification',
+  refines: 'foam.lang.StubNotification',
   flags: ['swift'],
   properties: [
     {
@@ -91,7 +91,7 @@ try? delegate.send(msg)
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'StubSwiftRefinement',
-  refines: 'foam.core.Stub',
+  refines: 'foam.lang.Stub',
   flags: ['swift'],
   properties: [
     {

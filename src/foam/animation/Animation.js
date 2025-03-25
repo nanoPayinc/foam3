@@ -104,7 +104,7 @@ foam.CLASS({
 
     function start_() {
       var self    = this;
-      var cleanup = foam.core.FObject.create();
+      var cleanup = foam.lang.FObject.create();
 
       this.objs.forEach(function(o) {
         cleanup.onDetach(o.propertyChange.sub(self.propertySet));

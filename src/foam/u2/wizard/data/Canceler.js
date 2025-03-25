@@ -33,7 +33,7 @@ foam.CLASS({
         return this.delegate_$create({}, this.__subContext__);
       },
       setter: function(v) {
-        if ( foam.core.FObject.isInstance(v) || v == null ) {
+        if ( foam.lang.FObject.isInstance(v) || v == null ) {
           this.instance_['delegate'] = v;
           return;
         }

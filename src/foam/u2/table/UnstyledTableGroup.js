@@ -10,7 +10,7 @@ foam.CLASS({
   extends: 'foam.u2.table.TableComponentView',
 
   requires: [
-    'foam.core.SimpleSlot',
+    'foam.lang.SimpleSlot',
     'foam.u2.CheckBox',
     'foam.u2.view.OverlayActionListView'
   ],

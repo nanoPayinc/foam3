@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'FObjectPropertyView',
   extends: 'foam.u2.view.ModeAltView',
 
-  documentation: 'A view for foam.core.FObjectProperty properties.',
+  documentation: 'A view for foam.lang.FObjectProperty properties.',
 
   requires: [
     'foam.u2.CitationView',
@@ -30,5 +30,5 @@ foam.CLASS({
         }
       }
     }
-  ],
+  ]
 });

@@ -6,7 +6,7 @@
 
 package foam.lib.query;
 
-import foam.core.PropertyInfo;
+import foam.lang.PropertyInfo;
 import foam.lib.json.Whitespace;
 import foam.lib.parse.Alt;
 import foam.lib.parse.Literal;

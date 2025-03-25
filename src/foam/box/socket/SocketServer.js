@@ -11,16 +11,16 @@ foam.CLASS({
   documentation: 'Waits on the socket connection for requests, passing them off to a SocketServerProcessor.',
 
   implements: [
-    'foam.nanos.NanoService'
+    'foam.core.COREService'
   ],
 
   javaImports: [
     'foam.box.Box',
-    'foam.core.Agency',
-    'foam.core.ContextAgent',
-    'foam.core.X',
-    'foam.nanos.logger.Logger',
-    'foam.nanos.logger.Loggers',
+    'foam.lang.Agency',
+    'foam.lang.ContextAgent',
+    'foam.lang.X',
+    'foam.core.logger.Logger',
+    'foam.core.logger.Loggers',
     'foam.net.Port',
     'java.io.IOException',
     'java.net.ServerSocket',
@@ -74,7 +74,7 @@ foam.CLASS({
 
           Agency agency = (Agency) getX().get(getThreadPoolName());
           final X x_ = getX();
-          logger.info("start", "threadPoolName", getThreadPoolName(), "threadsPerCore", ((foam.nanos.pool.AbstractFixedThreadPool) agency).getThreadsPerCore(), "numberOfThreads", ((foam.nanos.pool.AbstractFixedThreadPool) agency).getNumberOfThreads());
+          logger.info("start", "threadPoolName", getThreadPoolName(), "threadsPerCore", ((foam.core.pool.AbstractFixedThreadPool) agency).getThreadsPerCore(), "numberOfThreads", ((foam.core.pool.AbstractFixedThreadPool) agency).getNumberOfThreads());
           Thread serverThread = new Thread(() -> {
             try {
               while ( true ) {

@@ -169,6 +169,8 @@ foam.CLASS({
       if ( p.normalize ) {
         this.on('blur', () => this.data$.set(p.normalize(this.data$.get(), p)));
       }
+
+      this.addClass(this.myClass(p.name));
     },
 
     function updateMode_(mode) {

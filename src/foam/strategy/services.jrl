@@ -1,5 +1,5 @@
 p({
-  "class": "foam.nanos.boot.NSpec",
+  "class": "foam.core.boot.CSpec",
   "name": "strategyDAO",
   "description": "A DAO that knows which objects in the system implement the various interfaces present in the system. It is used on the server by the Strategizer service.",
   "serve": true,
@@ -10,8 +10,8 @@ p({
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("strategyReferences")
       .build()
-      .addPropertyIndex(new foam.core.PropertyInfo[] { foam.strategy.StrategyReference.DESIRED_MODEL_ID } )
-      .addPropertyIndex(new foam.core.PropertyInfo[] { foam.strategy.StrategyReference.TARGET } );
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.strategy.StrategyReference.DESIRED_MODEL_ID } )
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.strategy.StrategyReference.TARGET } );
 
   """,
   "client": """
@@ -24,7 +24,7 @@ p({
   "authNotes": "This DAO is decorated with a standard AuthorizationDAO via EasyDAO."
 })
 p({
-  "class": "foam.nanos.boot.NSpec",
+  "class": "foam.core.boot.CSpec",
   "name": "strategizer",
   "description": "A service that can give you a list of all models in the system that implement a given interface.",
   "serve": true,

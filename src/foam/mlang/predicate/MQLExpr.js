@@ -8,13 +8,13 @@ foam.CLASS({
   package: 'foam.mlang.predicate',
   name: 'MQLExpr',
   extends: 'foam.mlang.predicate.AbstractPredicate',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   documentation: `Stores mql query as a property and converts it into predicate when f() is called.`,
 
   javaImports: [
-    'foam.core.ClassInfo',
-    'foam.core.FObject',
+    'foam.lang.ClassInfo',
+    'foam.lang.FObject',
     'foam.lib.parse.PStream',
     'foam.lib.parse.ParserContext',
     'foam.lib.parse.ParserContextImpl',

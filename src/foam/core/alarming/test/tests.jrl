@@ -1,0 +1,4 @@
+p({
+  class:"foam.core.alarming.test.CandlestickAlarmTest",
+  id:"CandlestickAlarmTest"
+})

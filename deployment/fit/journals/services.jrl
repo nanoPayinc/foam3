@@ -1,5 +1,5 @@
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"issueDAO_",
   "serve": true,
   "serviceScript": """
@@ -15,7 +15,7 @@ p({
 })
 
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"issueDAO_foam1",
   "serve": true,
   "serviceScript": """
@@ -31,7 +31,7 @@ p({
 })
 
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"issueDAO_foam2",
   "serve": true,
   "serviceScript": """
@@ -47,32 +47,32 @@ p({
 })
 
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"issueDAO",
   "serve": true,
-  "serviceScript": "return new foam.nanos.boot.ByServiceProviderFactory();",
+  "serviceScript": "return new foam.core.boot.ByServiceProviderFactory();",
   "client": "{\"of\":\"foamdev.fit.Issue\"}"
 })
 
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"http",
   "service":{
-    "class":"foam.nanos.jetty.HttpServer",
+    "class":"foam.core.jetty.HttpServer",
     "welcomeFiles":["/deployment/fit/index.html"]
   }
 })
 
 p({
-  "class": "foam.nanos.boot.NSpec",
+  "class": "foam.core.boot.CSpec",
   "name": "uniqueUserService",
   "serve": true,
   "authenticate": true,
-  "boxClass": "foam.nanos.auth.UniqueUserServiceSkeleton",
+  "boxClass": "foam.core.auth.UniqueUserServiceSkeleton",
   "serviceScript": """
-    ul = new foam.nanos.auth.PreventDuplicateEmailLoginService(x);
+    ul = new foam.core.auth.PreventDuplicateEmailLoginService(x);
     /*
-    ul = new foam.nanos.auth.FilterBySpidService.Builder(x)
+    ul = new foam.core.auth.FilterBySpidService.Builder(x)
       .setDelegate(ul)
       .build();*/
     return ul;
@@ -80,19 +80,19 @@ p({
 })
 
 p({
-  "class": "foam.nanos.boot.NSpec",
+  "class": "foam.core.boot.CSpec",
   "name": "theme",
   "authenticate": false,
   "serve": true,
   "client":"""
 {
-  "class":"foam.nanos.theme.Theme",
+  "class":"foam.core.theme.Theme",
   "id":"79B87FC0-C622-417A-A14A-2A04DD348CBD",
   "spid":"foam",
   "name":"foam",
   "appName":"FOAM",
   "description":"The default FOAM theme.",
-  "topNavigation":"foam.nanos.u2.navigation.ResponsiveTopNav",
+  "topNavigation":"foam.core.u2.navigation.ResponsiveTopNav",
   "defaultMenu": ["admin.data"],
   "logo":"/images/foam_red.png",
   "font1":"Arial",

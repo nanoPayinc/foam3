@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'Predicated',
   extends: 'foam.util.async.SequenceInstaller',
   implements: [
-    'foam.core.ContextAgent',
+    'foam.lang.ContextAgent',
   ],
   mixins: [
     'foam.u2.wizard.wizardflow.WizardDSL',

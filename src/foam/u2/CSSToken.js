@@ -53,7 +53,8 @@ foam.CLASS({
         cls,
         foam.String.constantize(this.name),
         {
-          get: function() { return axiom; }
+          get: function() { return axiom; },
+          configurable: true
         }
       );
     },
@@ -67,7 +68,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'CSSTokenRefinement',
-  refines: 'foam.core.Model',
+  refines: 'foam.lang.Model',
 
   properties: [
     {
@@ -83,14 +84,14 @@ foam.CLASS({
           }
           return cs;
         }
-        return foam.core.AxiomArray.ADAPT.value.call(this, _, a, prop);
+        return foam.lang.AxiomArray.ADAPT.value.call(this, _, a, prop);
       },
       adaptArrayElement: function(o, prop) {
         if ( Array.isArray(o) ) {
           return foam.u2.CSSToken.create({ name: o[0], value: o[1] });
         }
 
-        return foam.core.AxiomArray.ADAPT_ARRAY_ELEMENT.value.call(this, o, prop);
+        return foam.lang.AxiomArray.ADAPT_ARRAY_ELEMENT.value.call(this, o, prop);
       }
     }
   ]

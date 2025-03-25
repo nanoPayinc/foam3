@@ -6,8 +6,8 @@
 
 package foam.lib.json;
 
-import foam.core.ClassInfo;
-import foam.core.PropertyInfo;
+import foam.lang.ClassInfo;
+import foam.lang.PropertyInfo;
 import foam.lib.parse.*;
 import foam.parse.NewlineParser;
 import java.lang.reflect.InvocationTargetException;

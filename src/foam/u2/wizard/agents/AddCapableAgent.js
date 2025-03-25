@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.wizard.agents',
   name: 'AddCapableAgent',
-  implements: ['foam.core.ContextAgent'],
+  implements: ['foam.lang.ContextAgent'],
 
   documentation: `
     Context agent that exports some data as the capable object for all subsequent wizardlets, 

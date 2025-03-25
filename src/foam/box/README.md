@@ -108,7 +108,7 @@ TODO(adamvy): Write this section.
 ## Stubs and skeletons
 
 The `Stub` and `SkeletonBox` constructs elevate box-based message passing to
-the level of the interface. `foam.core.StubFactorySingleton` implements:
+the level of the interface. `foam.lang.StubFactorySingleton` implements:
 
 ```
 interface StubFactory {
@@ -128,7 +128,7 @@ messages (and emit replies).
 
 ### Implementation details
 
-There is an unfortunate asymmetry between `foam.core.Stub` (which should not
+There is an unfortunate asymmetry between `foam.lang.Stub` (which should not
 be confused with a "stub class" mentioned above) and a
 `foam.box.SkeletonBox`. One might expect these to be duals of each other, but
 they are not. A `Stub` is class of property that augments its containing
@@ -188,7 +188,7 @@ symmetry:
 ```js
 // With MyInterface above.
 var impl = MyInterface.create();
-var stub = foam.core.StubFactorySingleton.create().get(MyInterface);
+var stub = foam.lang.StubFactorySingleton.create().get(MyInterface);
 var skeleton = foam.box.SkeletonBox.create({delegate: impl});
 stub.delegate = skeleton;
 stub.helloWorld();

@@ -28,7 +28,7 @@ foam.LIB({
         return 'nil';
       } else if ( type == foam.Null ) {
         return 'nil';
-      } else if ( type == foam.core.FObject ) {
+      } else if ( type == foam.lang.FObject ) {
         // TODO: Should be able to serialize an FObject to swift.
         return 'nil';
       } else  {
@@ -43,7 +43,7 @@ foam.LIB({
       return type != 'Any?' && type != 'Any!'
     },
     function toSwiftType(type, optional) {
-      return foam.core.type.toType(type).toSwiftType(optional)
+      return foam.lang.type.toType(type).toSwiftType(optional)
     },
     function toSwiftName(id) {
       return id.replace(/\./g, '_')

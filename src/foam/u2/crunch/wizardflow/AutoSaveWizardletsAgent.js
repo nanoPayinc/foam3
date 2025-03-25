@@ -17,11 +17,11 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.nanos.crunch.ui.CapabilityWizardlet'
+    'foam.core.crunch.ui.CapabilityWizardlet'
   ],
 
   implements: [
-    'foam.core.ContextAgent'
+    'foam.lang.ContextAgent'
   ],
 
   methods: [

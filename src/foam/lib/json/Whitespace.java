@@ -18,7 +18,7 @@ public class Whitespace
   }
 
   public static Parser wrap(Parser p) {
-    return new Seq1(1, instance(), p, instance());
+    return new Seq1(1, instance__, p, instance__);
   }
 
   private Whitespace() {
@@ -38,15 +38,14 @@ public class Whitespace
   public PStream parse(PStream ps, ParserContext x) {
     while ( ps.valid() ) {
       char c = ps.head();
-      if ( c == ' '  || c == '\t' ||
-           c == '\r' || c == '\n' ) {
+      if ( c == ' '  || c == '\t' || c == '\r' || c == '\n' ) {
         ps = ps.tail();
       } else {
         return ps;
       }
     }
 
-    return null;
+    return ps;
   }
 
   public String toString() {

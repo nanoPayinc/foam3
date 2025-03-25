@@ -35,10 +35,11 @@ require('../src/foam_node.js');
 var [argv, X, flags] = require('./processArgs.js')(
   '',
   {
-    d:           './build/classes/java/main', // TODO: build/classes should be sufficient, but doesn't work with rest of build
+    d:           './build/classes',
     builddir:    './build',
     pom:         'pom',
-    makers:      '' // TODO: doc, swift
+    makers:      '', // TODO: doc, swift,
+    path:        './'
   },
   {
     // TODO: it would be better if the Makers specified if they needed files loaded or not
@@ -76,11 +77,12 @@ const MAKERS = X.makers.split(',').map(m => {
   var task;
   var [_, taskName, _, taskArgs] = m.match(/([a-zA-Z0-9]*)(\((.*)\))?/);
 
-  try {
-    task = require('./' + taskName + 'Maker');
-  } catch (x) {
-    task = require(path_.join(__dirname, taskName + 'Maker'));
+  var loc = path_.join(__dirname, X.path, taskName + "Maker.js");
+  
+  if (!fs_.existsSync(loc)) {
+    loc = path_.join(process.cwd(), x.path, taskName + "Maker.js");
   }
+  task = require(loc);
 
   if ( task && task.init ) task.init(taskArgs);
 

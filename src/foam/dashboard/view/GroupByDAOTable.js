@@ -38,7 +38,7 @@
     },
     {
       class: 'FObjectProperty',
-      of: 'foam.nanos.menu.Menu',
+      of: 'foam.core.menu.Menu',
       name: 'redirectMenu',
       documentation: 'The menu that will be pushed when an individual grouping is selected.'
     },

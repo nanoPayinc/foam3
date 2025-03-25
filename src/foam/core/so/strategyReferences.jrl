@@ -1,0 +1,14 @@
+p({
+  class: "foam.strategy.StrategyReference",
+  id: "foam_core.so_SystemNotificationTask",
+  desiredModelId: "foam.core.so.SystemOutageTask",
+  strategy: "foam.core.so.SystemNotificationTask",
+  label: "System Notification"
+})
+p({
+  class: "foam.strategy.StrategyReference",
+  id: "foam_core.so_MessageTask",
+  desiredModelId: "foam.core.so.SystemOutageTask",
+  strategy: "foam.core.so.MessageTask",
+  label: "Translation Message"
+})

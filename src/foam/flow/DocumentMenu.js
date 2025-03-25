@@ -7,18 +7,18 @@
 foam.CLASS({
   package: 'foam.flow',
   name: 'DocumentMenu',
-  extends: 'foam.nanos.menu.Menu',
+  extends: 'foam.core.menu.Menu',
 
   documentation: 'Psedo-menu to display all documents as sub-menus.',
 
   implements: [ 'foam.mlang.Expressions' ],
 
   requires: [
-    'foam.nanos.menu.DocumentFileMenu',
+    'foam.core.menu.DocumentFileMenu',
     'foam.dao.ArrayDAO',
     'foam.dao.PromisedDAO',
-    'foam.nanos.controller.Memento',
-    'foam.nanos.menu.Menu'
+    'foam.core.controller.Memento',
+    'foam.core.menu.Menu'
   ],
 
   imports: [ 'documentDAO' ],
@@ -35,9 +35,8 @@ foam.CLASS({
           .select(doc => {
             var menu = this.Menu.create({
               id:     this.id + '/' + doc.id,
-              // label:  doc.title,
               keywords: ["flow", "doc", "document", "help"],
-              label:  foam.String.labelize(doc.id),
+              label:  doc.title || foam.String.labelize(doc.id),
               parent: "flowdoc", //this.id,
               handler: this.DocumentFileMenu.create({
                 docKey: doc.id,
@@ -46,7 +45,7 @@ foam.CLASS({
             aDAO.put(menu);
         }).then(() => pDAO.promise.resolve(aDAO));
 
-        return pDAO;
+        return pDAO.orderBy(this.Menu.LABEL);
       }
     },
     {

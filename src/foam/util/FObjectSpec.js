@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.util',
   name: 'FObjectSpec',
-  extends: 'foam.core.FObjectProperty',
+  extends: 'foam.lang.FObjectProperty',
 
   documentation: `
     A Property which stores knowledge of what FObject to create
@@ -34,7 +34,7 @@ foam.CLASS({
     {
       class: 'Class',
       name: 'of',
-      value: 'foam.core.FObject'
+      value: 'foam.lang.FObject'
     },
     [
       'fromJSON',
@@ -78,7 +78,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.util',
   name: 'FObjectSpecArray',
-  extends: 'foam.core.FObjectArray',
+  extends: 'foam.lang.FObjectArray',
 
   properties: [
     [

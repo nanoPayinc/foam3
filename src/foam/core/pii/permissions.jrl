@@ -1,0 +1,12 @@
+p({
+  class:"foam.core.auth.Permission",
+  id:"user.action.pii"
+})
+p({
+  class:"foam.core.auth.Permission",
+  id:"strategyreference.read.foam_core_pii_PIIReportTicket"
+})
+p({
+  class:"foam.core.auth.Permission",
+  id:"menu.read.pii-report"
+})

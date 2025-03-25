@@ -10,7 +10,7 @@ foam.CLASS({
   extends: 'foam.u2.stack.StackView',
 
   requires: [
-    'foam.nanos.controller.Memento',
+    'foam.core.controller.Memento',
     'foam.u2.dialog.Popup',
     'foam.u2.stack.Stack'
   ],

@@ -12,8 +12,8 @@ foam.CLASS({
   documentation: 'An overlay that presents a list of actions a user can take.',
 
   requires: [
-    'foam.core.ConstantSlot',
-    'foam.core.ExpressionSlot',
+    'foam.lang.ConstantSlot',
+    'foam.lang.ExpressionSlot',
     'foam.u2.md.OverlayDropdown',
     'foam.u2.HTMLView',
     'foam.u2.LoadingSpinner'
@@ -44,7 +44,7 @@ foam.CLASS({
   properties: [
     {
       class: 'FObjectArray',
-      of: 'foam.core.FObject',
+      of: 'foam.lang.FObject',
       name: 'data'
     },
     {
@@ -82,7 +82,7 @@ foam.CLASS({
     },
     {
       name: 'dropdownIcon',
-      documentation: 'fallback dropdown icon that can be specified for non-nanos apps',
+      documentation: 'fallback dropdown icon that can be specified for non-core apps',
       value: '/images/dropdown-icon.svg'
     },
     'availabilities_',
@@ -293,10 +293,10 @@ foam.CLASS({
       let slot;
       if (  foam.u2.ActionReference.isInstance(action) ) {
         slot = action.action.createIsEnabled$(this.__context__, action.data)
-      } else if ( foam.core.Action.isInstance(action) ) {
+      } else if ( foam.lang.Action.isInstance(action) ) {
         slot = action.createIsEnabled$(this.__context__, this.obj);
       } else {
-        slot = foam.core.ConstantSlot.create({ value: true }, this)
+        slot = foam.lang.ConstantSlot.create({ value: true }, this)
       }
       return slot ;
     }
@@ -318,10 +318,10 @@ foam.CLASS({
       code: function() {
         let availSlots = this.data.map(action => {
           if (  foam.u2.ActionReference.isInstance(action) && action.data ) return action.action.createIsAvailable$(this.__context__, action.data)
-          if ( ! foam.core.Action.isInstance(action) ) return foam.core.ConstantSlot.create({ value: true }, this);
+          if ( ! foam.lang.Action.isInstance(action) ) return foam.lang.ConstantSlot.create({ value: true }, this);
           return action.createIsAvailable$(this.__context__, this.obj)
         });
-        return foam.core.ArraySlot.create({
+        return foam.lang.ArraySlot.create({
           slots: availSlots
         }, this).map(async arr => {
           arr = await Promise.all(arr);

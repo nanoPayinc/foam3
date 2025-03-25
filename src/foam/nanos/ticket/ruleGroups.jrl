@@ -1,8 +1,0 @@
-p({
-  "class":"foam.nanos.ruler.RuleGroup",
-  "id":"Ticket",
-  "predicate":{
-    "class":"foam.mlang.predicate.IsInstanceOf",
-    "of":"foam.nanos.ticket.Ticket"
-  }
-})

@@ -33,8 +33,5 @@ exports.visitFile = function(pom, f, fn) {
 
 
 exports.end = function() {
-  // Write to document_files for verification purpose
-  fs_.writeFileSync(X.builddir + '/document_files', documentFiles.join('\n') + '\n');
-
   console.log(`[Doc Maker] Copied ${documentFiles.length} flow document files to ${X.documentdir}.`);
 }

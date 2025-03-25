@@ -65,7 +65,7 @@ foam.CLASS({
     {
       class: 'FObjectArray',
       // of: 'foam.util.FluentSpec',
-      of: 'foam.core.FObject',
+      of: 'foam.lang.FObject',
       name: 'changes'
     }
   ],

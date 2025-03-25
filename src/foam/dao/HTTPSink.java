@@ -7,14 +7,14 @@
 package foam.dao;
 
 import foam.box.HTTPAuthorizationType;
-import foam.core.Detachable;
-import foam.core.FObject;
+import foam.lang.Detachable;
+import foam.lang.FObject;
 import foam.lib.Outputter;
 import foam.lib.json.OutputterMode;
 import foam.lib.NetworkPropertyPredicate;
 import foam.lib.PropertyPredicate;
-import foam.nanos.http.Format;
-import foam.nanos.logger.Loggers;
+import foam.core.http.Format;
+import foam.core.logger.Loggers;
 import foam.util.SafetyUtil;
 
 import jakarta.servlet.http.HttpServletResponse;

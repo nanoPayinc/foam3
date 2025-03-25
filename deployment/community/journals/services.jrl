@@ -1,0 +1,8 @@
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "communityZACClient",
+  "authenticate": false,
+  "lazyClient": true,
+  "serve": true,
+  "client":"""{"class":"com.foamframework.ZACClient"}"""
+})

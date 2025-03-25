@@ -19,7 +19,7 @@ foam.CLASS({
   `,
 
   implements: [
-    'foam.core.ContextAgent',
+    'foam.lang.ContextAgent',
     'foam.mlang.Expressions'
   ],
 
@@ -49,7 +49,7 @@ foam.CLASS({
 
       if ( ! shouldOpen ) {
         var filteredCapabilitiesNeeded = capabilitiesNeeded.filter(capa => {
-          return foam.nanos.crunch.Capability.isInstance(capa);
+          return foam.core.crunch.Capability.isInstance(capa);
         });
         var updateJunctionPromises = filteredCapabilitiesNeeded.map(capa => {
           return this.crunchService.updateJunction(null, capa.id, null, null);
@@ -65,13 +65,13 @@ foam.CLASS({
     function shouldOpenCapabilitiesArray(array) {
       var shouldOpen = false;
       array.forEach(capa => {
-        if ( foam.nanos.crunch.MinMaxCapability.isInstance(capa) ){
+        if ( foam.core.crunch.MinMaxCapability.isInstance(capa) ){
           // TODO: need js implementation of MinMaxCapability.getPrereqsChainedStatus
           // and check if that is implied GRANTED then grant the min max too no need for wizard
           shouldOpen = true;
         }
 
-        if ( foam.nanos.crunch.Capability.isInstance(capa) ){
+        if ( foam.core.crunch.Capability.isInstance(capa) ){
           if (capa.of){
             shouldOpen = true;
           }

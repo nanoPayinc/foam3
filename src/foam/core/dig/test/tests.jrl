@@ -1,0 +1,8 @@
+p({
+  class: "foam.core.dig.test.DigJsonDriverTest",
+  id:"DigJsonDriverTest"
+})
+p({
+  class: "foam.core.dig.test.DUGLoopbackTest",
+  id:"DUGLoopbackTest"
+})

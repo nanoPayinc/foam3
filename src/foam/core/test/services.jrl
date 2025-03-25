@@ -1,0 +1,52 @@
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "testDAO",
+  "serve": true,
+  "serviceScript": """
+    mdao = new foam.dao.MDAO(foam.core.test.Test.getOwnClassInfo());
+    mdao.addIndex(new foam.lang.PropertyInfo[] {foam.core.script.Script.LAST_RUN});
+    mdao.addIndex(new foam.lang.PropertyInfo[] {foam.core.script.Script.ENABLED});
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.test.Test.getOwnClassInfo())
+      .setMdao(mdao)
+      .setGuid(true)
+      .setPm(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("tests")
+      .setDecorator(new foam.core.script.ScriptRunnerDAO(new foam.dao.NullDAO(x, foam.core.test.Test.getOwnClassInfo())))
+      .setOrder(new foam.mlang.order.Comparator[] {
+        new foam.mlang.order.Desc.Builder(x).setArg1(foam.core.script.Script.ENABLED).build(),
+        new foam.mlang.order.Desc.Builder(x).setArg1(foam.core.script.Script.LAST_RUN).build()
+      })
+      .build();
+  """,
+  "client": "{\"of\":\"foam.core.test.Test\"}"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"testEventDAO",
+  "serve":true,
+  "serviceScript":"""
+    mdao = new foam.dao.MDAO(foam.core.script.ScriptEvent.getOwnClassInfo());
+    mdao.addIndex(new foam.lang.PropertyInfo[] {foam.core.script.ScriptEvent.OWNER});
+    mdao.addIndex(new foam.lang.PropertyInfo[] {foam.core.script.ScriptEvent.LAST_RUN});
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.script.ScriptEvent.getOwnClassInfo())
+      .setMdao(mdao)
+      .setGuid(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("testEvents")
+      .setWriteOnly(true)
+      .setFixedSize(new foam.dao.FixedSizeDAO.Builder(x)
+        .setComparator(foam.mlang.MLang.DESC(foam.core.script.ScriptEvent.LAST_RUN))
+        .setSize(10000)
+        .build())
+      .setOrder(new foam.mlang.order.Comparator[] {
+        new foam.mlang.order.Desc.Builder(x).setArg1(foam.core.script.ScriptEvent.LAST_RUN).build()
+      })
+      .setRuler(false)
+      .build();
+  """,
+  "client":"{\"of\":\"foam.core.script.ScriptEvent\"}"
+})

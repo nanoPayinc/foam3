@@ -10,7 +10,7 @@ foam.CLASS({
   extends: 'foam.u2.View',
 
   requires: [
-    'foam.core.SimpleSlot'
+    'foam.lang.SimpleSlot'
   ],
 
   properties: [

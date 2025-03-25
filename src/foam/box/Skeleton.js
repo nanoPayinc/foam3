@@ -27,7 +27,7 @@ foam.INTERFACE({
       args: [
         {
           name: 'factory',
-          type: 'foam.core.XFactory'
+          type: 'foam.lang.XFactory'
         }
       ]
     }

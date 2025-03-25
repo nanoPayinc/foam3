@@ -14,7 +14,7 @@ foam.CLASS({
   extends: 'org.chartjs.AbstractChartView',
 
   requires: [
-    'foam.nanos.analytics.Candlestick'
+    'foam.core.analytics.Candlestick'
   ],
 
   implements: [

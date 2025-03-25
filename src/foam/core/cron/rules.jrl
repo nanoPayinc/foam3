@@ -1,0 +1,30 @@
+p({
+  "class":"foam.core.ruler.Rule",
+  "id":"add-schedulable-to-cronJobDAO",
+  "name":"Add Schedulable to cronJobDAO",
+  "priority":100,
+  "ruleGroup":"schedulable",
+  "documentation":"put schedulable to cronjobDAO on create",
+  "daoKey":"schedulableDAO",
+  "operation":0,
+  "action":{ "class":"foam.core.cron.ScheduleSchedulableRuleAction" },
+  "after":true,
+  "enabled":true,
+  "lifecycleState":1
+})
+
+p({
+  "class":"foam.core.ruler.Rule",
+  "id":"remove-deleted-schedulable-from-cronJobDAO",
+  "name":"Remove Deleted Schedulable from cronJobDAO",
+  "priority":100,
+  "ruleGroup":"schedulable",
+  "documentation":"put schedulable to cronjobDAO on create",
+  "daoKey":"schedulableDAO",
+  "operation": 2,
+  "action":{ "class":"foam.core.cron.UnscheduleSchedulableRuleAction" },
+  "after":true,
+  "enabled":true,
+  "lifecycleState":1,
+  "documentation":"When a user deletes a schedulable, also remove the schedulable from cronjobdao"
+})

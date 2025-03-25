@@ -184,7 +184,7 @@ foam.CLASS({
                   '(' + groups.groups[key].value + ')');
               var subKey = labels[i].substring(0, self.width - count.length - 3);
               // ???: Why do we need to clean the key?
-              var cleanKey = foam.core.Enum.isInstance(self.property) ?
+              var cleanKey = foam.lang.Enum.isInstance(self.property) ?
                   self.property.of[key].label :
                   subKey.replace(/</g, '&lt;').replace(/>/g, '&gt;')
                       .replace(/"/g, '&quot;');

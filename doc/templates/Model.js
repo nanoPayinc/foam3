@@ -12,7 +12,7 @@
  foam.CLASS({
    package: 'com.acme.somepackage', // optional, but should be used for all non-demo code
    name: 'Thing',
-   extends: 'com.acme.somepackage.SomeObject', // optional, defaults to 'foam.core.FObject'
+   extends: 'com.acme.somepackage.SomeObject', // optional, defaults to 'foam.lang.FObject'
 
    // Common classes to extend when implementing GUI components:
    extends: 'foam.u2.Element',

@@ -7,10 +7,10 @@
 foam.CLASS({
   package: 'foam.dao.test',
   name: 'ArrayDAOTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
 
   javaImports: [
-    'foam.core.Currency',
+    'foam.lang.Currency',
     'foam.dao.DAO',
     'foam.dao.ArrayDAO',
     'foam.dao.ArraySink',

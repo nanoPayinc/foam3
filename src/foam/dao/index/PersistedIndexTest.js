@@ -7,14 +7,14 @@
 foam.CLASS({
   package: 'foam.dao.index',
   name: 'PersistedIndexTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
 
   methods: [
     {
       name: 'runTest',
       javaCode: `
         try {
-          foam.dao.index.TreeIndex index = new foam.dao.index.TreeIndex(foam.nanos.auth.Country.CODE);
+          foam.dao.index.TreeIndex index = new foam.dao.index.TreeIndex(foam.core.auth.Country.CODE);
           foam.dao.index.PersistedIndex pindex = new foam.dao.index.PersistedIndex("testindex", index);
 
           foam.dao.index.PersistedState w1 = (foam.dao.index.PersistedState) pindex.wrap("hello world");

@@ -15,7 +15,7 @@ foam.CLASS({
     {
       class: 'Class',
       name: 'of',
-      value: 'foam.core.FObject'
+      value: 'foam.lang.FObject'
     },
     {
       name: 'fd',

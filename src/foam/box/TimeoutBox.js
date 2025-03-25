@@ -18,7 +18,7 @@
 foam.CLASS({
   package: 'foam.box',
   name: 'TimeoutException',
-  implements: ['foam.core.Exception']
+  implements: ['foam.lang.Exception']
 });
 
 foam.CLASS({

@@ -10,7 +10,7 @@ foam.CLASS({
   extends: 'FObjectProperty',
 
   requires: [
-    'foam.core.FObjectProperty',
+    'foam.lang.FObjectProperty',
     'foam.u2.view.FnFormatter'
   ],
 
@@ -45,7 +45,7 @@ foam.CLASS({
   package: 'foam.u2.view',
   name: 'TableCellPropertyRefinement',
 
-  refines: 'foam.core.Property',
+  refines: 'foam.lang.Property',
 
   properties: [
     {
@@ -93,7 +93,7 @@ foam.CLASS({
   package: 'foam.u2.view',
   name: 'TableHeaderActionRefinement',
 
-  refines: 'foam.core.Action',
+  refines: 'foam.lang.Action',
 
   properties: [
     {
@@ -108,7 +108,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.view',
   name: 'ActionTableCellFormatterRefinement',
-  refines: 'foam.core.Action',
+  refines: 'foam.lang.Action',
 
   properties: [
     {
@@ -145,7 +145,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.view',
   name: 'EnumTableCellFormatterRefinement',
-  refines: 'foam.core.Enum',
+  refines: 'foam.lang.Enum',
 
   requires: ['foam.u2.view.ReadOnlyEnumView'],
 
@@ -175,7 +175,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.view',
   name: 'ImageTableCellFormatterRefinement',
-  refines: 'foam.core.Image',
+  refines: 'foam.lang.Image',
 
   requires: [
     'foam.u2.view.ImageView',
@@ -211,7 +211,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.view',
   name: 'FObjectPropertyTableCellFormatterRefinement',
-  refines: 'foam.core.FObjectProperty',
+  refines: 'foam.lang.FObjectProperty',
 
   properties: [
     {
@@ -232,7 +232,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.view',
   name: 'UnitValueTableCellFormatterRefinement',
-  refines: 'foam.core.UnitValue',
+  refines: 'foam.lang.UnitValue',
 
   properties: [
     {
@@ -246,11 +246,11 @@ foam.CLASS({
           return;
         }
         var self = this;
-        this.add(foam.core.ExpressionSlot.create({
+        this.add(foam.lang.ExpressionSlot.create({
           args: [obj.slot(unitProp.name), obj.slot(axiom.name)],
           code: (unitId, propValue) => {
             // TODO: Replace currencyDAO with unitDAO
-            return foam.core.PromiseSlot.create({
+            return foam.lang.PromiseSlot.create({
               promise: obj.__context__.currencyDAO.find(unitId).then((unit) => {
                 var formatted = unit ? unit.format(propValue) : propValue;
                 self.tooltip = formatted;
@@ -333,7 +333,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.view',
   name: 'BooleanTableCellFormatterRefinement',
-  refines: 'foam.core.Boolean',
+  refines: 'foam.lang.Boolean',
 
   properties: [
     {
@@ -353,7 +353,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.view',
   name: 'StringArrayTableCellFormatterRefinement',
-  refines: 'foam.core.StringArray',
+  refines: 'foam.lang.StringArray',
   properties: [
     {
       class: 'foam.u2.view.TableCellFormatter',
@@ -369,7 +369,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.view',
   name: 'FObjectArrayTableCellFormatterRefinement',
-  refines: 'foam.core.FObjectArray',
+  refines: 'foam.lang.FObjectArray',
   properties: [
     {
       class: 'foam.u2.view.TableCellFormatter',
@@ -387,7 +387,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.view',
   name: 'DateTableCellFormatterRefinement',
-  refines: 'foam.core.Date',
+  refines: 'foam.lang.Date',
 
   properties: [
     {
@@ -414,7 +414,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.view',
   name: 'DateTimeTableCellFormatterRefinement',
-  refines: 'foam.core.DateTime',
+  refines: 'foam.lang.DateTime',
 
   properties: [
     {
@@ -442,7 +442,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.view',
   name: 'DurationTableCellFormatterRefinement',
-  refines: 'foam.core.Duration',
+  refines: 'foam.lang.Duration',
   imports: [
     'returnExpandedCSS'
   ],
@@ -451,7 +451,7 @@ foam.CLASS({
       class: 'foam.u2.view.TableCellFormatter',
       name: 'tableCellFormatter',
       value: function(value) {
-        let formatted = foam.core.Duration.duration(value);
+        let formatted = foam.lang.Duration.duration(value);
         let negative = value < 0;
         this.add(formatted || '0ms').style({ color: negative ? this.__subContext__.returnExpandedCSS('$destructive500') : 'inherit' });
       }
@@ -463,7 +463,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.view',
   name: 'FormattedStringTableCellFormatterRefinement',
-  refines: 'foam.core.FormattedString',
+  refines: 'foam.lang.FormattedString',
 
   properties: [
     {

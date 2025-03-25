@@ -11,7 +11,7 @@ foam.CLASS({
 
   javaImplements: [
     'Runnable',
-    'foam.nanos.NanoService'
+    'foam.core.COREService'
   ],
 
   constants: [
@@ -21,14 +21,15 @@ foam.CLASS({
   ],
 
   javaImports: [
-    'foam.core.Detachable',
-    'foam.core.FObject',
+    'foam.lang.Detachable',
+    'foam.lang.FObject',
     'foam.dao.index.AddIndexCommand',
     'foam.mlang.sink.Count',
     'foam.mlang.predicate.Predicate',
     'foam.mlang.predicate.True',
-    'foam.nanos.logger.Logger',
-    'foam.nanos.logger.Loggers',
+    'foam.core.logger.Logger',
+    'foam.core.logger.Loggers',
+    'foam.core.pm.PM',
     'foam.util.concurrent.AbstractAssembly',
     'foam.util.concurrent.AssemblyLine',
     'foam.util.concurrent.AsyncAssemblyLine'
@@ -99,7 +100,7 @@ foam.CLASS({
       documentation: 'Decorate with a ServiceProviderAwareDAO',
       name: 'serviceProviderAware',
       class: 'Boolean',
-      javaFactory: 'return foam.nanos.auth.ServiceProviderAware.class.isAssignableFrom(getSourceDAO().getOf().getObjClass());'
+      javaFactory: 'return foam.core.auth.ServiceProviderAware.class.isAssignableFrom(getSourceDAO().getOf().getObjClass());'
     },
     {
       documentation: 'Enable authorization',
@@ -109,7 +110,7 @@ foam.CLASS({
     },
     {
       class: 'Object',
-      type: 'foam.nanos.auth.Authorizer',
+      type: 'foam.core.auth.Authorizer',
       name: 'authorizer',
       documentation: `
         Checks read access to the sourceDAO.
@@ -119,10 +120,10 @@ foam.CLASS({
         sourceDAO objects.
       `,
       javaFactory: `
-      if ( foam.nanos.auth.Authorizable.class.isAssignableFrom(getOf().getObjClass()) ) {
-        return new foam.nanos.auth.AuthorizableAuthorizer(getPermissionPrefix());
+      if ( foam.core.auth.Authorizable.class.isAssignableFrom(getOf().getObjClass()) ) {
+        return new foam.core.auth.AuthorizableAuthorizer(getPermissionPrefix());
       }
-      return new foam.nanos.auth.StandardAuthorizer(getPermissionPrefix());
+      return new foam.core.auth.StandardAuthorizer(getPermissionPrefix());
       `
     },
     {
@@ -136,21 +137,21 @@ foam.CLASS({
       name: 'delegate',
       javaPreSet: `
         if ( getServiceProviderAware() ) {
-          val = new foam.nanos.auth.ServiceProviderAwareDAO.Builder(getX())
+          val = new foam.core.auth.ServiceProviderAwareDAO.Builder(getX())
             .setDelegate(val)
             .build();
         }
 
         if ( getAuthorize() ) {
-          val = new foam.nanos.auth.AuthorizationDAO.Builder(getX())
+          val = new foam.core.auth.AuthorizationDAO.Builder(getX())
             .setDelegate(val)
             .setAuthorizer(getAuthorizer())
             .build();
         }
 
-        /* TODO: get suitable NSpec
+        /* TODO: get suitable CSpec
         if ( getPm() )
-          val = new foam.dao.PMDAO.Builder(getX()).setNSpec(getNSpec()).setDelegate(val).build();
+          val = new foam.dao.PMDAO.Builder(getX()).setCSpec(getCSpec()).setDelegate(val).build();
         */
       `,
       javaFactory: 'return new foam.dao.MDAO(getOf());'
@@ -183,10 +184,11 @@ foam.CLASS({
         t.start();
 
         // Could take a long time
+        PM pm = new PM("MaterializedDAO", "initializing", getSourceDAO().getOf().getObjClass().getSimpleName());
         AddIndexCommand cmd = new AddIndexCommand();
         cmd.setIndex(new MaterializedDAOIndex(this));
         getSourceDAO().cmd(cmd);
-
+        pm.log(getX());
         logger.info("initialized");
 
         String[] daoKeys = getObservedDAOs();
@@ -262,7 +264,7 @@ foam.CLASS({
       name: 'run',
       type: 'void',
       javaCode: `
-        foam.core.XLocator.set(getX());
+        foam.lang.XLocator.set(getX());
         while ( true ) {
           try {
             process((Object[]) getQueue().take());

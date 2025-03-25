@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.util',
   name: 'SecurityUtilTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
 
   javaImports: [
     'java.math.BigInteger',

@@ -240,8 +240,8 @@ foam.CLASS({
           //   and leave the insertion point where it is, so the next
           //   item can check if it is equal to the just-inserted item.
           var insertAfter = head;
-          insertPlanSink = foam.dao.QuickSink.create({
-            putFn: function(o) {
+          insertPlanSink = foam.dao.ProxySink.create({delegate: {
+            put: function(o) {
               function insert() {
                 var nu = Object.create(NodeProto);
                 nu.next = insertAfter.next;
@@ -284,7 +284,7 @@ foam.CLASS({
                  insert();
               }
             }
-          });
+          }});
         })();
         // restart the promise chain, if a promise is added we collect it
         var nuPromiseRef = [];
@@ -302,7 +302,7 @@ foam.CLASS({
       // result reading may by async, so define it but don't call it yet
       var resultSink = this.decorateSink_(sink, skip, limit);
 
-      var sub = foam.core.FObject.create();
+      var sub = foam.lang.FObject.create();
       var detached = false;
       sub.onDetach(function() { detached = true; });
 

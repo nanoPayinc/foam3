@@ -2,86 +2,67 @@
 # Super simple launcher.
 
 HOST_NAME=`hostname -s`
-APP_NAME=foam
-SYSTEM_NAME=foam
+APP_HOME=$(dirname $(dirname $0))
+APP_ROOT=$(echo $APP_HOME | cut -d "/" -f2)
+APP_NAME=$(echo $APP_HOME | cut -d "/" -f3)
 WEB_PORT=
-DEBUG_PORT=*:5005
-DEBUG_SUSPEND=n
-DEBUG_DEV=0
+export DEBUG=0
+export DEBUG_SUSPEND=n
+export DEBUG_PORT=8000
 PROFILER=0
 PROFILER_PORT=8849
-NANOS_PIDFILE=/tmp/nanos.pid
-DAEMONIZE=1
+CLUSTER=false
 VERSION=
-RUN_USER=
-FS=rw
-#CLUSTER=false
 
-# local development -u deployment
-if [ -f "build/env.sh" ]; then
-    source build/env.sh
-fi
-
-MACOS='darwin*'
-LINUXOS='linux-gnu'
-
-PROFILER_AGENT_PATH=""
-if [[ $OSTYPE =~ $MACOS ]]; then
-    PROFILER_AGENT_PATH="/Applications/JProfiler.app/Contents/Resources/app/bin/macos/libjprofilerti.jnilib"
-elif [[ $OSTYPE =~ $LINUXOS ]]; then
-    PROFILER_AGENT_PATH="/opt/jprofiler12/bin/linux-x64/libjprofilerti.so"
-fi
-
-
-export DEBUG=0
 function usage {
     echo "Usage: $0 [OPTIONS]"
     echo ""
     echo "Options are:"
-    echo "  -A <app_name>       : Application nmae and also prefix of jar file"
-    echo "  -C <true>           : enable clustering"
-    echo "  -D 0 or 1           : Debug mode."
-    echo "  -E <debug port>     : Port to run debugger on."
-    echo "  -F <rw | ro>        : File System mode"
-    echo "  -H <hostname>       : hostname "
-    echo "  -J 0 or 1           : JProfiler enabled"
-    echo "  -P PORT             : JProfiler PORT"
-    echo "  -S <system_name>    : System name."
-    echo "  -U <user>           : User to run script as"
-    echo "  -V <version>        : Version."
-    echo "  -W <web_port>       : HTTP Port."
-    echo "  -Y <y/n>            : Suspend on debug launch."
-    echo "  -Z <0/1>            : Daemonize."
+    echo "  -d                  : Debug enabled"
+    echo "  -D port             : Debug enabled, on port (default 8000)"
+    echo "  -H hostname         : Hostname override"
+    echo "  -m                  : Confiugure as Medusa mediator"
+    echo "  -N name             : Application name"
+    echo "  -P port             : Profiling enabled on PORT"
+    echo "  -p                  : Profiling enabled, default 8849"
+    echo "  -R path             : Application root path, default /opt"
+    echo "  -s                  : Debug enabled, suspend on launch"
+    echo "  -W port             : HTTP Port (defaults to http:8080 | https:8443)"
+    echo "  -V version          : Version"
 }
 
-while getopts "A:C:D:E:F:H:J:P:S:U:V:W:Y:Z:" opt ; do
+# NOTE this run script is used for both local and remote jvm execution.
+# When used locally, the build.js arguments c (clean) and r (restart) are
+# handled as the script is often passed all parameters from build.js.
+# Similarly m and C are support for Medusa mediator configuration
+while getopts "D:dH:mN:P:pR:sW:V:" opt ; do
     case $opt in
-        A) APP_NAME=$OPTARG;;
-        C) CLUSTER=$OPTARG;;
-        D) DEBUG_DEV=$OPTARG;;
-        E) DEBUG_PORT=$OPTARG;;
-        F) FS=$OPTARG;;
-        H) HOST_NAME=$OPTARG;;
-        J) PROFILER=$OPTARG;;
-        P) PROFILER_PORT=$OPTARG;;
-        S) SYSTEM_NAME=$OPTARG;;
-        U) RUN_USER=$OPTARG;;
-        V) VERSION=$OPTARG;;
-        W) WEB_PORT=$OPTARG;;
-        Y) DEBUG_SUSPEND=$OPTARG;;
-        Z) DAEMONIZE=$OPTARG;;
+        D) DEBUG=1;
+           if [ -n "${OPTARG}" ]; then
+               DEBUG_PORT=${OPTARG};
+           fi;;
+        d) DEBUG=1;;
+        H) HOST_NAME=${OPTARG};;
+        m) CLUSTER=true;;
+        N) APP_NAME=${OPTARG};;
+        P) PROFILER=1;
+           PROFILER_PORT=${OPTARG};;
+        p) PROFILER=1;;
+        R) APP_ROOT=${OPTARG};;
+        s) DEBUG=1;
+           DEBUG_SUSPEND=y;;
+        W) if [ -n ${OPTARG} ] && [ ${OPTARG} -ne 0 ]; then
+               WEB_PORT=${OPTARG}
+           fi;;
+        V) VERSION=${OPTARG};;
         ?) usage ; exit 0 ;;
    esac
 done
 
-echo "run.sh $APP_NAME($SYSTEM_NAME) @ $HOST_NAME:$WEB_PORT"
+APP_HOME="/${APP_ROOT}/${APP_NAME}"
 
+echo "starting $APP_NAME @ $HOST_NAME:$WEB_PORT"
 
-if [ ! -z ${RUN_USER} ] && [ "$(uname -s)" == "Linux" ] && [ "$(whoami)" != "${RUN_USER}" ]; then
-    exec sudo -u "${RUN_USER}" -- "$0" "$@"
-fi
-
-APP_HOME=/opt/${SYSTEM_NAME}
 JAVA_OPTS=""
 export JOURNAL_HOME="${APP_HOME}/journals"
 export DOCUMENT_HOME="${APP_HOME}/documents"
@@ -102,36 +83,23 @@ JAVA_OPTS="${JAVA_OPTS} -DJOURNAL_HOME=${JOURNAL_HOME}"
 JAVA_OPTS="${JAVA_OPTS} -DDOCUMENT_HOME=${DOCUMENT_HOME}"
 JAVA_OPTS="${JAVA_OPTS} -DLOG_HOME=${LOG_HOME}"
 
-if [[ ${FS} = "ro" ]]; then
-    JAVA_OPTS="${JAVA_OPTS} -DFS=ro"
-fi
-
-echo CLUSTER=$CLUSTER
-if [[ ${JAVA_OPTS} != *"CLUSTER"* ]]; then
-  if [[ ${CLUSTER} = "true" ]]; then
-    JAVA_OPTS="${JAVA_OPTS} -DCLUSTER=${CLUSTER}"
-  fi
-fi
-if [ "$PROFILER" -eq 1 ]; then
+if [[ "$PROFILER" -eq 1 ]]; then
     JAVA_OPTS="${JAVA_OPTS} -agentpath:${PROFILER_AGENT_PATH}=port=$PROFILER_PORT"
 fi
 
-if [ ! -z $VERSION ]; then
-    JAR="${APP_HOME}/lib/${APP_NAME}-${VERSION}.jar"
-else
-    JAR=$(ls ${APP_HOME}/lib/${APP_NAME}-*.jar | awk '{print $1}')
+if [[ ${JAVA_OPTS} != *"CLUSTER"* ]]; then
+    if [[ ${CLUSTER} = "true" ]]; then
+        JAVA_OPTS="${JAVA_OPTS} -DCLUSTER=${CLUSTER}"
+    fi
 fi
+
+JAR=$(ls ${APP_HOME}/lib/${APP_NAME}-${VERSION}.jar | awk '{print $1}')
 
 export RES_JAR_HOME="${JAR}"
 
 export JAVA_TOOL_OPTIONS="${JAVA_OPTS}"
 echo ${JAVA_OPTS} > ${APP_HOME}/logs/opts.txt
 echo JAVA_OPTS=${JAVA_OPTS}
-if [ "$DAEMONIZE" -eq 1 ]; then
-    nohup java -server -jar "${JAR}" > ${APP_HOME}/logs/out.txt 3>&1 &
-    echo $! > "${NANOS_PIDFILE}"
-else
-    java -server -jar "${JAR}"
-fi
+java -server -jar "${JAR}"
 
 exit 0

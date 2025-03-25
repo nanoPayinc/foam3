@@ -7,12 +7,12 @@
 foam.CLASS({
   package: 'foam.net.test',
   name: 'CIDRTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
 
   javaImports: [
-    'foam.core.X',
-    'foam.nanos.logger.Logger',
-    'foam.nanos.logger.Loggers',
+    'foam.lang.X',
+    'foam.core.logger.Logger',
+    'foam.core.logger.Loggers',
     'foam.net.CIDR'
   ],
 

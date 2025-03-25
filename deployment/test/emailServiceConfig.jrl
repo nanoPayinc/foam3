@@ -1,5 +1,5 @@
 p({
-  class: 'foam.nanos.notification.email.EmailServiceConfig',
+  class: 'foam.core.notification.email.EmailServiceConfig',
   id: 'test',
   enabled: 'false',
   rateLimit: 2,

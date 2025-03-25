@@ -15,7 +15,7 @@ foam.CLASS({
     'foam.lib.parse.ParserContextImpl',
     'foam.lib.parse.StringPStream',
     'foam.parse.FScriptParser',
-    'foam.core.PropertyInfo'
+    'foam.lang.PropertyInfo'
   ],
 
   properties: [
@@ -42,7 +42,7 @@ foam.CLASS({
       if ( getProp() != null ) {
         parser = FScriptParser.create(getProp());
       } else {
-        parser = FScriptParser.create(((foam.core.FObject) obj).getClassInfo());
+        parser = FScriptParser.create(((foam.lang.FObject) obj).getClassInfo());
       }
       StringPStream sps = new StringPStream();
       sps.setString(getQuery());
@@ -50,7 +50,13 @@ foam.CLASS({
       ParserContext x = new ParserContextImpl();
       ps = parser.parse(ps, x);
       if ( ps == null ) {
-        System.err.println("FScript Syntax Error: " + getQuery() + " for Class: " + obj.getClass());
+        foam.lib.parse.ErrorReportingPStream eps = new foam.lib.parse.ErrorReportingPStream(sps);
+        parser.parse(eps, x);
+        int pos = eps.getErrorPosition();
+
+        System.err.println("FScript Syntax Error:: class: " + obj.getClass() + ", error: " + eps.getMessage());
+        System.err.println("input: " + getQuery().substring(0, pos) + "<ERROR>" + getQuery().substring(pos));
+
         return Boolean.FALSE;
       }
 

@@ -16,7 +16,7 @@
     },
     {
       class: 'FObjectArray',
-      of: 'foam.core.FObject',
+      of: 'foam.lang.FObject',
       name: 'savers_',
       transient: true,
       postSet: function(_, n) {

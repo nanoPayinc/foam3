@@ -18,7 +18,7 @@
 foam.CLASS({
   package: 'foam.u2',
   name: 'ViewFactory',
-  extends: 'foam.core.Property',
+  extends: 'foam.lang.Property',
 
   documentation: `Set a ViewFactory to be a string containing a class name,
     a Class object, or a factory function(args, context). this.myFactory

@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.wizard.agents',
   name: 'ConfigureFlowAgent',
-  implements: [ 'foam.core.ContextAgent' ],
+  implements: [ 'foam.lang.ContextAgent' ],
 
   documentation: `
     Exports pushView and popView, either delegates to the stack or creates
@@ -39,9 +39,9 @@ foam.CLASS({
     {
       class: 'FObjectProperty',
       name: 'wizardCloseSub',
-      of: 'foam.core.FObject',
+      of: 'foam.lang.FObject',
       factory: function() {
-        return foam.core.FObject.create();
+        return foam.lang.FObject.create();
       }
     },
     {

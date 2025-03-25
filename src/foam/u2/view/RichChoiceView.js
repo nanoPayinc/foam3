@@ -108,7 +108,7 @@ foam.CLASS({
 
       {
         class: 'Reference',
-        of: 'foam.nanos.auth.User',
+        of: 'foam.core.auth.User',
         name: 'exampleProperty',
         view: function(_, X) {
           return {
@@ -118,7 +118,7 @@ foam.CLASS({
             sections: [
               {
                 heading: 'Users',
-                dao: X.userDAO.orderBy(foam.nanos.auth.User.LEGAL_NAME)
+                dao: X.userDAO.orderBy(foam.core.auth.User.LEGAL_NAME)
               },
               // Set "disabled: true" to render each object as non-selectable row
               // Set hideIfEmpty: true" to hide headers if not objects are present in dao provided.
@@ -126,7 +126,7 @@ foam.CLASS({
                 disabled: true,
                 heading: 'Disabled users',
                 hideIfEmpty: true,
-                dao: X.userDAO.where(this.EQ(foam.nanos.auth.User.LIFECYCLE_STATE, this.LifecycleState.DISABLED)),
+                dao: X.userDAO.where(this.EQ(foam.core.auth.User.LIFECYCLE_STATE, this.LifecycleState.DISABLED)),
               },
             ]
           };
@@ -143,7 +143,7 @@ foam.CLASS({
   ],
 
   exports: [
-    'of'
+    'of', 'rowView'
   ],
 
   messages: [
@@ -487,6 +487,8 @@ foam.CLASS({
 
   methods: [
     function render() {
+      this.SUPER();
+
       var self = this;
 
       if ( ! Array.isArray(this.sections) || this.sections.length === 0 ) {
@@ -542,6 +544,7 @@ foam.CLASS({
             return Promise.all(promiseArray).then(resp => {
               var index = 0;
               return this.E().forEach(sections, function(section) {
+                section.refineInput_ = resp[index].value > section.choicesLimit;
                 this.addClass(self.myClass('setAbove'))
                   .start().hide(!! section.hideIfEmpty && resp[index].value <= 0 || ! section.heading)
                     .addClass('p', 'bolder', self.myClass('heading'))
@@ -737,7 +740,7 @@ foam.CLASS({
 
       requires: ['foam.u2.CitationView'],
       imports: [
-        'of'
+        'of', 'rowView'
       ],
 
       css:`
@@ -778,9 +781,9 @@ foam.CLASS({
 
           this.add(this.dynamic(function(fullObject) {
             if ( fullObject ) {
-              this.tag(self.CitationView, { data: fullObject });
+              this.tag((self.rowView || self.CitationView), { data: fullObject });
             } else {
-              this.start().addClass(self.myClass('paddingWrapper')).add(this.defaultSelectionPrompt).end();
+              this.start().addClass(self.myClass('paddingWrapper')).add(self.defaultSelectionPrompt).end();
             }
           }));
         }

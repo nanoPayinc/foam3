@@ -31,7 +31,7 @@ foam.CLASS({
           return ( o && predicate.f(o) ) ? o : null;
         });
       },
-      javaCode: `foam.core.FObject ret = super.find_(x, id);
+      javaCode: `foam.lang.FObject ret = super.find_(x, id);
 if ( ret != null && getPredicate().f(ret) ) return ret;
 return null;`
     },

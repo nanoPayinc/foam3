@@ -13,7 +13,7 @@ foam.CLASS({
   `,
 
   requires: [
-    'foam.core.NullAgent'
+    'foam.lang.NullAgent'
   ],
 
   css: `
@@ -95,7 +95,7 @@ foam.CLASS({
     function viewsFor_(args) {
       var views = {};
       for ( let k in args ) {
-        if ( args[k] && args[k].cls_ && foam.core.AbstractEnum.isInstance(args[k]) ) {
+        if ( args[k] && args[k].cls_ && foam.lang.AbstractEnum.isInstance(args[k]) ) {
           views[k] = { class: 'foam.u2.view.ReadOnlyEnumView' };
           continue;
         }

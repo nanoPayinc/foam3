@@ -12,7 +12,7 @@ foam.CLASS({
     { class: 'String', name: 'firstName' },
     { class: 'String', name: 'lastName' },
     { class: 'DateTime',   name: 'born' },
-    { class: 'FObjectProperty', of: 'foam.nanos.auth.Address', name: 'address' }
+    { class: 'FObjectProperty', of: 'foam.core.auth.Address', name: 'address' }
   ]
 });
 
@@ -89,7 +89,7 @@ foam.CLASS({
       test('firstName.len==2*3');
       test('firstName=="Kevin"&&lastName=="Greer"');
       test('firstName=="Kevin"||id==42');
-      test('address instanceof foam.nanos.auth.Address');
+      test('address instanceof foam.core.auth.Address');
       test('YEARS(born)==20');
       test('YEARS(1970-11-19)>51');
       test('MONTHS(born)==240');
@@ -270,6 +270,12 @@ foam.CLASS({
 
           date: alt(
             'now',
+            'minDate',
+            'maxDate',
+            // YYYY-MM-DDTHH:MM:ss.sssZ - ISO Date format
+            str(seq(sym('number'), '-', sym('char'), sym('char'), '-', sym('char'), sym('char'), 'T',
+                sym('char'), sym('char'), ':', sym('char'), sym('char'), ':', sym('char'), sym('char'), '.',
+                sym('char'), sym('char'), sym('char'), 'Z')),
             // YYYY-MM-DDTHH:MM
             seq(sym('number'), '-', sym('number'), '-', sym('number'), 'T',
                 sym('number'), ':', sym('number')),
@@ -343,8 +349,8 @@ foam.CLASS({
         const self       = this;
         const cls        = this.of;
         const fields     = [];
-        const properties = cls.getAxiomsByClass(foam.core.Property);
-        const constants  = cls.getAxiomsByClass(foam.core.Constant);
+        const properties = cls.getAxiomsByClass(foam.lang.Property);
+        const constants  = cls.getAxiomsByClass(foam.lang.Constant);
 
         if ( this.thisValue !== undefined ) {
           fields.push(this.Literal.create({
@@ -478,7 +484,7 @@ foam.CLASS({
           },
 
           form_expr: function(v) {
-          if ( foam.mlang.expr.Dot.isInstance(v[0]) || foam.core.Property.isInstance(v[0]) && ! foam.core.Int.isInstance(v[0]) ) return foam.parse.ParserWithAction.NO_PARSE;
+          if ( foam.mlang.expr.Dot.isInstance(v[0]) || foam.lang.Property.isInstance(v[0]) && ! foam.lang.Int.isInstance(v[0]) ) return foam.parse.ParserWithAction.NO_PARSE;
 
             // handle left hand side (lhs) value as formula without MUL or DIV operator and right hand side (rhs) value
             // v[0] is lhs value and v[1] is null or empty
@@ -515,8 +521,16 @@ foam.CLASS({
 
 
           date: function(v) {
-          if ( 'now' === v ) return self.NOW();
-          var args = [];
+            if ( 'now' === v ) return self.NOW();
+            if ( 'maxDate' === v ) return foam.Date.MAX_DATE;
+            if ( 'minDate' === v ) return foam.Date.MIN_DATE;
+            var args = [];
+            if ( foam.String.isInstance(v) ) {
+              // the date constructor doesnt like making MAX_DATE without the + on chrome
+              if ( ! v.startsWith('-') )
+                v = '+' + v;
+              return new Date(v);
+            }
             for (var i = 0; i < v.length; i ++ ) {
               if ( i == 0 || i % 2 === 0 ) {
                 // we assume that the input for month is human readable(january is 1 but should be 0 when creating new date)

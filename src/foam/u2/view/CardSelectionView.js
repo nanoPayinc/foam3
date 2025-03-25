@@ -107,7 +107,7 @@ foam.CLASS({
                     selection = choice;
                 }
 
-                return self.E()
+                return self.E().style({ display: 'content' })
                   .addClass(self.myClass('innerFlexer'))
                   .style({
                     'width': self.isVertical ? '100%' : `${100 / self.numCols}%`
@@ -146,9 +146,9 @@ foam.CLASS({
     },
 
     function mustSlot(v) {
-      return foam.core.Slot.isInstance(v) ?
+      return foam.lang.Slot.isInstance(v) ?
         v :
-        foam.core.SimpleSlot.create({ value: v });
+        foam.lang.SimpleSlot.create({ value: v });
     }
   ]
 });

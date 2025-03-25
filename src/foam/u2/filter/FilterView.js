@@ -24,7 +24,7 @@ foam.CLASS({
 
   requires: [
     'foam.u2.memento.Memento',
-    'foam.core.SimpleSlot',
+    'foam.lang.SimpleSlot',
     'foam.u2.dialog.Popup',
     'foam.u2.filter.FilterController',
     'foam.u2.filter.properties.PropertyFilterView',
@@ -287,7 +287,7 @@ foam.CLASS({
 
 
           var e = this.E();
-          var labelSlot = foam.core.ExpressionSlot.create({ args: [this.filterController.activeFilterCount$],
+          var labelSlot = foam.lang.ExpressionSlot.create({ args: [this.filterController.activeFilterCount$],
             code: function(x) { return x > 0 ? `${self.LABEL_FILTER} (${x})` : self.LABEL_FILTER; }});
           e.onDetach(self.filterController);
           e.start().addClass(self.myClass('container-search'))
@@ -398,7 +398,7 @@ foam.CLASS({
       var permissionedProperties = [];
       var unpermissionedProperties = [];
 
-      var classProperties = foam.lookup(of).getAxiomsByClass(foam.core.Property);
+      var classProperties = foam.lookup(of).getAxiomsByClass(foam.lang.Property);
       for ( prop of classProperties ) {
         if ( properties.includes(prop.name) && ! prop.hidden ) {
           prop.readPermissionRequired ? permissionedProperties.push(prop.name) : unpermissionedProperties.push(prop.name);

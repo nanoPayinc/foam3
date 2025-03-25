@@ -6,11 +6,11 @@
 
 package foam.dao.jdbc;
 
-import foam.core.X;
+import foam.lang.X;
 import org.apache.commons.dbcp2.*;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
-import foam.nanos.logger.Logger;
+import foam.core.logger.Logger;
 import javax.sql.DataSource;
 import java.sql.DriverManager;
 

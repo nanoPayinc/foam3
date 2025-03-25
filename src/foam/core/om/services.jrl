@@ -1,0 +1,206 @@
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "OMLogger",
+  "serviceClass": "foam.core.om.OMLogger"
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "localOm1MinuteDAO",
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.analytics.Candlestick.getOwnClassInfo())
+      .setAuthorize(false)
+      .setCluster(false)
+      .build();
+  """
+})
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "om1MinuteDAO",
+  "serve": true,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.analytics.Candlestick.getOwnClassInfo())
+      .setInnerDAO(x.get("localOm1MinuteDAO"))
+      .setOrder(new foam.mlang.order.Comparator[] { foam.mlang.MLang.DESC(foam.core.analytics.Candlestick.COUNT) })
+      .build();
+  """,
+  "client": """
+    {
+      "of":"foam.core.analytics.Candlestick"
+    }
+  """
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "localOm5MinuteDAO",
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.analytics.Candlestick.getOwnClassInfo())
+      .setAuthorize(false)
+      .setCluster(false)
+      .setDecorator(new foam.core.alarming.CandlestickAlarmDAO.Builder(x)
+        .setDelegate(new foam.dao.NullDAO(x, foam.core.analytics.Candlestick.getOwnClassInfo())).build())
+      .build();
+  """
+})
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "om5MinuteDAO",
+  "serve": true,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.analytics.Candlestick.getOwnClassInfo())
+      .setInnerDAO(x.get("localOm5MinuteDAO"))
+      .setOrder(new foam.mlang.order.Comparator[] { foam.mlang.MLang.DESC(foam.core.analytics.Candlestick.COUNT) })
+      .build();
+  """,
+  "client": "{\"of\":\"foam.core.analytics.Candlestick\"}"
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "localOmHourlyDAO",
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.analytics.Candlestick.getOwnClassInfo())
+      .setAuthorize(false)
+      .setCluster(false)
+      .build();
+  """
+})
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "omHourlyDAO",
+  "serve": true,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.analytics.Candlestick.getOwnClassInfo())
+      .setInnerDAO(x.get("localOmHourlyDAO"))
+      .setOrder(new foam.mlang.order.Comparator[] { foam.mlang.MLang.DESC(foam.core.analytics.Candlestick.OPEN_VALUE_TIME) })
+      .build();
+  """,
+  "client": "{\"of\":\"foam.core.analytics.Candlestick\"}"
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "localOmDailyDAO",
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.analytics.Candlestick.getOwnClassInfo())
+      .setAuthorize(false)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("omDaily")
+      .setCluster(false)
+      .build();
+  """
+})
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "omDailyDAO",
+  "serve": true,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.analytics.Candlestick.getOwnClassInfo())
+      .setInnerDAO(x.get("localOmDailyDAO"))
+      .setOrder(new foam.mlang.order.Comparator[] { foam.mlang.MLang.DESC(foam.core.analytics.Candlestick.OPEN_VALUE_TIME) })
+      .build();
+  """,
+  "client": "{\"of\":\"foam.core.analytics.Candlestick\"}"
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "omFoldManager",
+  "serviceScript": """
+    return new foam.core.analytics.DAOFoldManager.Builder(x)
+      .setDao((foam.dao.DAO) x.get("localOm1MinuteDAO"))
+      .setPeriodLengthMs(60*1000)
+      .build();
+  """
+})
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "om5MinuteReduceManager",
+  "serviceScript": """
+    return new foam.core.analytics.DAOReduceManager.Builder(x)
+      .setSourceDAO((foam.dao.DAO) x.get("localOm1MinuteDAO"))
+      .setDestDAO((foam.dao.DAO) x.get("localOm5MinuteDAO"))
+      .setPeriodLengthMs(5*60*1000)
+      .build();
+  """
+})
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "omHourlyReduceManager",
+  "serviceScript": """
+    return new foam.core.analytics.DAOReduceManager.Builder(x)
+      .setSourceDAO((foam.dao.DAO) x.get("localOm5MinuteDAO"))
+      .setDestDAO((foam.dao.DAO) x.get("localOmHourlyDAO"))
+      .setPeriodLengthMs(60*60*1000)
+      .build();
+  """
+})
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "omDailyReduceManager",
+  "serviceScript": """
+    return new foam.core.analytics.DAOReduceManager.Builder(x)
+      .setSourceDAO((foam.dao.DAO) x.get("localOmHourlyDAO"))
+      .setDestDAO((foam.dao.DAO) x.get("localOmDailyDAO"))
+      .setPeriodLengthMs(24*60*60*1000)
+      .build();
+  """
+})
+
+// Clustered OMs explicitly enabled in Medusa setups.
+// p({
+//   "class": "foam.core.boot.CSpec",
+//   "name": "localCcom1MinuteDAO",
+//   "serviceScript": """
+//     return new foam.dao.EasyDAO.Builder(x)
+//       .setOf(foam.core.analytics.Candlestick.getOwnClassInfo())
+//       .setAuthorize(false)
+////      .setSAF(true)
+//       .build();
+//   """
+// })
+// p({
+//   "class": "foam.core.boot.CSpec",
+//   "name": "com1MinuteDAO",
+//   "serve": true,
+//   "serviceScript": """
+//     return new foam.dao.EasyDAO.Builder(x)
+//       .setOf(foam.core.analytics.Candlestick.getOwnClassInfo())
+//       .setInnerDAO(x.get("localCcom1MinuteDAO"))
+//       .setOrder(new foam.mlang.order.Comparator[] { foam.mlang.MLang.DESC(foam.core.analytics.Candlestick.COUNT) })
+//       .build();
+//   """,
+//   "client": """
+//     {
+//       "of":"foam.core.analytics.Candlestick"
+//     }
+//   """
+// })
+// p({
+//   "class": "foam.core.boot.CSpec",
+//   "name": "ccomFoldManager",
+//   "serviceScript": """
+//     return new foam.core.analytics.DAOFoldManager.Builder(x)
+//       .setDao((foam.dao.DAO) x.get("localCcom1MinuteDAO"))
+//       .setPeriodLengthMs(60*1000)
+//       .build();
+//   """
+// })
+// p({
+//   "class": "foam.core.boot.CSpec",
+//   "name": "CCOMLogger",
+//   "description":"Clustered Candlestick OM Logger",
+//   "service": {
+//     class:"foam.core.om.OMLogger",
+//     foldManagerContextKey: "ccomFoldManager"
+//   }
+// })

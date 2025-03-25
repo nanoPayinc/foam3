@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'CodeView',
   extends: 'foam.u2.view.ModeAltView',
 
-  documentation: 'A view for foam.core.Code properties.',
+  documentation: 'A view for foam.lang.Code properties.',
 
   requires: [
     'foam.u2.view.PreView',

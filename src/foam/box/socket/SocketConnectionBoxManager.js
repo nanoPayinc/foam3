@@ -11,17 +11,17 @@ foam.CLASS({
   documentation: 'Manages Socket boxes, providing reuse of established connections for send and receive.',
   
   implements: [
-    'foam.nanos.NanoService'
+    'foam.core.COREService'
   ],
 
   javaImports: [
     'foam.box.Box',
     'foam.box.ReplyBox',
-    'foam.core.Agency',
-    'foam.core.ContextAgent',
-    'foam.core.X',
-    'foam.nanos.logger.PrefixLogger',
-    'foam.nanos.logger.Logger',
+    'foam.lang.Agency',
+    'foam.lang.ContextAgent',
+    'foam.lang.X',
+    'foam.core.logger.PrefixLogger',
+    'foam.core.logger.Logger',
     'java.io.IOException',
     'java.net.ConnectException',
     'java.net.InetSocketAddress',
@@ -67,7 +67,7 @@ foam.CLASS({
     {
       name: 'logger',
       class: 'FObjectProperty',
-      of: 'foam.nanos.logger.Logger',
+      of: 'foam.core.logger.Logger',
       visibility: 'HIDDEN',
       transient: true,
       javaCloneProperty: '//noop',

@@ -69,7 +69,7 @@ foam.CLASS({
         'foam.mlang.AbstractExpr': function(expr) {
           return expr.clone();
         },
-        'foam.core.Property': function(property) {
+        'foam.lang.Property': function(property) {
           return property;
         }
       }, function(predicate) {

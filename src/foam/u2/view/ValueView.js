@@ -14,7 +14,6 @@ foam.CLASS({
   css: `
     ^ {
       display: block;
-      min-width: 220px;
     }
   `,
 
@@ -40,9 +39,9 @@ foam.CLASS({
         var unitPropSlot = self.__subContext__.objData?.slot(prop.unitPropName);
         this.add(
           unitPropSlot ?
-          unitPropSlot.map(unitProp => this.slot(function(data) {
-              return prop.unitPropValueToString.call(self.__subContext__.objData, self.__subContext__, data, unitProp);
-          })) :
+          this.slot(function(data, unitProp) {
+            return prop.unitPropValueToString.call(self.__subContext__.objData, self.__subContext__, data, unitProp);
+          }, this.data$, unitPropSlot) :
           this.slot(function(data) {
             return prop.unitPropValueToString.call(self.__subContext__.objData, self.__subContext__, data, self.__subContext__.objData[prop.unitPropName]);
           })

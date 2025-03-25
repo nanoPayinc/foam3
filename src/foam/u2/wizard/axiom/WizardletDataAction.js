@@ -28,7 +28,7 @@ foam.CLASS({
       name: 'code',
       value: function (slot, X) {
         var wizardletData = slot.data.currentWizardlet.data;
-        var action = foam.core.Action
+        var action = foam.lang.Action
           .create(wizardletData[X.actionName], this)
           .copyFrom({ isAvailable: null, isEnabled: null });
         action.maybeCall(slot, wizardletData);

@@ -1,36 +1,36 @@
 p({
-  "class": "foam.nanos.boot.NSpec",
+  "class": "foam.core.boot.CSpec",
   "name": "helloWorld",
   "authenticate": false,
-  "lazyClient": false,
+  "lazyClient": true,
   "serve": true,
   "client":"""{"class":"foamdev.demo.zac.HelloWorld"}"""
 })
 
 
 p({
-  "class":"foam.nanos.boot.NSpec",
+  "class":"foam.core.boot.CSpec",
   "name":"http",
   "service":{
-    "class":"foam.nanos.jetty.HttpServer",
+    "class":"foam.core.jetty.HttpServer",
     "welcomeFiles":["/deployment/demo/index.html"]
   }
 })
 
 p({
-  "class": "foam.nanos.boot.NSpec",
+  "class": "foam.core.boot.CSpec",
   "name": "theme",
   "authenticate": false,
   "serve": true,
   "client":"""
 {
-  "class":"foam.nanos.theme.Theme",
+  "class":"foam.core.theme.Theme",
   "id":"79B87FC0-C622-417A-A14A-2A04DD348CBD",
   "spid":"foam",
   "name":"foam",
   "appName":"FOAM",
   "description":"The default FOAM theme.",
-  "topNavigation":"foam.nanos.u2.navigation.ResponsiveTopNav",
+  "topNavigation":"foam.core.u2.navigation.ResponsiveTopNav",
   "defaultMenu": ["admin.data"],
   "logo":"/images/foam_red.png",
   "font1":"Arial",

@@ -23,7 +23,7 @@ foam.INTERFACE({
         },
         {
           name: 'prop',
-          javaType: 'foam.core.PropertyInfo'
+          javaType: 'foam.lang.PropertyInfo'
         }
       ]
     }

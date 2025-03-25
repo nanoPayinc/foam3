@@ -29,7 +29,7 @@ foam.CLASS({
       name: 'chartJSOptions',
       factory: function() {
         return {};
-      },
+      }
     },
     {
       name: 'config',
@@ -57,9 +57,7 @@ foam.CLASS({
     {
       name: 'update',
       isFramed: true,
-      on: [
-        'this.propertyChange.data'
-      ],
+      on: [ 'this.propertyChange.data' ],
       code: function() {
         if ( ! this.chart ) return;
 

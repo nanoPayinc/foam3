@@ -18,7 +18,7 @@ foam.CLASS({
     {
       class: 'Reference',
       name: 'currency',
-      of: 'foam.core.Currency',
+      of: 'foam.lang.Currency',
       value: 'CAD'
     },
     'curr_',

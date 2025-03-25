@@ -54,8 +54,8 @@ foam.CLASS({
   `,
 
   requires: [
-    'foam.core.Action',
-    'foam.core.Property',
+    'foam.lang.Action',
+    'foam.lang.Property',
     'foam.layout.PathPropertyHolder',
     'foam.layout.SectionAxiom'
   ],
@@ -89,12 +89,12 @@ foam.CLASS({
     },
     {
       class: 'FObjectArray',
-      of: 'foam.core.Property',
+      of: 'foam.lang.Property',
       name: 'properties'
     },
     {
       class: 'FObjectArray',
-      of: 'foam.core.Action',
+      of: 'foam.lang.Action',
       name: 'actions'
     },
     {
@@ -104,7 +104,7 @@ foam.CLASS({
       class: 'Function',
       name: 'createIsAvailableFor',
       value: function(data$) {
-        return foam.core.ConstantSlot.create({value: true});
+        return foam.lang.ConstantSlot.create({value: true});
       }
     },
     {
@@ -117,14 +117,14 @@ foam.CLASS({
   methods: [
     function createErrorSlotFor(data$) {
       var errorSlots = data$.map(d => {
-        return foam.core.ArraySlot.create({
+        return foam.lang.ArraySlot.create({
           slots: this.properties
             .filter(p => p.validateObj)
             .map(p => d.slot(p.validateObj))
         });
       });
 
-      var retSlot = foam.core.ProxySlot.create({ delegate: errorSlots.get() });
+      var retSlot = foam.lang.ProxySlot.create({ delegate: errorSlots.get() });
       this.onDetach(errorSlots.sub(slot => {
         retSlot.delegate = slot;
       }));
@@ -158,9 +158,9 @@ foam.CLASS({
             return this.PathPropertyHolder.create({ name: p.name.split('.').pop(), value: p.name, config: p2 });
           }
           return cls.getAxiomByName(p.name).clone().copyFrom(p);
-        }).sort(foam.core.Property.ORDER.compare);
+        }).sort(foam.lang.Property.ORDER.compare);
       } else {
-        this.properties = cls.getAxiomsByClass(foam.core.Property)
+        this.properties = cls.getAxiomsByClass(foam.lang.Property)
           .filter(p => p.section == a.name)
           .filter(p => ! p.hidden)
           .sort((p1, p2) => p1.order - p2.order);

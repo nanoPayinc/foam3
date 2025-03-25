@@ -47,12 +47,16 @@ foam.CLASS({
 
   methods: [
     function render() {
+      let self = this;
       this
         .addClass(this.myClass())
         .startContext({ data: this })
-          .start(this.logoSpec)
-            .addClass(this.myClass('image'))
-          .end()
+          .add(this.slot(function(logoSpec) {
+            return this.E().style({ display: 'contents' })
+              .start(logoSpec)
+                .addClass(self.myClass('image'))
+              .end();
+          }))
         .endContext()
         .start()
           .addClass('h300')

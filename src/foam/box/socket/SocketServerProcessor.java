@@ -10,15 +10,15 @@ import foam.box.Box;
 import foam.box.ReplyBox;
 import foam.box.Message;
 import foam.box.socket.SocketRouter;
-import foam.core.ContextAgent;
-import foam.core.ContextAware;
-import foam.core.X;
-import foam.core.XLocator;
+import foam.lang.ContextAgent;
+import foam.lang.ContextAware;
+import foam.lang.X;
+import foam.lang.XLocator;
 import foam.lib.json.JSONParser;
-import foam.nanos.logger.PrefixLogger;
-import foam.nanos.logger.Logger;
-import foam.nanos.pm.PM;
-import foam.nanos.om.OMLogger;
+import foam.core.logger.PrefixLogger;
+import foam.core.logger.Logger;
+import foam.core.pm.PM;
+import foam.core.om.OMLogger;
 
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -129,8 +129,8 @@ public class SocketServerProcessor
             foam.box.RemoteException remote = new foam.box.RemoteException();
             remote.setId(t.getClass().getName());
             remote.setMessage(t.getMessage());
-            if ( t instanceof foam.core.FOAMException ) {
-              remote.setException((foam.core.FOAMException) t);
+            if ( t instanceof foam.lang.FOAMException ) {
+              remote.setException((foam.lang.FOAMException) t);
             }
             foam.box.RPCErrorMessage error = new foam.box.RPCErrorMessage();
             error.setData(remote);

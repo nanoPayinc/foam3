@@ -8,14 +8,14 @@ foam.CLASS({
   package: 'foam.mlang.predicate',
   name: 'NamedProperty',
   extends: 'foam.mlang.AbstractExpr',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   documentation: 'Stores propName as a property and returns property when f() is called.',
 
   javaImports: [
-    'foam.core.ClassInfo',
-    'foam.core.FObject',
-    'foam.core.PropertyInfo',
+    'foam.lang.ClassInfo',
+    'foam.lang.FObject',
+    'foam.lang.PropertyInfo',
     'foam.mlang.Expr',
     'java.util.List',
     'java.util.Map',
@@ -67,7 +67,7 @@ foam.CLASS({
         return this.specialization(o.model_).f(o);
       },
       javaCode: `
-        if ( obj instanceof foam.core.X )
+        if ( obj instanceof foam.lang.X )
           return foam.mlang.ContextObject.create(getPropName());
 
         if ( obj instanceof FObject )

@@ -6,7 +6,7 @@
 
 package foam.lib.json;
 
-import foam.core.*;
+import foam.lang.*;
 import foam.lib.parse.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
@@ -17,7 +17,11 @@ public class FObjectParser
   private final static Map    map__      = new ConcurrentHashMap();
   private final static Parser instance__ = new FObjectParser();
 
-  public static Parser instance() { return instance__ == null ? new ProxyParser() { public Parser getDelegate() { return instance__; } } : instance__; }
+  public static Parser instance() {
+    return instance__ == null ?
+      new ProxyParser() { public Parser getDelegate() { return instance__; } } :
+      instance__;
+  }
 
   /**
    * Implement the multiton pattern so we don't create the same
@@ -89,7 +93,7 @@ public class FObjectParser
               subx.set("obj", obj);
               subParser = ModelParserFactory.getInstance(obj.getClass());
             } else {
-              if ( c == foam.core.FObject.class ) return null;
+              if ( c == foam.lang.FObject.class ) return null;
 
               if ( c.isEnum() ) {
                 subx.set("enum", c);

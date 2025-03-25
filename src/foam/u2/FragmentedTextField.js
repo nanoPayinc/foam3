@@ -17,7 +17,7 @@ foam.CLASS({
   `,
 
   requires: [
-    'foam.core.ArraySlot',
+    'foam.lang.ArraySlot',
   ],
 
   css: `

@@ -1,0 +1,79 @@
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"digFormatDAO",
+  "serve":true,
+  "serviceScript":
+  """
+  return new foam.dao.EasyDAO.Builder(x)
+    .setOf(foam.core.dig.format.DigFormat.getOwnClassInfo())
+    .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+    .setJournalName("digformats")
+    .build();
+  """,
+  "client":
+  """
+    {
+      "of":"foam.core.dig.format.DigFormat"
+    }
+  """
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "jsonDigDriver",
+  "description": "Driver for handling JSON requests from DIG.",
+  "serve": false,
+  "service": {
+    "class": "foam.core.dig.drivers.DigJsonDriver"
+  }
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "jsonjDigDriver",
+  "description": "Driver for handling JSON/J requests from DIG.",
+  "serve": false,
+  "service": {
+    "class": "foam.core.dig.drivers.DigJsonJDriver"
+  }
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "csvDigDriver",
+  "description": "Driver for handling CSV requests from DIG.",
+  "serve": false,
+  "service": {
+    "class": "foam.core.dig.drivers.DigCsvDriver"
+  }
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "csvSheetsDigDriver",
+  "description": "Driver for handling CSV requests from DIG, exporting to Google Sheets.",
+  "serve": false,
+  "service": {
+    "class": "foam.core.dig.drivers.DigCsvSheetsDriver"
+  }
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "htmlDigDriver",
+  "description": "Driver for handling HTML requests from DIG.",
+  "serve": false,
+  "service": {
+    "class": "foam.core.dig.drivers.DigHtmlDriver"
+  }
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "xmlDigDriver",
+  "description": "Driver for handling XML requests from DIG.",
+  "serve": false,
+  "service": {
+    "class": "foam.core.dig.drivers.DigXmlDriver"
+  }
+})

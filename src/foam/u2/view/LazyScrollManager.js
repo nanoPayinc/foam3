@@ -14,7 +14,7 @@ foam.CLASS({
 
   requires: [
     'foam.dao.FnSink',
-    'foam.core.Latch',
+    'foam.lang.Latch',
     'foam.dao.ProxyDAO',
     'foam.mlang.sink.Count'
   ],
@@ -195,7 +195,7 @@ foam.CLASS({
     },
     {
       class: 'FObjectProperty',
-      of: 'foam.core.Latch',
+      of: 'foam.lang.Latch',
       name: 'dataLatch',
       documentation: 'A latch used to wait for table data load.',
       factory: function () {
@@ -234,7 +234,7 @@ foam.CLASS({
       })
       // Render empty view if dao is empty
       // Change to dynamic after U3
-      this.appendTo.add(this.slot(function(daoCount, isInit) { 
+      this.appendTo.add(this.slot(function(daoCount, isInit) {
         if ( isInit || daoCount ) return;
         return this.E().addClass(self.myClass('no-data'))
           .add(self.NO_DATA({ modelName: self.config?.browseTitle ?? 'data' }));
@@ -297,19 +297,26 @@ foam.CLASS({
     },
 
     function getPage(dao, page) {
-      var self = this;
-      var proxy = this.ProxyDAO.create({ delegate: dao });
+      var self       = this;
+      var proxy      = this.ProxyDAO.create({ delegate: dao });
       var sortParams = [];
-      if ( this.groupBy ) sortParams.push(this.invertGroupingOrder ? this.DESC(this.groupBy) : this.groupBy)
-      if ( this.order ) sortParams.push(this.order)
-      if ( sortParams.length ) proxy = proxy.orderBy(sortParams);
-      this.loadingPages_[page] = true;
-      let promise = this.prepDAO(proxy, this.ctx);
-      var e = this.E().attr('data-page', page);
 
-      promise.then((values) => {
-        let populateRows = function (args) {
+      if ( this.groupBy )
+        sortParams.push(this.invertGroupingOrder ? this.DESC(this.groupBy) : this.groupBy)
+
+      if ( this.order ) sortParams.push(this.order)
+
+      if ( sortParams.length ) proxy = proxy.orderBy(sortParams);
+
+      this.loadingPages_[page] = true;
+
+      let promise = this.prepDAO(proxy, this.ctx);
+      var e       = this.E().attr('data-page', page);
+
+      promise.then(values => {
+        function populateRows(args) {
           if ( values.array[i] === undefined ) return;
+
           var index = (page*self.pageSize_) + i + 1;
           if ( self.groupBy ) {
             var group = self.groupBy.f(values.array[i]);
@@ -318,43 +325,49 @@ foam.CLASS({
             }
             self.currGroup_ = group;
           }
-          var rowEl = self.E().tag(self.rowView, args)
-              .attr('data-idx', index);
+          var rowEl = self.E().tag(self.rowView, args).attr('data-idx', index);
           e.add(rowEl)
-          rowEl.el().then((a) => {
+          rowEl.el().then(a => {
             self.rowObserver.observe(a)
           });
-        }
+        };
+
         if ( foam.mlang.sink.Projection.isInstance( values ) ) {
-          for (var i = 0 ; i < values.projection.length ; i++) {
+          for ( var i = 0 ; i < values.projection.length ; i++ ) {
             // TODO: replace obj with data
-            let args = { obj: values.array[i], projection: values.projection[i] }
+            let args = { obj: values.array[i], projection: values.projection[i] };
             populateRows(args);
           }
-        } else if ( foam.dao.Sink.isInstance( values ) && values.array ){
-          for (var i = 0 ; i < values.array.length ; i++) {
-            let args = { data: values.array[i] }
+        } else if ( foam.dao.Sink.isInstance( values ) && values.array ) {
+          for ( var i = 0 ; i < values.array.length ; i++ ) {
+            let args = { data: values.array[i] };
             populateRows(args);
           }
         }
+
         var isSet = false;
-        if  ( self.renderedPages_[page] ) {
+        if ( self.renderedPages_[page] ) {
           console.warn('Trying to overwrite a loaded page without clearning....Clearing page');
           this.clearPage(page)
         }
+
         Object.keys(self.renderedPages_).forEach(j => {
-          if ( j > page && self.renderedPages_[j] && !isSet ) {
+          if ( j > page && self.renderedPages_[j] && ! isSet ) {
             this.appendTo.insertBefore(e, self.renderedPages_[j]);
             isSet = true;
             // TODO: Figure out why scrolling to the top causes you to go to first page
           }
         });
+
         if ( ! isSet ) { this.appendTo.add(e); isSet = true; }
+
         self.renderedPages_[page] = e;
-        self.loadingPages_[page] = false;
+        self.loadingPages_[page]  = false;
+
         // If there is a scroll in progress and all pages have been loaded, try to scroll again
         if ( this.scrollToIndex && Object.keys(this.renderedPages_).length == Math.min(this.NUM_PAGES_TO_RENDER, this.numPages_) )
           self.safeScroll();
+
         this.dataLatch.resolve();
         if ( this.displayedRowCount_ < 0 ) this.bottomRow = this.daoCount
       });

@@ -293,7 +293,7 @@ foam.INTERFACE({
       name: 'getOf',
       flags: ['java'],
       type: 'Class',
-      javaType: 'foam.core.ClassInfo'
+      javaType: 'foam.lang.ClassInfo'
     }
   ]
 });

@@ -6,10 +6,10 @@
 
 package foam.lib.json;
 
-import foam.core.ClassInfo;
-import foam.core.Detachable;
-import foam.core.FObject;
-import foam.core.PropertyInfo;
+import foam.lang.ClassInfo;
+import foam.lang.Detachable;
+import foam.lang.FObject;
+import foam.lang.PropertyInfo;
 import foam.dao.AbstractSink;
 import foam.lib.PermissionedPropertyPredicate;
 import foam.lib.PropertyPredicate;
@@ -37,7 +37,7 @@ public class Outputter
     }
   };
 
-  protected foam.core.X       x_;
+  protected foam.lang.X       x_;
   public    PrintWriter       writer_;
   protected StringWriter      stringWriter_        = null;
   protected boolean           outputShortNames_    = false;
@@ -49,15 +49,15 @@ public class Outputter
   protected Map<String, List<PropertyInfo>> propertyMap_ = new HashMap<>();
 
 
-  public Outputter(foam.core.X x) {
+  public Outputter(foam.lang.X x) {
     this(x, (PrintWriter) null);
   }
 
-  public Outputter(foam.core.X x, File file) throws FileNotFoundException {
+  public Outputter(foam.lang.X x, File file) throws FileNotFoundException {
     this(x, new PrintWriter(file));
   }
 
-  public Outputter(foam.core.X x, PrintWriter writer) {
+  public Outputter(foam.lang.X x, PrintWriter writer) {
     if ( writer == null ) {
       stringWriter_ = new StringWriter();
       writer        = new PrintWriter(stringWriter_);

@@ -56,9 +56,11 @@
     }
     ^row {
       position: relative;
+/*
       animation-duration: 0.3s;
       animation-timing-function: ease;
       animation-name: slide;
+*/
     }
     ^tr {
       background: $white;

@@ -35,7 +35,7 @@ foam.CLASS({
 
   methods: [
     function hasImports(cls) {
-      return cls.getAxiomsByClass(foam.core.Import).length > 0;
+      return cls.getAxiomsByClass(foam.lang.Import).length > 0;
     },
 
     function installInClass(cls) {

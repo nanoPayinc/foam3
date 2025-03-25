@@ -16,8 +16,7 @@ foam.CLASS({
   requires: [
     'foam.dao.DAOSink',
     'foam.dao.PromisedDAO',
-    'foam.dao.PurgeRecordCmd',
-    'foam.dao.QuickSink'
+    'foam.dao.PurgeRecordCmd'
   ],
 
   imports: [ 'merged' ],

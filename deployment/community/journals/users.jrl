@@ -1,0 +1,5 @@
+// remove default admin user
+r({
+  "class":"foam.core.auth.User",
+  "id":42
+})

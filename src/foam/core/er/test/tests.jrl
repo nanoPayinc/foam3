@@ -1,0 +1,4 @@
+p({
+  class: "foam.core.er.test.EventRecordTest",
+  id: "EventRecordTest"
+})

@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.dao',
   name: 'RoutingJournalTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
   flags: ['java'],
 
   documentation: '',
@@ -17,13 +17,13 @@ foam.CLASS({
       type: 'String',
       name: 'USER_DAO_PUT',
       documentation: 'UserDAO expected put line',
-      value: `userDAO.p({"class":"foam.nanos.auth.User","id":1000,"firstName":"Kirk","lastName":"Eaton"`
+      value: `userDAO.p({"class":"foam.core.auth.User","id":1000,"firstName":"Kirk","lastName":"Eaton"`
     },
     {
       type: 'String',
       name: 'GROUP_DAO_PUT',
       documentation: 'GroupDAO expected put line',
-      value: `groupDAO.p({"class":"foam.nanos.auth.Group","id":"admin","enabled":true`
+      value: `groupDAO.p({"class":"foam.core.auth.Group","id":"admin","enabled":true`
 
     }
   ],
@@ -39,24 +39,24 @@ foam.CLASS({
           throw new RuntimeException(t);
         }
 
-        foam.dao.DAO userDAODelegate = new foam.dao.MDAO(foam.nanos.auth.User.getOwnClassInfo());
-        foam.dao.DAO groupDAODelegate = new foam.dao.MDAO(foam.nanos.auth.Group.getOwnClassInfo());
+        foam.dao.DAO userDAODelegate = new foam.dao.MDAO(foam.core.auth.User.getOwnClassInfo());
+        foam.dao.DAO groupDAODelegate = new foam.dao.MDAO(foam.core.auth.Group.getOwnClassInfo());
 
         x = x.put("userDAO", userDAODelegate);
         x = x.put("groupDAO", groupDAODelegate);
-        x = x.put(foam.nanos.fs.Storage.class, new foam.nanos.fs.FileSystemStorage(file.getParent()));
+        x = x.put(foam.core.fs.Storage.class, new foam.core.fs.FileSystemStorage(file.getParent()));
 
         foam.dao.RoutingJournal journal = new foam.dao.RoutingJournal.Builder(x).setFilename(file.getName()).build();
         foam.dao.DAO userDAO = new foam.dao.RoutingJDAO.Builder(x)
           .setService("userDAO")
-          .setOf(foam.nanos.auth.User.getOwnClassInfo())
+          .setOf(foam.core.auth.User.getOwnClassInfo())
           .setDelegate(userDAODelegate)
           .setJournal(journal)
           .build();
 
         foam.dao.DAO groupDAO = new foam.dao.RoutingJDAO.Builder(x)
           .setService("groupDAO")
-          .setOf(foam.nanos.auth.Group.getOwnClassInfo())
+          .setOf(foam.core.auth.Group.getOwnClassInfo())
           .setDelegate(groupDAODelegate)
           .setJournal(journal)
           .build();
@@ -64,8 +64,8 @@ foam.CLASS({
         // Hack!
         journal.setReplayed(true);
 
-        userDAO.put(new foam.nanos.auth.User.Builder(x).setId(1000).setFirstName("Kirk").setLastName("Eaton").build());
-        groupDAO.put(new foam.nanos.auth.Group.Builder(x).setId("admin").setEnabled(true).build());
+        userDAO.put(new foam.core.auth.User.Builder(x).setId(1000).setFirstName("Kirk").setLastName("Eaton").build());
+        groupDAO.put(new foam.core.auth.Group.Builder(x).setId("admin").setEnabled(true).build());
 
         // check to see that lines are correctly output
         try ( java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(file)) ) {
@@ -118,7 +118,7 @@ foam.CLASS({
 
         // verify length & contents of userDAO
         test(array.size() == 1, "UserDAO should contain one element");
-        foam.nanos.auth.User user = (foam.nanos.auth.User) array.get(0);
+        foam.core.auth.User user = (foam.core.auth.User) array.get(0);
         test(user != null, "User is not null");
         test(user.getId() == 1000L, "User's id is 1000");
         test("Kirk".equals(user.getFirstName()), "User's first name is \\"Kirk\\"");
@@ -137,7 +137,7 @@ foam.CLASS({
 
         // verify length & contents of groupDAO
         test(array.size() == 1, "GroupDAO should contain one element");
-        foam.nanos.auth.Group group = (foam.nanos.auth.Group) array.get(0);
+        foam.core.auth.Group group = (foam.core.auth.Group) array.get(0);
         test(group != null, "Group is not null");
         test("admin".equals(group.getId()), "Group's id is \\"admin\\"");
         test(group.getEnabled(), "Group is enabled");

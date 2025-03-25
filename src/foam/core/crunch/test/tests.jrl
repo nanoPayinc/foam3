@@ -1,0 +1,9 @@
+p({
+  class:"foam.core.crunch.test.RenewableTest",
+  id:"RenewableTest"
+})
+p({
+  "class":"foam.core.crunch.crunchtest.CapabilityReputTest",
+  "id":"CapabilityReputTest",
+  "documentation":"Test ucj reput when a prerequisite has been newly granted"
+})

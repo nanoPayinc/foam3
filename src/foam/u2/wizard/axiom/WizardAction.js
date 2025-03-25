@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.wizard.axiom',
   name: 'WizardAction',
-  extends: 'foam.core.Action',
+  extends: 'foam.lang.Action',
   documentation: `
     Creates a distinction for actions that belong to a wizardlet but should
     display at the bottom of a wizard rather than within the wizardlet.

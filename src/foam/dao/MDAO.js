@@ -212,7 +212,7 @@ foam.CLASS({
     function select_(x, sink, skip, limit, order, predicate) {
       sink = this.prepareSink_(sink);
       var plan;
-//console.log("----select");
+      // TODO: Copy this logic to MDAO.java
       if ( this.Explain.isInstance(sink) ) {
         plan = this.index.plan(sink.arg1, skip, limit, order, predicate, this.index);
         sink.plan = 'cost: ' + plan.cost + ', ' + plan.toString();

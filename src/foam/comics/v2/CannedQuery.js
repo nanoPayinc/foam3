@@ -4,6 +4,24 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+/**
+   Canned queries are common reusable DAO Predicates associated with a model.
+   If 'name' is specified, they are installed on both the prototype and class.
+   <pre>
+   Ex.
+   axioms: [
+     {
+       class: 'foam.comics.v2.CannedQuery',
+       name: 'DAOS',
+       label: 'DAOs',
+       predicateFactory: function(e, cls) {
+         return e.ENDS_WITH(cls.NAME, 'DAO');
+       }
+     }
+   ]
+   </pre>
+   Accessed as someDAO.where(this.MyClass.DAOS)...
+**/
 foam.CLASS({
   package: 'foam.comics.v2',
   name: 'CannedQuery',
@@ -38,6 +56,23 @@ foam.CLASS({
     {
       name: 'predicateFactory',
       hidden: true
+    }
+  ],
+
+  methods: [
+    function installInClass(cls) {
+      if ( ! this.hasOwnProperty('name') ) return;
+
+      Object.defineProperty(
+        cls,
+        this.name, //foam.String.constantize(this.name),
+        {
+          get: () => this.predicate,
+          configurable: false
+        });
+    },
+    function installInProto(proto) {
+      this.installInClass(proto);
     }
   ]
 });

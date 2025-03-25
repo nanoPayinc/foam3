@@ -7,9 +7,9 @@
 foam.CLASS({
   package: 'foam.u2.wizard.agents',
   name: 'AnalyticEventsAgent',
-  implements: [ 'foam.core.ContextAgent' ],
+  implements: [ 'foam.lang.ContextAgent' ],
 
-  requires: ['foam.nanos.analytics.AnalyticEvent'],
+  requires: ['foam.core.analytics.AnalyticEvent'],
 
   imports: [
     'logAnalyticEvent',

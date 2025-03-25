@@ -7,10 +7,10 @@
 foam.CLASS({
   package: 'foam.crypto.sign',
   name: 'SignableTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
 
   javaImports: [
-    'foam.nanos.auth.User',
+    'foam.core.auth.User',
     'foam.util.SafetyUtil',
     'org.bouncycastle.jce.provider.BouncyCastleProvider',
     'org.bouncycastle.util.encoders.Base64',

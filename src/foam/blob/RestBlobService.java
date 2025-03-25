@@ -6,7 +6,7 @@
 
 package foam.blob;
 
-import foam.core.X;
+import foam.lang.X;
 import foam.lib.json.JSONParser;
 import foam.util.SafetyUtil;
 import org.apache.commons.io.IOUtils;

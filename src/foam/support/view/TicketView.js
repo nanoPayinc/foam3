@@ -16,8 +16,8 @@ foam.CLASS({
   ],
 
   imports: [
-    'subject',
-    'createLabel'
+    'createLabel',
+    'subject'
   ],
 
   exports: [ 'hideSummary' ],
@@ -78,8 +78,7 @@ foam.CLASS({
   ],
 
   methods: [
-    function render(){
-
+    function render() {
       this.addClass()
       .start().hide(this.hideSummary$)
         .tag({ class: 'foam.support.view.TicketSummaryView' })
@@ -95,7 +94,7 @@ foam.CLASS({
       })
     }
   ],
-  
+
   classes: [
     {
       name: 'TicketTableView',
@@ -105,7 +104,7 @@ foam.CLASS({
         'foam.u2.view.ScrollableTableView',
         'foam.support.model.Ticket',
       ],
-      
+
       imports: [ 'user'],
 
       properties: [
@@ -125,4 +124,3 @@ foam.CLASS({
     }
   ]
 });
-

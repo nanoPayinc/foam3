@@ -56,7 +56,7 @@ foam.CLASS({
       background-color: $checkboxColor$disabled;
       fill: white;
     }
-    ^:checked:after{
+    ^:checked:after {
       position:relative;
       top: 1px;
       content: url("/images/checkmark-white.svg");
@@ -85,7 +85,8 @@ foam.CLASS({
         .on('click', this.onClick);
 
       if ( this.showLabel ) {
-        this.start('label')
+        // TODO: remove with U2
+        (this.U3 ? this.parentNode : this).start('label')
           .addClass(this.myClass('label'))
           .addClass(this.myClass('noselect'))
           .on('click', this.onClick)

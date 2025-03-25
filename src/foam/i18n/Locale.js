@@ -11,8 +11,8 @@ foam.CLASS({
   ids: ['locale', 'variant', 'source', 'themeId'],
 
   implements: [
-    'foam.nanos.auth.LastModifiedAware',
-    'foam.nanos.auth.LastModifiedByAware'
+    'foam.core.auth.LastModifiedAware',
+    'foam.core.auth.LastModifiedByAware'
   ],
 
   properties: [
@@ -35,7 +35,7 @@ foam.CLASS({
 //       documentation: ` Contains references to models, views, and the
 //         associated translations. String will reference the
 //         package and name of model or view to be translated. Ex.
-//         'foam.nanos.auth.User’.'complete culture code, return
+//         'foam.core.auth.User’.'complete culture code, return
 //         locale and variant. ('en-CA', 'fr-CA', 'de_AT' …etc)`,
 //       //factory: function() { return this.locale + '-' + this.variant ; }
 //       //translationValues (Map)<String, XLIFFTranslationValue>
@@ -64,7 +64,7 @@ foam.CLASS({
     },
     {
       class: 'Reference',
-      of: 'foam.nanos.auth.User',
+      of: 'foam.core.auth.User',
       name: 'lastModifiedBy',
       createVisibility: 'HIDDEN',
       updateVisibility: 'RO',
@@ -78,7 +78,7 @@ foam.CLASS({
     },
     {
       class: 'Reference',
-      of: 'foam.nanos.auth.User',
+      of: 'foam.core.auth.User',
       name: 'lastModifiedByAgent',
       createVisibility: 'HIDDEN',
       updateVisibility: 'RO',
@@ -92,7 +92,7 @@ foam.CLASS({
     },
     {
       class: 'Reference',
-      of: 'foam.nanos.theme.Theme',
+      of: 'foam.core.theme.Theme',
       name: 'themeId',
       documentation: 'Making locales themeAware'
     }

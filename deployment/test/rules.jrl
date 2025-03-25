@@ -1,6 +1,6 @@
 p({
-  "class": "foam.nanos.dig.DUGRule",
-  "id": "foam-nanos-dig-DUGLoopbackTest",
+  "class": "foam.core.dig.DUGRule",
+  "id": "foam-core-dig-DUGLoopbackTest",
   "name": "DUG Webhook Test",
   enabled: true,
   "ruleGroup": "DUG",
@@ -10,13 +10,13 @@ p({
   "spid": "test",
   "authType": 0,
   "predicate":{
-    "class":"foam.nanos.ruler.predicate.FScriptRulePredicate",
+    "class":"foam.core.ruler.predicate.FScriptRulePredicate",
     "query":'o.name != n.name'
   }
 })
 
 p({
-  "class":"foam.nanos.ruler.Rule",
+  "class":"foam.core.ruler.Rule",
   "id":"DAONotificationRuleActionTest",
   "name":"DAONotificationRuleActionTest",
   "priority":100,
@@ -26,7 +26,7 @@ p({
   "daoKey":"localCountryDAO",
   "operation":1,
   "action": {
-    class:"foam.nanos.notification.DAONotificationRuleAction",
+    class:"foam.core.notification.DAONotificationRuleAction",
     notificationTemplate: "DAONotificationTest-test",
     group: "test"
   },
@@ -35,8 +35,8 @@ p({
 })
 
 p({
-  "class":"foam.nanos.ruler.Rule",
-  "id":"foam-nanos-auth-UserLifecycleDeletedRule",
+  "class":"foam.core.ruler.Rule",
+  "id":"foam-core-auth-UserLifecycleDeletedRule",
   "name":"UserLifecycleDeletedRule",
   "documentation":"When user removes themselves, generate a UserLifecycleTicket to manage the operation",
   "enabled":true,
@@ -47,11 +47,11 @@ p({
   "after": true,
   "lifecycleState": 1,
   "predicate": {
-    class: "foam.nanos.ruler.predicate.FScriptRulePredicate",
-    query: 'o.lifecycleState == foam.nanos.auth.LifecycleState.ACTIVE && n.lifecycleState == foam.nanos.auth.LifecycleState.DELETED && n.loginEnabled == true && n.type == "User"',
+    class: "foam.core.ruler.predicate.FScriptRulePredicate",
+    query: 'o.lifecycleState == foam.core.auth.LifecycleState.ACTIVE && n.lifecycleState == foam.core.auth.LifecycleState.DELETED && n.loginEnabled == true && n.type == "User"',
   },
   action: {
-    "class": "foam.nanos.auth.UserLifecycleDeletedRuleAction"
+    "class": "foam.core.auth.UserLifecycleDeletedRuleAction"
   },
   "generateTicket": true
 })

@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'EnumView',
   extends: 'foam.u2.view.ModeAltView',
 
-  documentation: 'A view for foam.core.Enum properties.',
+  documentation: 'A view for foam.lang.Enum properties.',
 
   requires: [
     'foam.u2.CitationView',

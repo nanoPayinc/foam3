@@ -8,7 +8,7 @@
 #########################
 
 if [ -z "${DEBUG_PORT}" ]; then
-  DEBUG_PORT=*:5005
+  DEBUG_PORT=127.0.0.1:8000
 fi
 
 if [ -z "${DEBUG_SUSPEND}" ]; then
@@ -61,31 +61,29 @@ JAVA_OPTS=$JAVA_OPTS" -Dnetworkaddress.cache.ttl=3600"
 # Uncomment in shrc.custom to enable all Debug/Diagnostic parameters.
 #DEBUG=1 - enable in shrc.custom
 
-if [ "${DEBUG}" = "1" ]; then
-  JAVA_OPTS="${JAVA_OPTS} -XX:+PrintFlagsFinal"
+#if [ "${DEBUG}" = "1" ]; then
+  #JAVA_OPTS="${JAVA_OPTS} -XX:+PrintFlagsFinal"
 
   # Turn on to debug random JVM pauses
-  JAVA_OPTS="${JAVA_OPTS} -XX:+UnlockDiagnosticVMOptions"
-  JAVA_OPTS="${JAVA_OPTS} -XX:+LogCompilation"
-  JAVA_OPTS="${JAVA_OPTS} -XX:+PrintCompilation"
+  #JAVA_OPTS="${JAVA_OPTS} -XX:+UnlockDiagnosticVMOptions"
+  #JAVA_OPTS="${JAVA_OPTS} -XX:+LogCompilation"
+  #JAVA_OPTS="${JAVA_OPTS} -XX:+PrintCompilation"
 
   # Free List Statistics
   # (failing on java 11) JAVA_OPTS="${JAVA_OPTS} -XX:PrintFLSStatistics=2"
-  JAVA_OPTS="${JAVA_OPTS} -XX:+LogVMOutput"
+  #JAVA_OPTS="${JAVA_OPTS} -XX:+LogVMOutput"
 
   # DTrace - no longer supported?
   #JAVA_OPTS="${JAVA_OPTS} -XX:+ExtendedDTraceProbes"
   #JAVA_OPTS="${JAVA_OPTS} -XX:+DTraceAllocProbes"
   #JAVA_OPTS="${JAVA_OPTS} -XX:+DTraceMethodProbes"
   #JAVA_OPTS="${JAVA_OPTS} -XX:+DTraceMonitorProbes"
-fi
+#fi
 # Uncomment in shrc.custom to enable only the following Dev Debug/Diagnostic parameters.
 # NOTE: these parameters are also enabled when DEBUG is enabled.
 #DEBUG_DEV=1 - enable in shrc.custom
 
 if [ "${DEBUG}" = "1" -o "${DEBUG_DEV}" = "1" ]; then
-  JAVA_OPTS="${JAVA_OPTS} -Xdebug"
-  JAVA_OPTS="${JAVA_OPTS} -Xnoagent"
   JAVA_OPTS="${JAVA_OPTS} -agentlib:jdwp=transport=dt_socket,server=y,suspend=${DEBUG_SUSPEND},address=${DEBUG_PORT}"
 fi
 

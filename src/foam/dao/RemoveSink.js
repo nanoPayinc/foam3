@@ -11,12 +11,12 @@ foam.CLASS({
   flags: ['js', 'java'],
 
   implements: [
-    'foam.core.ContextAware'
+    'foam.lang.ContextAware'
   ],
 
   javaImports: [
-    'foam.core.FObject',
-    'foam.core.X'
+    'foam.lang.FObject',
+    'foam.lang.X'
   ],
 
   properties: [
@@ -35,7 +35,7 @@ foam.CLASS({
           name: 'obj'
         },
         {
-          type: 'foam.core.Detachable',
+          type: 'foam.lang.Detachable',
           name: 'sub'
         }
       ],

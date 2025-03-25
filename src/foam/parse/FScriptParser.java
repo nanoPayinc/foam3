@@ -6,7 +6,7 @@
 
 package foam.parse;
 
-import foam.core.*;
+import foam.lang.*;
 import foam.lib.json.BooleanParser;
 import foam.lib.json.NullParser;
 import foam.lib.json.Whitespace;
@@ -107,7 +107,7 @@ public class FScriptParser {
   private void addExpressions(List expressions) {
     this.expressions.addAll(expressions);
     this.expressions.sort(Comparator.comparing(LiteralIC::getString).reversed());
-    // foam.nanos.logger.StdoutLogger.instance().info(this.getClass().getSimpleName(), "expressions", this.expressions.stream().map(Object::toString).collect(java.util.stream.Collectors.joining(",")));
+    // foam.core.logger.StdoutLogger.instance().info(this.getClass().getSimpleName(), "expressions", this.expressions.stream().map(Object::toString).collect(java.util.stream.Collectors.joining(",")));
   }
 
   /**
@@ -160,13 +160,12 @@ public class FScriptParser {
   protected Grammar getGrammar() {
     Grammar grammar = new Grammar();
     grammar.addSymbol("FIELD_NAME",   new Alt(new Alt(expressions)));
-    grammar.addSymbol("START",        new Seq1(1,new Optional(grammar.sym("LET")), grammar.sym("START_VALUES"), EOF.instance()));
+    grammar.addSymbol("START",        new Seq1(1, new Optional(grammar.sym("LET")), grammar.sym("START_VALUES"), EOF.instance()));
     grammar.addSymbol("START_VALUES", new Alt(grammar.sym("OR"), grammar.sym("TEMPLATE_STRING"), grammar.sym("FORMULA"), grammar.sym("IF_ELSE")));
 
     grammar.addSymbol(
       "OR",
-      new Repeat(grammar.sym("AND"),
-        new Seq1(1, Whitespace.instance(), Literal.create("||"), Whitespace.instance()),1)
+      new Repeat(grammar.sym("AND"), Whitespace.wrap(Literal.create("||")), 1)
     );
     grammar.addAction("OR", (val, x) -> {
       Object[] values = (Object[])val;
@@ -183,8 +182,8 @@ public class FScriptParser {
 
     grammar.addSymbol(
       "AND",
-      new Repeat(grammar.sym("EXPR"),
-        new Seq1(1, Whitespace.instance(), Literal.create("&&"), Whitespace.instance()),1));
+       new Repeat(grammar.sym("EXPR"), Whitespace.wrap(Literal.create("&&")), 1)
+    );
 
     grammar.addAction("AND", (val, x) -> {
       Object[] valArr = (Object[]) val;
@@ -199,7 +198,7 @@ public class FScriptParser {
       return and;
     });
 
-    grammar.addSymbol("EXPR", new Seq1(1, Whitespace.instance(), new Alt(
+    grammar.addSymbol("EXPR", Whitespace.wrap(new Alt(
       grammar.sym("PAREN"),
       grammar.sym("NEGATE"),
       grammar.sym("INSTANCE_OF"),
@@ -218,17 +217,16 @@ public class FScriptParser {
       grammar.sym("FORMULA"),
       Literal.create(")")));
 
-    grammar.addSymbol("NEGATE", new Seq1(1,new LiteralIC("!"), grammar.sym("OR")));
+    grammar.addSymbol("NEGATE", new Seq1(1, new LiteralIC("!"), grammar.sym("OR")));
     grammar.addAction("NEGATE", (val, x) -> {
       foam.mlang.predicate.Not predicate = new foam.mlang.predicate.Not();
       predicate.setArg1((Predicate) val);
       return predicate;
     });
 
-    grammar.addSymbol("COMPARISON", new SeqI( new int[] { 0, 2,4 },
+    grammar.addSymbol("COMPARISON", new Seq(
       grammar.sym("VALUE"),
-      Whitespace.instance(),
-      new Alt(
+      Whitespace.wrap(new Alt(
         new AbstractLiteral("==")  {
           @Override
           public Object value() {
@@ -277,8 +275,7 @@ public class FScriptParser {
             return new In();
           }
         }
-      ),
-      Whitespace.instance(),
+      )),
       new Alt(
         grammar.sym("VALUE"),
         NullParser.instance()
@@ -307,7 +304,7 @@ public class FScriptParser {
 
     grammar.addSymbol(
       "FORMULA",
-      new Repeat(grammar.sym("MINUS"), new Seq1(1, Whitespace.instance(), Literal.create("+"), Whitespace.instance()),1)
+      new Repeat(grammar.sym("MINUS"), Whitespace.wrap(Literal.create("+")), 1)
     );
     grammar.addAction("FORMULA", (val, x) -> {
       Object[] vals = (Object[]) val;
@@ -325,7 +322,7 @@ public class FScriptParser {
 
     grammar.addSymbol(
       "MINUS",
-      new Repeat(grammar.sym("FORM_EXPR"), new Seq1(1, Whitespace.instance(), Literal.create("-"), Whitespace.instance()),1)
+      new Repeat(grammar.sym("FORM_EXPR"), Whitespace.wrap(Literal.create("-")), 1)
     );
     grammar.addAction("MINUS", (val, x) -> {
       Object[] vals = (Object[]) val;
@@ -349,24 +346,23 @@ public class FScriptParser {
         new Repeat(
           new Seq(
             // MUL or DIV
-            new Alt(
-              new Seq1(1, Whitespace.instance(), new AbstractLiteral("*") {
+            Whitespace.wrap(new Alt(
+              new AbstractLiteral("*") {
                 @Override
                 public Object value() {
                   return new Multiply();
                 }
-              }, Whitespace.instance()),
-              new Seq1(1, Whitespace.instance(), new AbstractLiteral("/") {
+              },
+              new AbstractLiteral("/") {
                 @Override
                 public Object value() {
                   return new Divide();
                 }
-              }, Whitespace.instance())
-            ),
+              }
+            )),
             // rhs
             grammar.sym("FORM_VALUE")
-          ), 1
-        ),
+          ), 1),
         new foam.lib.parse.Not(
           new Alt(new Seq(Whitespace.instance(), Literal.create("*")), new Seq(Whitespace.instance(), Literal.create("/")))
         )
@@ -519,13 +515,12 @@ public class FScriptParser {
       return pred;
     });
 
-    grammar.addSymbol("INSTANCE_OF", new Seq2(0,4,
+    grammar.addSymbol("INSTANCE_OF", new Seq2(0, 2,
       new Optional(grammar.sym("FIELD")),
-      Whitespace.instance(),
-      Literal.create("instanceof"),
-      Whitespace.instance(),
+      Whitespace.wrap(Literal.create("instanceof")),
       grammar.sym("CLASS_INFO")));
-      grammar.addAction("INSTANCE_OF", (val, x) -> {
+
+    grammar.addAction("INSTANCE_OF", (val, x) -> {
       Object[] vals = (Object[]) val;
       ClassInfo cls = (ClassInfo) vals[1];
       IsInstanceOf pred = new IsInstanceOf();
@@ -536,13 +531,12 @@ public class FScriptParser {
       return pred;
     });
 
-    grammar.addSymbol("CLASS_OF", new Seq2(0,4,
+    grammar.addSymbol("CLASS_OF", new Seq2(0, 2,
       new Optional(grammar.sym("FIELD")),
-      Whitespace.instance(),
-      Literal.create("classof"),
-      Whitespace.instance(),
+      Whitespace.wrap(Literal.create("classof")),
       grammar.sym("CLASS_INFO")));
-      grammar.addAction("CLASS_OF", (val, x) -> {
+
+    grammar.addAction("CLASS_OF", (val, x) -> {
       Object[] vals = (Object[]) val;
       ClassInfo cls = (ClassInfo) vals[1];
       IsClassOf pred = new IsClassOf();
@@ -605,6 +599,8 @@ public class FScriptParser {
 
     grammar.addSymbol("DATE", new Alt(
       Literal.create("now"),
+      Literal.create("minDate"),
+      Literal.create("maxDate"),
       new Seq(
         grammar.sym("NUMBER"),
         new Alt(Literal.create("-"), Literal.create("/")),
@@ -640,6 +636,10 @@ public class FScriptParser {
     ));
     grammar.addAction("DATE", (val, x) -> {
       if ( "now".equals(val) ) return MLang.NOW;
+      // min-date and max-date should be kept consistent with js version
+      // in stdlib.js
+      if ( "minDate".equals(val) ) return new Date(-8640000000000000L);
+      if ( "maxDate".equals(val) ) return new Date(8640000000000000L);
       Calendar start = new GregorianCalendar();
       start.clear();
       start.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -654,10 +654,10 @@ public class FScriptParser {
 
       start.set(
         year,
-        dateFmt >=  3 ? (Integer) result[2] - 1 : 0,
-        dateFmt >=  5 ? (Integer) result[4]     : 0,
-        dateFmt >=  7 ? (Integer) result[6]     : 0,
-        dateFmt >=  9 ? (Integer) result[8]     : 0);
+        dateFmt >= 3 ? (Integer) result[2] - 1 : 0,
+        dateFmt >= 5 ? (Integer) result[4]     : 0,
+        dateFmt >= 7 ? (Integer) result[6]     : 0,
+        dateFmt >= 9 ? (Integer) result[8]     : 0);
 
       return start.getTime();
     });

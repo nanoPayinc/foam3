@@ -22,7 +22,7 @@ foam.CLASS({
   exports: ['as data'],
 
   requires: [
-    'foam.core.FObject',
+    'foam.lang.FObject',
     'foam.u2.wizard.WizardPosition',
     'foam.u2.wizard.WizardStatus',
     'foam.u2.wizard.WizardletIndicator',

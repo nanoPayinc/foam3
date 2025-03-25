@@ -1,5 +1,5 @@
 p({
-  class:"foam.nanos.script.Script",
+  class:"foam.core.script.Script",
   id:"AUIDGenerator",
   description: "Generate Alpha-Numeric FOAM UIDs",
   clusterable: false,
@@ -12,7 +12,7 @@ p({
   """
 })
 p({
-  class:"foam.nanos.script.Script",
+  class:"foam.core.script.Script",
   id:"NUIDGenerator",
   description: "Generate Numeric FOAM UIDs",
   clusterable: false,
@@ -23,7 +23,7 @@ p({
     import foam.util.NUIDGenerator;
     daoName = "notificationTemplateDAO";
     dao = (foam.dao.DAO)x.get(daoName);
-    g = new NUIDGenerator(x, daoName, dao, foam.nanos.notification.Notification.ID);
+    g = new NUIDGenerator(x, daoName, dao, foam.core.notification.Notification.ID);
     for ( i = 0; i < 20; i++ ) {
       print("id: "+g.getNextLong());
     }

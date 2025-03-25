@@ -1,8 +1,8 @@
 package foam.util;
 
-import foam.core.ContextAware;
-import foam.core.X;
-import foam.nanos.om.OMLogger;
+import foam.lang.ContextAware;
+import foam.lang.X;
+import foam.core.om.OMLogger;
 import java.util.LinkedHashMap;
 import java.util.Map;
 

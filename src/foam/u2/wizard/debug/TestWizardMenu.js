@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.wizard.debug',
   name: 'TestWizardMenu',
-  extends: 'foam.nanos.menu.Menu',
+  extends: 'foam.core.menu.Menu',
 
   imports: [
     'stack'
@@ -15,7 +15,7 @@ foam.CLASS({
 
   requires: [
     'foam.dao.ArrayDAO',
-    'foam.nanos.menu.Menu',
+    'foam.core.menu.Menu',
     'foam.u2.wizard.debug.TestWizardScenarioMenu'
   ],
 
@@ -34,7 +34,7 @@ foam.CLASS({
           id: this.id + '/ElementWizardTest',
           label: 'Element Wizard Test',
           parent: this.id,
-          handler: foam.nanos.menu.ViewMenu.create({
+          handler: foam.core.menu.ViewMenu.create({
             view: { class: 'net.nanopay.cards.test.wizards.ElementTest' }
           }, this)
         }));

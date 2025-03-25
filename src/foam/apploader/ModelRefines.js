@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.apploader',
   name: 'ModelGetClassDepsRefinement',
-  refines: 'foam.core.Model',
+  refines: 'foam.lang.Model',
 
   methods: [
     {
@@ -26,7 +26,7 @@ foam.CLASS({
         if ( this.refines ) deps.push(this.refines);
 
         return deps.map(function(d) {
-          if ( d.indexOf('.') == -1 ) return 'foam.core.' + d;
+          if ( d.indexOf('.') == -1 ) return 'foam.lang.' + d;
           return d;
         });
         return deps;

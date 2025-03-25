@@ -104,9 +104,9 @@ foam.CLASS({
     {
       name: 'columnHandler',
       class: 'FObjectProperty',
-      of: 'foam.nanos.column.CommonColumnHandler',
+      of: 'foam.core.column.CommonColumnHandler',
       factory: function() {
-        return foam.nanos.column.CommonColumnHandler.create();
+        return foam.core.column.CommonColumnHandler.create();
       }
     },
     {
@@ -573,9 +573,9 @@ foam.CLASS({
     {
       name: 'columnHandler',
       class: 'FObjectProperty',
-      of: 'foam.nanos.column.CommonColumnHandler',
+      of: 'foam.core.column.CommonColumnHandler',
       factory: function() {
-        return foam.nanos.column.CommonColumnHandler.create();
+        return foam.core.column.CommonColumnHandler.create();
       }
     }
   ],
@@ -648,7 +648,7 @@ foam.CLASS({
   listeners: [
     function toggleSelection(e) {
       e.stopPropagation();
-      if ( ! this.data.hasSubProperties || foam.core.Reference.isInstance(this.data.prop) || foam.core.FObjectProperty.isInstance(this.data.prop) ) {
+      if ( ! this.data.hasSubProperties || foam.lang.Reference.isInstance(this.data.prop) || foam.lang.FObjectProperty.isInstance(this.data.prop) ) {
         if ( ! this.data.isPropertySelected )
           this.data.expanded = false;
         this.onSelectionChangedParentFunction(this.data.isPropertySelected, this.data.index);
@@ -659,7 +659,7 @@ foam.CLASS({
       if ( this.theme ) {
         this.data.isPropertyGrouped = ! this.data.isPropertyGrouped;
       }
-      if ( ! this.data.hasSubProperties || foam.core.Reference.isInstance(this.data.prop) || foam.core.FObjectProperty.isInstance(this.data.prop) ) {
+      if ( ! this.data.hasSubProperties || foam.lang.Reference.isInstance(this.data.prop) || foam.lang.FObjectProperty.isInstance(this.data.prop) ) {
         if ( ! this.data.isPropertyGrouped )
           this.data.expanded = false;
         this.onGroupByChangedParentFunction(this.data.isPropertyGrouped, this.data.index);
@@ -744,7 +744,7 @@ foam.CLASS({
     },
     function onChildrenSelectionChanged(isColumnSelected, index, isColumnSelectionHaventChanged) {
       //isColumnSelectionHaventChanged to be false on either selectionChanged or being undefined
-      if ( ! isColumnSelectionHaventChanged || foam.core.Reference.isInstance(this.data.prop) || foam.core.FObjectProperty.isInstance(this.data.prop) ) {
+      if ( ! isColumnSelectionHaventChanged || foam.lang.Reference.isInstance(this.data.prop) || foam.lang.FObjectProperty.isInstance(this.data.prop) ) {
         //to change view
         this.onSelectionChanged(isColumnSelected, index, this.views);
         //to set currentProperty isColumnSelected
@@ -752,7 +752,7 @@ foam.CLASS({
         //to re-check if isPropertySelected changed
         if ( this.data.isPropertySelected !== isColumnSelected ) {
           var anySelected = this.data.subColumnSelectConfig.find(s => s.isPropertySelected);
-          if ( foam.core.Reference.isInstance(this.data.prop) || foam.core.FObjectProperty.isInstance(this.data.prop) ) {
+          if ( foam.lang.Reference.isInstance(this.data.prop) || foam.lang.FObjectProperty.isInstance(this.data.prop) ) {
             this.data.isPropertySelected = typeof anySelected !== 'undefined';
             //close if not selected
             if ( ! this.data.isPropertySelected )
@@ -766,7 +766,7 @@ foam.CLASS({
     },
     function onChildrenGroupByChanged(isColumnSelected, index, isColumnSelectionHaventChanged) {
       //isColumnSelectionHaventChanged to be false on either selectionChanged or being undefined
-      if ( ! isColumnSelectionHaventChanged || foam.core.Reference.isInstance(this.data.prop) || foam.core.FObjectProperty.isInstance(this.data.prop) ) {
+      if ( ! isColumnSelectionHaventChanged || foam.lang.Reference.isInstance(this.data.prop) || foam.lang.FObjectProperty.isInstance(this.data.prop) ) {
         //to change view
         this.onGroupChanged(isColumnSelected, index, this.views);
         //to set currentProperty isColumnSelected
@@ -774,7 +774,7 @@ foam.CLASS({
         //to re-check if isPropertySelected changed
         if ( this.data.isPropertyGrouped !== isColumnSelected ) {
           var anySelected = this.data.subColumnSelectConfig.find(s => s.isPropertyGrouped);
-          if ( foam.core.Reference.isInstance(this.data.prop) || foam.core.FObjectProperty.isInstance(this.data.prop) ) {
+          if ( foam.lang.Reference.isInstance(this.data.prop) || foam.lang.FObjectProperty.isInstance(this.data.prop) ) {
             this.data.isPropertyGrouped = typeof anySelected !== 'undefined';
             //close if not selected
             if ( ! this.data.isPropertyGrouped )
@@ -819,8 +819,8 @@ foam.CLASS({
       expression: function(prop) {
         if ( ! this.of || ! this.of.getAxiomByName )
           return [];
-        if ( prop && prop.cls_ && ( foam.core.FObjectProperty.isInstance(prop) || ( foam.core.Reference.isInstance(prop) && prop.showSubColumns ) ) )
-          return prop.of.getAxiomsByClass(foam.core.Property).map(p => { if ( ! foam.dao.DAOProperty.isInstance(p) )  return [p.name, this.columnHandler.returnAxiomHeader(p)] }).filter(e => e != undefined);
+        if ( prop && prop.cls_ && ( foam.lang.FObjectProperty.isInstance(prop) || ( foam.lang.Reference.isInstance(prop) && prop.showSubColumns ) ) )
+          return prop.of.getAxiomsByClass(foam.lang.Property).map(p => { if ( ! foam.dao.DAOProperty.isInstance(p) )  return [p.name, this.columnHandler.returnAxiomHeader(p)] }).filter(e => e != undefined);
         return [];
       }
     },
@@ -873,9 +873,9 @@ foam.CLASS({
     {
       name: 'columnHandler',
       class: 'FObjectProperty',
-      of: 'foam.nanos.column.CommonColumnHandler',
+      of: 'foam.core.column.CommonColumnHandler',
       factory: function() {
-        return foam.nanos.column.CommonColumnHandler.create();
+        return foam.core.column.CommonColumnHandler.create();
       }
     }
   ],

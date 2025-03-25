@@ -43,7 +43,7 @@ foam.CLASS({
     function fromProperty(prop) {
       this.SUPER(prop);
       if ( ! this.dao ) {
-        // name$dao is added by foam.core.Reference
+        // name$dao is added by foam.lang.Reference
         this.dao = this.__context__[prop.targetDAOKey] || this.__context__.data[prop.name + '$dao'];
       }
     }

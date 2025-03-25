@@ -17,10 +17,10 @@ foam.CLASS({
   properties: [
     [ 'align', 'center' ],
     [ 'fontValue', '16px Roboto' ],
-    [ 'graphColors', 'black' ],
+    'graphColors',
     [ 'h' ],
     [ 'height', 500 ],
-    [ 'lineColor', 'black' ],
+    [ 'lineColor', 'white' ],
     [ 'lineWidth', 2 ],
     [ 'margin', 0 ],
     [ 'radius', 4 ],
@@ -32,6 +32,11 @@ foam.CLASS({
   ],
 
   methods: [
+    function assignColor(i) {
+      var l = this.seriesValues.length;
+      return this.graphColors[i % l];
+    },
+
     function initCView( x, y, seriesValues, radius, margin, graphColors, symbol, lineColor, w, h, lineWidth, fontValue, align ) {
       var total = this.seriesValues.reduce( ( prev, curr ) => prev + curr );
       var startAng = 0;
@@ -49,14 +54,15 @@ foam.CLASS({
       }
 
       for ( var i in this.seriesValues ) {
-        var circlePiePresentation = foam.graphics.Arc.create({
+        var circlePiePresentation = foam.graphics.Circle.create({
           x: this.x,
           y: this.y,
           radius: this.radius,
           start: startAng,
-          end: ( 2 * Math.PI * this.seriesValues[ i ] / total ) + startAng,
+          end: ( 2 * Math.PI * this.seriesValues[i] / total ) + startAng,
           border: this.lineColor,
-          color: this.graphColors[ i ] || '#FFFFFF'
+          //           color: this.graphColors[i % this.graphColors.length] || '#FFFFFF'
+          color: this.assignColor(i)
         });
 
         rayLine = foam.graphics.Line.create({
@@ -68,14 +74,15 @@ foam.CLASS({
           lineWidth: this.lineWidth
         });
 
+        var textH = h || 19;
         InfoData = foam.graphics.Label.create({
           align: this.align,
-          x: Math.cos( ( 2 * Math.PI * this.seriesValues[ i ] / total / 2 ) + startAng ) * ( this.radius * this.margin ) + this.x,
-          y: Math.sin( ( 2 * Math.PI * this.seriesValues[ i ] / total / 2 ) + startAng ) * ( this.radius * this.margin ) + this.y,
+          x: Math.cos( ( 2 * Math.PI * this.seriesValues[ i ] / total / 2 ) + startAng ) * ( this.radius * this.margin ) + this.x / 2,
+          y: Math.sin( ( 2 * Math.PI * this.seriesValues[ i ] / total / 2 ) + startAng ) * ( this.radius * this.margin ) + (this.y + textH)/ 2,
           color: this.textColor,
           font: this.fontValue,
           width: w || 50,
-          height: h || 19,
+          height: textH,
           text: symbol ? this.seriesValues[ i ] + this.symbol : this.seriesValues[ i ]
         });
 

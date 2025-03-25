@@ -100,7 +100,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.android.tools',
   name: 'ModelStringExtension',
-  refines: 'foam.core.Model',
+  refines: 'foam.lang.Model',
   flags: ['android'],
   methods: [
     function toAndroidStringResources(opt_resources) {
@@ -117,7 +117,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.android.tools',
   name: 'PropertyStringExtension',
-  refines: 'foam.core.Property',
+  refines: 'foam.lang.Property',
   flags: ['android'],
 
   requires: [
@@ -141,7 +141,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.android.tools',
   name: 'ActionStringExtension',
-  refines: 'foam.core.Action',
+  refines: 'foam.lang.Action',
   flags: ['android'],
 
   requires: [

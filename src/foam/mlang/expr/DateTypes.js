@@ -7,12 +7,11 @@
 foam.ENUM({
   package: 'foam.mlang.expr',
   name: 'DateTypes',
-  documentation: `
-      An enum of date grouping types
-  `,
+
+  documentation: 'An enum of date grouping types',
 
   values: [
-      { 
+      {
         name: 'HOURS',
         conversionFactorMs: 3600000
       },
@@ -38,6 +37,6 @@ foam.ENUM({
     {
       class: 'Long',
       name: 'conversionFactorMs'
-    },
+    }
   ]
 });

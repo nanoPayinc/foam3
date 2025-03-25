@@ -7,14 +7,14 @@
 foam.CLASS({
   package: 'foam.dao.history.test',
   name: 'HistoryRecordServiceTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
 
   javaImports: [
     'foam.dao.DAO',
     'foam.dao.history.HistoryRecord',
     'foam.dao.history.HistoryRecordService',
     'foam.dao.history.PropertyUpdate',
-    'foam.nanos.auth.User',
+    'foam.core.auth.User',
     'java.util.ArrayList',
     'java.util.List',
     'java.util.stream.Collectors'

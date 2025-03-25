@@ -19,11 +19,11 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.core.SimpleSlot',
+    'foam.lang.SimpleSlot',
     'foam.dao.ProxyDAO',
-    'foam.nanos.column.ColumnConfigToPropertyConverter',
-    'foam.nanos.column.CommonColumnHandler',
-    'foam.nanos.column.TableColumnOutputter',
+    'foam.core.column.ColumnConfigToPropertyConverter',
+    'foam.core.column.CommonColumnHandler',
+    'foam.core.column.TableColumnOutputter',
     'foam.u2.CheckBox',
     'foam.u2.md.OverlayDropdown',
     'foam.u2.tag.Image',
@@ -126,7 +126,7 @@ foam.CLASS({
     },
     {
       class: 'FObjectArray',
-      of: 'foam.core.Action',
+      of: 'foam.lang.Action',
       name: 'contextMenuActions',
       documentation: `
         Each table row has a context menu that contains actions you can perform
@@ -251,16 +251,16 @@ foam.CLASS({
     {
       name: 'columnHandler',
       class: 'FObjectProperty',
-      of: 'foam.nanos.column.CommonColumnHandler',
+      of: 'foam.core.column.CommonColumnHandler',
       factory: function() {
-        return foam.nanos.column.CommonColumnHandler.create();
+        return foam.core.column.CommonColumnHandler.create();
       }
     },
     {
       name: 'columnConfigToPropertyConverter',
       factory: function() {
         if ( ! this.__context__.columnConfigToPropertyConverter )
-          return foam.nanos.column.ColumnConfigToPropertyConverter.create();
+          return foam.core.column.ColumnConfigToPropertyConverter.create();
         return this.__context__.columnConfigToPropertyConverter;
       }
     },
@@ -331,10 +331,10 @@ foam.CLASS({
     async function render() {
       var view = this;
 
-      const asyncRes = await this.filterUnpermitted(view.of.getAxiomsByClass(foam.core.Property).filter(p => ! p.hidden));
+      const asyncRes = await this.filterUnpermitted(view.of.getAxiomsByClass(foam.lang.Property).filter(p => ! p.hidden));
       this.allColumns = ! view.of ? [] : [].concat(
         asyncRes.map(a => a.name),
-        view.of.getAxiomsByClass(foam.core.Action)
+        view.of.getAxiomsByClass(foam.lang.Action)
         .map(a => a.name).filter( a => view.of.getAxiomByName('tableColumns') ? view.of.getAxiomByName('tableColumns').columns.includes(a) : false)
       );
 
@@ -366,7 +366,7 @@ foam.CLASS({
           }).join(',');
         }
         if ( ! this.memento.tail ) {
-          this.memento.tail = foam.nanos.controller.Memento.create({value: '', parent: this.memento});
+          this.memento.tail = foam.core.controller.Memento.create({value: '', parent: this.memento});
           this.currentMemento_ = this.memento.tail;
         }
       }
@@ -537,7 +537,7 @@ foam.CLASS({
         }
       },
       function returnRecords(of, dao, propertyNamesToQuery, useProjection) {
-        var expr = foam.nanos.column.ExpressionForArrayOfNestedPropertiesBuilder.create().buildProjectionForPropertyNamesArray(of, propertyNamesToQuery, useProjection);
+        var expr = foam.core.column.ExpressionForArrayOfNestedPropertiesBuilder.create().buildProjectionForPropertyNamesArray(of, propertyNamesToQuery, useProjection);
         return dao.select(expr);
       },
       function doesAllColumnsContainsColumnName(obj, col) {
@@ -547,7 +547,7 @@ foam.CLASS({
         return columns.filter( c => obj.allColumns.includes( obj.columnHandler.checkIfArrayAndReturnFirstLevelColumnName(c) ));
       },
       function returnPropertiesForColumns(obj, columns_) {
-        var propertyNamesToQuery = columns_.length === 0 ? columns_ : [ 'id' ].concat(obj.filterColumnsThatAllColumnsDoesNotIncludeForArrayOfColumns(obj, columns_).filter(c => ! foam.core.Action.isInstance(obj.of.getAxiomByName(obj.columnHandler.propertyNamesForColumnArray(c)))).map(c => obj.columnHandler.propertyNamesForColumnArray(c)));
+        var propertyNamesToQuery = columns_.length === 0 ? columns_ : [ 'id' ].concat(obj.filterColumnsThatAllColumnsDoesNotIncludeForArrayOfColumns(obj, columns_).filter(c => ! foam.lang.Action.isInstance(obj.of.getAxiomByName(obj.columnHandler.propertyNamesForColumnArray(c)))).map(c => obj.columnHandler.propertyNamesForColumnArray(c)));
         return obj.columnConfigToPropertyConverter.returnPropertyColumnMappings(obj.of, propertyNamesToQuery);
       },
       function shouldColumnBeSorted(c) {
@@ -589,7 +589,7 @@ foam.CLASS({
           var actionsMerger = action => { actions[action.name] = action; };
 
           // Model actions
-          obj.cls_.getAxiomsByClass(foam.core.Action).forEach(actionsMerger);
+          obj.cls_.getAxiomsByClass(foam.lang.Action).forEach(actionsMerger);
           // Context menu actions
           this.contextMenuActions.forEach(actionsMerger);
 

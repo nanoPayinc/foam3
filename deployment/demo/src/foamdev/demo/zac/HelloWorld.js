@@ -12,7 +12,7 @@ foam.CLASS({
   documentation: 'Simple demonstration ZAC service.',
 
   requires: [
-    'foam.nanos.menu.VerticalMenu'
+    'foam.core.menu.VerticalMenu'
   ],
 
   imports: [
@@ -27,7 +27,7 @@ foam.CLASS({
       this.SUPER();
 
       try {
-        if ( foam.nanos.zac.Client.isInstance(this.ctrl) ) {
+        if ( foam.core.zac.Client.isInstance(this.ctrl) ) {
           this.ctrl.add(this);
         }
       } catch (x) {}

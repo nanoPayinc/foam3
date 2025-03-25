@@ -23,7 +23,7 @@ foam.CLASS({
     },
     {
       name: 'innerSub',
-      type: 'foam.core.Detachable',
+      type: 'foam.lang.Detachable',
       swiftPostSet: 'if let s = newValue { onDetach(s) }'
     },
     {

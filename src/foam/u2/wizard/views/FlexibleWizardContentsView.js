@@ -76,7 +76,7 @@ foam.CLASS({
           controlBorder: this.controlBorder
         }) ?? this.E();
       })
-      let actionsDetachable = foam.core.FObject.create();
+      let actionsDetachable = foam.lang.FObject.create();
 
       this.addClass()
         // Render current wizard section
@@ -91,7 +91,7 @@ foam.CLASS({
 
           // When the slot listener updates this object will be detached
           actionsDetachable.detach();
-          actionsDetachable = foam.core.FObject.create();
+          actionsDetachable = foam.lang.FObject.create();
 
           if ( self.controlBorder ) {
             const remainingActions = [];
@@ -113,7 +113,7 @@ foam.CLASS({
           actions.forEach(a => {
             slots.push(a.createIsAvailable$(self.__subContext__, self.data));
           });
-          let s = foam.core.ArraySlot.create({ slots: slots }, self);
+          let s = foam.lang.ArraySlot.create({ slots: slots }, self);
           let anyAvailable = this.slot(function(slots) {
             for ( let slot of slots ) {
               if ( slot ) return true;

@@ -65,7 +65,7 @@ foam.CLASS({
           this.resolve_(msg.object.data);
           return;
         }
-        if ( foam.core.Exception.isInstance(msg.object) ) {
+        if ( foam.lang.Exception.isInstance(msg.object) ) {
           this.reject_(msg.object);
           return;
         }

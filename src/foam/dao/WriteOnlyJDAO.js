@@ -10,11 +10,11 @@ foam.CLASS({
   extends: 'foam.dao.java.JDAO',
 
   javaCode: `
-    public WriteOnlyJDAO(foam.core.X x, foam.core.ClassInfo classInfo, String filename) {
+    public WriteOnlyJDAO(foam.lang.X x, foam.lang.ClassInfo classInfo, String filename) {
       this(x, new foam.dao.NullDAO(), classInfo, filename);
     }
 
-    public WriteOnlyJDAO(foam.core.X x, foam.dao.DAO delegate, foam.core.ClassInfo classInfo, String filename) {
+    public WriteOnlyJDAO(foam.lang.X x, foam.dao.DAO delegate, foam.lang.ClassInfo classInfo, String filename) {
       setX(x);
       setOf(classInfo);
       setFilename(filename);
@@ -25,7 +25,7 @@ foam.CLASS({
         .setFilename(filename)
         .setCreateFile(true)
         .setDao(getDelegate())
-        .setLogger(new foam.nanos.logger.PrefixLogger(new Object[] { "[JDAO]", filename }, foam.nanos.logger.StdoutLogger.instance()))
+        .setLogger(new foam.core.logger.PrefixLogger(new Object[] { "[JDAO]", filename }, foam.core.logger.StdoutLogger.instance()))
         .build());
     }
   `,

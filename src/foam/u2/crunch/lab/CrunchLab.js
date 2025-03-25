@@ -48,9 +48,9 @@ foam.CLASS({
     'foam.dao.PromisedDAO',
     'foam.graph.GraphBuilder',
     'foam.graph.map2d.RelationshipGridPlacementStrategy',
-    'foam.nanos.crunch.AgentCapabilityJunction',
-    'foam.nanos.crunch.Capability',
-    'foam.nanos.crunch.UserCapabilityJunction',
+    'foam.core.crunch.AgentCapabilityJunction',
+    'foam.core.crunch.Capability',
+    'foam.core.crunch.UserCapabilityJunction',
     'foam.u2.Tab',
     'foam.u2.crunch.lab.CapabilityGraphNodeView',
     'foam.u2.borders.SideViewBorder',
@@ -72,7 +72,7 @@ foam.CLASS({
       class: 'Reference',
       name: 'crunchUser',
       label: 'User',
-      of: 'foam.nanos.auth.User',
+      of: 'foam.core.auth.User',
       help: `User reference used to populate UCJ data on capability graph.
           This user references the sourceId/owner of a user capability junction.`,
       view: function(_, X) {
@@ -96,7 +96,7 @@ foam.CLASS({
     {
       class: 'Reference',
       name: 'effectiveUser',
-      of: 'foam.nanos.auth.User',
+      of: 'foam.core.auth.User',
       help: `User reference used to further filter capabilities listed for rootCapability.
           This user references the effectiveUser of a capabilityJunction.`,
       view: function(_, X) {
@@ -127,7 +127,7 @@ foam.CLASS({
             ) :
             this.EQ(this.UserCapabilityJunction.SOURCE_ID, crunchUser);
         return this.PromisedDAO.create({
-          of: 'foam.nanos.crunch.Capability',
+          of: 'foam.core.crunch.Capability',
           promise: this.userCapabilityJunctionDAO.where(predicate)
             .select(this.MAP(this.UserCapabilityJunction.TARGET_ID))
             .then((sink) => {
@@ -158,7 +158,7 @@ foam.CLASS({
     {
       class: 'Reference',
       name: 'rootCapability',
-      of: 'foam.nanos.crunch.Capability',
+      of: 'foam.core.crunch.Capability',
       memorable: 'true',
       help: `Root capability reference used to populate graph.
           Graph renders prerequisites downward of the selected capabilty.`,
@@ -184,7 +184,7 @@ foam.CLASS({
       postSet: function(_, n) {
         if ( this.memento ) {
           if ( n )
-            this.currentMemento_ = foam.nanos.controller.Memento.create({value: n});
+            this.currentMemento_ = foam.core.controller.Memento.create({value: n});
           else
             this.currentMemento_ = null;
         }

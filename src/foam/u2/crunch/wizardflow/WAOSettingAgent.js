@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.crunch.wizardflow',
   name: 'WAOSettingAgent',
-  implements: [ 'foam.core.ContextAgent' ],
+  implements: [ 'foam.lang.ContextAgent' ],
 
   documentation: `
     basic WAO setting.
@@ -23,9 +23,9 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.nanos.crunch.ui.ApprovableUserCapabilityJunctionWAO',
-    'foam.nanos.crunch.ui.UserCapabilityJunctionWAO',
-    'foam.nanos.crunch.ui.CapableWAO',
+    'foam.core.crunch.ui.ApprovableUserCapabilityJunctionWAO',
+    'foam.core.crunch.ui.UserCapabilityJunctionWAO',
+    'foam.core.crunch.ui.CapableWAO',
     'foam.u2.wizard.wao.SplitWAO',
     'foam.u2.wizard.data.UserCapabilityJunctionSaver'
   ],

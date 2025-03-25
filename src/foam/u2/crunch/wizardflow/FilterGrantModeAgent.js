@@ -15,16 +15,16 @@ foam.CLASS({
   `,
 
   requires: [
-    'foam.nanos.crunch.ui.CapabilityWizardlet',
-    'foam.nanos.crunch.Capability',
-    'foam.nanos.crunch.CapabilityGrantMode'
+    'foam.core.crunch.ui.CapabilityWizardlet',
+    'foam.core.crunch.Capability',
+    'foam.core.crunch.CapabilityGrantMode'
   ],
 
   properties: [
     {
       name: 'allowedModes',
       class: 'FObjectArray',
-      of: 'foam.nanos.crunch.CapabilityGrantMode',
+      of: 'foam.core.crunch.CapabilityGrantMode',
       factory: function () {
         return [ this.CapabilityGrantMode.AUTOMATIC ];
       }

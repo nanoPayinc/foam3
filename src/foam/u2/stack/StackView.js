@@ -21,7 +21,7 @@ foam.CLASS({
   extends: 'foam.u2.View',
 
   requires: [
-    'foam.nanos.controller.Memento',
+    'foam.core.controller.Memento',
     'foam.u2.stack.Stack'
   ],
 
@@ -66,7 +66,7 @@ foam.CLASS({
 
       if ( this.showActions ) {
         this.start('actions')
-          .add(this.data.cls_.getAxiomsByClass(foam.core.Action))
+          .add(this.data.cls_.getAxiomsByClass(foam.lang.Action))
         .end();
       }
       this.maybeAddDefault();

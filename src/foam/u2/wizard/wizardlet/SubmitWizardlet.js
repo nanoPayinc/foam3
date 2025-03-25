@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.wizard.wizardlet',
   name: 'SubmitWizardlet',
-  extends: 'foam.nanos.crunch.ui.CapabilityWizardlet',
+  extends: 'foam.core.crunch.ui.CapabilityWizardlet',
 
   imports: [
     'wizardlets'
@@ -17,7 +17,7 @@ foam.CLASS({
     ['isVisible', false],
     {
       name: 'of',
-      value: 'foam.core.RequiredBooleanHolder'
+      value: 'foam.lang.RequiredBooleanHolder'
     },
     {
       name: 'sections',

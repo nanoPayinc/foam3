@@ -140,14 +140,22 @@ MySink {
 ### Creating a Sink inline
 
 Often you want to perform a query and do something with each object it
-produces. You can declare a Sink inline with `foam.dao.QuickSink`:
+produces. You can declare a Sink inline with `foam.dao.ProxySink`:
 
 ```javascript
-dao.select(foam.dao.QuickSink.create({
-  putFn: function(o) {
+dao.select(foam.dao.ProxySink.create({delegate: {
+  put: function(o) {
     console.log("Got an object:", o);
   },
-}));
+}}));
+```
+
+or just add a function:
+
+```javascript
+dao.select(function(o) {
+  console.log("Got an object:", o);
+});
 ```
 
 ## Errors
@@ -308,4 +316,3 @@ paging results and infinite scrolling.
 
 Ignores the first `num` results from the DAO (according to the sort order).
 Useful for paging and infinite scrolling.
-

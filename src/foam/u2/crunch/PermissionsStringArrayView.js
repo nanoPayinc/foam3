@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.crunch',
   name: 'PermissionRow',
-  extends: 'foam.nanos.auth.Permission',
+  extends: 'foam.core.auth.Permission',
 
   tableColumns: [ 'granted', 'id', 'description' ],
 
@@ -44,7 +44,7 @@ foam.CLASS({
   classes: [
     {
       name: 'PermissionRow',
-      extends: 'foam.nanos.auth.Permission',
+      extends: 'foam.core.auth.Permission',
 
       properties: [
         {
@@ -53,7 +53,7 @@ foam.CLASS({
           tableWidth: 70,
           tableCellFormatter: function(value, _, projection) {
             var id = projection[0];
-            var slot = foam.core.SimpleSlot.create({value: value});
+            var slot = foam.lang.SimpleSlot.create({value: value});
             slot.sub(() => {
               if ( slot.get() ) {
                 this.__context__.addPermission(id);
@@ -86,7 +86,7 @@ foam.CLASS({
     'foam.u2.crunch.PermissionRow',
 
     'foam.dao.MDAO',
-    'foam.nanos.auth.Permission',
+    'foam.core.auth.Permission',
     'foam.u2.crunch.PermissionSelection',
     'foam.u2.TextField'
   ],

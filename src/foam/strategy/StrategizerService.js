@@ -33,12 +33,12 @@ foam.INTERFACE({
     name: 'exampleProp',
     view: function(_, X) {
       let predicate = expr.AND(
-          expr.EQ(foam.strategy.StrategyReference.DESIRED_MODEL_ID, 'foam.nanos.auth.User'),
-          expr.IN(foam.strategy.StrategyReference.STRATEGY, [foam.lookup('foam.nanos.auth.SomeUserClass'), foam.lookup('foam.nanos.auth.AnotherUserClass') ])
+          expr.EQ(foam.strategy.StrategyReference.DESIRED_MODEL_ID, 'foam.core.auth.User'),
+          expr.IN(foam.strategy.StrategyReference.STRATEGY, [foam.lookup('foam.core.auth.SomeUserClass'), foam.lookup('foam.core.auth.AnotherUserClass') ])
       );
       return foam.u2.view.FObjectView.create({
         data: X.data.exampleProp,
-        of: foam.nanos.auth.User,
+        of: foam.core.auth.User,
         persistantData: { website: X.data.user.website },
         predicate: predicate
       }, X);

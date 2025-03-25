@@ -123,7 +123,7 @@ e.attrs({color: 'orange'}).
 
 var e13 = E('div').add(
   'dynamic function: ',
-  foam.core.ExpressionSlot.create({
+  foam.lang.ExpressionSlot.create({
     args: [ timer.second$ ],
     code: function(s) {
       return s % 2 ?
@@ -144,7 +144,7 @@ var e13 = E('div').add(
       E('span').add('PONG').style({color: 'orange'});
   }),
   ' dynamic function4: ',
-  foam.core.ExpressionSlot.create({
+  foam.lang.ExpressionSlot.create({
     args: [ timer.second$ ],
     code: function(s) {
       return s % 2 ?
@@ -277,7 +277,7 @@ Person.FIRST_NAME.toE(null, Y).write();
 var e = Y.E('div').add('simple: ').add(Person.FIRST_NAME, Person.LAST_NAME);
 e.write();
 
-var e2 = Y.E('div').add('simple2: ').add(Person.getAxiomsByClass(foam.core.Property));
+var e2 = Y.E('div').add('simple2: ').add(Person.getAxiomsByClass(foam.lang.Property));
 e2.write();
 
 foam.u2.DetailView.create({

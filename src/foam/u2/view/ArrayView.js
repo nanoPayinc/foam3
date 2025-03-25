@@ -10,7 +10,7 @@ foam.CLASS({
   extends: 'foam.u2.View',
 
   requires: [
-    'foam.core.FObject',
+    'foam.lang.FObject',
     'foam.u2.layout.Cols',
     'foam.u2.layout.Rows'
   ],

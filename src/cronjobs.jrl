@@ -1,7 +1,7 @@
 p({
-  "class": "foam.nanos.cron.Cron",
+  "class": "foam.core.cron.Cron",
   "schedule": {
-    "class": "foam.nanos.cron.CronSchedule",
+    "class": "foam.core.cron.CronSchedule",
     "minute": 0,
     "hour": -1,
     "dayOfMonth": -1,
@@ -14,18 +14,18 @@ p({
   "description": "Cron for renewing rule history - run every hour.",
   "code":
   """
-    import foam.nanos.ruler.cron.RenewRuleHistoryCron;
+    import foam.core.ruler.cron.RenewRuleHistoryCron;
     cron = new RenewRuleHistoryCron();
     cron.execute(x);
     print("done");
   """
 })
 p({
-  "class":"foam.nanos.cron.Cron",
+  "class":"foam.core.cron.Cron",
   "id":"CleanupTempFileCron",
   "description":"Cron to clean up files which exist more than 4 hours",
   schedule:{
-    class:"foam.nanos.cron.CronSchedule",
+    class:"foam.core.cron.CronSchedule",
     minute: 0,
     hour: -1,
     dayOfMonth:-1,
@@ -34,10 +34,10 @@ p({
     second: -1
   },
   "code": """
-    import foam.core.X;
+    import foam.lang.X;
     import foam.dao.DAO;
     import foam.mlang.MLang;
-    import foam.nanos.fs.TempFile;
+    import foam.core.fs.TempFile;
     import java.time.LocalDateTime;
     import java.time.ZoneId;
     import java.util.Date;

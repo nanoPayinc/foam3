@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.lib.csv',
   name: 'CSVParser',
-  
+
   requires: [
     'foam.parse.ImperativeGrammar'
   ],
@@ -26,8 +26,8 @@ foam.CLASS({
       factory: function() {
         var X = this.X;
         var self = this;
-        
-        return this.ImperativeGrammar.create({ 
+
+        return this.ImperativeGrammar.create({
           symbols: function(alt, anyChar, literal, literalIC, not, notChars, optional,
           plus, range, repeat, repeat0, seq, seq1, str, sym) {
             return {
@@ -66,8 +66,8 @@ foam.CLASS({
       factory: function() {
         var X = this.X;
         var self = this;
-        
-        return this.ImperativeGrammar.create({ 
+
+        return this.ImperativeGrammar.create({
           symbols: function(alt, anyChar, literal, literalIC, not, notChars, optional,
           plus, range, repeat, repeat0, seq, seq1, str, sym) {
             return {
@@ -102,7 +102,7 @@ foam.CLASS({
       this.delimiter = delimiter;
       return this.stringParser.parseString(str);
     },
-    
+
     function parseHeader(str, nestedObjectSeperator) {
       this.nestedObjectSeperator = nestedObjectSeperator;
       return this.headerParser.parseString(str);
@@ -110,8 +110,8 @@ foam.CLASS({
 
     function recoverHeaderTitle(t) {
       // Recovers header title by replacing the nested object seperator x 2, by itself
-      return t.replace(new RegExp(this.nestedObjectSeperator + this.nestedObjectSeperator, 'g'), 
-                this.nestedObjectSeperator);
+      return t.replace(new RegExp(this.nestedObjectSeperator + this.nestedObjectSeperator, 'g'),
+        this.nestedObjectSeperator);
     }
   ]
 });

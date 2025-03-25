@@ -12,6 +12,7 @@ const fs_      = require('fs');
 const path_    = require('path');
 const uglify_  = require('uglify-js');
 const zlib_    = require('zlib');
+const { adaptOrCreateArgs, ensureDir } = require("./buildlib");
 
 const licenses = {};
 var version    = '';
@@ -22,7 +23,17 @@ function addLicense(l) {
   licenses[l] = true;
 }
 
+exports.args = [
+  {
+    // Isn't used directly by this Maker, but is used in java/refinements.js
+    name: 'outdir',
+    description: 'location to write foam-bin files, default: {builddir}/js',
+    factory: () => path_.resolve(path_.normalize(X.outdir || (X.builddir + '/js')))
+  }
+];
+
 exports.init = function() {
+  adaptOrCreateArgs(X, exports.args);
   flags.java      = false;
   flags.web       = true;
   flags.loadFiles = true;
@@ -81,16 +92,23 @@ exports.end = function() {
   license = license.split('\n').map(l => '// ' + l).join('\n');
 
   console.log(`[JS] Version: ${version}, Licenses: ${Object.keys(licenses).length}, Files: ${Object.keys(files).length}, Stage: ${X.stage}`);
-  var code = uglify_.minify(
+  var result = Object.keys(files).length && uglify_.minify(
     files,
     {
       compress: false,
       mangle:   false,
+      module:   false,
       output:   {
         semicolons: false,
         preamble: `// Generated: ${new Date()}\n\n${license}\n` + ((X.stage === undefined || X.stage === '0') ? `globalThis.foam = { main: function() { /* prevent POM loading since code is in-lined below */ } };\n` : '')
       }
-    }).code;
+    });
+
+  if (result && result.error) {
+    console.log("[JS] Error: ", result.error);
+    process.exit(1);
+  }
+  var code = result && result.code;
 
   if ( ! code ) {
     console.log('No output for stage:', X.stage);
@@ -99,12 +117,13 @@ exports.end = function() {
   }
 
   // Remove most Java and Swift Code
-  code = code.replace(/(java|swift)(DefaultValue|Type|Code|Setter|Getter|Factory|PreSet|PostSet|Extends):`(\\`|[^`])*`}/gm, '}');
-  code = code.replace(/(java|swift)(DefaultValue|Type|Code|Setter|Getter|Factory|PreSet|PostSet|Extends):"(\\"|[^"])*"}/gm, '}');
-  code = code.replace(/(java|swift)(DefaultValue|Type|Code|Setter|Getter|Factory|PreSet|PostSet|Extends):'(\\'|[^'])*'}/gm, '}');
-  code = code.replace(/(java|swift)(DefaultValue|Type|Code|Setter|Getter|Factory|PreSet|PostSet|Extends):`(\\`|[^`])*`,/gm, '');
-  code = code.replace(/(java|swift)(DefaultValue|Type|Code|Setter|Getter|Factory|PreSet|PostSet|Extends):"(\\"|[^"])*",/gm, '');
-  code = code.replace(/(java|swift)(DefaultValue|Type|Code|Setter|Getter|Factory|PreSet|PostSet|Extends):'(\\'|[^'])*',/gm, '');
+  // - java only meta properties are from TypeInfo and after eg. javaTypeInfo, javaJSONParser, ... javaValidateObj
+  code = code.replace(/(java|swift)(DefaultValue|Type|Code|Setter|Getter|Factory|PreSet|PostSet|Extends|Value|InfoType|JSONParser|FormatJSON|ToCSV|ToCSVLabel|CSVParser|CloneProperty|Compare|ValidateObj):`(\\`|[^`])*`}/gm, '}');
+  code = code.replace(/(java|swift)(DefaultValue|Type|Code|Setter|Getter|Factory|PreSet|PostSet|Extends|Value|InfoType|JSONParser|FormatJSON|ToCSV|ToCSVLabel|CSVParser|CloneProperty|Compare|ValidateObj):"(\\"|[^"])*"}/gm, '}');
+  code = code.replace(/(java|swift)(DefaultValue|Type|Code|Setter|Getter|Factory|PreSet|PostSet|Extends|Value|InfoType|JSONParser|FormatJSON|ToCSV|ToCSVLabel|CSVParser|CloneProperty|Compare|ValidateObj):'(\\'|[^'])*'}/gm, '}');
+  code = code.replace(/(java|swift)(DefaultValue|Type|Code|Setter|Getter|Factory|PreSet|PostSet|Extends|Value|InfoType|JSONParser|FormatJSON|ToCSV|ToCSVLabel|CSVParser|CloneProperty|Compare|ValidateObj):`(\\`|[^`])*`,/gm, '');
+  code = code.replace(/(java|swift)(DefaultValue|Type|Code|Setter|Getter|Factory|PreSet|PostSet|Extends|Value|InfoType|JSONParser|FormatJSON|ToCSV|ToCSVLabel|CSVParser|CloneProperty|Compare|ValidateObj):"(\\"|[^"])*",/gm, '');
+  code = code.replace(/(java|swift)(DefaultValue|Type|Code|Setter|Getter|Factory|PreSet|PostSet|Extends|Value|InfoType|JSONParser|FormatJSON|ToCSV|ToCSVLabel|CSVParser|CloneProperty|Compare|ValidateObj):'(\\'|[^'])*',/gm, '');
   code = code.replace(/swiftThrows:true,/gm, '');
   code = code.replace(/swiftSynchronized:true,/gm, '');
   code = code.replace(/swiftThrows:true}/gm, '}');
@@ -166,11 +185,12 @@ if ( ! foam.flags.skipStage2 ) {
 
   var filename = fn(X.stage);
   console.log('[JS] Writing', filename + '.js');
-  fs_.writeFileSync(filename + '.js', code);
+  ensureDir(X.outdir);
+  fs_.writeFileSync(X.outdir + "/" + filename + '.js', code);
   console.log('[JS] Writing', filename + '.js.gz');
   zlib_.gzip(code, (err, buffer) => {
     if ( ! err ) {
-      fs_.writeFileSync(filename + '.js.gz', buffer);
+      fs_.writeFileSync(X.outdir + "/" + filename + '.js.gz', buffer);
     } else {
       console.error(err);
     }

@@ -10,7 +10,7 @@ foam.CLASS({
   extends: 'foam.u2.wizard.data.ProxySaver',
 
   mixins: [
-    'foam.nanos.analytics.Analyticable'
+    'foam.core.analytics.Analyticable'
   ],
 
   properties: [

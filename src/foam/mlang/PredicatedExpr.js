@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.mlang',
   name: 'PredicatedExpr',
   extends: 'foam.mlang.AbstractExpr',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   documentation: 'An Expression that evaluates a predicate.',
 

@@ -23,7 +23,7 @@ foam.CLASS({
   extends: 'foam.dao.index.ProxyIndex',
 
   requires: [
-    'foam.core.Property',
+    'foam.lang.Property',
     'foam.dao.index.NoPlan',
     'foam.dao.index.CustomPlan',
     'foam.mlang.predicate.And',

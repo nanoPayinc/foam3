@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'FilterWizardletsAgent',
 
   implements: [
-    'foam.core.ContextAgent'
+    'foam.lang.ContextAgent'
   ],
 
   imports: [

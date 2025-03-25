@@ -68,7 +68,7 @@ foam.CLASS({
 
                 // Support string titles and functions
                 var title$ = foam.Function.isInstance(s.title) ?
-                foam.core.ExpressionSlot.create({
+                foam.lang.ExpressionSlot.create({
                   obj$: self.data$,
                   code: s.title
                 }) :

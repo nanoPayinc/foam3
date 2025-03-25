@@ -17,9 +17,9 @@ foam.CLASS({
   ],
   exports: [ 'initialPosition' ],
   requires: [
-    'foam.nanos.crunch.CapabilityJunctionStatus',
+    'foam.core.crunch.CapabilityJunctionStatus',
     'foam.u2.crunch.wizardflow.SkipMode',
-    'foam.nanos.crunch.ui.CapabilityWizardlet',
+    'foam.core.crunch.ui.CapabilityWizardlet',
     'foam.u2.wizard.WizardPosition',
     'foam.u2.wizard.wizardflow.AddFacadeWizardlet.FacadeWizardlet'
   ],

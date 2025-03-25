@@ -1,0 +1,19 @@
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"bootScriptDAO",
+  "lazy":false,
+  "serve":false,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.script.Script.getOwnClassInfo())
+      .setGuid(true)
+      .setCluster(false)
+      .setRuler(false)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("bootscripts")
+      .setOrder(new foam.lang.PropertyInfo[] {foam.core.script.Script.ID})
+      .setPm(true)
+      .build();
+  """,
+  "client":"{\"of\":\"foam.core.script.Script\"}"
+})

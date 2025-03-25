@@ -1,0 +1,138 @@
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"fileLabelDAO",
+  "authenticated":true,
+  "serve":true,
+  "lazy":true,
+  "serviceScript":
+  """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setAuthorizer(new foam.core.auth.GlobalReadAuthorizer("filelabel"))
+      .setOf(foam.core.fs.FileLabel.getOwnClassInfo())
+      .setJournalName("fileLabels")
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setRuler(false)
+      .setPm(true)
+      .build()
+  """,
+  "client":"{\"of\":\"foam.core.fs.FileLabel\"}"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"fileTypeDAO",
+  "serve":true,
+  "serviceScript":
+  """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setAuthorizer(new foam.core.auth.GlobalReadAuthorizer("filetype"))
+      .setGuid(true)
+      .setOf(foam.core.fs.FileType.getOwnClassInfo())
+      .setJournalName("fileTypes")
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .build()
+  """,
+  "client": "{\"of\":\"foam.core.fs.FileType\"}"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"fileDAO",
+  "serve":true,
+  "serviceScript":"""
+    dao = new foam.core.fs.FileDataDAO.Builder(x)
+      .setDelegate(
+        new foam.core.fs.FileUpdateDecorator.Builder(x)
+          .setDelegate(new foam.dao.NullDAO(x, foam.core.fs.File.getOwnClassInfo()))
+          .build())
+      .build();
+
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.fs.File.getOwnClassInfo())
+      .setGuid(true)
+      .setDecorator(dao)
+      .setJournalName("files")
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setPm(true)
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.fs.File.FILENAME })
+      .orderBy(foam.mlang.MLang.DESC(foam.core.fs.File.CREATED));
+  """,
+  "client":"""
+    {
+      "of":"foam.core.fs.File",
+      "cache":false,
+      "decorators":
+      [
+        {
+          "class":"foam.blob.BlobServiceDecorator"
+        }
+      ]
+    }
+  """
+})
+
+p({
+  class: "foam.core.boot.CSpec",
+  name: "tempFileDAO",
+  serve: false,
+  serviceScript:
+  """
+    dao = new foam.core.fs.TempFileDAO.Builder(x)
+      .setDelegate(new foam.dao.NullDAO(x, foam.core.fs.TempFile.getOwnClassInfo()))
+      .build();
+    return new foam.dao.EasyDAO.Builder(x)
+      .setJournalType(foam.dao.JournalType.NO_JOURNAL)
+      .setAuthorize(false)
+      .setPm(true)
+      .setDecorator(dao)
+      .setOf(foam.core.fs.TempFile.getOwnClassInfo())
+      .setGuid(true)
+      .build();
+  """
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"FSFileDAO",
+  "enabled":false,
+  "serve":true,
+  "serviceScript":"""
+    // --- should set the root of FSFileDAO here ---
+    nulldao = new foam.dao.NullDAO.Builder(x).setOf(foam.core.fs.FSFile.getOwnClassInfo()).build();
+    fsdao = new foam.core.fs.FSFileDAO.Builder(x).setDelegate(nulldao).build();
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.fs.FSFile.getOwnClassInfo())
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("fsFiles")
+      .setDecorator(fsdao)
+      .build();
+  """,
+  "client":"""
+    {
+      "of":"foam.core.fs.FSFile"
+    }
+  """
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"FSFileContentDAO",
+  "enabled":false,
+  "serve":true,
+  "serviceScript":"""
+    nulldao = new foam.dao.NullDAO.Builder(x).setOf(foam.core.fs.FSFileContent.getOwnClassInfo()).build();
+    dao = new foam.core.fs.FSFileContentDAO.Builder(x).setDelegate(nulldao).build();
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.fs.FSFileContent.getOwnClassInfo())
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("fsFileContents")
+      .setDecorator(dao)
+      .build();
+  """,
+  "client":"""
+    {
+      "of":"foam.core.fs.FSFileContent"
+    }
+  """
+})

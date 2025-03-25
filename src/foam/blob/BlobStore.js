@@ -19,7 +19,7 @@ foam.CLASS({
     'java.io.IOException',
     'org.apache.commons.codec.binary.Hex',
     'org.apache.commons.io.IOUtils',
-    'foam.nanos.fs.FileSystemStorage'
+    'foam.core.fs.FileSystemStorage'
   ],
 
   constants: [

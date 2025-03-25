@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.dao',
   name: 'DAOSlot',
-  implements: ['foam.core.Slot'],
+  implements: ['foam.lang.Slot'],
   extends: 'foam.dao.ResetListener',
   flags: [],
   properties: [

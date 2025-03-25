@@ -20,7 +20,7 @@
 foam.CLASS({
   package: 'foam.u2',
   name: 'TableCellPropertyRefinement',
-  refines: 'foam.core.Property',
+  refines: 'foam.lang.Property',
 
   properties: [
     {
@@ -42,7 +42,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2',
   name: 'TableCellActionRefinement',
-  refines: 'foam.core.Action',
+  refines: 'foam.lang.Action',
 
   properties: [
     {
@@ -323,9 +323,9 @@ foam.CLASS({
 
         if ( tableColumns ) return tableColumns.columns;
 
-        return this.of.getAxiomsByClass(foam.core.Property)
+        return this.of.getAxiomsByClass(foam.lang.Property)
           .filter(p => ! p.hidden)
-          .map(foam.core.Property.NAME.f);
+          .map(foam.lang.Property.NAME.f);
       }
     },
     {

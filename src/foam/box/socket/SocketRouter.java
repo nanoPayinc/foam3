@@ -11,25 +11,25 @@ import foam.box.Message;
 import foam.box.SessionServerBox;
 import foam.box.Skeleton;
 import foam.box.socket.SocketWebAgent;
-import foam.core.ContextAware;
-import foam.core.FObject;
-import foam.core.Detachable;
-import foam.core.X;
-import foam.core.ContextAware;
+import foam.lang.ContextAware;
+import foam.lang.FObject;
+import foam.lang.Detachable;
+import foam.lang.X;
+import foam.lang.ContextAware;
 import foam.dao.AbstractSink;
 import foam.dao.DAO;
 import foam.dao.SessionDAOSkeleton;
 import foam.lib.json.JSONParser;
-import foam.nanos.boot.NSpec;
-import foam.nanos.boot.NSpecAware;
-import foam.nanos.http.NanoRouter;
-import foam.nanos.http.WebAgent;
-import foam.nanos.logger.PrefixLogger;
-import foam.nanos.logger.Logger;
-import foam.nanos.om.OMLogger;
-import foam.nanos.pm.PM;
-import foam.nanos.pm.PMWebAgent;
-import foam.nanos.NanoService;
+import foam.core.boot.CSpec;
+import foam.core.boot.CSpecAware;
+import foam.core.http.NanoRouter;
+import foam.core.http.WebAgent;
+import foam.core.logger.PrefixLogger;
+import foam.core.logger.Logger;
+import foam.core.om.OMLogger;
+import foam.core.pm.PM;
+import foam.core.pm.PMWebAgent;
+import foam.core.COREService;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -49,11 +49,11 @@ public class SocketRouter
 
   public SocketRouter(X x) {
     setX(x);
-    nSpecDAO_ = (DAO) getX().get("nSpecDAO");
-    nSpecDAO_.listen( new AbstractSink() {
+    cSpecDAO_ = (DAO) getX().get("cSpecDAO");
+    cSpecDAO_.listen( new AbstractSink() {
       @Override
       public void put(Object obj, Detachable sub) {
-        NSpec sp = (NSpec) obj;
+        CSpec sp = (CSpec) obj;
         handlerMap_.remove(sp.getName());
       }
     }, null);
@@ -82,7 +82,7 @@ public class SocketRouter
     }
 
     try {
-      NSpec spec = (NSpec) nSpecDAO_.find(serviceKey);
+      CSpec spec = (CSpec) cSpecDAO_.find(serviceKey);
       if ( spec == null ) {
         logger_.error("Service not found", serviceKey);
         throw new IOException("Service not found: " + serviceKey);
@@ -93,7 +93,7 @@ public class SocketRouter
               this.getClass().getSimpleName(),
               spec.getName()
             }, (Logger) getX().get("logger")))
-        .put(NSpec.class, spec);
+        .put(CSpec.class, spec);
       SocketWebAgent agent = (SocketWebAgent) getWebAgent(spec);
       if ( agent == null ) {
         logger_.error("Agent not found", serviceKey);
@@ -111,7 +111,7 @@ public class SocketRouter
     }
   }
 
-  protected WebAgent getAgent(Skeleton skeleton, NSpec spec) {
+  protected WebAgent getAgent(Skeleton skeleton, CSpec spec) {
     ((OMLogger) getX().get("OMLogger")).log("socket.router.agent");
     WebAgent agent = new SocketWebAgent(skeleton, spec.getAuthenticate());
 //    informService(agent, spec);

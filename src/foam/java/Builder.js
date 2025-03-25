@@ -10,7 +10,7 @@ foam.CLASS({
   properties: [
     {
       class: 'FObjectArray',
-      of: 'foam.core.Property',
+      of: 'foam.lang.Property',
       name: 'properties'
     }
   ],
@@ -24,7 +24,7 @@ foam.CLASS({
 
       builder.field({
         name: 'x_',
-        type: 'foam.core.X',
+        type: 'foam.lang.X',
         visibility: 'protected',
       });
 
@@ -32,7 +32,7 @@ foam.CLASS({
         visibility: 'public',
         name: 'Builder',
         type: '',
-        args: [ { type: 'foam.core.X', name: 'x' } ],
+        args: [ { type: 'foam.lang.X', name: 'x' } ],
         body: `x_ = x;`
       });
 
@@ -40,7 +40,7 @@ foam.CLASS({
         visibility: 'public',
         name: 'setX',
         type: 'Builder',
-        args: [ { type: 'foam.core.X', name: 'x' } ],
+        args: [ { type: 'foam.lang.X', name: 'x' } ],
         body: `x_ = x;
 return this;`
       });

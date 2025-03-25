@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.util.async',
   name: 'MetaContextAgent',
   implements: [
-    'foam.core.ContextAgent'
+    'foam.lang.ContextAgent'
   ],
   documentation: `
     If a context agent extends MetaContextAgent it will be treated differently

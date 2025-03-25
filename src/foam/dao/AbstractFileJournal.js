@@ -11,20 +11,20 @@ foam.CLASS({
   flags: ['java'],
 
   javaImports: [
-    'foam.core.FObject',
-    'foam.core.PropertyInfo',
-    'foam.core.ProxyX',
+    'foam.lang.FObject',
+    'foam.lang.PropertyInfo',
+    'foam.lang.ProxyX',
     'foam.lib.StoragePropertyPredicate',
     'foam.lib.json.ExprParser',
     'foam.lib.json.JSONParser',
     'foam.lib.json.Outputter',
     'foam.lib.parse.*',
-    'foam.nanos.auth.LastModifiedByAware',
-    'foam.nanos.auth.Subject',
-    'foam.nanos.auth.User',
-    'foam.nanos.logger.Logger',
-    'foam.nanos.logger.PrefixLogger',
-    'foam.nanos.logger.StdoutLogger',
+    'foam.core.auth.LastModifiedByAware',
+    'foam.core.auth.Subject',
+    'foam.core.auth.User',
+    'foam.core.logger.Logger',
+    'foam.core.logger.PrefixLogger',
+    'foam.core.logger.StdoutLogger',
 
     'java.io.BufferedReader',
     'java.io.BufferedWriter',
@@ -89,7 +89,7 @@ foam.CLASS({
     },
     {
       class: 'FObjectProperty',
-      of: 'foam.nanos.logger.Logger',
+      of: 'foam.core.logger.Logger',
       name: 'logger',
       visibility: 'HIDDEN',
       transient: true,
@@ -130,7 +130,7 @@ foam.CLASS({
       javaType: 'java.io.BufferedReader',
       javaGetter: `
 try {
-  InputStream is = getX().get(foam.nanos.fs.Storage.class).getInputStream(getFilename());
+  InputStream is = getX().get(foam.core.fs.Storage.class).getInputStream(getFilename());
   if ( is == null ) {
     getLogger().error("File not found - journal: " + getFilename());
   }
@@ -148,7 +148,7 @@ try {
       javaType: 'java.io.BufferedWriter',
       javaFactory: `
 try {
-  OutputStream os = getX().get(foam.nanos.fs.Storage.class).getOutputStream(getFilename());
+  OutputStream os = getX().get(foam.core.fs.Storage.class).getOutputStream(getFilename());
   if ( os == null ) {
     getLogger().error("File not found - journal: " + getFilename());
   }
@@ -169,7 +169,7 @@ try {
         { name: 'x',      type: 'Context' },
         { name: 'prefix', type: 'String' },
         { name: 'dao',    type: 'DAO' },
-        { name: 'obj',    type: 'foam.core.FObject' }
+        { name: 'obj',    type: 'foam.lang.FObject' }
       ],
       javaCode: `
         final Object id = obj.getProperty("id");
@@ -259,7 +259,7 @@ try {
         { name: 'x',      type: 'Context' },
         { name: 'prefix', type: 'String' },
         { name: 'dao',    type: 'DAO' },
-        { name: 'obj',    type: 'foam.core.FObject' }
+        { name: 'obj',    type: 'foam.lang.FObject' }
       ],
       javaCode: `
       final Object id = obj.getProperty("id");
@@ -364,7 +364,7 @@ try {
         },
         {
           name: 'obj',
-          type: 'foam.core.FObject'
+          type: 'foam.lang.FObject'
         }
       ],
       javaCode: `
@@ -436,7 +436,7 @@ try {
     },
     {
       name: 'mergeFObject',
-      type: 'foam.core.FObject',
+      type: 'foam.lang.FObject',
       documentation: 'Add diff property to old property',
       args: [
         {
@@ -473,7 +473,7 @@ try {
         },
         {
           name: 'prop',
-          javaType: 'foam.core.PropertyInfo'
+          javaType: 'foam.lang.PropertyInfo'
         }
       ],
       javaCode: `

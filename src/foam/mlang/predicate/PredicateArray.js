@@ -29,7 +29,7 @@ foam.CLASS({
         if ( Array.isArray(o) ) return foam.mlang.Constant.create({ value: o });
         if ( o === true ) return foam.mlang.predicate.True.create();
         if ( o === false ) return foam.mlang.predicate.False.create();
-        if ( foam.core.FObject.isInstance(o) ) return o;
+        if ( foam.lang.FObject.isInstance(o) ) return o;
         if ( o.class && this.__context__.maybeLookup(o.class) ) {
           return this.adaptArrayElement(this.__context__.lookup(o.class).create(o, this));
         }

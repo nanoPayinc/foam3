@@ -16,10 +16,10 @@ foam.CLASS({
   mixins: ['foam.u2.memento.Memorable'],
 
   requires: [
-    'foam.core.SimpleSlot',
+    'foam.lang.SimpleSlot',
     'foam.comics.v2.DAOControllerConfig',
     'foam.dao.ProxyDAO',
-    'foam.nanos.column.TableColumnOutputter',
+    'foam.core.column.TableColumnOutputter',
     'foam.u2.CheckBox',
     'foam.u2.layout.Rows',
     'foam.u2.layout.Cols',
@@ -170,7 +170,7 @@ foam.CLASS({
     },
     {
       class: 'FObjectArray',
-      of: 'foam.core.Action',
+      of: 'foam.lang.Action',
       name: 'contextMenuActions',
       documentation: `
         Each table row has a context menu that contains actions you can perform
@@ -366,10 +366,10 @@ foam.CLASS({
     async function render() {
       var view = this;
       var nextViewMemento;
-      const asyncRes = await this.filterUnpermitted(view.of.getAxiomsByClass(foam.core.Property));
+      const asyncRes = await this.filterUnpermitted(view.of.getAxiomsByClass(foam.lang.Property));
       this.allColumns = ! view.of ? [] : [].concat(
         asyncRes.map(a => a.name),
-        view.of.getAxiomsByClass(foam.core.Action)
+        view.of.getAxiomsByClass(foam.lang.Action)
         .map(a => a.name).filter( a => view.of.getAxiomByName('tableColumns') ? view.of.getAxiomByName('tableColumns').columns.includes(a) : false)
       );
 
@@ -524,7 +524,7 @@ foam.CLASS({
         var actionsMerger = action => { actions[action.name] = action; };
         if ( obj?.cls_ ) {
           // Model actions
-          obj.cls_.getAxiomsByClass(foam.core.Action).forEach(actionsMerger);
+          obj.cls_.getAxiomsByClass(foam.lang.Action).forEach(actionsMerger);
         } else {
           console.error('FObject is missing cls_', obj);
         }
@@ -578,7 +578,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.u2.table',
   name: 'TableViewPropertyRefinement',
-  refines: 'foam.core.Property',
+  refines: 'foam.lang.Property',
   properties: [
     {
       class: 'Boolean',

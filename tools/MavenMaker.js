@@ -127,7 +127,7 @@ exports.end = function() {
 
   if ( writeFileIfUpdated('pom.xml', pomxml) ) {
     console.log('[Maven] Updating pom.xml with', javaDependencies.length, 'dependencies.');
-    execSync(`mvn dependency:copy-dependencies -DoutputDirectory=${path_.join(process.cwd(), X.builddir + '/lib')}`, { stdio: 'inherit' });
+    execSync(`mvn dependency:copy-dependencies -DoutputDirectory=${X.builddir + '/lib'}`, { stdio: 'inherit' });
   } else {
     console.log('[Maven] Not Updating pom.xml. No changes to', javaDependencies.length, 'dependencies.');
   }

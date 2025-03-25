@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.mlang.expr',
   name: 'Divide',
   extends: 'foam.mlang.Formula',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   methods: [
     {

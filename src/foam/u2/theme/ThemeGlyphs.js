@@ -15,14 +15,14 @@ foam.CLASS({
   `,
 
   requires: [
-    'foam.core.Glyph'
+    'foam.lang.Glyph'
   ],
 
   properties: [
     {
       name: 'checkmark',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: function() {
         return { template: `
         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="/*%FILL%*/ #ffffff"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M9 16.2l-3.5-3.5c-.39-.39-1.01-.39-1.4 0-.39.39-.39 1.01 0 1.4l4.19 4.19c.39.39 1.02.39 1.41 0L20.3 7.7c.39-.39.39-1.01 0-1.4-.39-.39-1.01-.39-1.4 0L9 16.2z"/></svg>
@@ -32,7 +32,7 @@ foam.CLASS({
     {
       name: 'exclamation',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: function() {
         return { template: `
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="/*%FILL%*/ #ffffff" viewBox="0 0 24 24">
@@ -44,7 +44,7 @@ foam.CLASS({
     {
       name: 'pending',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: function() {
         return { template: `
         <svg width="14px" height="14px" viewBox="0 0 14 14" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -62,7 +62,7 @@ foam.CLASS({
     {
       name: 'helpIcon',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: function() {
         return { template: `
         <svg width="100%" viewBox="0 0 48 48" fill="/*%FILL%*/ #ffffff" xmlns="http://www.w3.org/2000/svg">
@@ -74,7 +74,7 @@ foam.CLASS({
     {
       name: 'networkError',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: function () {
         return { template: `
           <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="/*%FILL%*/ #ffffff">
@@ -92,7 +92,7 @@ foam.CLASS({
     {
       name: 'plus',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: function() {
         return { template: `
         <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 24 24" fill="/*%FILL%*/ #FFFFFF"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
@@ -102,7 +102,7 @@ foam.CLASS({
     {
       name: 'trash',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: function() {
         return { template: `
         <svg width="24" height="24" fill="/*%FILL%*/ #B2B6BD" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -114,7 +114,7 @@ foam.CLASS({
     {
       name: 'progress',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: function() {
         return { template: `
         <svg width="28" height="32" viewBox="0 0 28 32" fill="/*%FILL%*/ #406DEA" xmlns="http://www.w3.org/2000/svg">
@@ -127,7 +127,7 @@ foam.CLASS({
     {
       name: 'back',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: function() {
         return { template: `
         <svg width="100%" viewBox="0 0 6 12" fill="/*%FILL%*/ #ffffff" xmlns="http://www.w3.org/2000/svg">
@@ -140,7 +140,7 @@ foam.CLASS({
     {
       name: 'next',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: function() {
         return { template: `
         <svg height="100%" viewBox="0 0 6 12" fill="/*%FILL%*/ #ffffff" xmlns="http://www.w3.org/2000/svg">
@@ -153,7 +153,7 @@ foam.CLASS({
     {
       name: 'first',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: function() {
         return { template: `
         <svg width="100%" viewBox="0 0 14 12" fill="/*%FILL%*/ #ffffff" xmlns="http://www.w3.org/2000/svg">
@@ -167,7 +167,7 @@ foam.CLASS({
     {
       name: 'last',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: function() {
         return { template: `
         <svg width="100%" viewBox="0 0 14 12" fill="/*%FILL%*/ #ffffff" xmlns="http://www.w3.org/2000/svg">
@@ -181,7 +181,7 @@ foam.CLASS({
     {
       name: 'copy',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: function() {
         return { template: `
         <svg width="100%" viewBox="0 0 24 24" fill="/*%FILL%*/ #ffffff" xmlns="http://www.w3.org/2000/svg">
@@ -193,7 +193,7 @@ foam.CLASS({
     {
       name: 'close',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: function() {
         return { template: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" fill="/*%FILL%*/ #ffffff"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M18.3 5.71c-.39-.39-1.02-.39-1.41 0L12 10.59 7.11 5.7c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41L10.59 12 5.7 16.89c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0L12 13.41l4.89 4.89c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z"/></svg>'}
       }
@@ -201,7 +201,7 @@ foam.CLASS({
     {
       name: 'edit',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="24" height="24" viewBox="0 0 24 24" fill="/*%FILL%*/ #ffffff" xmlns="http://www.w3.org/2000/svg">
@@ -213,7 +213,7 @@ foam.CLASS({
     {
       name: 'file',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 16 20" fill="/*%FILL%*/ #ffffff" xmlns="http://www.w3.org/2000/svg">
@@ -225,7 +225,7 @@ foam.CLASS({
     {
       name: 'scan',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: function() {
         return { template: `
         <svg width="100%" viewBox="0 0 40 40" fill="/*%FILL%*/ #FFFFFF" xmlns="http://www.w3.org/2000/svg">
@@ -242,7 +242,7 @@ foam.CLASS({
     {
       name: 'phone',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: function() {
         return { template: `
         <svg width="100%"  viewBox="0 0 24 24" fill="/%*FILL*%/ #FFFFFF" xmlns="http://www.w3.org/2000/svg">
@@ -255,7 +255,7 @@ foam.CLASS({
     {
       name: 'users',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 24.75 17.79" version="1.1" fill-rule="nonzero" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -267,7 +267,7 @@ foam.CLASS({
     {
       name: 'dashboard',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 24.25 24.25" version="1.1" fill-rule="nonzero" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -278,7 +278,7 @@ foam.CLASS({
     {
       name: 'bankaccount',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 24.75 24.74" version="1.1" fill-rule="nonzero" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -290,7 +290,7 @@ foam.CLASS({
     {
       name: 'payables',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 24 24" version="1.1" fill-rule="nonzero" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -302,7 +302,7 @@ foam.CLASS({
     {
       name: 'receivables',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 24 24" version="1.1" fill-rule="nonzero" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -314,7 +314,7 @@ foam.CLASS({
     {
       name: 'dropdown',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `<svg width="10" height="6" viewBox="0 0 10 6" fill="/*%FILL%*/ #ffffff" xmlns="http://www.w3.org/2000/svg">
         <path d="M0 0.5L5 5.5L10 0.5H0Z" /></svg>`
@@ -324,7 +324,7 @@ foam.CLASS({
     {
       name: 'businesses',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 24 24" version="1.1" fill-rule="nonzero" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -336,7 +336,7 @@ foam.CLASS({
     {
       name: 'transactions',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 21.98 24" version="1.1" fill-rule="nonzero" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -347,7 +347,7 @@ foam.CLASS({
     {
       name: 'sendMoney',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 24.25 24.24" version="1.1" fill-rule="nonzero" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -358,7 +358,7 @@ foam.CLASS({
     {
       name: 'accountBalance',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 24 24" version="1.1" fill-rule="nonzero" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -370,7 +370,7 @@ foam.CLASS({
     {
       name: 'charges',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 24 24" version="1.1" fill-rule="nonzero" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -382,7 +382,7 @@ foam.CLASS({
     {
       name: 'reports',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 24 24" version="1.1" fill-rule="nonzero" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -394,7 +394,7 @@ foam.CLASS({
     {
       name: 'home',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 18 18" stroke="/*%FILL%*/ #FFFFFF" fill="/*%FILL%*/ #FFFFFF" xmlns="http://www.w3.org/2000/svg">
@@ -406,7 +406,7 @@ foam.CLASS({
     {
       name: 'calendar',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 16 16" fill="/*%FILL%*/ white" xmlns="http://www.w3.org/2000/svg">
@@ -427,7 +427,7 @@ foam.CLASS({
     {
       name: 'card',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 20 20" stroke="/*%FILL%*/ #FFFFFF" fill="/*%FILL%*/ #FFFFFF" xmlns="http://www.w3.org/2000/svg">
@@ -439,7 +439,7 @@ foam.CLASS({
     {
       name: 'cardGroup',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 24 24" fill="/*%FILL%*/" xmlns="http://www.w3.org/2000/svg">
@@ -458,7 +458,7 @@ foam.CLASS({
     {
       name: 'extension',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 24 24" version="1.1" fill-rule="nonzero" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -470,7 +470,7 @@ foam.CLASS({
     {
       name: 'supportTickets',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 24 24" version="1.1" fill-rule="nonzero" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -510,7 +510,7 @@ foam.CLASS({
     {
       name: 'coupons',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
        <svg width="100%" viewBox="0 0 24 24" version="1.1" fill-rule="nonzero" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -521,7 +521,7 @@ foam.CLASS({
     {
       name: 'star',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
           <svg width="100%" viewBox="0 0 20 20" fill="/*%FILL%*/ #ffffff" xmlns="http://www.w3.org/2000/svg">
@@ -533,7 +533,7 @@ foam.CLASS({
     {
       name: 'accounts',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 24 24" version="1.1" fill-rule="nonzero" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -545,7 +545,7 @@ foam.CLASS({
     {
       name: 'folderOutline',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: function() {
         return { template: `<svg width="100%" viewBox="0 0 20 16" fill="/*%FILL%*/ #ffffff" xmlns="http://www.w3.org/2000/svg">
         <path d="M18 2H10L8 0H2C0.9 0 0.00999999 0.9 0.00999999 2L0 14C0 15.1 0.9 16 2 16H18C19.1 16 20 15.1 20 14V4C20 2.9 19.1 2 18 2ZM18 14H2V4H18V14Z"/>
@@ -556,7 +556,7 @@ foam.CLASS({
     {
       name: 'folderFill',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: function() {
         return { template: `<svg width="100%" viewBox="0 0 20 16" fill="/*%FILL%*/ #ffffff" xmlns="http://www.w3.org/2000/svg">
         <path d="M8 0H2C0.9 0 0.00999999 0.9 0.00999999 2L0 14C0 15.1 0.9 16 2 16H18C19.1 16 20 15.1 20 14V4C20 2.9 19.1 2 18 2H10L8 0Z"/>
@@ -567,7 +567,7 @@ foam.CLASS({
     {
       name: 'drag',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg height="100%" viewBox="0 0 3 5" fill="/*%FILL%*/ #FFFFFF" xmlns="http://www.w3.org/2000/svg">
@@ -580,7 +580,7 @@ foam.CLASS({
     {
       name: 'circleSlash',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 20 20" fill="/*%FILL%*/ #FFFFFF" xmlns="http://www.w3.org/2000/svg">
@@ -592,7 +592,7 @@ foam.CLASS({
     {
       name: 'clipboardCheck',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 18 20" fill="/*%FILL%*/ #FFFFFF" xmlns="http://www.w3.org/2000/svg">
@@ -604,7 +604,7 @@ foam.CLASS({
     {
       name: 'hamburger',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
           <svg width="100%" viewBox="0 0 18 12" fill="/*%FILL%*/ #FFFFFF" xmlns="http://www.w3.org/2000/svg">
@@ -616,7 +616,7 @@ foam.CLASS({
     {
       name: 'bell',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 16 20" fill="/*%FILL%*/ #FFFFFF" xmlns="http://www.w3.org/2000/svg">
@@ -628,7 +628,7 @@ foam.CLASS({
     {
       name: 'centerAlign',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 30 18" fill="/*%FILL%*/ #FFFFFF" xmlns="http://www.w3.org/2000/svg">
@@ -642,7 +642,7 @@ foam.CLASS({
     {
       name: 'leftAlign',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 30 18" fill="/*%FILL%*/ #FFFFFF" xmlns="http://www.w3.org/2000/svg">
@@ -656,7 +656,7 @@ foam.CLASS({
     {
       name: 'rightAlign',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 30 18" fill="/*%FILL%*/ #FFFFFF" xmlns="http://www.w3.org/2000/svg">
@@ -670,7 +670,7 @@ foam.CLASS({
     {
       name: 'blockQuote',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 30 18" fill="/*%FILL%*/ #FFFFFF" xmlns="http://www.w3.org/2000/svg">
@@ -685,7 +685,7 @@ foam.CLASS({
     {
       name: 'numberedList',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 30 20" fill="/*%FILL%*/ #FFFFFF" xmlns="http://www.w3.org/2000/svg">
@@ -702,7 +702,7 @@ foam.CLASS({
     {
       name: 'bulletedList',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 30 18" fill="/*%FILL%*/ #FFFFFF" xmlns="http://www.w3.org/2000/svg">
@@ -719,7 +719,7 @@ foam.CLASS({
     {
       name: 'link',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 40 20" fill="/*%FILL*%/" xmlns="http://www.w3.org/2000/svg">
@@ -731,7 +731,7 @@ foam.CLASS({
     {
       name: 'send',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 20 20" fill="/*%FILL%*/ #FFFFFF" xmlns="http://www.w3.org/2000/svg">
@@ -743,7 +743,7 @@ foam.CLASS({
     {
       name: 'decreaseIndentation',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 30 18" fill="/*%FILL%*/ #FFFFFF" xmlns="http://www.w3.org/2000/svg">
@@ -758,7 +758,7 @@ foam.CLASS({
     {
       name: 'increaseIndentation',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 30 18" fill="/*%FILL%*/ #FFFFFF" xmlns="http://www.w3.org/2000/svg">
@@ -773,7 +773,7 @@ foam.CLASS({
     {
       name: 'backspace',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 24 24" fill="/*%FILL%*/ #ffffff" xmlns="http://www.w3.org/2000/svg">
@@ -785,7 +785,7 @@ foam.CLASS({
     {
       name: 'requestmoney',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 24 24" fill="/*%FILL%*/ #ffffff" xmlns="http://www.w3.org/2000/svg">
@@ -796,7 +796,7 @@ foam.CLASS({
     {
       name: 'target',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 22 22" fill="/*%FILL%*/ #ffffff" xmlns="http://www.w3.org/2000/svg">
@@ -808,7 +808,7 @@ foam.CLASS({
     {
       name: 'pin',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 14 20" fill="/*%FILL%*/ #ffffff" xmlns="http://www.w3.org/2000/svg">
@@ -820,7 +820,7 @@ foam.CLASS({
     {
       name: 'lock',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 17 16" fill="/*%FILL%*/ #FFFFFF" xmlns="http://www.w3.org/2000/svg">
@@ -833,7 +833,7 @@ foam.CLASS({
     {
       name: 'addPeople',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 24 24" fill="/*%FILL%*/ #FFFFFF" xmlns="http://www.w3.org/2000/svg">
@@ -847,7 +847,7 @@ foam.CLASS({
     {
       name: 'dollar',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg height="100%" viewBox="0 0 8 13" fill="/*%FILL%*/ #ffffff" xmlns="http://www.w3.org/2000/svg">
@@ -859,7 +859,7 @@ foam.CLASS({
     {
       name: 'gift',
       class: 'GlyphProperty',
-      of: 'foam.core.Glyph',
+      of: 'foam.lang.Glyph',
       factory: () => {
         return { template: `
         <svg width="100%" viewBox="0 0 12 12" fill="/*%FILL%*/ #ffffff" xmlns="http://www.w3.org/2000/svg">

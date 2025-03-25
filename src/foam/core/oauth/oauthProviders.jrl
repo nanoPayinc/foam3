@@ -1,0 +1,11 @@
+// Example provider
+// Create an OAuth client on Google Cloud Platform and fill in the details here to enable sign in with google support
+//p({
+//    class:"foam.core.oauth.OAuthProvider",
+//    clientId: "...apps.googleusercontent.com",
+//    clientSecret: "GO...",
+//    icon: "/images/google.svg",
+//    description: "Sign in with Google",
+//    tokenURL: "https://oauth2.googleapis.com/token",
+//    authURL: "https://accounts.google.com/o/oauth2/v2/auth"
+//})

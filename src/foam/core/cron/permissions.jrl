@@ -1,0 +1,15 @@
+p({
+  "class":"foam.core.auth.Permission",
+  "id":"foam.core.cron.Schedule.disable",
+  "description":"permission to make available DISABLE action on a schedulable"
+})
+p({
+  "class":"foam.core.auth.Permission",
+  "id":"foam.core.cron.Schedule.run",
+  "description":"permission to make available RUN action on a schedulable"
+})
+p({
+  "class":"foam.core.auth.Permission",
+  "id":"foam.core.cron.schedulable.section.history",
+  "description":"permission to see schedulable history section"
+})

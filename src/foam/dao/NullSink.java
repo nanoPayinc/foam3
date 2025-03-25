@@ -15,7 +15,7 @@ public class NullSink
   protected NullSink() {}
 
 /*
-  public void put(Object obj, foam.core.Detachable sub) {
+  public void put(Object obj, foam.lang.Detachable sub) {
     System.err.println("**************** UNEXPECTED PUT to NullSink " + obj);
   }
   */

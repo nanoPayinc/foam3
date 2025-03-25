@@ -1,0 +1,13 @@
+authorityKeyIdentifier=keyid,issuer
+basicConstraints=CA:FALSE
+keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+extendedKeyUsage = serverAuth, clientAuth
+subjectAltName = @alt_names
+[alt_names]
+DNS.1 = localhost
+DNS.2 = localhost.localdomain
+DNS.3 = *.foamdev.com
+DNS.4 = *.some_domain.some_ttl
+DNS.5 = somelocalhostname
+IP.1 = 127.0.0.1
+IP.2 = ::1

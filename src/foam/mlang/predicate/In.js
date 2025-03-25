@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'In',
   extends: 'foam.mlang.predicate.ArrayBinary',
   implements: [
-    'foam.core.Serializable',
+    'foam.lang.Serializable',
     { path: 'foam.mlang.Expressions', flags: ['js'], java: false }
   ],
 
@@ -28,7 +28,7 @@ foam.CLASS({
       name: 'arg1',
       postSet: function(old, nu) {
         // this is slightly slower when an expression on upperCase_
-        this.upperCase_ = nu && foam.core.Enum.isInstance(nu);
+        this.upperCase_ = nu && foam.lang.Enum.isInstance(nu);
       }
     },
     {

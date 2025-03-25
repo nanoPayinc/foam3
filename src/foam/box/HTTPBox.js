@@ -6,7 +6,7 @@
 foam.CLASS({
   package: 'foam.box',
   name: 'HTTPException',
-  extends: 'foam.core.FOAMException',
+  extends: 'foam.lang.FOAMException',
   properties: [
     'response'
   ]
@@ -158,7 +158,7 @@ foam.CLASS({
       protected foam.lib.formatter.JSONFObjectFormatter initialValue() {
         foam.lib.formatter.JSONFObjectFormatter formatter = new foam.lib.formatter.JSONFObjectFormatter();
         formatter.setQuoteKeys(true);
-        formatter.setOutputShortNames(false);
+        formatter.setOutputShortNames(true);
         formatter.setPropertyPredicate(new foam.lib.AndPropertyPredicate(new foam.lib.PropertyPredicate[] {new foam.lib.NetworkPropertyPredicate(), new foam.lib.PermissionedPropertyPredicate()}));
         return formatter;
       }
@@ -351,7 +351,7 @@ task.resume()
           type: 'java.net.HttpURLConnection'
         }
       ],
-      javaType: 'foam.core.FObject',
+      javaType: 'foam.lang.FObject',
       javaThrows: ['java.io.IOException'],
       javaCode: `
       // TODO: Switch to ReaderPStream when https://github.com/foam-framework/foam2/issues/745 is fixed.
@@ -371,10 +371,10 @@ task.resume()
       }
 
       String str = new String(buf, 0, off, java.nio.charset.StandardCharsets.UTF_8);
-      foam.core.FObject responseMessage = getX().create(foam.lib.json.JSONParser.class).parseString(str);
+      foam.lang.FObject responseMessage = getX().create(foam.lib.json.JSONParser.class).parseString(str);
 
       if ( responseMessage == null ) {
-        ((foam.nanos.logger.Logger) getX().get("logger")).error("HTTPBox", "Error parsing response.", str);
+        ((foam.core.logger.Logger) getX().get("logger")).error("HTTPBox", "Error parsing response.", str);
         throw new RuntimeException("Error parsing response.");
       }
       if ( ! ( responseMessage instanceof foam.box.Message ) ) {

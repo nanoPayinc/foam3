@@ -28,6 +28,8 @@ foam.CLASS({
       name: 'put',
       code: function put(obj, sub) { this.value += this.arg1.f(obj); },
       javaCode: 'setValue(getValue() + ((Number) this.arg1_.f(obj)).doubleValue());'
-    }
+    },
+    function toSummary() { return this.value; },
+    function addToE(e) { e.add(this.value); }
   ]
 });

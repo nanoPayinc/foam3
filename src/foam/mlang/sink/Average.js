@@ -33,12 +33,14 @@ foam.CLASS({
       name: 'put',
       code: function put(obj, sub) {
         this.count++;
-        this.value = ( this.value + this.arg1.f(obj) ) / this.count;
+        this.value = ( this.value * (this.count-1) + this.arg1.f(obj) ) / this.count;
       },
       javaCode: `
 setCount(getCount() + 1);
-setValue((getValue() + ((Number)this.getArg1().f(obj)).doubleValue()) / getCount());
+setValue((getValue() * ( getCount()-1) + ((Number)this.getArg1().f(obj)).doubleValue()) / getCount());
       `,
-    }
+    },
+    function toSummary() { return this.value; },
+    function addToE(e) { e.add(this.value); }
   ]
 });

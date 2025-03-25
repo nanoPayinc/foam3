@@ -11,8 +11,6 @@ foam.CLASS({
 
   documentation: 'Javascript DAO Decorator which adds select caching to a delegate DAO.',
 
-  requires: [ 'foam.dao.FnSink' ],
-
   properties: [
     {
       // The cache for local storage and fast access
@@ -25,7 +23,7 @@ foam.CLASS({
     function init() {
       // if anything changes in the delegate -> clear cache
       // Can happen if the dao is modified outside the DAOController (for eg. in wizards)
-      this.onDetach(this.delegate.listen(this.FnSink.create({ fn: () => this.purgeCache() })));
+      this.onDetach(this.delegate.listen(() => this.purgeCache()));
       this.onDetach(this.on.reset.sub(this.purgeCache.bind(this)));
     },
 

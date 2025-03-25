@@ -7,10 +7,10 @@
 foam.CLASS({
   package: 'foam.crypto.hash',
   name: 'HashableTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
 
   javaImports: [
-    'foam.nanos.auth.User',
+    'foam.core.auth.User',
     'org.bouncycastle.util.encoders.Hex',
     'java.security.NoSuchAlgorithmException'
   ],

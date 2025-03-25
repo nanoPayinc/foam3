@@ -67,7 +67,7 @@ foam.CLASS({
       // of: 'foam.mlang.F',
       name: 'firestoreDocumentID',
       documentation: `The function used to extract a Firestore Document ID string
-          from a foam.core.FObject that is stored via this DAO.`,
+          from a foam.lang.FObject that is stored via this DAO.`,
       factory: function() { return this.DefaultFirestoreDocumentID.create(); }
     },
     {
@@ -75,14 +75,14 @@ foam.CLASS({
       // of: 'foam.mlang.F',
       name: 'firestoreData',
       documentation: `The function used to extract a Firestore data from a
-          foam.core.FObject that is stored via this DAO.`,
+          foam.lang.FObject that is stored via this DAO.`,
       factory: function() { return this.DefaultFirestoreData.create(); }
     },
     {
       // class: 'FObjectProperty',
       // of: 'foam.mlang.F',
       name: 'fobject',
-      documentation: `The function used to extract a foam.core.FObject from
+      documentation: `The function used to extract a foam.lang.FObject from
           Firestore data that is stored via this DAO.`,
       factory: function() { return this.DefaultFObject.create(); }
     },
@@ -136,7 +136,7 @@ foam.CLASS({
       return this.getDoc_(obj).delete();
     },
     function find_(x, idOrObj) {
-      return (foam.core.FObject.isInstance(idOrObj) ?
+      return (foam.lang.FObject.isInstance(idOrObj) ?
               this.getDoc_(idOrObj) : this.collection.doc(idOrObj.toString()))
           .get()
           .then(function(docSnapshot) {
@@ -165,7 +165,7 @@ foam.CLASS({
 
       return collection.get().then(function(querySnapshot) {
         var docs = querySnapshot.docs;
-        var sub = foam.core.FObject.create();
+        var sub = foam.lang.FObject.create();
         var detached = false;
         sub.onDetach(function() { detached = true; });
         if ( decoratedSink.put ) {
@@ -202,7 +202,7 @@ foam.CLASS({
           decoratedSink.put(this.fobject.f(docs[i].data()));
         }
       }.bind(this));
-      var sub = foam.core.FObject.create();
+      var sub = foam.lang.FObject.create();
       sub.onDetach(unsub);
       return sub;
     },

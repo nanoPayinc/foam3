@@ -21,7 +21,7 @@ foam.CLASS({
     {
       name: 'data',
       class: 'FObjectProperty',
-      of: 'foam.core.FObject',
+      of: 'foam.lang.FObject',
       factory: function () {
         return this.of.create({}, this.__context__);
       }

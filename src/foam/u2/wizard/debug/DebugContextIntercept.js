@@ -25,9 +25,9 @@ foam.CLASS({
         } catch {
           continue;
         }
-        if ( foam.core.Slot.isInstance(contextValue) ) continue;
-        if ( ! foam.core.FObject.isInstance(contextValue) ) continue;
-        let stubMethods = contextValue.cls_.getAxiomsByClass(foam.core.StubMethod)
+        if ( foam.lang.Slot.isInstance(contextValue) ) continue;
+        if ( ! foam.lang.FObject.isInstance(contextValue) ) continue;
+        let stubMethods = contextValue.cls_.getAxiomsByClass(foam.lang.StubMethod)
           .map(ax => ax.name);
         if ( stubMethods.length == 0 ) continue;
         subContext[key] = new Proxy(contextValue, {

@@ -31,7 +31,7 @@ foam.CLASS({
       factory: function() {
         return {
           class: 'foam.u2.wizard.data.CreateLoader',
-          spec: { class: 'foam.core.MapHolder' }
+          spec: { class: 'foam.lang.MapHolder' }
         };
       }
     },
@@ -56,7 +56,7 @@ foam.CLASS({
 
         let loader = this.args[k];
         // If it's not an FObject, parse it
-        if ( ! foam.core.FObject.isInstance(loader) ) {
+        if ( ! foam.lang.FObject.isInstance(loader) ) {
           console.log('before parse of', loader)
           loader = foam.json.parse(loader, undefined, this.__subContext__);
           console.log('after parse');

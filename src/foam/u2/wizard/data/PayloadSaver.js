@@ -10,7 +10,7 @@ foam.CLASS({
   extends: 'foam.u2.wizard.data.ProxySaver',
 
   requires: [
-    'foam.nanos.crunch.CapabilityJunctionPayload',
+    'foam.core.crunch.CapabilityJunctionPayload',
     'foam.u2.wizard.data.NullSaver'
   ],
 

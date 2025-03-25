@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.graphics',
   name: 'DataSource',
-  extends: 'foam.core.Property',
+  extends: 'foam.lang.Property',
 
   documentation: 'DataSource is composed by [ Horizontal [ String ] , LegendEntries [ seriesName : String, seriesValues [ Float ] ]',
 

@@ -9,7 +9,7 @@
   name: 'ComparisonView',
   extends: 'foam.u2.View',
   requires: [
-    'foam.core.FObject',
+    'foam.lang.FObject',
     'foam.u2.ModalHeader',
     'foam.u2.DetailView',
     'foam.u2.detail.VerticalDetailView',

@@ -1,0 +1,46 @@
+p({
+  class:"foam.core.menu.Menu",
+  id:"notification.emailServiceConfig",
+  label:"Email Service Configuration",
+  keywords: ["email","config","smtp"],
+  handler:{
+    class:"foam.core.menu.DAOMenu2",
+    config:{
+      class:"foam.comics.v2.DAOControllerConfig",
+      daoKey:"emailServiceConfigDAO",
+      browseTitle:"Email Service Configuration"
+    }
+  },
+  parent:"notification"
+})
+p({
+  "class":"foam.core.menu.Menu",
+  "id":"notification.emailmessages",
+  "label":"Email Messages",
+  "keywords": ["email","message"],
+  "handler":{
+    "class":"foam.core.menu.DAOMenu2",
+    "config":{
+      "class":"foam.comics.v2.DAOControllerConfig",
+      "daoKey":"emailMessageDAO",
+      "editPredicate":{"class":"foam.mlang.predicate.False"},
+      "createPredicate":{"class":"foam.mlang.predicate.False"},
+      "deletePredicate":{"class":"foam.mlang.predicate.False"}
+    }
+  },
+  "parent":"notification"
+})
+p({
+  "class":"foam.core.menu.Menu",
+  "id":"notification.emailtemplates",
+  "label":"Email Templates",
+  "keywords": ["email","message","template"],
+  "handler":{
+    "class":"foam.core.menu.DAOMenu2",
+    "config":{
+      "class":"foam.comics.v2.DAOControllerConfig",
+      "daoKey":"emailTemplateDAO"
+    }
+  },
+  "parent":"notification"
+})

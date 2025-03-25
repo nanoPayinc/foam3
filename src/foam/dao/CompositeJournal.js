@@ -28,7 +28,7 @@ foam.CLASS({
         { name: 'x',      type: 'Context' },
         { name: 'prefix', type: 'String' },
         { name: 'dao',    type: 'DAO' },
-        { name: 'obj',    type: 'foam.core.FObject' }
+        { name: 'obj',    type: 'foam.lang.FObject' }
       ],
       javaCode: `
         // TODO: only pass real 'dao' on one delegate call
@@ -45,7 +45,7 @@ foam.CLASS({
         { name: 'x',      type: 'Context' },
         { name: 'prefix', type: 'String' },
         { name: 'dao',    type: 'DAO' },
-        { name: 'obj',    type: 'foam.core.FObject' }
+        { name: 'obj',    type: 'foam.lang.FObject' }
       ],
       javaCode: `
         for ( Journal delegate : getDelegates() ) {

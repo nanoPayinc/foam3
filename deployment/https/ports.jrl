@@ -1,0 +1,6 @@
+// Default when -W (web port) not specified at build time
+p({
+  "class":"foam.net.Port",
+  "id":"http",
+  "number":8443
+})

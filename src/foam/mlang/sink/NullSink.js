@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.mlang.sink',
   name: 'NullSink',
   extends: 'foam.dao.AbstractSink',
-  implements: ['foam.core.Serializable'],
+  implements: ['foam.lang.Serializable'],
 
   documentation: 'Null Pattern (do-nothing) Sink.',
 

@@ -10,15 +10,15 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import foam.core.EmptyX;
+import foam.lang.EmptyX;
 import foam.dao.ArraySink;
 import foam.dao.DAO;
 import foam.lib.parse.PStream;
 import foam.lib.parse.ParserContext;
 import foam.lib.parse.ParserContextImpl;
 import foam.lib.parse.StringPStream;
-import foam.nanos.auth.User;
-import foam.nanos.auth.LanguageId;
+import foam.core.auth.User;
+import foam.core.auth.LanguageId;
 
 public class TestUser {
   public static void main(String[] args) {

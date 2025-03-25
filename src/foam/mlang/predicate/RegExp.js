@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.mlang.predicate',
   name: 'RegExp',
   extends: 'foam.mlang.predicate.Unary',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
   properties: [
     {
       name: 'arg1',
@@ -16,7 +16,7 @@ foam.CLASS({
     },
     {
       type: 'Regex',
-      javaInfoType: 'foam.core.AbstractObjectPropertyInfo',
+      javaInfoType: 'foam.lang.AbstractObjectPropertyInfo',
       name: 'regExp',
       gridColumns: 6
     }

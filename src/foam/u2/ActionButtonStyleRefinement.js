@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2',
   name: 'ActionButtonStyleRefinement',
-  refines: 'foam.core.Action',
+  refines: 'foam.lang.Action',
 
   properties: [
     // TODO: this breaks Java gen

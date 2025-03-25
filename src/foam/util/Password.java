@@ -6,8 +6,8 @@
 
 package foam.util;
 
-import foam.nanos.auth.AuthService;
-import foam.nanos.auth.User;
+import foam.core.auth.AuthService;
+import foam.core.auth.User;
 import org.bouncycastle.crypto.PBEParametersGenerator;
 import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
 import org.bouncycastle.crypto.params.KeyParameter;
@@ -97,7 +97,7 @@ public class Password {
    * @param password password to validate
    * @return true if valid, false otherwise
    */
-  public static boolean isValid(foam.core.X x, User user, String password) {
+  public static boolean isValid(foam.lang.X x, User user, String password) {
     AuthService auth = (AuthService) x.get("auth");
     try {
       auth.validatePassword(x, user, password);
@@ -111,7 +111,7 @@ public class Password {
   public static void main(String argv[]) {
     /** To generate a password hash for use in a journal file, cd into
      *  your build directory and then execute:
-     *  java -cp "lib/*:classes/java/main" foam.util.Password password
+     *  java -cp "lib/*:classes" foam.util.Password password
      **/
     if ( argv.length != 1 ) {
       System.out.println("Password - generate a password hash.");

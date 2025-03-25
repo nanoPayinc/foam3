@@ -54,7 +54,7 @@
           delegate: { class: 'foam.u2.wizard.data.NullLoader' },
         }
         foam.u2.wizard.data.PrerequisiteLoader
-          .getOwnAxiomsByClass(foam.core.Property)
+          .getOwnAxiomsByClass(foam.lang.Property)
           .forEach(a => {
             // We use toJSON here because some property values, such as those
             // of Class properties, are recursive and therefore invalid inside

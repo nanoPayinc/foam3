@@ -46,7 +46,7 @@ foam.CLASS({
     function createIsEnabled$(x, data) {
       return this.isEnabled ?
       data.slot(this.isEnabled ) :
-      foam.core.ConstantSlot.create({ value: true });
+      foam.lang.ConstantSlot.create({ value: true });
     }
   ],
 

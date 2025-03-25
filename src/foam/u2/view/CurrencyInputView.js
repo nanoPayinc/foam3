@@ -80,13 +80,13 @@ foam.CLASS({
     },
     {
       class: 'Reference',
-      of: 'foam.core.Unit',
+      of: 'foam.lang.Unit',
       name: 'currencyId',
       documentation: 'The currency ID (eg: "CAD")'
     },
     {
       class: 'FObjectProperty',
-      of: 'foam.core.Currency',
+      of: 'foam.lang.Currency',
       name: 'currency',
       documentation: 'The actual currency object that can format the value'
     },

@@ -80,6 +80,10 @@ public class ErrorReportingPStream
       "Valid characters include: " + StringUtils.join(validCharacters, ",") + "\n";
   }
 
+  public int getErrorPosition() {
+    return errStream.pos_;
+  }
+
   public String getPrintableCharacter(Character ch) {
     switch ( (int) ch ) {
       case 0x09:

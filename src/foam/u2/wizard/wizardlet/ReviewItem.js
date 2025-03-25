@@ -11,7 +11,7 @@ foam.CLASS({
   implements: ['foam.mlang.Expressions'],
 
   requires: [
-    'foam.core.AnyHolder'
+    'foam.lang.AnyHolder'
   ],
 
   properties: [

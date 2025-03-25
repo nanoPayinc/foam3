@@ -6,7 +6,7 @@
 
 package foam.dao;
 
-import foam.core.FObject;
+import foam.lang.FObject;
 
 /**
  * Adapter used by MaterializedDAO to convert objects in the sourceDAO to

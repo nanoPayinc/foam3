@@ -26,7 +26,7 @@ foam.CLASS({
         class: 'foam.u2.tag.Image',
         embedSVG: true,
         data$: this.slot(function(data) {
-          return foam.nanos.fs.File.isInstance(data)
+          return foam.core.fs.File.isInstance(data)
             ? this.getImagePath(data) : data;
         })
       });

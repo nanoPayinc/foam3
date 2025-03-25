@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.u2.crunch.wizardflow',
   name: 'CheckPendingAgent',
   implements: [
-    'foam.core.ContextAgent',
+    'foam.lang.ContextAgent',
     'foam.mlang.Expressions'
   ],
   documentation: `
@@ -29,8 +29,8 @@ foam.CLASS({
 
   requires: [
     'foam.log.LogLevel',
-    'foam.nanos.crunch.AgentCapabilityJunction',
-    'foam.nanos.crunch.CapabilityJunctionStatus'
+    'foam.core.crunch.AgentCapabilityJunction',
+    'foam.core.crunch.CapabilityJunctionStatus'
   ],
 
   properties: [

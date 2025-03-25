@@ -10,7 +10,7 @@ foam.CLASS({
   extends: 'foam.u2.View',
 
   requires: [
-    'foam.core.AnyHolder',
+    'foam.lang.AnyHolder',
     'foam.u2.ControllerMode'
   ],
 

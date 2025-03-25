@@ -6,7 +6,7 @@
 package foam.lib.json;
 
 import foam.lib.parse.*;
-import foam.core.ClassInfo;
+import foam.lang.ClassInfo;
 
 public class PropertyReferenceParser
   extends ProxyParser

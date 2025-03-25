@@ -87,7 +87,7 @@ foam.CLASS({
 
 
 foam.RELATIONSHIP({
-  sourceModel: 'foam.nanos.auth.User',
+  sourceModel: 'foam.core.auth.User',
   targetModel: 'foam.support.model.Ticket',
   forwardName: 'tickets',
   inverseName: 'user',

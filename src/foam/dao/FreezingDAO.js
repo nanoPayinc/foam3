@@ -10,9 +10,9 @@ foam.CLASS({
   extends: 'foam.dao.ProxyDAO',
 
   javaImports: [
-    'foam.core.Detachable',
-    'foam.core.FObject',
-    'foam.core.X',
+    'foam.lang.Detachable',
+    'foam.lang.FObject',
+    'foam.lang.X',
     'foam.mlang.order.Comparator',
     'foam.mlang.predicate.Predicate'
   ],

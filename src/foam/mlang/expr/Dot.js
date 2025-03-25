@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.mlang.expr',
   name: 'Dot',
   extends: 'foam.mlang.AbstractExpr',
-  implements: [ 'foam.core.Serializable', 'foam.core.Indexer' ],
+  implements: [ 'foam.lang.Serializable', 'foam.lang.Indexer' ],
 
   documentation: `
     A Binary Expression which evaluates arg1 and passes the result to arg2.
@@ -18,11 +18,11 @@ foam.CLASS({
 
     DOT(User.ADDRESS, Address.CITY).f(user); // return user.address.city
 
-    Since Dot implements foam.core.Indexer, it can be used as an Index
+    Since Dot implements foam.lang.Indexer, it can be used as an Index
     compoment for EasyDAO or on MDAO's directly.
 
     Example:
-    easyDAO.addPropertyIndex(new foam.core.Indexer[] { foam.mlang.Mlang.DOT(User.ADDRESS, Address.CITY) });
+    easyDAO.addPropertyIndex(new foam.lang.Indexer[] { foam.mlang.Mlang.DOT(User.ADDRESS, Address.CITY) });
   `,
 
   properties: [
@@ -69,7 +69,7 @@ foam.CLASS({
       type: 'int',
       args: 'Object key, Object value',
       javaCode: `
-        return ((foam.core.Indexer) getArg2()).comparePropertyToValue(key, value);
+        return ((foam.lang.Indexer) getArg2()).comparePropertyToValue(key, value);
       `
     }
   ]

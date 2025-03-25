@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.u2.wizard.crunch',
   name: 'CapabilityRefinement',
-  refines: 'foam.nanos.crunch.Capability',
+  refines: 'foam.core.crunch.Capability',
 
   properties: [
     {
@@ -21,7 +21,7 @@ foam.CLASS({
       `,
       hidden: true,
       factory: function() {
-        return foam.nanos.crunch.ui.CapabilityWizardlet.create({}, this);
+        return foam.core.crunch.ui.CapabilityWizardlet.create({}, this);
       },
       includeInDigest: false,
     },

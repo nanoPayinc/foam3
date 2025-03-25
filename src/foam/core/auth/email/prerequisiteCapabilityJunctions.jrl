@@ -1,0 +1,6 @@
+
+p({
+  "class":"foam.core.crunch.CapabilityCapabilityJunction",
+  "sourceId":"foam.core.auth.email.ResetPassword",
+  "targetId":"foam.core.auth.email.RetrievePassword"
+})

@@ -8,10 +8,10 @@ foam.CLASS({
   package: 'foam.mlang.predicate',
   name: 'Keyword',
   extends: 'foam.mlang.predicate.Unary',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   javaImports: [
-    'foam.core.PropertyInfo',
+    'foam.lang.PropertyInfo',
     'java.lang.reflect.Method',
     'java.text.DateFormat',
     'java.text.SimpleDateFormat',
@@ -26,27 +26,27 @@ foam.CLASS({
   requires: [
     {
       name: 'String',
-      path: 'foam.core.String',
+      path: 'foam.lang.String',
       flags: ['js'],
     },
     {
       name: 'FObjectProperty',
-      path: 'foam.core.FObjectProperty',
+      path: 'foam.lang.FObjectProperty',
       flags: ['js'],
     },
     {
       name: 'Long',
-      path: 'foam.core.Long',
+      path: 'foam.lang.Long',
       flags: ['js']
     },
     {
       name: 'Enum',
-      path: 'foam.core.Enum',
+      path: 'foam.lang.Enum',
       flags: ['js']
     },
     {
       name: 'Date',
-      path: 'foam.core.Date',
+      path: 'foam.lang.Date',
       flags: ['js']
     }
   ],
@@ -73,7 +73,7 @@ foam.CLASS({
 
 
         var s = '';
-        const props = obj.cls_.getAxiomsByClass(foam.core.Property);
+        const props = obj.cls_.getAxiomsByClass(foam.lang.Property);
         for ( let i = 0; i < props.length; i++ ) {
           try {
             const prop = props[i];
@@ -100,7 +100,7 @@ foam.CLASS({
 if ( ! ( getArg1().f(obj) instanceof String ) ) return false;
 
 String arg1 = ((String) getArg1().f(obj)).toUpperCase();
-List props = ((foam.core.FObject) obj).getClassInfo().getAxiomsByClass(PropertyInfo.class);
+List props = ((foam.lang.FObject) obj).getClassInfo().getAxiomsByClass(PropertyInfo.class);
 Iterator i = props.iterator();
 
 while ( i.hasNext() ) {
@@ -108,10 +108,10 @@ while ( i.hasNext() ) {
 
   try {
     String s = "";
-    if ( prop instanceof foam.core.AbstractFObjectPropertyInfo ) {
+    if ( prop instanceof foam.lang.AbstractFObjectPropertyInfo ) {
       if ( checkNestedFObject(prop.f(obj)) ) return true;
       setCheckingNestedFObject_(false);
-    } else if ( prop instanceof foam.core.AbstractEnumPropertyInfo ) {
+    } else if ( prop instanceof foam.lang.AbstractEnumPropertyInfo ) {
       Object value = prop.f(obj);
       if ( value == null ) continue;
       Class c = value.getClass();
@@ -121,9 +121,9 @@ while ( i.hasNext() ) {
       } catch (Throwable t) {
         s = value.toString();
       }
-    } else if ( prop instanceof foam.core.AbstractLongPropertyInfo ) {
+    } else if ( prop instanceof foam.lang.AbstractLongPropertyInfo ) {
       s = Long.toString((long) prop.f(obj));
-    } else if ( prop instanceof foam.core.AbstractDatePropertyInfo ) {
+    } else if ( prop instanceof foam.lang.AbstractDatePropertyInfo ) {
       Date d = (Date) prop.f(obj);
       if ( d == null ) continue;
 
@@ -132,7 +132,7 @@ while ( i.hasNext() ) {
       DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
       df.setTimeZone(TimeZone.getTimeZone("UTC"));
       s = df.format(d);
-    } else if ( ! ( prop instanceof foam.core.AbstractStringPropertyInfo ) ) {
+    } else if ( ! ( prop instanceof foam.lang.AbstractStringPropertyInfo ) ) {
       continue;
     } else {
       s = ((String) prop.f(obj));

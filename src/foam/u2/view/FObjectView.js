@@ -17,7 +17,7 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.core.Latch'
+    'foam.lang.Latch'
   ],
 
   messages: [
@@ -26,8 +26,8 @@ foam.CLASS({
 
   properties: [
     {
-      class: 'foam.core.FObjectProperty',
-      of: 'foam.core.Latch',
+      class: 'foam.lang.FObjectProperty',
+      of: 'foam.lang.Latch',
       name: 'choicesLoaded',
       documentation: 'A latch used to wait on choices loaded.',
       factory: function() { return this.Latch.create(); }
@@ -147,15 +147,15 @@ foam.CLASS({
         name: 'exampleProp',
         view: function(_, X) {
           let predicate = expr.AND(
-              expr.EQ(foam.strategy.StrategyReference.DESIRED_MODEL_ID, 'foam.nanos.auth.User'),
+              expr.EQ(foam.strategy.StrategyReference.DESIRED_MODEL_ID, 'foam.core.auth.User'),
               expr.IN(
                 foam.strategy.StrategyReference.STRATEGY,
-                [foam.lookup('foam.nanos.auth.SomeUserClass'), foam.lookup('foam.nanos.auth.AnotherUserClass') ]
+                [foam.lookup('foam.core.auth.SomeUserClass'), foam.lookup('foam.core.auth.AnotherUserClass') ]
               )
           );
           return foam.u2.view.FObjectView.create({
             data: X.data.exampleProp,
-            of: foam.nanos.auth.User,
+            of: foam.core.auth.User,
             predicate: predicate
           }, X);
         }
@@ -194,13 +194,13 @@ foam.CLASS({
     },
 
     function updateChoices() {
-      if ( this.of == null || this.of.id == 'foam.core.FObject' ) {
+      if ( this.of == null || this.of.id == 'foam.lang.FObject' ) {
         this.choices = [];
         this.choicesLoaded.resolve();
         return;
       }
 
-      // If this view is being used in a nanos application, then use the
+      // If this view is being used in a core application, then use the
       // strategizer service to populate the list of choices. Otherwise
       // populate the list of choices using models related to 'of' via the
       // implements and extends relations.
@@ -283,7 +283,7 @@ foam.CLASS({
         start(this.OBJECT_CLASS, { data$: this.objectClass$ }).
           // If we were using a DetailView, this would be done for us, but since
           // we aren't, we need to connect the 'visibility' property ourself.
-          show(this.OBJECT_CLASS.createVisibilityFor(foam.core.SimpleSlot.create({ value: this }), this.controllerMode$).map(function(m) {
+          show(this.OBJECT_CLASS.createVisibilityFor(foam.lang.SimpleSlot.create({ value: this }), this.controllerMode$).map(function(m) {
             return m != foam.u2.DisplayMode.HIDDEN;
           })).
           style({'margin-bottom': '6px'}).
@@ -336,7 +336,7 @@ foam.CLASS({
 
       return Object.keys(choices)
         .map((id) => foam.lookup(id).model_)
-        .filter((m) => ! foam.core.InterfaceModel.isInstance(m))
+        .filter((m) => ! foam.lang.InterfaceModel.isInstance(m))
         .filter((m) => ! m.abstract )
         .map((m) => [m.id, m.label]);
     }

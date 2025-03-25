@@ -206,7 +206,7 @@ foam.CLASS({
         if ( obj instanceof String ) {
           return (String) obj;
         }
-        return (String) ((foam.core.FObject) obj).getProperty("id");
+        return (String) ((foam.lang.FObject) obj).getProperty("id");
       `
     },
     {

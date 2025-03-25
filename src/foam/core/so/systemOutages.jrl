@@ -1,0 +1,12 @@
+p({
+  class: "foam.core.so.SystemOutage",
+  id: "systemoutage-messagetask-test",
+  name: "messagetask test",
+  description: "messagetask test",
+  tasks: [
+    {
+      class: "foam.core.so.MessageTask",
+      messageKeyText: "TEST MESSAGE"
+    }
+  ]
+})

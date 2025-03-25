@@ -60,7 +60,7 @@ foam.CLASS({
           return null;
         return getRounding() ? Math.round(result) : result;
       } catch (Throwable t) {
-        foam.nanos.logger.Logger logger = foam.nanos.logger.StdoutLogger.instance();
+        foam.core.logger.Logger logger = foam.core.logger.StdoutLogger.instance();
         logger.warning("Formula,f,result", result, this.toString(), t);
         for ( int i = 0; i < getArgs().length; i++) {
           logger.warning("Formula,f,arg", i, "arg", getArgs()[i]);

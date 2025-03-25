@@ -7,11 +7,11 @@
 foam.CLASS({
   package: 'foam.parse.test',
   name: 'FScriptParserTest',
-  extends: 'foam.nanos.test.Test',
+  extends: 'foam.core.test.Test',
 
   javaImports: [
     'java.text.SimpleDateFormat',
-    'foam.core.X',
+    'foam.lang.X',
     'foam.lib.parse.LiteralIC',
     'foam.lib.parse.PStream',
     'foam.lib.parse.ParserContext',
@@ -20,8 +20,8 @@ foam.CLASS({
     'foam.mlang.Constant',
     'foam.mlang.predicate.Predicate',
     'foam.mlang.Expr',
-    'foam.nanos.auth.Address',
-    'foam.nanos.ruler.Rule',
+    'foam.core.auth.Address',
+    'foam.core.ruler.Rule',
     'foam.parse.FScriptParser',
     'java.util.Date',
     'java.util.ArrayList',
@@ -360,27 +360,27 @@ foam.CLASS({
     result = ((Expr) parser.parse(sps, px).value()).f(user);
     test("Toronto".equals(result.toString()), "if ( address.regionId.len==4 ) { firstName } else { if ( lastName.len+3==10 ) { address.regionId } else { address.city } }"+result.toString()+" class "+result.getClass().getName());
 
-    sps.setString("address instanceof foam.nanos.auth.Address");
-    test(( ((Predicate) parser.parse(sps, px).value()).f(user)), "address instanceof foam.nanos.auth.Address");
+    sps.setString("address instanceof foam.core.auth.Address");
+    test(( ((Predicate) parser.parse(sps, px).value()).f(user)), "address instanceof foam.core.auth.Address");
 
-    sps.setString("!(address instanceof foam.nanos.auth.User)");
-    test(( ((Predicate) parser.parse(sps, px).value()).f(user)), "!(address instanceof foam.nanos.auth.User)");
+    sps.setString("!(address instanceof foam.core.auth.User)");
+    test(( ((Predicate) parser.parse(sps, px).value()).f(user)), "!(address instanceof foam.core.auth.User)");
 
-    sps.setString("address instanceof foam.nanos.auth.Address");
-    test(( ((Predicate) parser.parse(sps, px).value()).f(user)), "address instanceof foam.nanos.auth.Address");
+    sps.setString("address instanceof foam.core.auth.Address");
+    test(( ((Predicate) parser.parse(sps, px).value()).f(user)), "address instanceof foam.core.auth.Address");
 
-    sps.setString("address classof foam.nanos.auth.Address");
-    test(( ((Predicate) parser.parse(sps, px).value()).f(user)), "address classOf foam.nanos.auth.Address");
+    sps.setString("address classof foam.core.auth.Address");
+    test(( ((Predicate) parser.parse(sps, px).value()).f(user)), "address classOf foam.core.auth.Address");
 
-    sps.setString("address classof foam.nanos.auth.PKAddress");
-    test(! ( ((Predicate) parser.parse(sps, px).value()).f(user)), "! address classOf foam.nanos.auth.PKAddress");
+    sps.setString("address classof foam.core.auth.PKAddress");
+    test(! ( ((Predicate) parser.parse(sps, px).value()).f(user)), "! address classOf foam.core.auth.PKAddress");
 
-    user.setAddress(new foam.nanos.auth.PKAddress.Builder(x).build());
-    sps.setString("address classof foam.nanos.auth.PKAddress");
-    test(( ((Predicate) parser.parse(sps, px).value()).f(user)), "address classOf foam.nanos.auth.PKAddress");
+    user.setAddress(new foam.core.auth.PKAddress.Builder(x).build());
+    sps.setString("address classof foam.core.auth.PKAddress");
+    test(( ((Predicate) parser.parse(sps, px).value()).f(user)), "address classOf foam.core.auth.PKAddress");
 
-    sps.setString("address classof foam.nanos.auth.Address");
-    test( ! ( ((Predicate) parser.parse(sps, px).value()).f(user)), "! address classOf foam.nanos.auth.Address");
+    sps.setString("address classof foam.core.auth.Address");
+    test( ! ( ((Predicate) parser.parse(sps, px).value()).f(user)), "! address classOf foam.core.auth.Address");
 
     user.setAddress(addr);
 
@@ -397,27 +397,27 @@ foam.CLASS({
     test(( ((Predicate) parser.parse(sps, px).value()).f(user)), "let testVar2 = address.regionId.len; address.regionId.len==testVar");
 
 
-    var sprtCnfg = new foam.nanos.app.SupportConfig();
-    var theme = new foam.nanos.theme.Theme();
+    var sprtCnfg = new foam.core.app.SupportConfig();
+    var theme = new foam.core.theme.Theme();
     sprtCnfg.setSupportAddress(addr);
     theme.setSupportConfig(sprtCnfg);
-    parser = FScriptParser.create(foam.nanos.theme.Theme.SUPPORT_CONFIG);
+    parser = FScriptParser.create(foam.core.theme.Theme.SUPPORT_CONFIG);
 
     sps.setString("supportConfig.supportAddress.regionId!=supportConfig.supportAddress.countryId");
     test(((Predicate) parser.parse(sps, px).value()).f(theme), "supportConfig.supportAddress.regionId!=supportConfig.supportAddress.countryId");
     test(((Predicate) parser.parse(sps, px).value()).f(theme), "supportConfig.supportAddress.regionId!=supportConfig.supportAddress.countryId");
     sps.setString("supportConfig.supportAddress.regionId==\\"CA-ON\\"");
     test(((Predicate) parser.parse(sps, px).value()).f(theme), "supportConfig.supportAddress.regionId==\\"CA-ON\\"");
-    sps.setString("supportConfig.supportAddress instanceof foam.nanos.auth.Address");
-    test(((Predicate) parser.parse(sps, px).value()).f(theme), "supportConfig.supportAddress instanceof oam.nanos.auth.Address");
+    sps.setString("supportConfig.supportAddress instanceof foam.core.auth.Address");
+    test(((Predicate) parser.parse(sps, px).value()).f(theme), "supportConfig.supportAddress instanceof oam.core.auth.Address");
 
     var rule = new Rule();
-    parser = FScriptParser.create(foam.nanos.ruler.Rule.OPERATION);
-    rule.setOperation(foam.nanos.dao.Operation.CREATE);
-    sps.setString("thisValue==foam.nanos.dao.Operation.CREATE");
-    test(((Predicate) parser.parse(sps, px).value()).f(rule), "thisValue==foam.nanos.dao.Operation.CREATE");
-    sps.setString("instanceof foam.nanos.ruler.Rule");
-    test(((Predicate) parser.parse(sps, px).value()).f(rule), "thisValue instanceof foam.nanos.ruler.Rule");
+    parser = FScriptParser.create(foam.core.ruler.Rule.OPERATION);
+    rule.setOperation(foam.core.dao.Operation.CREATE);
+    sps.setString("thisValue==foam.core.dao.Operation.CREATE");
+    test(((Predicate) parser.parse(sps, px).value()).f(rule), "thisValue==foam.core.dao.Operation.CREATE");
+    sps.setString("instanceof foam.core.ruler.Rule");
+    test(((Predicate) parser.parse(sps, px).value()).f(rule), "thisValue instanceof foam.core.ruler.Rule");
 
     List<LiteralIC> expressions = new ArrayList();
     expressions.add(new LiteralIC("lit_int_10", new Constant(10)));

@@ -1,0 +1,6 @@
+p({"class":"foam.core.notification.NotificationSetting","id":"02FB70D9-46CF-417A-A458-5B0DCD4CC464","spid":"*"})
+p({"class":"foam.core.notification.EmailSetting","id":"9600DAE7-5AB1-4CBC-82C7-D58598E55EBA","spid":"*"})
+p({"class":"foam.core.notification.GoogleChatSetting","id":"D9BF278F-976E-4747-9679-722097386260","spid":"*"})
+p({"class":"foam.core.notification.SlackSetting","id":"FCEEDF3E-63BF-425F-8F64-47C59F2F8016","spid":"*"})
+p({"class":"foam.core.notification.push.PushSetting","id":"b859876f-a62d-ffb3-bfa6-014fd11f990a","spid":"*"})
+p({"class":"foam.core.notification.sms.SMSSetting","id":"7017E2D8-D8CD-402D-BCCA-ACE01177BD12","spid":"*","enabled":false})

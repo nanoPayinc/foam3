@@ -9,13 +9,16 @@ foam.CLASS({
   name: 'AbstractDateGlang',
   extends: 'foam.mlang.AbstractExpr',
   abstract: true,
+
   requires: [
     'foam.mlang.IdentityExpr',
   ],
+
   implements: [
-    'foam.core.Serializable',
-    'foam.mlang.order.Comparator',
+    'foam.lang.Serializable',
+    'foam.mlang.order.Comparator'
   ],
+
   properties: [
     {
       class: 'foam.mlang.ExprProperty',
@@ -23,6 +26,7 @@ foam.CLASS({
       factory: function() { return this.IdentityExpr.create() }
     }
   ],
+
   methods: [
     {
       name: 'createStatement',

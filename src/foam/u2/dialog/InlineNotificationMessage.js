@@ -142,7 +142,7 @@ foam.CLASS({
         .style({ 'border-color': this.accentColor$ })
         .call(function() {
           if ( ! self.icon ) return;
-          if ( foam.core.String.isInstance(this.icon) == 'String' ) {
+          if ( foam.lang.String.isInstance(this.icon) == 'String' ) {
             this.start('img')
             .addClass(self.myClass('status-icon'))
             .attrs({ src: self.icon$ })

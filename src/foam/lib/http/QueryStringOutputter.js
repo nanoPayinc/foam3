@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'QueryStringOutputter',
 
   requires: [
-    'foam.core.Map'
+    'foam.lang.Map'
   ],
 
   properties: [
@@ -22,7 +22,7 @@ foam.CLASS({
   methods: [
     function output (obj) {
       const parts = [];
-      const properties = obj.cls_.getOwnAxiomsByClass(foam.core.Property);
+      const properties = obj.cls_.getOwnAxiomsByClass(foam.lang.Property);
       for ( const prop of properties ) {
         if ( this.Map.isInstance(prop) && this.combineMaps ) {
           const map = obj[prop.name];

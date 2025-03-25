@@ -20,7 +20,7 @@ foam.CLASS({
     },
 
     function findPropertyIC(cls, name) {
-      var ps = cls.getAxiomsByClass(foam.core.Property);
+      var ps = cls.getAxiomsByClass(foam.lang.Property);
       for ( var i = 0 ; i < ps.length ; i++ ) {
         if ( name == ps[i].name.toLowerCase() ) return ps[i];
       }

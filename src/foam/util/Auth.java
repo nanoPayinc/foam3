@@ -6,14 +6,15 @@
 
 package foam.util;
 
-import foam.core.FObject;
-import foam.core.X;
+import foam.lang.FObject;
+import foam.lang.X;
 import foam.dao.DAO;
-import foam.nanos.auth.Group;
-import foam.nanos.auth.GroupPermissionJunction;
-import foam.nanos.auth.Subject;
-import foam.nanos.auth.User;
-import foam.nanos.session.Session;
+import foam.core.auth.Group;
+import foam.core.auth.GroupPermissionJunction;
+import foam.core.auth.LifecycleState;
+import foam.core.auth.Subject;
+import foam.core.auth.User;
+import foam.core.session.Session;
 
 import static foam.mlang.MLang.AND;
 import static foam.mlang.MLang.EQ;
@@ -46,8 +47,9 @@ public class Auth {
   */
   public static X sudo(X x, String email) {
     return sudo(x, (User) ((DAO) x.get("userDAO")).inX(x).find(AND(
-      EQ(User.EMAIL, email),
-      EQ(User.LOGIN_ENABLED, true)
+      EQ(User.LIFECYCLE_STATE, LifecycleState.ACTIVE),
+      EQ(User.LOGIN_ENABLED, true),
+      EQ(User.EMAIL, email)
     )));
   }
 

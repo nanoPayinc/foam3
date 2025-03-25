@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'EasyCrunchWizard',
   implements: [
     {
-      path: 'foam.core.ContextAgent',
+      path: 'foam.lang.ContextAgent',
       flags: 'web'
     }
   ],
@@ -72,7 +72,7 @@ foam.CLASS({
     {
       class: 'String',
       name: 'view',
-      value: 'foam.nanos.crunch.ui.UCJView'
+      value: 'foam.core.crunch.ui.UCJView'
     },
     {
       class: 'Boolean',
@@ -110,7 +110,7 @@ foam.CLASS({
     {
       class: 'FObjectArray',
       // of: 'foam.util.FluentSpec',
-      of: 'foam.core.FObject',
+      of: 'foam.lang.FObject',
       name: 'sequenceExtras'
     },
   ],

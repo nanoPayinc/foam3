@@ -1,0 +1,146 @@
+p({
+  class:"foam.core.menu.Menu",
+  id:"crunch",
+  label: "CRUNCH",
+  handler: {
+    class:"foam.core.menu.SubMenu"
+  },
+  parent:""
+})
+
+p({
+  "class": "foam.core.menu.Menu",
+  "id": "crunch.crunchlab",
+  "label": "Lab",
+  "keywords": ["crunchlab", "crunch lab", "crunch", "lab", "debug crunch", "debug capabilities"],
+  "handler": {
+    "class": "foam.core.menu.ViewMenu",
+    "view": {"class":"foam.u2.crunch.lab.CrunchLab"}
+  },
+  "parent":"crunch"
+})
+
+p({
+  "class":"foam.core.menu.Menu",
+  "id":"crunch.capstore",
+  "label":"Capability Store",
+  "handler": {
+    "class":"foam.core.menu.ViewMenu",
+    "view": {
+      "class":"foam.u2.crunch.CapabilityStore"
+    }
+  },
+  "parent":"crunch"
+})
+
+p({
+  "class": "foam.core.menu.Menu",
+  "id": "crunch.capability-category",
+  "label": "Capability Categories",
+  "handler": {
+    "class":"foam.core.menu.DAOMenu2",
+    "config":{
+      "class":"foam.comics.v2.DAOControllerConfig",
+      "daoKey":"capabilityCategoryDAO"
+    }
+  },
+  "parent":"crunch"
+})
+
+p({
+  "class": "foam.core.menu.Menu",
+  "id": "crunch.capability",
+  "label": "Capabilities",
+  "handler": {
+    "class":"foam.core.menu.DAOMenu2",
+    "config":{
+      "class":"foam.comics.v2.DAOControllerConfig",
+      "daoKey":"capabilityDAO"
+    }
+  },
+  "parent":"crunch"
+})
+
+p({
+  "class": "foam.core.menu.Menu",
+  "id": "crunch.catetory-capability-junction",
+  "label": "Category Capability Junctions",
+  "handler": {
+    "class":"foam.core.menu.DAOMenu2",
+    "config":{
+      "class":"foam.comics.v2.DAOControllerConfig",
+      "daoKey":"capabilityCategoryCapabilityJunctionDAO"
+    }
+  },
+  "parent":"crunch"
+})
+
+p({
+  "class": "foam.core.menu.Menu",
+  "id": "crunch.user-capability-junction",
+  "label": "User Capability Junctions",
+  "handler": {
+    "class":"foam.core.menu.DAOMenu2",
+    "config":{
+      "class":"foam.comics.v2.DAOControllerConfig",
+      "daoKey":"userCapabilityJunctionDAO"
+    }
+  },
+  "parent":"crunch"
+})
+
+p({
+  "class": "foam.core.menu.Menu",
+  "id": "crunch.user-capability-junction-history",
+  "label": "User Capability Junction History",
+  "handler": {
+    "class":"foam.core.menu.DAOMenu2",
+    "config":{
+      "class":"foam.comics.v2.DAOControllerConfig",
+      "daoKey":"userCapabilityJunctionHistoryDAO"
+    }
+  },
+  "parent":"crunch"
+})
+
+p({
+  "class": "foam.core.menu.Menu",
+  "id": "crunch.capability-payload",
+  "label": "Capability Payloads",
+  "handler": {
+    "class":"foam.core.menu.DAOMenu2",
+    "config":{
+      "class":"foam.comics.v2.DAOControllerConfig",
+      "daoKey":"capabilityPayloadDAO"
+    }
+  },
+  "parent":"crunch"
+})
+
+p({
+  "class": "foam.core.menu.Menu",
+  "id": "crunch.capability-payload-record",
+  "label": "Capability Payload Records",
+  "handler": {
+    "class":"foam.core.menu.DAOMenu2",
+    "config":{
+      "class":"foam.comics.v2.DAOControllerConfig",
+      "daoKey":"capabilityPayloadRecordDAO"
+    }
+  },
+  "parent":"crunch"
+})
+
+p({
+  "class":"foam.core.menu.Menu",
+  "id": "appStore",
+  "label": "Features",
+  "themeIcon":"extension",
+  "handler":{
+    "class":"foam.core.menu.ViewMenu",
+    "view":{
+      "class":"foam.u2.crunch.CapabilityStore"
+    }
+  },
+  "order":1
+})

@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.swift.refines',
   name: 'ModelSwiftRefinement',
-  refines: 'foam.core.Model',
+  refines: 'foam.lang.Model',
   flags: ['swift'],
   requires: [
     'foam.swift.SwiftClass',
@@ -57,7 +57,7 @@ foam.CLASS({
         ( this.implements || [] )
         .filter(foam.util.flagFilter(['swift']))
         // Remove anything that's not actually an interface to avoid multiple inheritence.
-        .filter(i => foam.core.InterfaceModel.isInstance(foam.lookup(i.path).model_))
+        .filter(i => foam.lang.InterfaceModel.isInstance(foam.lookup(i.path).model_))
         .map(function(i) {
           return foam.swift.toSwiftName(i.path)
         })

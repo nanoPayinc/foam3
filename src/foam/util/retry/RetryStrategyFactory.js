@@ -11,7 +11,7 @@ foam.CLASS({
   documentation: 'Factory for generating new RetryStrategy.',
 
   javaImplements: [
-    'foam.core.XFactory'
+    'foam.lang.XFactory'
   ],
 
   javaCode: `

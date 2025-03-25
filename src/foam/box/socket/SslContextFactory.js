@@ -10,9 +10,9 @@ foam.CLASS({
   documentation: 'create SSL context from resource',
 
   javaImports: [
-    'foam.core.X',
-    'foam.nanos.logger.PrefixLogger',
-    'foam.nanos.logger.Logger',
+    'foam.lang.X',
+    'foam.core.logger.PrefixLogger',
+    'foam.core.logger.Logger',
     'javax.net.ssl.*',
     'java.io.FileInputStream',
     'java.io.FileNotFoundException',
@@ -54,7 +54,7 @@ foam.CLASS({
     {
       class: 'FObjectProperty',
       name: 'logger',
-      of: 'foam.nanos.logger.Logger',
+      of: 'foam.core.logger.Logger',
       visibility: 'HIDDEN',
       transient: true,
       javaCloneProperty: '//noop',
@@ -159,7 +159,7 @@ foam.CLASS({
       javaCode: `
         KeyStore keyStore = null;
         try {
-          InputStream is = getX().get(foam.nanos.fs.Storage.class).getInputStream(storePath);
+          InputStream is = getX().get(foam.core.fs.Storage.class).getInputStream(storePath);
 
           keyStore = KeyStore.getInstance(getStoreType());
           keyStore.load(is, storePass == null ? null : storePass.toCharArray());

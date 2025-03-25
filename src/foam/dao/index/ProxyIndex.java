@@ -6,7 +6,7 @@
 
 package foam.dao.index;
 
-import foam.core.FObject;
+import foam.lang.FObject;
 import foam.dao.Sink;
 import foam.mlang.order.Comparator;
 import foam.mlang.predicate.Predicate;

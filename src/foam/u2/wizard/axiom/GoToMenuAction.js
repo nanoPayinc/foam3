@@ -25,7 +25,7 @@ foam.CLASS({
     {
       class: 'Reference',
       name: 'menu',
-      of: 'foam.nanos.menu.Menu',
+      of: 'foam.core.menu.Menu',
       documentation: 'Optional argument used to menu to push, if left empty, default menu is pushed'
     },
     {

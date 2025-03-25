@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.graphics',
   name: 'LegendEntries',
-  extends: 'foam.core.Property',
+  extends: 'foam.lang.Property',
 
   documentation: 'LegendEntries  [ name ,  value [ float ] ]',
 

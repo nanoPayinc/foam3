@@ -25,7 +25,7 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.nanos.menu.Menu',
+    'foam.core.menu.Menu',
     'foam.u2.layout.MDProfileImageView'
   ],
 
@@ -87,7 +87,7 @@ foam.CLASS({
             .tag({
               class: 'foam.u2.view.TreeView',
               data: self.dao_,
-              relationship: foam.nanos.menu.MenuMenuChildrenRelationship,
+              relationship: foam.core.menu.MenuMenuChildrenRelationship,
               startExpanded: true,
               query: self.menuSearch$,
               onClickAddOn: function(data) { self.openMenu(data); },

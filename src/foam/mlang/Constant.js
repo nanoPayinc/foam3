@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.mlang',
   name: 'Constant',
   extends: 'foam.mlang.AbstractExpr',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   documentation: 'An Expression which always returns the same constant value.',
 /*

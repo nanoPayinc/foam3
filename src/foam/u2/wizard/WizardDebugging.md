@@ -42,7 +42,7 @@ to find the code or configuration ((WizardFlow/)Sequence or Capability) that des
 Sometimes something may not look like a wizard but it's using wizard technology.
 A good clue that this is happening is if something in the UI changes dynamically
 based on CRUNCH. Here are a couple examples:
-- NANOS' approval subsystem displays a user's capability data when an operator
+- CORE' approval subsystem displays a user's capability data when an operator
   is reviewing approval requests. This involves all of the wizard ingredients:
   a launch sequence, a wizard controller, and a wizard view; but it's included
   inside another page rather than displaying in a popup.
@@ -60,7 +60,7 @@ When you find the menu entry, it will look something like this:
 p({
     id: 'some-menu',
     handler: {
-        class: 'foam.nanos.menu.SequenceMenu',
+        class: 'foam.core.menu.SequenceMenu',
         parentMethod: ['crunchController', 'createWizardSequence'],
         sequence: [
             // ...

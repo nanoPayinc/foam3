@@ -8,12 +8,12 @@ foam.CLASS({
   package: 'foam.mlang.sink',
   name: 'Projection',
   extends: 'foam.dao.AbstractSink',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
 
   javaImports: [
-    'foam.core.ClassInfo',
-    'foam.core.FObject',
-    'foam.core.PropertyInfo',
+    'foam.lang.ClassInfo',
+    'foam.lang.FObject',
+    'foam.lang.PropertyInfo',
     'foam.mlang.Expr',
     'java.util.Arrays',
     'java.util.ArrayList',
@@ -65,7 +65,7 @@ foam.CLASS({
           let res = v.slice(this.PROJECTION_VALUES_OFFSET);
           if ( ! this.useProjection ) {
             this.exprs.forEach((e, i) => {
-              if ( foam.core.Property.isInstance(e) ) {
+              if ( foam.lang.Property.isInstance(e) ) {
                 res[i] = e.f(v[this.CLS_OR_OBJ_INDEX]);
               }
             })
@@ -120,8 +120,8 @@ foam.CLASS({
                 if ( es[j] instanceof PropertyInfo ) {
                   PropertyInfo e = (PropertyInfo) es[j];
                   e.set(o, arr[i]);
-                } else if ( es[j] instanceof foam.nanos.column.NestedPropertiesExpression ) {
-                  foam.nanos.column.NestedPropertiesExpression e = (foam.nanos.column.NestedPropertiesExpression) es[j];
+                } else if ( es[j] instanceof foam.core.column.NestedPropertiesExpression ) {
+                  foam.core.column.NestedPropertiesExpression e = (foam.core.column.NestedPropertiesExpression) es[j];
                   e.set(o, arr[i]);
                 }
               }

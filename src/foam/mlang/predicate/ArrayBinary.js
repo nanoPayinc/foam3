@@ -13,7 +13,7 @@ foam.CLASS({
   documentation: 'Binary predicate that accepts an array in "arg2".',
 
   javaImports: [
-    'foam.core.PropertyInfo',
+    'foam.lang.PropertyInfo',
     'foam.mlang.ArrayConstant',
     'foam.mlang.Constant',
     'java.util.List'

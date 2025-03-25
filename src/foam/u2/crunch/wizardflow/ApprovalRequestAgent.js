@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.u2.crunch.wizardflow',
   name: 'ApprovalRequestAgent',
   implements: [
-    'foam.core.ContextAgent'
+    'foam.lang.ContextAgent'
   ],
 
   imports: [
@@ -23,10 +23,10 @@ foam.CLASS({
   ],
 
   requires: [
-    'foam.nanos.approval.ApprovalRequest',
-    'foam.nanos.approval.CompositeApprovable',
-    'foam.nanos.crunch.UCJUpdateApprovable',
-    'foam.nanos.dao.Operation'
+    'foam.core.approval.ApprovalRequest',
+    'foam.core.approval.CompositeApprovable',
+    'foam.core.crunch.UCJUpdateApprovable',
+    'foam.core.dao.Operation'
   ],
 
   properties: [

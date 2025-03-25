@@ -1,8 +1,8 @@
 package foam.test;
 
-import foam.core.ContextAware;
-import foam.core.X;
-import foam.nanos.test.Test;
+import foam.lang.ContextAware;
+import foam.lang.X;
+import foam.core.test.Test;
 import foam.util.AddressUtil;
 import static foam.util.AddressUtil.parseAddress;
 

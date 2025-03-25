@@ -1,0 +1,21 @@
+p({"class":"foam.core.auth.test.PasswordPolicyTest","id":"passwordPolicyTest","description":"password policy tests"})
+p({"class":"foam.core.auth.test.ServiceProviderAwareTest","id":"ServiceProviderAwareTest","description":""})
+p({"class":"foam.core.auth.test.UserAndGroupPermissionTest","id":"UserAndGroupPermissionTest","description":""})
+p({"class":"foam.core.auth.test.PreventPrivilegeEscalationTest","id":"PreventPrivilegeEscalationTest"})
+p({"class":"foam.core.auth.test.ServiceProviderAuthorizerTest","id":"ServiceProviderAuthorizerTest"})
+p({
+  class:"foam.core.auth.test.GroupResetSessionTest",
+  id:"GroupResetSessionTest"
+})
+p({
+  class:"foam.core.auth.test.GroupURLSessionTest",
+  id:"GroupURLSessionTest"
+})
+p({
+  class:"foam.core.auth.test.UserLifecycleTicketTest",
+  id:"UserLifecycleTicketTest"
+})
+p({
+  class:"foam.core.auth.test.PreventDuplicateEmailTest",
+  id:"PreventDuplicateEmailTest"
+})

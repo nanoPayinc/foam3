@@ -1,12 +1,12 @@
 p({
-  "class":"foam.nanos.auth.User",
+  "class":"foam.core.auth.User",
   "id": 185426801,
   "spid":"test",
   "firstName":"Generic",
   "lastName":"Test",
   "email":"generic-test@foam.net",
   "userName":"generic-test",
-  "language":{"class":"foam.nanos.auth.LanguageId","code":"en","variant":"US"},
+  "language":{"class":"foam.core.auth.LanguageId","code":"en","variant":"US"},
   "emailVerified":true,
   "status":2,
   "compliance":1,
@@ -15,5 +15,5 @@ p({
   "isPublic":false,
   "lifecycleState":1,
   "password":"BZVrotlKyF0=:GhhCkcBBI5zeXSGa9S5+U9AjkX3mElUQ23LRsd568bC++2yvFN45/F6OKJDGApmuSG65cb87rh0LSTQHbZAaJ2C8uqsOgNJzVQ==",
-  "address":{"class":"foam.nanos.auth.Address","countryId":"CA","regionId":"ON","streetNumber":"905","streetName":"King Street West","city":"Toronto"}
+  "address":{"class":"foam.core.auth.Address","countryId":"CA","regionId":"ON","streetNumber":"905","streetName":"King Street West","city":"Toronto"}
 })

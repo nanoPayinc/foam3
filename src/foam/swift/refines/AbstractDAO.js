@@ -14,7 +14,7 @@ foam.CLASS({
       name: 'swiftType',
       expression: function(required) {
         var d = foam.dao.DAO.model_.swiftName;
-        var f = foam.core.FObject.model_.swiftName;
+        var f = foam.lang.FObject.model_.swiftName;
         var o = required ? '' : '?';
         return `(${d} & ${f})${o}`;
       },

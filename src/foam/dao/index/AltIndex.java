@@ -5,7 +5,7 @@
  */
 package foam.dao.index;
 
-import foam.core.FObject;
+import foam.lang.FObject;
 import foam.dao.AbstractSink;
 import foam.dao.Sink;
 import foam.mlang.order.Comparator;
@@ -37,7 +37,7 @@ public class AltIndex
     // Copy all data from first index into new index, updating state
     final Object[] sa = cloneState(state);
     Sink sink = new AbstractSink() {
-      public void put(Object obj, foam.core.Detachable sub) {
+      public void put(Object obj, foam.lang.Detachable sub) {
         try {
           sa[sa.length-1] = i.put(sa[sa.length-1], (FObject) obj);
         } catch (ClassCastException e) {

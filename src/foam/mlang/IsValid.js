@@ -8,9 +8,9 @@ foam.CLASS({
   package: 'foam.mlang',
   name: 'IsValid',
   extends: 'foam.mlang.predicate.Unary',
-  implements: [ 'foam.core.Serializable' ],
+  implements: [ 'foam.lang.Serializable' ],
   javaImports: [
-    'foam.core.XLocator'
+    'foam.lang.XLocator'
   ],
 
   properties: [
@@ -28,7 +28,7 @@ foam.CLASS({
       },
       javaCode: `
 try {
-  ((foam.core.FObject) getArg1().f(obj)).validate(XLocator.get());
+  ((foam.lang.FObject) getArg1().f(obj)).validate(XLocator.get());
 } catch(Exception e) {
   return false;
 }

@@ -1,0 +1,11 @@
+p({
+  class: "foam.core.crunch.Capability",
+  id: "foam-core-analytics-AnalyticEvent-read",
+  name: "Ananlytic Events",
+  enabled: true,
+  keywords: ["analytic", "event"],
+  permissionsGranted: [
+    "service.analyticEventDAO",
+    "analyticevent.read.*"
+  ]
+})

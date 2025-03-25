@@ -1,0 +1,266 @@
+// not lazy as needed by notification system during startup.
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "localNotificationDAO",
+  "lazy": false,
+  "serviceScript": """
+    mdao = new foam.dao.MDAO(foam.core.notification.Notification.getOwnClassInfo());
+    mdao.addIndex(new foam.lang.PropertyInfo[] { foam.core.notification.Notification.GROUP_ID,foam.core.notification.Notification.READ });
+    mdao.addIndex(new foam.lang.PropertyInfo[] { foam.core.notification.Notification.BROADCASTED,foam.core.notification.Notification.READ });
+    mdao.addIndex(new foam.lang.PropertyInfo[] { foam.core.notification.Notification.USER_ID,foam.core.notification.Notification.READ });
+    mdao.addIndex(new foam.lang.PropertyInfo[] { foam.core.notification.Notification.EXPIRY_DATE });
+    mdao.addIndex(new foam.lang.PropertyInfo[] { foam.core.notification.Notification.CREATED });
+
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.notification.Notification.getOwnClassInfo())
+      .setMdao(mdao)
+      .setAuthorize(false)
+      .setPm(true)
+      .setFuid(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("notifications")
+      .setSAF(true)
+      .setWaitReplay(false)
+      .setFixedSize(new foam.dao.FixedSizeDAO.Builder(x)
+        .setComparator(foam.mlang.MLang.COMPOUND(new foam.mlang.order.Comparator[] {
+          foam.mlang.MLang.DESC(foam.core.notification.Notification.CREATED),
+          foam.core.notification.Notification.READ
+        }))
+        .setSize(100000)
+        .build())
+      .build();
+  """
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "notificationDAO",
+  "lazy": false,
+  "serve": true,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.notification.Notification.getOwnClassInfo())
+      .setAuthorize(true)
+      .setInnerDAO((foam.dao.DAO) x.get("localNotificationDAO"))
+      .setDecorator(
+        new foam.core.notification.NotificationTemplateDAO.Builder(x)
+          .setDelegate(new foam.core.notification.NotificationExpansionDAO.Builder(x)
+            .setDelegate(new foam.dao.NullDAO(x, foam.core.notification.Notification.getOwnClassInfo()))
+            .build())
+          .build())
+      .setEnableInterfaceDecorators(false)
+      .setOrder(new foam.mlang.order.Comparator[] {
+        new foam.mlang.order.Desc.Builder(x).setArg1(foam.core.notification.Notification.CREATED).build()
+      })
+      .build();
+""",
+  "client": "{\"of\":\"foam.core.notification.Notification\"}"
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "myNotificationDAO",
+  "lazy": false,
+  "serve": true,
+  "serviceScript": """
+    import foam.core.auth.User;
+    import foam.core.auth.Subject;
+    import foam.core.notification.Notification;
+
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.notification.Notification.getOwnClassInfo())
+      .setAuthorize(false)
+      .setDecorator( new foam.core.notification.MyNotificationDAO.Builder(x).build() )
+      .setInnerDAO((foam.dao.DAO) x.get("notificationDAO"))
+      .setEnableInterfaceDecorators(false)
+      .build();
+  """,
+  "client": """
+    {
+      "of": "foam.core.notification.Notification",
+      "cache": true,
+      "pollingInterval": 25000,
+      "pollingProperty": {
+        "class":"__Property__",
+        "forClass_":"foam.core.notification.Notification",
+        "name":"created"
+      },
+      "ttlPurgeTime": 0,
+      "ttlSelectPurgeTime": 0,
+      "decorators": [
+        {
+          "class":"foam.core.notification.ToastNotificationDAO"
+        }
+      ]
+    }
+  """
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"notificationTemplateDAO",
+  "lazy":false,
+  "serve":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setPm(true)
+      .setSeqNo(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("notificationTemplates")
+      .setOf(foam.core.notification.Notification.getOwnClassInfo())
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] {foam.core.notification.Notification.TEMPLATE});
+    """,
+    "client":"{\"of\":\"foam.core.notification.Notification\"}"
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "localNotificationSettingDefaultsDAO",
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setAuthorize(false)
+      .setServiceProviderAware(false)
+      .setGuid(true)
+      .setPm(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("notificationSettingDefaults")
+      .setOf(foam.core.notification.NotificationSetting.getOwnClassInfo())
+      .build();
+  """
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "notificationSettingDefaultsDAO",
+  "serve":true,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.notification.NotificationSetting.getOwnClassInfo())
+      .setPm(true)
+      .setServiceProviderAware(false)
+      .setAuthorize(true)
+      .setPermissionPrefix("notificationsettingdefaults")
+      .setInnerDAO((foam.dao.DAO) x.get("localNotificationSettingDefaultsDAO"))
+      .setEnableInterfaceDecorators(false)
+      .build();
+  """,
+  "client": "{\"of\":\"foam.core.notification.NotificationSetting\"}"
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "localNotificationSettingDAO",
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setAuthorize(false)
+      .setGuid(true)
+      .setPm(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("notificationSettings")
+      .setOf(foam.core.notification.NotificationSetting.getOwnClassInfo())
+      .build();
+  """
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "notificationSettingDAO",
+  "serve": true,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.notification.NotificationSetting.getOwnClassInfo())
+      .setPm(true)
+      .setAuthorize(true)
+      .setInnerDAO((foam.dao.DAO) x.get("localNotificationSettingDAO"))
+      .setEnableInterfaceDecorators(false)
+      .build();
+    """,
+  "client": "{\"of\":\"foam.core.notification.NotificationSetting\"}"
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "broadcastNotificationDAO",
+  "serve": true,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.notification.broadcast.BroadcastNotification.getOwnClassInfo())
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("broadcastNotifications")
+      .setAuthorize(true)
+      .setFuid(true)
+      .build();
+    """,
+  "client": "{\"of\":\"foam.core.notification.broadcast.BroadcastNotification\"}"
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "resendNotificationService",
+  "serve": true,
+  "authenticate": true,
+  "boxClass":"foam.core.notification.ResendNotificationServiceInterfaceSkeleton",
+  "serviceClass": "foam.core.notification.ResendNotificationService",
+  "client":
+    """
+      {
+        "class":"foam.core.notification.ClientResendNotificationService",
+        "delegate": {
+          "class":"foam.box.SessionClientBox",
+          "delegate": {
+            "class":"foam.box.HTTPBox",
+            "url":
+            "service/resendNotificationService"
+          }
+        }
+      }
+    """
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"pushService",
+  "lazy":true,
+  "serve":true,
+  "authenticate":true,
+  "boxClass":"foam.core.notification.push.PushServiceSkeleton",
+  "service":{
+    "class":"foam.core.notification.push.RoutingPushService",
+  },
+  "client":"""
+    {
+      "class":"foam.core.notification.push.ClientPushService",
+      "delegate": {
+        "class":"foam.box.SessionClientBox",
+        "delegate": {
+          "class":"foam.box.HTTPBox",
+          "url":"service/pushService"
+        }
+      }
+    }
+  """
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"WebPushService",
+  "lazy":true,
+  "serve":false,
+  "authenticate":false,
+  "service":{
+    "class":"foam.core.notification.push.WebPushService",
+  }
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"APNSpushService",
+  "lazy":true,
+  "serve":false,
+  "authenticate":true,
+  "boxClass":"foam.core.notification.push.PushServiceSkeleton",
+  "service":{
+    class:"foam.core.notification.push.APNSPushService"
+  }
+})

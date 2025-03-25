@@ -1,0 +1,21 @@
+/**
+ * @license
+ * Copyright 2020 The FOAM Authors. All Rights Reserved.
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+foam.INTERFACE({
+  package: 'foam.core.test',
+  name: 'EchoService',
+
+  skeleton: true,
+
+  methods: [
+    {
+      name: 'echo',
+      type: 'FObject',
+      async: true,
+      args: [ { name: 'obj', type: 'FObject' } ]
+    }
+  ]
+});

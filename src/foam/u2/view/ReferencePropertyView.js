@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'ReferencePropertyView',
   extends: 'foam.u2.view.ModeAltView',
 
-  documentation: 'A view for foam.core.Reference properties.',
+  documentation: 'A view for foam.lang.Reference properties.',
 
   requires: [
     'foam.u2.view.ReferenceView',
