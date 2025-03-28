@@ -139,8 +139,21 @@
       class: 'Boolean',
       name: 'authenticate',
       value: true,
-      documentation: `By deafult, authenticate: false only bypasses the authentication check for logged out users,
-      logged in users still need to be granted permission to see unauthenticated menus`
+      documentation: `
+        IMPORTANT! "authenticate" property is now legacy and is being proxied to
+        "authorizationStatus" property on postSet to minimize menus.jrl migration.
+
+        authenticate:true is equivalent to authorizationStatus:AUTHENTICATED and
+        authenticate:false is equivalent to authorizationStatus:PUBLIC.
+
+        AuthorizationStatus also has UNAUTHENTICATED enum that can be used.
+        See. AuthorizationStatus for details.
+      `,
+      transient: true,
+      hidden: true,
+      javaPostSet: `
+        setAuthorizationStatus(val ? AuthorizationStatus.AUTHENTICATED : AuthorizationStatus.PUBLIC);
+      `
     },
     {
       class: 'foam.u2.ViewSpec',
@@ -150,6 +163,13 @@
     {
       class: 'String',
       name: 'analyticsMessage'
+    },
+    {
+      class: 'Enum',
+      of: 'foam.core.menu.AuthorizationStatus',
+      name: 'authorizationStatus',
+      documentation: 'See. AuthorizationStatus',
+      value: 'AUTHENTICATED'
     }
   ],
 
@@ -221,24 +241,26 @@
     },
     {
       name: 'authorizeOnRead',
-      documentation: `
-        If a menu is unauthenticated, we allow read without checking permission only when the session is also unauthenticated.
-        If the session is authenticated, read permission will be checked as usual.
-        This allows us make certain unauthenticated menus accessible to unauthenticated sessions such as sign-in, and sign-up
-      `,
+      documentation: 'See. AuthorizationStatus',
       javaCode: `
-        // Authentication is only skipped for anonymous sessions, logged in users still require menu.read.<menu_id> permission
-        AuthService auth = (AuthService) x.get("auth");
-        if ( ! getAuthenticate() ) {
-          try {
-            var subject = auth.getCurrentSubject(x);
-            if ( subject == null || auth.isUserAnonymous(x, subject.getUser().getId()) )
-              return;
-          } catch(foam.core.auth.AuthenticationException e) {
-            return;
-          }
+        // Check menu.readPredicate
+        if ( ! f(x) ) {
+          throw ACCESS_DENIED;
         }
-        if ( ! ( f(x) && auth.check(x, "menu.read." + getId()) ) ) {
+
+        // Check user permission to access authenticated menu
+        AuthService auth = (AuthService) x.get("auth");
+        if ( getAuthorizationStatus() == AuthorizationStatus.AUTHENTICATED
+          && ! auth.check(x, "menu.read." + getId())
+        ) {
+          throw ACCESS_DENIED;
+        }
+
+        // Check subject to access unauthenticated menu
+        var subject = auth.getCurrentSubject(x);
+        if ( getAuthorizationStatus() == AuthorizationStatus.UNAUTHENTICATED
+          && subject != null && ! auth.isUserAnonymous(x, subject.getUser().getId())
+        ) {
           throw ACCESS_DENIED;
         }
       `
