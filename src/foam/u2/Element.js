@@ -2152,7 +2152,7 @@ foam.CLASS({
       // Without wrapping in a PropertyBorder
       name: '__',
       transient: true,
-      factory: function() { return { __proto__: this, toE: this.toPropertyView }; }
+      getter: function() { return { __proto__: this, toE: this.toPropertyView }; }
     },
     {
       class: 'Boolean',
@@ -2352,7 +2352,7 @@ foam.CLASS({
       name: 'view',
       value: {
         class: 'foam.u2.view.StringView',
-        writeView: { class: 'foam.u2.TextField', type: 'tel' }
+        writeView: { class: 'foam.u2.view.PhoneNumberInputView' }
       }
     }
   ]

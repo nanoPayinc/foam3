@@ -528,6 +528,9 @@ task('Start CORE application server.', [ 'setenv', 'deployData', 'deployApp' ], 
       }
     }
 
+    // Increase memory here, should be a command-line option:
+    // JAVA_OPTS += ' -Xms12000m -Xmx12000m ';
+
     info('JAVA_OPTS:' + JAVA_OPTS);
     info(MESSAGE);
 

@@ -40,6 +40,8 @@ tools by doing the following.
 * Run `npm install` in the root of the FOAM repository, where
   package.json is found.
 
+See [INSTALL.md](INSTALL.md) for more detailed installation notes.
+
 ## Building Java
 
 **NOTE: default configuration is setup for Java 21** 
@@ -149,7 +151,7 @@ then connect to http://localhost:8080
 - [Another example FOAM Project](https://github.com/jlhughes/Journal) building on the above with more models and example data. 
 
 ## Design Patterns
-The following course is not directly about FOAM, but covers material essential for fully understanding FOAM's design:
+The following course is not directly about FOAM, but covers material essential for understanding FOAM's design:
 
 [Introduction to Design Patterns](https://docs.google.com/presentation/d/1kcohKD0WJHJWoJshOUpVdk-Pa3oeJMt9DTl63gWt-bo/edit)
 
