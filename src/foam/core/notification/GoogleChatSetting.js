@@ -54,7 +54,6 @@ foam.CLASS({
           Map thread = new HashMap();
           thread.put("threadKey", threadKey.toString());
           map.put("thread", thread);
-          URL += "&messageReplyOption=REPLY_MESSAGE_FALLBACK_TO_NEW_THREAD";
         }
 
         String message = notification.getGoogleChatMessage();
