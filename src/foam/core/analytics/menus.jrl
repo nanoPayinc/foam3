@@ -54,3 +54,16 @@ p({
   },
   parent:"analytics"
 })
+
+p({
+  class:"foam.core.menu.Menu",
+  id:"threads",
+  label:"Threads",
+  keywords:["analytic", "thread"],
+  handler: {
+    class: "foam.core.menu.SessionLinkMenu",
+    link: "/service/threads",
+    openNewTab: true
+  },
+  parent:"analytics"
+})

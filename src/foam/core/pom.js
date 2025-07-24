@@ -293,6 +293,7 @@ foam.POM({
     { name: "menu/MenuBar",                                                               flags: "js" },
     { name: "menu/PopupMenu",                                                             flags: "js" },
     { name: "menu/SequenceMenu",                                                          flags: "js" },
+    { name: "menu/SessionLinkMenu",                                                       flags: "js" },
     { name: "menu/SubMenu",                                                               flags: "js" },
     { name: "menu/SubMenuView",                                                           flags: "js" },
     { name: "menu/TabsMenu",                                                              flags: "js" },

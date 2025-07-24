@@ -6,16 +6,16 @@
 
 package foam.core.http;
 
+import foam.lang.*;
 import foam.core.session.Session;
-import foam.lang.VirtualThreadAgency;
-import foam.lang.X;
-import jakarta.servlet.http.HttpServletRequest;
-
+import foam.util.SafetyUtil;
 import java.io.PrintWriter;
+import java.lang.StackTraceElement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import jakarta.servlet.http.HttpServletRequest;
 
 /** Display thread information. **/
 public class ThreadsWebAgent
@@ -49,29 +49,22 @@ public class ThreadsWebAgent
   public void execute(X x) {
     PrintWriter        out         = x.get(PrintWriter.class);
     HttpServletRequest req         = x.get(HttpServletRequest.class);
+    Set<Thread>        threadSet   = Thread.getAllStackTraces().keySet();
     Session            session     = x.get(Session.class);
+    Thread[]           threadArray = threadSet.toArray(new Thread[threadSet.size()]);
     boolean            showAll     = "y".equals(req.getParameter("showAll"));
     String             id          = req.getParameter("id");
-
-    Set<Thread>  platformThreadSet = Thread.getAllStackTraces().keySet();
-    Set<Thread>   virtualThreadSet = VirtualThreadAgency.getRunningThreads();
-    Thread[]           threadArray = new Thread[platformThreadSet.size() + virtualThreadSet.size() ];
-    int i = 0;
-    for ( Thread t : platformThreadSet ) threadArray[i++] = t;
-    for ( Thread t : virtualThreadSet  ) threadArray[i++] = t;
+    String             path        = req.getServletPath();
 
     out.println("<HTML>");
     out.println("<HEAD><TITLE>Threads</TITLE></HEAD>\n");
-    out.println("<STYLE>");
-    out.println("  tr:hover {");
-    out.println("    background-color: #f2f2f2;");
-    out.println("  }");
-    out.println("</STYLE>");
     out.println("<BODY>");
     if ( showAll ) {
-      out.println("<a href=\"?" + showAllParam(false) + "sessionId=" + session.getId() + "\">Hide parked threads.</a>");
+      // out.println("<a href=\""+ req.getRequestURL().toString() + "?" + showAllParam(false) + "sessionId=" + session.getId() + "\">Hide parked threads.</a>");
+      out.println("<a href=\""+ path + "?" + showAllParam(false) + "sessionId=" + session.getId() + "\">Hide parked threads.</a>");
     } else {
-      out.println("<a href=\"?" + showAllParam(true) + "sessionId=" + session.getId() + "\">Show parked threads.</a>");
+      // out.println("<a href=\"" + req.getRequestURL().toString() + "?" + showAllParam(true) + "sessionId=" + session.getId() + "\">Show parked threads.</a>");
+      out.println("<a href=\"" + path + "?" + showAllParam(true) + "sessionId=" + session.getId() + "\">Show parked threads.</a>");
     }
     out.println("<br><H1>Threads</H1>\n");
     out.println("<pre>");
@@ -83,14 +76,11 @@ public class ThreadsWebAgent
     out.println("<tr>");
     out.println("<th style=\"text-align: left\">Thread Name</th>");
     out.println("<th style=\"text-align: left\">State</th>");
-    out.println("<th style=\"text-align: left\">Virtual</th>");
     out.println("<th>Last Method Call</th>");
     out.println("</tr>");
 
     Thread selected = null;
     for ( Thread thread : threadArray ) {
-      if ( ! thread.isAlive() ) continue;
-
       Boolean isSelected = String.valueOf(thread.threadId()).equals(id);
       if ( isSelected ) selected = thread;
 
@@ -119,7 +109,7 @@ public class ThreadsWebAgent
       out.println(isSelected ? "<tr style=\"background-color:aliceblue\">" : "<tr>");
       out.println("<td>");
       if ( isSelected ) out.println("<b> &gt;&gt;");
-      out.println("<a href=\"threads?" + showAllParam(showAll) + "id=" + thread.getId() + "&sessionId=" + session.getId() + "\">" + thread.toString() + "</a>");
+      out.println("<a href=\"" + path + "?" + showAllParam(showAll) + "id=" + thread.getId() + "&sessionId=" + session.getId() + "\">" + thread.toString() + "</a>");
       if ( isSelected ) out.println("</b>");
       out.println("</td>");
       out.println("<td>");
@@ -130,9 +120,6 @@ public class ThreadsWebAgent
       } else {
         threadsInState.put(thread.getState(), Integer.valueOf(count.intValue() + 1));
       }
-      out.println("</td>");
-      out.println("<td>");
-      out.println(thread.isVirtual() ? "TRUE" : "FALSE");
       out.println("</td>");
       out.println("<td>");
       out.println(methodName);
