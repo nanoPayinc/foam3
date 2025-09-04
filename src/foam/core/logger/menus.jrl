@@ -17,6 +17,7 @@ p({
         limit: 4,
         citationView: "foam.core.logger.LogMessageCitationView",
         viewMore: true,
+        viewMoreMenuItem: "admin.logs",
         emptyTitle: "No activity"
       },
       mode: "config"

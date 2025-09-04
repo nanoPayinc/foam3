@@ -108,38 +108,31 @@ foam.CLASS({
       name: 'start',
       javaCode: `
     Loggers.logger(getX(), this).info(getPrefix(), "start");
-    threadGroup_ = new ThreadGroup(Thread.currentThread().getThreadGroup(), getPrefix());
-    pool_ = new ThreadPoolExecutor(
-      getNumberOfThreads(),
-      getNumberOfThreads(),
-      10,
-      TimeUnit.SECONDS,
-      new LinkedBlockingQueue<Runnable>(),
-      new ThreadFactory() {
-        final AtomicInteger threadNumber = new AtomicInteger(1);
-
-        public Thread newThread(Runnable runnable) {
-          Thread thread = new Thread(
-            threadGroup_,
-            runnable,
-            getPrefix() + "-" + threadNumber.getAndIncrement(),
-            0
-            );
-          // Thread does not block server from shut down.
-          thread.setDaemon(true);
-          thread.setPriority(Thread.NORM_PRIORITY);
-          return thread;
-        }
-      }
-    );
-    pool_.allowCoreThreadTimeOut(true);
+    initThreadPool();
     scheduleReporting();
     `
     },
     {
+      name: 'stop',
+      javaCode: `
+        getPool().shutdownNow();
+        synchronized ( queuedLock_ ) {
+          clearQueued();
+        }
+        synchronized ( executedLock_ ) {
+          clearExecuted();
+        }
+        synchronized ( executingLock_ ) {
+          clearExecuting();
+        }
+      `
+    },
+    {
       name: 'reload',
       javaCode: `
+      stop();
       Loggers.logger(getX(), this).info(getPrefix(), "reload");
+      initThreadPool();
       scheduleReporting();
       `
     },
@@ -220,7 +213,7 @@ foam.CLASS({
       ],
       javaCode: `
     incrQueued(1);
-    getPool().submit(new ContextAgentRunnable(x, agent, description));
+    return getPool().submit(new ContextAgentRunnable(x, agent, description));
      `
     },
     {
@@ -282,6 +275,39 @@ foam.CLASS({
       javaCode: `
       Loggers.logger(x, this).info(getPrefix(), "available", getNumberOfThreads(), "queued", getQueued(), "waiting", getWaiting(), "executing", getExecuting(), "executed", getExecuted());
       scheduleReporting();
+      `
+    },
+    {
+      name: 'initThreadPool',
+      type: 'Void',
+      visibility: 'protected',
+      javaCode: `
+        threadGroup_ = new ThreadGroup(Thread.currentThread().getThreadGroup(), getPrefix());
+        pool_ = new ThreadPoolExecutor(
+          getNumberOfThreads(),
+          getNumberOfThreads(),
+          10,
+          TimeUnit.SECONDS,
+          new LinkedBlockingQueue<Runnable>(),
+          new ThreadFactory() {
+            final AtomicInteger threadNumber = new AtomicInteger(1);
+
+            public Thread newThread(Runnable runnable) {
+              Thread thread = new Thread(
+                threadGroup_,
+                runnable,
+                getPrefix() + "-" + threadNumber.getAndIncrement(),
+                0
+                );
+              // Thread does not block server from shut down.
+              thread.setDaemon(true);
+              thread.setPriority(Thread.NORM_PRIORITY);
+              return thread;
+            }
+          }
+        );
+        pool_.allowCoreThreadTimeOut(true);
+
       `
     }
   ]

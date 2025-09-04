@@ -33,7 +33,7 @@ This decorators are responsible for saving file to fileDAO, and should be added 
 When the decorator receive a file, it will check its size and store it on the file system or inside FileDAO ledger.
 
 ### File system
-When a file is stored in file system, first it is recreated inside /opt/nanopay/journals/tmp folder, by trasfering file as bytes from client to server. When file is uploaded to the server and recreated in the tmp folder, it will be moved to /opt/nanopay/journals/largefiles folder. It will be named with file id. BlobStore responsible for this action.
+When a file is stored in file system, first it is recreated inside /opt/app/journals/tmp folder, by trasfering file as bytes from client to server. When file is uploaded to the server and recreated in the tmp folder, it will be moved to /opt/app/journals/largefiles folder. It will be named with file id. BlobStore responsible for this action.
 ```
 p({class:"foam.core.fs.File",id:"4ca42c2c1ee8d917d8412225e05798c93fd14b3791ccb91579e486bde84e380b",filename:"test_>3mb_img.jpg",filesize:4092988,mimeType:"image/jpeg",owner:2005})
 ```

@@ -20,12 +20,12 @@ foam.CLASS({
     }
     ^wizard-body {
       height: 100%;
-      background-color: $white;
+      background-color: $backgroundDefault;
     }
 
     ^footer {
       min-height: 75px;
-      border-top: solid 1px $grey50;
+      border-top: solid 1px $borderXLight;
       padding: 0px 128px;
     }
 

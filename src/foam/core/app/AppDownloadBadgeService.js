@@ -52,7 +52,7 @@ foam.CLASS({
       width: 100%;
     }
     ^header{
-      color: $primary400;
+      color: $textBrand;
       text-align: center;
     }
   `,

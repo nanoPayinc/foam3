@@ -11,8 +11,8 @@ foam.CLASS({
 
   properties: [
     {
-      name: 'data',
-    },
+      name: 'data'
+    }
   ],
 
   methods: [
@@ -35,6 +35,9 @@ foam.CLASS({
       this.data.forEach(function(d) {
         d.eof();
       });
+    },
+    function addToE(e) {
+      e.forEach(this.data, function(d) { e.add(d); });
     },
     function toE(_, x) {
       return x.E().add(this.slot(function(data) {

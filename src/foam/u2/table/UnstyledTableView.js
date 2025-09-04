@@ -47,9 +47,9 @@ foam.CLASS({
 
   imports: [
     'auth?',
+    'columnStorage',
     'config? as importedConfig',
     'filteredTableColumns?',
-    'memento',
     'stack?',
     'selection? as importSelection'
   ],
@@ -126,12 +126,12 @@ foam.CLASS({
     {
       name: 'selectedColumnNames',
       documentation: `Property responsible for deciding what columns to use when tableView is rendered
-        Order of precedece: Memento -> localStorage -> default cols.
-        Gets updated when 'columns' changes and tries to fetch the latest value from localStorage.
+        Order of precedece: Memento -> columnStorage (localStorage) -> default cols.
+        Gets updated when 'columns' changes and tries to fetch the latest value from columnStorage.
         Can also be set by any column config view to change the current columns loaded by the table`,
       memorable: true,
       expression: function(columns, of) {
-        var ls = JSON.parse(localStorage.getItem(of.id))?.map(c => foam.Array.isInstance(c) ? c[0] : c)
+        var ls = JSON.parse(this.columnStorage.getItem(of.id))?.map(c => foam.Array.isInstance(c) ? c[0] : c)
         return ls || columns;
       },
       adapt: function(_,n) {
@@ -145,7 +145,7 @@ foam.CLASS({
         widths here should propogate changes to the rest of the view and LS`,
       factory: function() {
         var local = {};
-        JSON.parse(localStorage.getItem(this.of.id))?.map(c => {
+        JSON.parse(this.columnStorage.getItem(this.of.id))?.map(c => {
           foam.Array.isInstance(c) ?
           local[c[0]] = c[1] :
           local[c] = undefined;
@@ -233,23 +233,6 @@ foam.CLASS({
       factory: function() {
         return {};
       }
-    },
-    {
-      name: 'checkboxes_',
-      documentation: 'The checkbox elements when multi-select support is enabled. Used internally to implement the select all feature.',
-      factory: function() {
-        return {};
-      }
-    },
-    {
-      class: 'Boolean',
-      name: 'togglingCheckBoxes_',
-      documentation: 'Used internally to improve performance when toggling all checkboxes on or off.'
-    },
-    {
-      class: 'Boolean',
-      name: 'allCheckBoxesEnabled_',
-      documentation: 'Used internally to denote when the user has pressed the checkbox in the header to enable all checkboxes.'
     },
     {
       class: 'Int',
@@ -358,7 +341,7 @@ foam.CLASS({
       this.groupBy = column;
     },
     function updateColumns() {
-      this.updateLocalStorage();
+      this.updateColumnStorage();
 
       this.isColumnChanged = ! this.isColumnChanged;
     },
@@ -378,7 +361,7 @@ foam.CLASS({
       this.isColumnChanged$.sub(this.updateColumns_);
       this.updateColumns_();
 
-      this.onDetach(this.colWidthUpdated$.sub(this.updateLocalStorage));
+      this.onDetach(this.colWidthUpdated$.sub(this.updateColumnStorage));
       if ( view.editColumnsEnabled )
         var editColumnView = foam.u2.view.EditColumnsView.create({data:view}, this);
 
@@ -413,29 +396,23 @@ foam.CLASS({
                     addClass(view.myClass('th')).
                     tag(view.CheckBox, {}, slot).
                     style({ width: `${this.CHECKBOX_CONTAINER_WIDTH}px`, 'min-width': `${this.CHECKBOX_CONTAINER_WIDTH}px` }).
-                  end();
+                    end();
 
                   // Set up a listener so we can update the existing CheckBox
                   // views when a user wants to select all or select none.
                   view.onDetach(slot.value.dot('data').sub(function(_, __, ___, newValueSlot) {
                     var checked = newValueSlot.get();
-                    view.allCheckBoxesEnabled_ = checked;
 
                     if ( checked ) {
-                      view.selectedObjects = {};
+                      var objs = {};
                       view.data.select(function(obj) {
-                        view.selectedObjects[obj.id] = obj;
+                        objs[obj.id] = obj;
+                      }).then(function() {
+                        view.selectedObjects = objs;
                       });
                     } else {
                       view.selectedObjects = {};
                     }
-
-                    // Update the existing CheckBox views.
-                    view.togglingCheckBoxes_ = true;
-                    Object.keys(view.checkboxes_).forEach(function(key) {
-                      view.checkboxes_[key].data = checked;
-                    });
-                    view.togglingCheckBoxes_ = false;
                   }));
                 }).
 
@@ -459,6 +436,7 @@ foam.CLASS({
                       this.addClass(view.myClass('th-editColumns'))
                       .on('click', function(e) {
                         editColumnView.parentId = this.id;
+                        editColumnView.updatePosition(); // Update position on click
                         if ( ! editColumnView.selectColumnsExpanded )
                           editColumnView.selectColumnsExpanded = ! editColumnView.selectColumnsExpanded;
                       }).
@@ -476,8 +454,8 @@ foam.CLASS({
             .tag(view.LazyScrollManager, {
                 data$: view.data$,
                 order$: view.order$,
-                rowView: { class: 'foam.u2.table.UnstyledTableRow', data: view },
-                groupHeaderView: { class: 'foam.u2.table.UnstyledTableGroup', data: view },
+                rowView: { class: 'foam.u2.table.UnstyledTableRow' },
+                groupHeaderView: { class: 'foam.u2.table.UnstyledTableGroup' },
                 rootElement: this.tableEl_,
                 ctx: view,
                 prepDAO: view.prepDAO,
@@ -545,12 +523,12 @@ foam.CLASS({
       }
     },
     {
-      name: 'updateLocalStorage',
+      name: 'updateColumnStorage',
       isMerged: true,
       mergeDelay: 5000,
       code: function() {
-        localStorage.removeItem(this.of.id);
-        localStorage.setItem(this.of.id, JSON.stringify(this.selectedColumnNames.map(c => {
+        this.columnStorage.removeItem(this.of.id);
+        this.columnStorage.setItem(this.of.id, JSON.stringify(this.selectedColumnNames.map(c => {
           var name = foam.String.isInstance(c) ? c : c.name;
           var size = this.selectedColumnsWidth[name] == undefined ? undefined : this.selectedColumnsWidth[name];
           return [name, size];

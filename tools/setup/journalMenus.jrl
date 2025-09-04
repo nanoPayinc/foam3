@@ -1,0 +1,14 @@
+p({
+  "class":"foam.core.menu.Menu",
+  "id":"{app}.{model}",
+  "label":"{Model}",
+  "authenticate":true,
+  "keywords":[""],
+  "handler":{
+    "class":"foam.core.menu.DAOMenu2",
+    "config":{
+      "class":"foam.comics.v2.DAOControllerConfig",
+      "daoKey":"{model}DAO"
+    }
+  }
+})

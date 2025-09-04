@@ -727,6 +727,13 @@ return sb.toString();`
 
         cls.method({
           visibility: 'public',
+          name: 'getPlural',
+          type: 'String',
+          body: `return "${this.model_.plural}";`
+        });
+
+        cls.method({
+          visibility: 'public',
           name: 'hashCode',
           type: 'int',
           body:
@@ -1442,12 +1449,15 @@ return new String[] {
             visibility: 'public',
             static: true,
             args: [ { name: 'ordinal', type: 'int' } ],
-            body: `
-switch (ordinal) {
-${this.VALUES.map(v => `\tcase ${v.ordinal}: return ${cls.name}.${v.name};`).join('\n')}
-  default: return null;
-}`
+            body: `return switch (ordinal) {
+${this.VALUES.map(v => `\tcase ${v.ordinal} -> ${cls.name}.${v.name};`).join('\n')}
+  default -> null;
+};`
           });
+
+          var nameLabel = function(v) {
+            return v.label === v.name ? `"${v.name}"` : `"${v.name}", "${v.label}"`;
+          };
 
           cls.method({
             name: 'forLabel',
@@ -1455,14 +1465,10 @@ ${this.VALUES.map(v => `\tcase ${v.ordinal}: return ${cls.name}.${v.name};`).joi
             visibility: 'public',
             static: true,
             args: [ { name: 'label', type: 'String' } ],
-            body: `
-switch (label) {
-${this.VALUES.map(v => `\tcase "${v.label}": return ${cls.name}.${v.name};`).join('\n')}
-  default: switch (label) {
-    ${this.VALUES.map(v => `\tcase "${v.name}": return ${cls.name}.${v.name};`).join('\n')}
-  }
-  return null;
-}`
+            body: `return switch (label) {
+${this.VALUES.map(v => `\tcase ${nameLabel(v)} -> ${cls.name}.${v.name};`).join('\n')}
+  default -> null;
+};`
           });
 
           return cls;
@@ -1527,18 +1533,8 @@ foam.CLASS({
        var info = this.SUPER(cls);
        var m = info.getMethod('cast');
        m.body = `
-        try {
-          if ( o instanceof Number ) {
-            return new java.util.Date(((Number) o).longValue());
-          }
-          if ( o instanceof String ) {
-            o = (java.util.Date) fromString((String) o);
-          }
-          // TODO(Minsun): convert the Date to be Noon time in its timezone
-          return (java.util.Date) o;
-        } catch ( Throwable t ) {
-          throw new RuntimeException(t);
-        }`;
+        return foam.util.DateUtil.adapt(o);
+       `;
 
        return info;
      }
@@ -1615,6 +1611,9 @@ foam.CLASS({
         return trim ? `val = foam.util.SafetyUtil.trim(val);\n` : '';
       }
     },
+    // Breaks parsing for some reason, but probably doesn't help much
+    // because the default is AnyParser which first list NullParser then StringParser
+    // ['javaJSONParser',  'foam.lib.json.StringParser.instance()'],
     {
       name: 'sqlType',
       expression: function(width) {
@@ -2012,7 +2011,8 @@ foam.CLASS({
   properties: [
     ['javaType',       'boolean'],
     ['javaInfoType',   'foam.lang.AbstractBooleanPropertyInfo'],
-    ['javaCompare',    '']
+    ['javaCompare',    ''],
+    ['javaJSONParser',  'foam.lib.json.BooleanParser.instance()']
   ],
 
   methods: [
@@ -2344,7 +2344,11 @@ foam.CLASS({
     },
 
     function targetJava(X) {
-      if ( ! this.flags || ! foam.checkForFlag(this.flags, 'java') ) return false;
+      var desired = 'java';
+      if ( foam.flags && foam.flags.test ) desired += "|java&test";
+      if ( ! this.flags || ! foam.checkForFlag(this.flags, desired) )
+        return false;
+
       var cls = foam.lookup(this.id);
       this.outputJavaClass(X, X.outdir, cls.buildJavaClass());
       return true;
@@ -2388,24 +2392,24 @@ foam.CLASS({
         var args = this.args;
         var boxPropName = foam.String.capitalize(this.boxPropName);
 
-        var code =
-`foam.box.Message message = getX().create(foam.box.Message.class);
-foam.box.RPCMessage rpc = getX().create(foam.box.RPCMessage.class);
+        var code = `
+var envelope = getX().create(foam.box.Envelope.class);
+var rpc = getX().create(foam.box.RPCMessage.class);
 rpc.setName("${name}");
 Object[] args = { ${ args.map( a => a.name ).join(',') } };
 rpc.setArgs(args);
 
-message.setObject(rpc);
-foam.box.RPCReturnBox replyBox = getX().create(foam.box.RPCReturnBox.class);
-message.getAttributes().put("replyBox", replyBox);
-get${boxPropName}().send(message);
+envelope.setMessage(rpc);
+var replyBox = getX().create(foam.box.RPCReturnBox.class);
+envelope.setReplyBox(replyBox);
+get${boxPropName}().send(envelope);
 try {
   replyBox.getSemaphore().acquire();
 } catch (Throwable t) {
   throw new RuntimeException(t);
 }
 
-Object result = replyBox.getMessage().getObject();
+Object result = replyBox.getEnvelope().getMessage();
 `;
 
         if ( this.javaType && this.javaType !== 'void' ) {
@@ -2635,6 +2639,8 @@ foam.CLASS({
   methods: [
 
     function buildJavaClass(cls) {
+      if ( ! this.javaSupport ) return;
+
     var result = this.TemplateUtil.create().compileJava(this.template, this.name, this.args || []);
       var args = [{ type: 'java.lang.StringBuilder', name: 'builder' }];
       args.push()

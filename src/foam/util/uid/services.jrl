@@ -25,6 +25,7 @@ p({
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("fuidKeys")
       .setCluster(false)
+      .setSaf(false)
       .build()
       .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.util.uid.FuidKey.KEY });
   """,

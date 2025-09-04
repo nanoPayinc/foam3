@@ -70,24 +70,24 @@ foam.CLASS({
           width: 220px;
         }
         ^dao {
-          color: $grey500;
+          color: $textTertiary;
           overflow: hidden;
           text-overflow: ellipsis;
         }
         ^dao:hover {
-          background: lightgray;
+          background: $backgroundSecondary;
         }
         ^section {
           display: inline-grid;
           vertical-align: baseline;
         }
         ^header {
-          background: $grey700;
-          color:$white;
+          background: $backgroundInverse;
+          color:$textOnInverse;
           font-weight: 800;
         }
         ^footer {
-          color: $grey500;
+          color: $textTertiary;
           padding-top: 12px;
         }
       `,

@@ -8,10 +8,12 @@ foam.CLASS({
   package: 'foam.core.export',
   name: 'GoogleSheetsOutputter',
   extends: 'foam.core.column.TableColumnOutputter',
+
   requires: [
     'foam.core.column.ColumnConfigToPropertyConverter',
     'foam.core.export.GoogleSheetsPropertyMetadata',
   ],
+
   methods: [
     {
       name: 'getColumnMetadata',
@@ -28,11 +30,11 @@ foam.CLASS({
             props.push(await columnConfig.returnProperty(cls, propNames[i]));
           }
         }
-        
+
         for ( var i = 0 ; i < props.length ; i++ ) {
           if ( props[i].cls_.id === "foam.lang.Action" )
             continue;
-          
+
           metadata.push(this.returnMetadataForProperty(x, cls, props[i], propNames[i]));
         }
         return metadata;
@@ -82,7 +84,7 @@ foam.CLASS({
             cellType = 'STRING';
           } else if ( foam.lang.StringArray.isInstance(prop) || foam.lang.Array.isInstance(prop) ) {
             cellType = 'ARRAY';
-          } 
+          }
 
           return this.GoogleSheetsPropertyMetadata.create({
             columnName: prop.name,

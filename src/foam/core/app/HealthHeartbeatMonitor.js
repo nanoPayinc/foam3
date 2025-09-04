@@ -17,19 +17,20 @@ foam.CLASS({
   ],
 
   javaImports: [
-    'foam.lang.Agency',
-    'foam.lang.ContextAgentTimerTask',
-    'foam.lang.ContextAgent',
-    'foam.lang.Detachable',
-    'foam.lang.X',
-    'foam.dao.DAO',
-    'foam.dao.Sink',
-    'static foam.mlang.MLang.EQ',
     'foam.core.alarming.Alarm',
     'foam.core.alarming.AlarmReason',
     'foam.core.logger.Logger',
     'foam.core.logger.Loggers',
     'foam.core.pm.PM',
+    'foam.dao.DAO',
+    'foam.dao.Sink',
+    'foam.lang.Agency',
+    'foam.lang.ContextAgentTimerTask',
+    'foam.lang.ContextAgent',
+    'foam.lang.Detachable',
+    'foam.lang.X',
+    'static foam.mlang.MLang.EQ',
+    'static foam.mlang.MLang.NEQ',
     'java.util.Timer'
   ],
 
@@ -109,13 +110,21 @@ foam.CLASS({
       name: 'execute',
       javaCode: `
       final Logger logger = Loggers.logger(x, this);
-      ((DAO) x.get("healthDAO")).select(
+      HealthSupport healthSupport = (HealthSupport) x.get("healthSupport");
+      Health self = healthSupport.getLocalHealth(x);
+      ((DAO) x.get("healthDAO"))
+      .where(
+        NEQ(Health.ID, self.getId())
+      )
+      .select(
         new Sink() {
           public void put(Object obj, Detachable sub) {
             Health health = (Health) obj;
             if ( health.getHeartbeatTime() == 0 ) return;
 
-            if ( health.getStatus() != HealthStatus.UP ) return;
+            if ( health.getStatus() == HealthStatus.DOWN ||
+                 health.getStatus() == HealthStatus.FAIL )
+              return;
 
             DAO alarmDAO = (DAO) x.get("alarmDAO");
             String name = "Heartbeat missed - "+health.toSummary();

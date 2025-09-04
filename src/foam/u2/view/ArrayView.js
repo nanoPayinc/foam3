@@ -24,6 +24,10 @@ foam.CLASS({
 
   properties: [
     {
+      class: 'Array',
+      name: 'data'
+    },
+    {
       class: 'foam.u2.ViewSpec',
       name: 'valueView',
       value: { class: 'foam.u2.view.AnyView' }
@@ -148,7 +152,7 @@ foam.CLASS({
       max-width: 100%;
     }
     ^addButton.foam-u2-ActionView {
-      border: 1.5px dashed $grey300;
+      border: 1.5px dashed $borderDefault;
       justify-content: flex-start;
       text-align: left;
       width: 100%;

@@ -24,6 +24,8 @@ foam.CLASS({
     'foam.core.auth.LastModifiedAware',
     'foam.core.auth.LastModifiedByAware',
     'foam.core.notification.Notification',
+    'foam.log.LogLevel',
+    'foam.util.SafetyUtil',
     'foam.util.StringUtil',
     'java.text.SimpleDateFormat',
     'java.util.Date',
@@ -56,6 +58,13 @@ foam.CLASS({
       javaCode: `
       Map args = new HashMap();
       EventRecord er = (EventRecord) obj;
+      if ( er.getSeverity() != LogLevel.ERROR ) {
+        Alarm alarm = (Alarm) ((DAO) x.get("alarmDAO")).find(EQ(Alarm.NAME, er.alarmSummary()));
+        if ( alarm == null ||
+             alarm.getIsActive() ) {
+          return;
+        }
+      }
 
       args.put("of", er.getClass().getSimpleName());
 
@@ -107,16 +116,10 @@ foam.CLASS({
       args.put("eventRecord", er.getId());
 
       StringBuilder body = new StringBuilder();
-      Alarm alarm = (Alarm) ((DAO) x.get("alarmDAO")).find(er.getAlarm());
+      Alarm alarm = (Alarm) ((DAO) x.get("alarmDAO")).find(EQ(Alarm.NAME, er.alarmSummary()));
       if ( alarm != null ) {
-        body.append("[");
-        body.append(alarm.getHostname());
-        body.append("] ");
-        body.append(alarm.getSeverity().getLabel().toUpperCase());
-        body.append(" - ");
         body.append(alarm.getName());
-        body.append("\\nname: ");
-        body.append(alarm.getName());
+        body.append("name: ");
         body.append("\\nstatus: ");
         body.append(alarm.getIsActive() ? "Active": "Cleared");
         body.append("\\nseverity: ");
@@ -133,7 +136,7 @@ foam.CLASS({
         }
         body.append("\\ninfo: ");
         body.append(alarm.getNote());
-        if ( alarm.getEventRecord() != null ) {
+        if ( ! SafetyUtil.isEmpty(alarm.getEventRecord()) ) {
           body.append("\\neventRecord: ");
           body.append("/#er?id="+alarm.getEventRecord());
         }
@@ -146,8 +149,10 @@ foam.CLASS({
         body.append(" ");
         AppConfig appConfig = (AppConfig) x.get("appConfig");
         body.append(appConfig.getUrl());
-        body.append("/#er?id=");
-        body.append(er.getId());
+        if ( ! SafetyUtil.isEmpty(er.getId()) ) {
+          body.append("/#er?id=");
+          body.append(er.getId());
+        }
       }
       Notification notification = new Notification();
       notification.setBody(body.toString());

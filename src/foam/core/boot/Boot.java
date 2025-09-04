@@ -6,12 +6,6 @@
 
 package foam.core.boot;
 
-import foam.lang.*;
-import foam.dao.AbstractSink;
-import foam.dao.ArraySink;
-import foam.dao.DAO;
-import foam.dao.java.JDAO;
-import foam.dao.ProxyDAO;
 import foam.core.auth.Group;
 import foam.core.auth.Subject;
 import foam.core.auth.User;
@@ -20,10 +14,20 @@ import foam.core.logger.ProxyLogger;
 import foam.core.logger.StdoutLogger;
 import foam.core.script.Script;
 import foam.core.session.Session;
+import foam.dao.AbstractSink;
+import foam.dao.ArraySink;
+import foam.dao.DAO;
+import foam.dao.ProxyDAO;
+import foam.dao.java.JDAO;
+import foam.lang.*;
+import static foam.mlang.MLang.EQ;
 import foam.util.SafetyUtil;
 import java.lang.Exception;
+import java.net.JarURLConnection;
+import java.net.URL;
 import java.util.*;
-import static foam.mlang.MLang.EQ;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 public class Boot {
   // Context key used to store the top-level root context in the context.
@@ -33,12 +37,9 @@ public class Boot {
   protected DAO                       serviceDAO_;
   protected X                         root_      = new MutableX();
   protected Map<String, CSpecFactory> factories_ = new HashMap<>();
+  protected static Map<String,String> ARGS       = new HashMap<>();
 
   public Boot() {
-    this("");
-  }
-
-  public Boot(String datadir) {
     XLocator.set(root_);
 
     Logger logger = new ProxyLogger(StdoutLogger.instance());
@@ -47,6 +48,7 @@ public class Boot {
 
     boolean cluster = SafetyUtil.equals("true", System.getProperty("CLUSTER", "false"));
 
+    String datadir = ARGS.get("datadir");
     if ( SafetyUtil.isEmpty(datadir) ) {
       datadir = System.getProperty("JOURNAL_HOME");
     }
@@ -169,19 +171,33 @@ public class Boot {
         .setAuthorizer(new foam.core.auth.AuthorizableAuthorizer("service"))
         .build());
 
-    String startScript = System.getProperty("foam.main", "main");
-    if ( startScript != null ) {
-      DAO scriptDAO = (DAO) root_.get("bootScriptDAO");
-      if ( scriptDAO == null ) {
-        logger.warning("DAO Not Found: bootScriptDAO. Falling back to scriptDAO");
-        scriptDAO = (DAO) root_.get("scriptDAO");
-      }
-      Script script = (Script) scriptDAO.find(startScript);
+    // Run main bootscript
+    // TOOD: support array of names
+    DAO scriptDAO = (DAO) root_.get("bootScriptDAO");
+    if ( scriptDAO == null ) {
+      logger.warning("DAO Not Found: bootScriptDAO. Falling back to scriptDAO");
+      scriptDAO = (DAO) root_.get("scriptDAO");
+    }
+    String bootScript = System.getProperty("foam.main", "main");
+    if ( bootScript != null ) {
+      Script script = (Script) scriptDAO.find(bootScript);
       if ( script != null ) {
-        logger.info("Boot,script", startScript);
+        logger.info("Boot,bootScript", bootScript);
         ((Script) script.fclone()).runScript(root_);
       } else {
-        logger.warning("Boot, Script not found", startScript);
+        logger.warning("Boot,bootScript not found", bootScript);
+      }
+    }
+
+    // Run auxilary boot script
+    bootScript = ARGS.get("boot.script.aux");
+    if ( bootScript != null ) {
+      Script script = (Script) scriptDAO.find(bootScript);
+      if ( script != null ) {
+        logger.info("Boot,bootScriptAux", bootScript);
+        ((Script) script.fclone()).runScript(root_);
+      } else {
+        logger.warning("Boot,bootScript not found", bootScript);
       }
     }
 
@@ -216,7 +232,10 @@ public class Boot {
   protected void installSystemUser() {
     User user = new User();
     user.setId(User.SYSTEM_USER_ID);
-    user.setSpid("foam");
+    String spid = ARGS.get("spid");
+    if ( SafetyUtil.isEmpty(spid) )
+      spid = "foam";
+    user.setSpid(spid);
     user.setFirstName("system");
     user.setGroup("system");
     user.setLoginEnabled(false);
@@ -237,30 +256,61 @@ public class Boot {
 
   public X getX() { return root_; }
 
+  public static String[] getManifestArgs() {
+    try {
+      String className = Boot.class.getSimpleName() + ".class";
+      String classPath = Boot.class.getResource(className).toString();
+      if ( ! classPath.startsWith("jar") ) {
+        return new String[0];
+      }
+      URL url = new URL(classPath);
+      JarURLConnection jarConnection = (JarURLConnection) url.openConnection();
+      Manifest manifest = jarConnection.getManifest();
+      Attributes attributes = manifest.getMainAttributes();
+      String args = attributes.getValue("Args");
+      if ( SafetyUtil.isEmpty(args) ) {
+        return new String[0];
+      }
+      return args.split(",");
+    } catch (Throwable t ) {
+      System.err.println("Failed to acquire 'Args' from manifest. " + t.getMessage());
+      return new String[0];
+    }
+  }
+
   public static void main (String[] args)
     throws java.lang.Exception
   {
-    System.out.println("Starting Nanos Server");
-
-    boolean datadirFlag = false;
-
-    String datadir = "";
-    for ( int i = 0 ; i < args.length ; i++ ) {
-      String arg = args[i];
-
-      if ( datadirFlag ) {
-        datadir = arg;
-        datadirFlag = false;
-      } else if ( arg.equals("--datadir") ) {
-        datadirFlag = true;
-      } else {
-        System.err.println("Unknown argument " + arg);
-        System.exit(1);
-      }
+    System.out.println("Starting CORE Server");
+    if ( args != null && args.length > 0 ) {
+      System.out.println("with: " + java.util.Arrays.toString(args));
     }
 
-    System.out.println("Datadir is " + datadir);
+    if ( args == null || args.length == 0 ) {
+      args = getManifestArgs();
+    }
 
-    new Boot(datadir);
+    for ( int i = 0 ; i < args.length ; i++ ) {
+      String arg = args[i];
+      if ( arg.startsWith("--") )
+        arg = arg.substring(2);
+
+      String[] kv = null;
+      String   k  = arg;
+      String   v  = null;
+
+      if ( arg.contains(":")) {
+        kv = arg.split(":");
+      } else if ( arg.contains("=")) {
+        kv = arg.split("=");
+      }
+      if ( kv != null ) {
+        k = kv[0];
+        v = kv.length == 2 ? kv[1] : "";
+      }
+      ARGS.put(k, v);
+    }
+
+    new Boot();
   }
 }

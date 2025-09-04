@@ -352,7 +352,7 @@ foam.CLASS({
         br().br().
 
         start('h2').add('TableView').end().
-        start({class: 'foam.u2.view.TableView', data: this.users}).
+        start({class: 'foam.u2.table.TableView', data: this.users}).
           style({height: '200px', display: 'contents'}).
         end().
 

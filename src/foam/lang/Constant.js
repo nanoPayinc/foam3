@@ -86,6 +86,7 @@ foam.CLASS({
   refines: 'foam.lang.Model',
   package: 'foam.lang',
   name: 'ModelConstantRefine',
+
   properties: [
     {
       class: 'AxiomArray',

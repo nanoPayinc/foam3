@@ -2,7 +2,7 @@
 
 
 
-DIG provides a simple unified method for users and systems to interact with Nanos Data Access Objects (DAOs).
+DIG provides a simple unified method for users and systems to interact with CORE Data Access Objects (DAOs).
 A DAO is similar to a database table,
 but with additional access control, performance monitoring, auditing, replication, validation, and business logic.
 

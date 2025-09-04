@@ -20,7 +20,7 @@ foam.CLASS({
       transition: background-color 140ms, border-color 140ms;
     }
     ^:checked {
-      background-color: $black;
+      background-color: $backgroundInverse;
     }
     ^ .label {
       // WHY DOESN"T WORK?

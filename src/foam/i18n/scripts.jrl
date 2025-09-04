@@ -250,8 +250,9 @@ p({
   let used = Object.values(foam.USED)
   let objs = used.concat(Object.values(foam.UNUSED))
   let msg  = '';
+  let package = 'some.package';
 
-  objs = used.filter(p => p.package == 'net.nanopay.sme.ui.dashboard')
+  objs = used.filter(p => p.package == package)
 
   objs.forEach(o => {
     !!o.messages && o.messages.forEach(m => {console.log(objs+'mm')

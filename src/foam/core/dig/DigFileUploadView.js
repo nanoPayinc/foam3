@@ -48,7 +48,7 @@ foam.CLASS({
       min-width: 700px;
       max-width: 275px;
       height: 40px;
-      background-color:$white;
+      background-color:$backgroundDefault;
       padding-left: 10px;
       padding-right: 10px;
       padding-top: 5px;
@@ -77,7 +77,7 @@ foam.CLASS({
     ^ .uploadDescription {
       margin-top: 9px;
       font-weight: 300;
-      color: $primary400;
+      color: $textBrand;
     }
     ^ .boxless-for-drag-drop {
       border: dashed 4px #a4b3b8;

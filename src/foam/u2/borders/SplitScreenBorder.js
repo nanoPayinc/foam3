@@ -13,7 +13,7 @@ foam.CLASS({
     ^ {
       height: 100vh;
       width: 100vw;
-      background: $white;
+      background: $backgroundDefault;
     }
     ^ .left-block {
       width: 55vw;

@@ -19,13 +19,13 @@ foam.CLASS({
 
   css: `
     ^ .foam-u2-Tabs-content > div {
-      background: $white;
+      background: $backgroundDefault;
       padding: 14px 16px;
       border-bottom-left-radius: 6px;
       border-bottom-right-radius: 6px;
     }
 
-    ^ .foam-u2-view-ScrollTableView table {
+    ^ .foam-u2-table-TableView table {
       width: 100%;
     }
 
@@ -63,7 +63,7 @@ foam.CLASS({
       this.SUPER();
       this
         .addClass(this.myClass())
-        .add(this.slot(function(sections, data) {
+        .add(this.slot(function(sections) {
           self.visibilityArray_$.follow(self.ArraySlot.create({
             slots: sections.map((s) => s.createIsAvailableFor(self.data$, self.__subContext__.controllerMode$))
           }));

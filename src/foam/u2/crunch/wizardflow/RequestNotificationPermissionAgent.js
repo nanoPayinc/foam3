@@ -46,7 +46,7 @@ foam.CLASS({
       ],
       css: `
         ^ {
-          color: $grey600;
+          color: $textSecondary;
           display: flex;
           flex-direction: column;
           gap: 2.4rem;
@@ -114,7 +114,7 @@ foam.CLASS({
 
   css: `
     ^ .foam-u2-dialog-StyledModal-modal-body {
-      color: $grey600;
+      color: $textSecondary;
       display: flex;
       flex-direction: column;
       gap: 2.4rem;

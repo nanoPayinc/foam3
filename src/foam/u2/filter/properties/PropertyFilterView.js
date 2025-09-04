@@ -20,11 +20,13 @@ foam.CLASS({
   ],
 
   imports: [
-    'filterController'
+    'filterController',
+    'ctrl'
   ],
 
   requires: [
-    'foam.parse.QueryParser'
+    'foam.parse.QueryParser',
+    'foam.u2.md.OverlayDropdown'
   ],
 
   css: `
@@ -35,7 +37,7 @@ foam.CLASS({
       padding: 6px 8px;
       padding-right: 4px;
       border-radius: 3px;
-      background: $grey50;
+      background: $backgroundSecondary;
     }
 
     ^container-property:hover {
@@ -43,36 +45,25 @@ foam.CLASS({
     }
 
     ^container-property-active, ^container-property-filtering {
-      background-color: $primary50;
+      background-color: $backgroundBrandTertiary;
     }
 
     ^label-property {
+      display: inline-block; 
       margin: 0;
-      color: #5e6061;
+      color: $textTertiary;
       flex: 1;
+      white-space: nowrap;
       overflow: hidden;
-    }
-
-    ^overlay-dismiss {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 2;
+      text-overflow: ellipsis;
     }
 
     ^container-filter {
-      position: absolute;
-      z-index: 100;
-      margin-top: 8px;
-
       min-width: 216px;
-
-      border-radius: 3px;
+      border-radius: 4px;
       box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 2px 8px 0 rgba(0, 0, 0, 0.16);
-      border: solid 1px #cbcfd4;
-      background-color: $white;
+      border: solid 1px $borderLight;
+      background-color: $backgroundDefault;
     }
   `,
 
@@ -119,11 +110,13 @@ foam.CLASS({
     {
       class: 'String',
       name: 'iconPath',
-      value: 'images/expand-more.svg'
+      expression: function(active) {
+        return active ? 'images/expand-less.svg' : 'images/expand-more.svg';
+      }
     },
     {
       name: 'criteria'
-    },
+      },
     'isInit',
     {
       name: 'queryParser',
@@ -134,6 +127,18 @@ foam.CLASS({
     {
       class: 'foam.mlang.predicate.PredicateProperty',
       name: 'preSetPredicate'
+    },
+    {
+      class: 'FObjectProperty',
+      of: 'foam.u2.Element',
+      name: 'overlay_',
+      factory: function() {
+        return this.OverlayDropdown.create({
+          closeOnLeave: false,
+          styled: false,
+          parentEdgePadding: '4'
+        });
+      }
     }
   ],
 
@@ -141,9 +146,16 @@ foam.CLASS({
     function render() {
       this.SUPER();
       var self = this;
-
+      this.overlay_.parentEl = this.el_();
+      this.onDetach(() => this.overlay_.remove());
+      self.active$.follow(this.overlay_.opened$);
+      if ( self.ctrl ) {
+        self.ctrl.add(this.overlay_);
+      } else {
+        this.overlay_.write();
+      }
       this.addClass()
-        .start().addClass(this.myClass('container-property'))
+        .start('div', {tooltip: this.property.label}).addClass(this.myClass('container-property'))
           .enableClass(this.myClass('container-property-active'), this.active$)
           .enableClass(this.myClass('container-property-filtering'), this.activeFilterCheck_$.not())
           .on('click', this.switchActive)
@@ -152,40 +164,40 @@ foam.CLASS({
             .add(this.labelFiltering$)
           .end()
           .start({ class: 'foam.u2.tag.Image', data$: this.iconPath$}).end()
-        .end()
-        .add(this.slot(function(active) {
-          return active ? self.E().start().addClass(self.myClass('overlay-dismiss'))
-          .on('click', self.switchActive)
-          .end() : self.E();
-        }))
-        .start('div', null, this.container_$).addClass(this.myClass('container-filter'))
-          .show(this.active$)
+        .end();
+
+      this.overlay_
+        .start('div', null, this.container_$)
+          .addClass(this.myClass('container-filter'))
         .end();
 
       this.isInit = true;
       // Load filters on render instead of open
       // Temp fix till filterController can be refactored to not depend on Search
       if ( this.firstTime_ )
-        this.initView();
+        this.initView(false);
       this.isFiltering();
       this.isInit = false;
     }
   ],
 
   listeners: [
-    function initView() {
-      if ( this.firstTime_ ) {
-        this.container_.tag(this.searchView, {
-          property: this.property,
-          dao$: this.dao$
-        }, this.view_$);
-      }
+    function initView(addView = true) {
       // Restore the search view using an existing predicate for that view
       // This requires that every search view implements restoreFromPredicate
       var existingPredicate = this.filterController.getExistingPredicate(this.criteria, this.property);
 
       if ( ! existingPredicate && this.preSetPredicate != null ) {
         existingPredicate = this.preSetPredicate;
+      }
+
+      if ( this.firstTime_ && (addView || existingPredicate) ) {
+        this.container_.tag(this.searchView, {
+          property: this.property,
+          dao$: this.dao$
+        }, this.view_$);
+      } else {
+        return;
       }
 
       if ( existingPredicate ) {
@@ -203,15 +215,18 @@ foam.CLASS({
 
       this.onDetach(this.view_$.dot('predicate').sub(this.isFiltering));
     },
-    function switchActive() {
+    function switchActive(e) {
       this.active = ! this.active;
-      this.iconPath = this.active ? 'images/expand-less.svg' : 'images/expand-more.svg';
 
       // View is not active. Does not require creation
       if ( ! this.active ) return;
       // View has been instantiated before. Does not require creation
-      if ( ! this.firstTime_ ) return;
-      this.initView();
+      if ( ! this.firstTime_ );
+        this.initView();
+
+      let x = e.clientX || this.getBoundingClientRect().x;
+      let y = e.clientY || this.getBoundingClientRect().y;
+      this.overlay_.open(x, y);
     },
 
     function isFiltering() {
@@ -224,7 +239,6 @@ foam.CLASS({
       // check to see if there is an existing predicate to use the correct label
       if ( this.filterController.getExistingPredicate(this.criteria, this.property) && this.firstTime_ ) {
         this.labelFiltering = this.LABEL_PROPERTY_FILTER;
-        this.filterController.activeFilterCount++;
         this.activeFilterCheck_ = false;
         return;
       }
@@ -232,12 +246,10 @@ foam.CLASS({
       // Displays the correct label depending on situation
         if ( this.view_.predicate !== this.TRUE && this.activeFilterCheck_ ) {
           this.labelFiltering = this.LABEL_PROPERTY_FILTER;
-          this.filterController.activeFilterCount++;
           this.activeFilterCheck_ = ! this.activeFilterCheck_;
         }
         else if ( this.view_.predicate === this.TRUE && ! this.activeFilterCheck_ ) {
           this.labelFiltering = this.LABEL_PROPERTY_ALL;
-          this.filterController.activeFilterCount--;
           this.activeFilterCheck_ = ! this.activeFilterCheck_;
         }
     }

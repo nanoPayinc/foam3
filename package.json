@@ -2,11 +2,17 @@
   "name": "foam3",
   "version": "2.0.0",
   "main": "src/foam.js",
+  "scripts": {
+    "lint": "eslint src/ tools/ --ext .js",
+    "lint:fix": "eslint src/ tools/ --ext .js --fix",
+    "lint:check": "eslint src/ tools/ --ext .js --max-warnings 0"
+  },
   "dependencies": {
     "container-query-polyfill": "^1.0.2",
     "xmldom": "^0.6.0"
   },
   "devDependencies": {
+    "eslint": "^8.57.0",
     "uglify-js": "^3.19.3"
   }
 }

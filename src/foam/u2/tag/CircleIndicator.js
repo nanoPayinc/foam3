@@ -30,9 +30,14 @@ foam.CLASS({
       overflow: hidden;
       align-items: center;
       justify-content: center;
+      cursor: pointer;
     }
     ^ > img {
       pointer-events: none;
+    }
+    ^ svg {
+      height: 100%;
+      width: 100%;
     }
   `,
 

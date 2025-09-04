@@ -172,21 +172,21 @@ foam.CLASS({
     }
 
     ^container {
-      background: $white;
-      border: 1px solid $grey400;
+      background: $backgroundDefault;
+      border: 1px solid $borderDefault;
       max-height: min(400px, 40vh);
       overflow-y: auto;
       box-sizing: border-box;
       width: 100%;
-      border-radius: 4px;
+      border-radius: $inputBorderRadius;
       box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 2px 8px 0 rgba(0, 0, 0, 0.16);
       z-index: 1000;
+      position: relative;
     }
 
     ^heading {
-      border-bottom: 1px solid #f4f4f9;
-      color: #333;
-      padding: 6px 16px;
+      color: $textSecondary;
+      padding: 8px 4px;
     }
 
     ^selection-view {
@@ -196,29 +196,30 @@ foam.CLASS({
       width: 100%;
       position: relative;
       min-height: $inputHeight;
-      border: 1px solid $grey400;
-      color: $black;
-      background-color: $white;
+      border: 1px solid $borderDefault;
+      color: $textDefault;
+      background-color: $backgroundDefault;
       min-width: 120px;
 
       width: 100%;
-      border-radius: 4px;
+      border-radius: $inputBorderRadius;
       -webkit-appearance: none;
       cursor: pointer;
+      transition: all 0.2s ease;
     }
     ^dropdown {
       padding: 0 0.8rem;
     }
     ^dropdown svg {
       height: 1em;
-      fill: currentColor;
+      fill: $dropdownIcon;
       aspect-ratio: 1;
     }
 
     ^selection-view:hover,
     ^selection-view:hover ^clear-btn {
-      border-color: $grey500;
-      background: $grey50;
+      border-color: $borderDefault;
+      background: $backgroundHover;
     }
 
     ^:focus {
@@ -227,7 +228,7 @@ foam.CLASS({
 
     ^:focus ^selection-view,
     ^:focus ^selection-view ^clear-btn {
-      border-color: $primary400;
+      border-color: $borderBrand;
     }
 
     ^custom-selection-view {
@@ -258,15 +259,15 @@ foam.CLASS({
     }
 
     ^search {
-      border-bottom: 1px solid #f4f4f9;
+      border-bottom: 1px solid $borderDefault;
       display: flex;
     }
 
-    ^ .disabled {
-      filter: grayscale(100%) opacity(60%);
+    ^container .disabled {
+      filter: grayscale(100%) opacity(70%);
     }
 
-    ^ .disabled:hover {
+    ^container .disabled:hover {
       cursor: default;
     }
 
@@ -278,18 +279,22 @@ foam.CLASS({
       padding-right: $inputHorizontalPadding;
       height: $inputHeight;
       border-left: 1px solid;
-      border-color: $grey400;
+      border-color: $borderDefault;
       margin-left: 12px;
       padding-left: 16px;
     }
 
     ^clear-btn:hover {
-      color: $destructive400;
+      color: $textDestructive;
       cursor: pointer;
     }
 
     ^moreChoices {
       padding: 8px 16px;
+    }
+
+    ^section:not(:last-child) {
+      border-bottom: 1px solid #f4f4f9;
     }
   `,
 
@@ -374,7 +379,7 @@ foam.CLASS({
     {
       class: 'Class',
       name: 'of',
-      documentation: 'The model stored in the DAO. Used intenrally.',
+      documentation: 'The model stored in the DAO. Used internally.',
       expression: function(sections) {
         return sections[0].dao.of;
       }
@@ -530,7 +535,7 @@ foam.CLASS({
                   .tag(self.FILTER_.clone().copyFrom({ view: {
                     class: 'foam.u2.TextField',
                     placeholder: this.searchPlaceholder || 'Search... ',
-                    focused: true,
+                    autofocus: true,
                     onKey: true
                   } }), {}, self.inputField$)
                 .endContext()
@@ -544,16 +549,19 @@ foam.CLASS({
             return Promise.all(promiseArray).then(resp => {
               var index = 0;
               return this.E().forEach(sections, function(section) {
+                if ( section.hideIfEmpty && resp[index].value <= 0 ) return;
                 section.refineInput_ = resp[index].value > section.choicesLimit;
                 this.addClass(self.myClass('setAbove'))
-                  .start().hide(!! section.hideIfEmpty && resp[index].value <= 0 || ! section.heading)
-                    .addClass('p', 'bolder', self.myClass('heading'))
+                  .start().addClass(self.myClass('section'))
+                  .start().hide(! section.heading)
+                    .addClass('h600', self.myClass('heading'))
                     .translate(section.heading$)
                   .end()
                   .start()
-                    .select( section.choicesLimit ? section.filteredDAO$proxy.limit(section.choicesLimit) : section.filteredDAO$proxy, obj => {
-                      return this.E()
-                        .start(self.rowView, { data: obj })
+                    .select( section.choicesLimit ? section.filteredDAO$proxy.limit(section.choicesLimit) : section.filteredDAO$proxy, function(obj) {
+                      let addRow = function() {
+                        this.start(self.rowView, { data: obj })
+                          .attr('disabled', section.disabled)
                           .attr('role', 'option')
                           .enableClass('disabled', section.disabled)
                           .callIf(! section.disabled, function() {
@@ -563,6 +571,12 @@ foam.CLASS({
                             });
                           })
                         .end();
+                      }
+                      if ( this.U3 ) {
+                        this.call(addRow);
+                      } else {
+                        return this.E().call(addRow);
+                      }
                     }, false, self.comparator)
                   .end()
                   .callIf(section.choicesLimit, function() {
@@ -570,7 +584,8 @@ foam.CLASS({
                       .addClass(self.myClass('moreChoices'))
                       .add(section.refineInput_$.map(v => v ? self.MORE_CHOICES : ''))
                     .end();
-                  });
+                  })
+                  .end();
                   index++;
               });
             });
@@ -630,7 +645,8 @@ foam.CLASS({
                   .tag(self.selectionView, {
                     mode$: self.mode$,
                     fullObject$: self.fullObject_$,
-                    defaultSelectionPrompt$: self.choosePlaceholder$
+                    defaultSelectionPrompt$: self.choosePlaceholder$,
+                    addPadding: false
                   })
                 .end();
           }
@@ -645,8 +661,9 @@ foam.CLASS({
 
     function addAction(action, actionData) {
       var self = this;
+      let e = this.E().style({ 'display': 'contents' })
       if ( action && actionData ) {
-        return this.E()
+        return e
           .start(self.DefaultActionView, { action: action, data: actionData })
           .on('click', () => {
             self.dropdown_.close();
@@ -655,7 +672,7 @@ foam.CLASS({
           .end();
       }
       if ( action ) {
-        return this.E()
+        return e
           .start(self.DefaultActionView, { action: action })
           .on('click', () => {
                 self.dropdown_.close();
@@ -692,15 +709,22 @@ foam.CLASS({
             section.dao.where(
               this.EQ(this.of.getAxiomByName(this.idProperty), this.data)
             ).select().then(result => {
-              if ( result.array.length > 0 ) this.fullObject_ = result.array[0];
-            }).catch( e => console.warn(e));
+              if ( result.array.length > 0 ) {
+                if ( section.disabled ) return this.clearSelection();
+                this.fullObject_ = result.array[0];
+              }
+            }).catch(e =>
+              console.warn(e)
+            );
             return;
           }
           // majority of cases will fall into above code,
           // but incase a section is defined without a proper dao
-          section.dao.find(this.data).then(result => {
-            if ( result ) this.fullObject_ = result;
-          }).catch( e => console.warn(e));
+          if ( this.data ) {
+            section.dao.find(this.data).then(result => {
+              if ( result ) this.fullObject_ = result;
+            }).catch( e => console.warn(e));
+          }
         });
       }
     },
@@ -744,9 +768,18 @@ foam.CLASS({
       ],
 
       css:`
+        ^ {
+          border-radius: $inputBorderRadius;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
         ^paddingWrapper {
           padding-left: $inputHorizontalPadding;
           padding-right: $inputHorizontalPadding;
+        }
+        ^customSelectView:not(^ro) > div {
+          padding: 4px 8px;
         }
       `,
       properties: [
@@ -766,22 +799,25 @@ foam.CLASS({
             custom selection view, it will be passed the id of the object (data)
             as well as the full object.
           `
+        },
+        {
+          class: 'Boolean',
+          name: 'addPadding',
+          value: true
         }
       ],
 
       methods: [
         function render() {
           let self = this;
-          this.style({
-            'overflow': 'hidden',
-            'white-space': 'nowrap',
-            'text-overflow': 'ellipsis',
-            'border-radius': '4px'
-          });
 
-          this.add(this.dynamic(function(fullObject) {
+          this.addClass().add(this.dynamic(function(fullObject) {
             if ( fullObject ) {
-              this.tag((self.rowView || self.CitationView), { data: fullObject });
+              this.startContext({ controllerMode: 'VIEW' }).start()
+                .addClass(self.myClass('customSelectView'))
+                .enableClass(self.myClass('ro'), self.addPadding$.not())
+                .tag((self.rowView || self.CitationView), { data: fullObject })
+              .end().endContext();
             } else {
               this.start().addClass(self.myClass('paddingWrapper')).add(self.defaultSelectionPrompt).end();
             }
@@ -798,25 +834,31 @@ foam.CLASS({
         action is provided.
       `,
 
+      cssTokens: [
+        {
+          name: 'buttonRadius',
+          value: '0 0 4px 4px'
+        }
+      ],
+
+      properties: [
+        {
+          name: 'buttonStyle',
+          value: foam.u2.ButtonStyle.TEXT
+        }
+      ],
+
       css: `
         ^ {
           border: 0;
-          border-top: 1px solid #f4f4f9;
-          color: $primary400;
-          display: flex;
+          border-top: 1px solid $borderDefault;
           justify-content: flex-start;
-          text-align: left;
           width: 100%;
+          background: $backgroundDefault;
+          position: sticky;
+          bottom: 0;
         }
 
-        ^:hover {
-          color: $primary500;
-          cursor: pointer;
-        }
-
-        ^ img + span {
-          margin-left: 6px;
-        }
       `
     }
   ]

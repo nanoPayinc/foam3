@@ -46,7 +46,7 @@ public class TreeIndex
   }
 
   public Object bulkLoad(FObject[] a) {
-    Arrays.sort(a);
+    Arrays.parallelSort(a);
     return TreeNode.getNullNode().bulkLoad(tail_, indexer_, 0, a.length-1, a);
   }
 
@@ -186,7 +186,7 @@ public class TreeIndex
     if ( predicate == null ) {
       // See if it's possible to do Count or GroupBy select efficiently.
       if ( sink instanceof Count && state != null ) {
-        return new CountPlan(((TreeNode) state).size);
+        return new CountPlan(Math.min(limit, ((TreeNode) state).size));
       }
 
       // We return a groupByPlan only if no order, no limit, no skip, no predicate

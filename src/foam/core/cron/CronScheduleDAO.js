@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'CronScheduleDAO',
   extends: 'foam.dao.ProxyDAO',
 
-  documentation: 'Update cron scheduledTime on schedule changed',
+  documentation: 'Recalculate next scheduledTime on update',
 
   javaImports: [
     'foam.core.script.ScriptStatus',
@@ -22,10 +22,14 @@ foam.CLASS({
       javaCode: `
         Cron newCron = (Cron) obj;
         Cron oldCron = (Cron) getDelegate().find_(x, obj);
-        if ( newCron.getStatus() == ScriptStatus.UNSCHEDULED ||
-             newCron.getStatus() == ScriptStatus.ERROR ||
-             ( oldCron != null &&
-               ! SafetyUtil.equals(oldCron.getSchedule(), newCron.getSchedule()) ) ) {
+        if ( newCron.getEnabled() &&
+             ( newCron.getStatus() == ScriptStatus.UNSCHEDULED ||
+               newCron.getStatus() == ScriptStatus.ERROR ||
+               ( oldCron != null &&
+                 ! SafetyUtil.equals(oldCron.getSchedule(), newCron.getSchedule()) ) ) ) {
+          if ( newCron.isFrozen() ) {
+            newCron = (Cron) newCron.fclone();
+          }
           newCron.setScheduledTime(newCron.getNextScheduledTime(x));
         }
         return getDelegate().put_(x, newCron);

@@ -115,7 +115,7 @@ foam.CLASS({
 
       // This method is only called on puts, so we only need to check for write
       // permission.
-      if ( axiom.getWritePermissionRequired() ) {
+      if ( axiom.getWritePermissionRequired() || axiom.getUpdatePermissionRequired() ) { 
         properties.add(axiom);
         maybeReset(axiom, of, auth, x, obj, oldObj);
       }
@@ -217,12 +217,15 @@ foam.CLASS({
       javaCode: `
   String axiomName =  axiom.toString();
   axiomName = axiomName.substring(axiomName.lastIndexOf(".") + 1);
-
+  var writePermissionRequired = (Boolean) axiom.getWritePermissionRequired();
+  
   if ( ! auth.check(x, of + ".rw." + axiomName.toLowerCase()) ) {
+    // If user does not have permission, block all updates if oldObj exists otherwise
+    // only block creates if writePermissionRequired == true
     if ( oldObj != null ) {
       Object oldValue = oldObj.getProperty(axiomName);
       axiom.set(obj, oldValue);
-    } else {
+    } else if ( writePermissionRequired ) {
       axiom.clear(obj);
     }
   }

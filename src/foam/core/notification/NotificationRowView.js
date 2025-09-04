@@ -38,8 +38,8 @@
 
     css: `
       ^ {
-        background:$white;
-        border: solid 1px #e7eaec;
+        background:$backgroundDefault;
+        border: solid 1px $borderLight;
         border-radius: 3px;
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
         cursor: pointer;
@@ -48,7 +48,7 @@
       }
       ^msg {
         display: -webkit-box;
-        color: $black;
+        color: $textDefault;
         overflow: hidden;
         text-overflow: ellipsis;
         word-wrap: break-word;

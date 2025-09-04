@@ -112,6 +112,8 @@ foam.CLASS({
     },
     {
       class: 'Map',
+      tranient: true,
+      hidden: true,
       name: 'containerMap'
     }
   ],
@@ -132,38 +134,37 @@ foam.CLASS({
       .addClass(this.myClass())
       .enableClass(this.myClass('main'), this.main)
       .start()
-        .hide(!this.dashboardTitle)
-        .enableClass('h500', this.dashboardTitle)
+        .show(this.dashboardTitle$)
+        .enableClass('h500', this.dashboardTitle$)
         .style({ height: '2em' })
-        .add(this.dashboardTitle)
+        .add(this.dashboardTitle$)
       .end()
-      .tag(widgetContainer)
-
-      let menuArray = Object.keys(this.widgets)
-      let menuLength = menuArray.length
-      for(let step = 0; step < menuLength; step++) {
-
-          let menuId = menuArray[step];
-          let menu = await this.menuDAO.find(menuId);
-          if (! await menu?.readPredicate.f(menu)) {menu = null}
-          if ( menu ) {
-            widgetContainer.startContext().start(menu.handler.view).style({
-              'grid-column': this.containerMap$.map(v => {
-                return v[menuId] ?? this.containerWidth?.cols;
-              })
-            }).end();
-          } else {
-            delete this.widgets[menuId];
-          }
-      };
-
+      .tag(widgetContainer);
+      await this.initWidgets(widgetContainer);
       this.updateCols();
       this.containerWidth$.sub(this.updateCols);
-
-
+    },
+    async function initWidgets(widgetContainer) {
+      let menuArray = Object.keys(this.widgets);
+      let menuLength = menuArray.length;
+      for( let step = 0; step < menuLength; step++ ) {
+        let menuId = menuArray[step];
+        let menu = await this.menuDAO.find(menuId);
+        if ( ! await menu?.readPredicate.f(menu) )
+          menu = null;
+        if ( menu ) {
+          widgetContainer.startContext().start(menu.handler.view).style({
+            'grid-column': this.containerMap$.map(v => {
+              return v[menuId] ?? this.containerWidth?.cols;
+            })
+          }).end();
+        } else {
+          delete this.widgets[menuId];
+        }
+      }
     }
   ],
-
+ 
   listeners: [
     {
       name: 'updateCols',

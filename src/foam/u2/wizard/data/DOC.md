@@ -182,7 +182,7 @@ wao: {
     class: 'foam.u2.wizard.data.InlineTransientSaver',
     wizardSpecLoader: {
       class: 'foam.u2.wizard.data.PrerequisiteLoader',
-      prerequisiteCapabilityId: 'net.nanopay.transfer.TestRequestQuotePut',
+      prerequisiteCapabilityId: 'foam.core.some.capability.TestSomethingPut',
       loadFromPath: 'selectedPlan'
     }
   }

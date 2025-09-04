@@ -55,52 +55,31 @@ foam.CLASS({
   properties: [
     {
       name: 'delegate',
-      postSet: function(old, nu) {
-        if ( ! nu ) return;
-        foam.assert(
-          nu.of === this.to,
-          'Expect AdapterDAO.delegate.of === AdapterDAO.to');
-      }
-    },
-    {
-      class: 'Class',
-      name: 'to',
-      documentation: '"of" of delegate.'
     },
     {
       name: 'Function',
       name: 'adaptToDelegate',
       documentation: `Adapt this's "of" type to "delegate"'s "of" type.`,
-      value: function(ctx, obj) {
-        if ( ! obj ) return obj;
-        if ( ! this.of.isInstance(obj) ) return obj;
-        return this.to.create(obj, ctx || this.__subContext__);
-      }
+      value: null
     },
     {
       name: 'Function',
       name: 'adaptFromDelegate',
       documentation: `Adapt "delegate"'s "of" type this's "of" type.`,
-      value: function(ctx, obj) {
-        if ( ! obj ) return obj;
-        if ( ! this.to.isInstance(obj) ) return obj;
-        return this.of.create(obj, ctx || this.__subContext__);
-      }
+      value: null
     },
     {
       name: 'Function',
       name: 'adaptOrder',
       documentation: 'Adapt select() order to order understood by "delegate".',
-      // TODO(markdittmer): Smarter default?
-      value: function(order) { return order; }
+      value: null
     },
     {
       name: 'Function',
       name: 'adaptPredicate',
       documentation: `Adapt select() predicate to predicate understood by
           "delegate".`,
-      // TODO(markdittmer): Smarter default?
-      value: function(predicate) { return predicate; }
+      value: null
     }
   ],
 
@@ -122,14 +101,31 @@ foam.CLASS({
 
     function select_(ctx, sink, skip, limit, order, predicate) {
       sink = sink || this.ArraySink.create();
+
+      // If we can adapt the query, then do the efficient thing and do so
+      if ( !! this.adaptPredicate && !! this.adaptOrder ) {
+        var adapterSink = this.AdapterSink.create({
+          delegate: sink,
+          adapt: (obj) => this.adaptFromDelegate(ctx, obj)
+        });
+        
+        return this.delegate.select_(
+          ctx, adapterSink, skip, limit,
+          this.adaptOrder(order), this.adaptPredicate(predicate)).
+          then(function() { return sink; });
+      }
+
+      
+      var decorated = this.decorateSink_(sink, skip, limit, order, predicate);
+      // otherwise, just decorate our sink and do a select all
       var adapterSink = this.AdapterSink.create({
-        delegate: sink,
+        delegate: decorated,
         adapt: this.adaptFromDelegate.bind(this, ctx)
       });
-      return this.delegate.select_(
-              ctx, adapterSink, skip, limit,
-              this.adaptOrder(order), this.adaptPredicate(predicate)).
-          then(function() { return sink; });
+
+      return this.delegate.select_(ctx, adapterSink).then(function() {
+        return sink;
+      });
     },
 
     function removeAll_(ctx, skip, limit, order, predicate) {

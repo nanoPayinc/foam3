@@ -40,13 +40,13 @@ foam.CLASS({
       content: attr(placeholder);
       pointer-events: none;
       display: block;
-      color: $grey400;
+      color: $textTertiary;
     }
     ^ > * + * {
       margin-top: 4px;
     }
     ^editor {
-      border: 1px solid $grey300;
+      border: 1px solid $borderDefault;
       border-radius: 4px;
       height: unset;
       overflow: auto;
@@ -55,8 +55,8 @@ foam.CLASS({
       width: 100%;
     }
     ^dragged{
-      background: $primary50;
-      border: 2px dashed $primary400;
+      background: $backgroundBrandTertiary;
+      border: 2px dashed $borderBrand;
     }
     ^dragged::after{
       content: "Drop Here";
@@ -70,12 +70,14 @@ foam.CLASS({
     ^ButtonToolbar {
       display: flex;
       gap: 8px;
+      width: 100%;
+      flex-wrap: wrap;
     }
     ^ButtonToolbar > button + button {
       margin-left: 0 !important;
     }
     ^seperator{
-      background: $grey500;
+      background: $backgroundSecondary0;
       width: 1px;
       height: 2em;
       align-self: center;
@@ -475,7 +477,7 @@ foam.CLASS({
       methods: [
         function initializeOverlay() {
           this.overlayInitialized_ = true;
-          this.overlay_.parentEl = this.richTextView;
+          this.overlay_.parentEl = this.richTextView.el_();
           this.overlay_
             .start()
               .addClass(this.myClass())
@@ -505,7 +507,7 @@ foam.CLASS({
             var el = this.document.createElement('a');
             // Is this secure? Limit it to current scope urls?
             el.href = this.link || '';
-            el.target = '_blank';
+            // el.target = '_blank'; // Why was this here?
             el.title = this.label || this.link || '';
             el.appendChild(this.document.createTextNode(this.label || this.link || ''));
             this.richTextView.insertElement(el, this.richTextView.currentSel_);

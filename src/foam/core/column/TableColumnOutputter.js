@@ -20,9 +20,7 @@ foam.CLASS({
 
   properties: [
     {
-      class: 'Boolean',
-      name: 'sheetsCompatibleDates',
-      value: true
+      name: 'dateFormat',
     },
     {
       class: 'Boolean',
@@ -78,21 +76,15 @@ foam.CLASS({
     },
 
     function dateToString(d) {
-      return this.sheetsCompatibleDates ?
-        d.toLocaleDateString('en-us') :
-        d.toLocaleDateString(foam.locale) ;
+      return this.dateFormat[0](d);
     },
 
-    function timeToString(d) {
-      return this.sheetsCompatibleDates ?
-        d.toLocaleTimeString('en-us') :
-        d.toString().substring(0, 8) ;
+    function timeToString(t) {
+      return this.dateFormat[1](t);
     },
 
     function dateTimeToString(dt) {
-      return this.sheetsCompatibleDates ?
-        dt.toLocaleDateString('en-us') + ' ' + dt.toLocaleTimeString('en-us') :
-        dt.toString() ;
+      return this.dateFormat[0](dt) + ' ' + this.dateFormat[1](dt);
     },
 
     {

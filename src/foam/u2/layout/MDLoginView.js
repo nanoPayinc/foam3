@@ -33,7 +33,7 @@ foam.CLASS({
       display: grid;
       position: relative;
       top: -52px;
-      color: $grey700;
+      color: $textSecondary;
     }
 
     ^ .link {
@@ -47,11 +47,11 @@ foam.CLASS({
       padding: 3rem;
       top: -10rem;
       position: relative;
-      background: $grey50;
+      background: $backgroundSecondary;
       margin: auto;
       box-shadow: 0px 0px 30px 0px #b7b7b7;
       border-radius: 30px;
-      color: $grey700;
+      color: $textSecondary;
     }
 
     ^ .background-container {
@@ -64,7 +64,7 @@ foam.CLASS({
     }
 
     ^ .home-logo {
-      background-color: $grey50;
+      background-color: $backgroundSecondary;
       padding: 3rem;
       border-radius: 50%;
       margin-bottom: 13rem;

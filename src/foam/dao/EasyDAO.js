@@ -34,7 +34,6 @@ foam.CLASS({
   `,
 
   requires: [
-    'foam.box.Context',
     'foam.box.HTTPBox',
     'foam.box.RetryBox',
     'foam.box.SessionClientBox',
@@ -181,6 +180,12 @@ foam.CLASS({
           }
         }
 
+        if ( getMdao() != null && getLastDao() == null ) {
+          setLastDao(delegate);
+        }
+
+        delegate = getClusterDelegate(delegate);
+
         if ( getFuid() ) {
           delegate = new foam.dao.FUIDDAO(getX(), getName(), getSeqPropertyName(), delegate);
         } else if ( getSeqNo() ) {
@@ -195,19 +200,11 @@ foam.CLASS({
           delegate = new foam.dao.GUIDDAO(getX(), delegate);
         }
 
-        if ( getMdao() != null && getLastDao() == null ) {
-          setLastDao(delegate);
-        }
-
         if ( getMdao() != null && ! getEnableInterfaceDecorators() ) {
           logger.warning(getName(),
             "Interface decorators need to be disabled on the higher level of the decorator chain " +
             "if you are trying to prevent the decorators to be triggered multiple times"
           );
-        }
-
-        if ( getCluster() && getMdao() != null ) {
-          delegate = getClusterDelegate(delegate);
         }
 
         if ( getSubdomainAware() ) {
@@ -242,7 +239,7 @@ foam.CLASS({
         if ( getDecorator() != null ) {
           if ( ! ( getDecorator() instanceof ProxyDAO) ) {
             logger.error(getName(), "delegateDAO", getDecorator(), "not instanceof ProxyDAO");
-            System.exit(1);
+            reportFatalDAOError();
           }
           // The decorator dao may be a proxy chain
           ProxyDAO proxy = (ProxyDAO) getDecorator();
@@ -365,7 +362,7 @@ foam.CLASS({
           delegate = new foam.core.om.DAOOMLogger.Builder(getX()).setCSpec(getCSpec()).setDelegate(delegate).build();
 
         if ( getPm() )
-          delegate = new foam.dao.PMDAO.Builder(getX()).setCSpec(getCSpec()).setDelegate(delegate).build();
+          delegate = new foam.dao.PMDAO.Builder(getX()).setName(getName()).setDelegate(delegate).build();
 
         for ( Indexer i : indexes ) {
           AddIndexCommand cmd = new AddIndexCommand();
@@ -486,9 +483,10 @@ foam.CLASS({
       type: 'foam.core.auth.Authorizer',
       name: 'authorizer',
       javaFactory: `
-      if ( foam.core.auth.Authorizable.class.isAssignableFrom(getOf().getObjClass()) ) {
+      if ( getOf().isAssignableTo(foam.core.auth.Authorizable.class) ) {
         return new foam.core.auth.AuthorizableAuthorizer(getPermissionPrefix());
       }
+
       return new foam.core.auth.StandardAuthorizer(getPermissionPrefix());
       `
     },
@@ -499,7 +497,7 @@ foam.CLASS({
         return this.of.name.toLowerCase();
       },
       javaFactory: `
-      return getOf().getObjClass().getSimpleName().toLowerCase();
+      return getOf().getSimpleName().toLowerCase();
      `
     },
     {
@@ -523,7 +521,7 @@ foam.CLASS({
       List<PropertyInfo> props = getOf().getAxiomsByClass(PropertyInfo.class);
       for ( PropertyInfo info : props ) {
         if ( info.getWritePermissionRequired() ||
-             info.getReadPermissionRequired() ) {
+             info.getReadPermissionRequired() || info.getUpdatePermissionRequired() ) {
           return true;
         }
       }
@@ -556,13 +554,31 @@ foam.CLASS({
     },
     {
       class: 'String',
-      name: 'journalName'
+      name: 'journalName',
+      factory: function() { return this.of.plural; },
+      javaFactory: `
+        var plural = getOf().getPlural().replaceAll(" ","");
+        return plural.substring(0,1).toLowerCase() + plural.substring(1);
+      `
     },
     {
       documentation: `See JDAO.  Force caller to wait on nspec initailzation. The first call to 'get' for an nspec (x.get(servicename)) will have the calling thread wait on reply of service. This is the default behaviour and should be used for all essential services.  Also this should be used if the model is using SeqNo or NUID for id generation.`,
       class: 'Boolean',
       name: 'waitReplay',
       value: true
+    },
+    {
+      documentation: 'See JDAO and F3FileJournal.  Default journal replay is asynchronous. Some models with business logic that reference self can cause deadlock when parsed out of order.  If journal processing hangs, set syncReplay to true to replay synchronously.',
+      class: 'Boolean',
+      name: 'syncReplay'
+    },
+    {
+      documentation: `Enable NDiff in JDAO. Enable per DAO with this property or globally via JVM Parameter 'UseNDiff'`,
+      class: 'Boolean',
+      name: 'ndiff',
+      javaFactory: `
+      return System.getProperty("UseNdiff", null) != null;
+      `
     },
     {
       class: 'FObjectProperty',
@@ -599,7 +615,8 @@ foam.CLASS({
     },
     {
       class: 'Boolean',
-      name: 'pm'
+      name: 'pm',
+      value: true
     },
     {
       class: 'Boolean',
@@ -721,18 +738,16 @@ foam.CLASS({
       }
     },
     {
-      // TODO: move refine in foam-medusa
+      // refined in foam-medusa
       documentation: 'Cluster this DAO',
       name: 'cluster',
-      class: 'Boolean',
-      javaFactory: `
-      return foam.util.SafetyUtil.equals("true", System.getProperty("CLUSTER", "false"));
-      `
+      class: 'Boolean'
     },
     {
-      documentation: 'Store and forward this DAO',
-      name: 'SAF',
       class: 'Boolean',
+      name: 'saf',
+      // refined in foam-saf
+      documentation: 'Store and forward this DAO',
       value: false
     },
     {
@@ -762,7 +777,7 @@ foam.CLASS({
       generateJava: false
     },
     {
-      documentation: 'Enables automated adding of property-related DAO decorators to qualifying decorator chains',
+      documentation: 'Enables automated adding of property-related DAO decorators to qualifying decorator chains.  Ex. CreatedAwareDAO is added if the obj implements CreatedAware.',
       name: 'enableInterfaceDecorators',
       class: 'Boolean',
       value: true
@@ -771,7 +786,7 @@ foam.CLASS({
       documentation: 'Decorate with a ServiceProviderAwareDAO',
       name: 'serviceProviderAware',
       class: 'Boolean',
-      javaFactory: 'return foam.core.auth.ServiceProviderAware.class.isAssignableFrom(getOf().getObjClass());'
+      javaFactory: 'return getOf().isAssignableTo(foam.core.auth.ServiceProviderAware.class);'
     },
     {
       name: 'subdomainAware',
@@ -780,32 +795,32 @@ foam.CLASS({
     {
       name: 'lifecycleAware',
       class: 'Boolean',
-      javaFactory: 'return getEnableInterfaceDecorators() && foam.core.auth.LifecycleAware.class.isAssignableFrom(getOf().getObjClass());'
+      javaFactory: 'return getEnableInterfaceDecorators() && getOf().isAssignableTo(foam.core.auth.LifecycleAware.class);'
     },
     {
       name: 'createdAware',
       class: 'Boolean',
-      javaFactory: 'return getEnableInterfaceDecorators() && foam.core.auth.CreatedAware.class.isAssignableFrom(getOf().getObjClass());'
+      javaFactory: 'return getEnableInterfaceDecorators() && getOf().isAssignableTo(foam.core.auth.CreatedAware.class);'
     },
     {
       name: 'createdByAware',
       class: 'Boolean',
-      javaFactory: 'return getEnableInterfaceDecorators() && foam.core.auth.CreatedByAware.class.isAssignableFrom(getOf().getObjClass());'
+      javaFactory: 'return getEnableInterfaceDecorators() && getOf().isAssignableTo(foam.core.auth.CreatedByAware.class);'
     },
     {
       name: 'lastModifiedAware',
       class: 'Boolean',
-      javaFactory: 'return getEnableInterfaceDecorators() && foam.core.auth.LastModifiedAware.class.isAssignableFrom(getOf().getObjClass());'
+      javaFactory: 'return getEnableInterfaceDecorators() && getOf().isAssignableTo(foam.core.auth.LastModifiedAware.class);'
     },
     {
       name: 'lastModifiedByAware',
       class: 'Boolean',
-      javaFactory: 'return getEnableInterfaceDecorators() && foam.core.auth.LastModifiedByAware.class.isAssignableFrom(getOf().getObjClass());'
+      javaFactory: 'return getEnableInterfaceDecorators() && getOf().isAssignableTo(foam.core.auth.LastModifiedByAware.class);'
     },
     {
       name: 'capable',
       class: 'Boolean',
-      javaFactory: 'return getEnableInterfaceDecorators() && foam.core.crunch.lite.Capable.class.isAssignableFrom(getOf().getObjClass());'
+      javaFactory: 'return getEnableInterfaceDecorators() && getOf().isAssignableTo(foam.core.crunch.lite.Capable.class);'
     },
     {
       name: 'allowActionRequiredPuts',
@@ -836,7 +851,7 @@ foam.CLASS({
         (ie. ApprovableAwareDAO) completely and since ApprovableAware interface implements
         LifecycleAware the lifecycleState property on the object will not be changed to ACTIVE.
       `,
-      javaFactory: 'return getEnableInterfaceDecorators() && foam.core.approval.ApprovableAware.class.isAssignableFrom(getOf().getObjClass());'
+      javaFactory: 'return getEnableInterfaceDecorators() && getOf().isAssignableTo(foam.core.approval.ApprovableAware.class);'
     },
     {
       name: 'approvableAwareEnabled',
@@ -885,15 +900,26 @@ foam.CLASS({
          if ( logger != null ) {
            logger.error("EasyDAO", getName(), "'of' not set.", new Exception("of not set"));
          } else {
-           System.err.println("EasyDAO "+getName()+" 'of' not set.");
+           System.err.println("EasyDAO " + getName() + " 'of' not set.");
          }
-         System.exit(1);
+         reportFatalDAOError();
        }
 
        if ( getInnerDAO() == null && getMdao() == null && ! getNullify() ) {
          setMdao(new foam.dao.MDAO(getOf()));
        }
      `
+    },
+    {
+      name: 'reportFatalDAOError',
+      type: 'void',
+      javaCode: `
+        Thread.dumpStack();
+        System.err.println("------------------------------------------------------ EasyDAO Shutting Down");
+        System.err.println("---- Due to inability to create DAO. Fix DAO specification.");
+
+        System.exit(-1);
+      `
     },
     {
       name: 'getJournalDelegate',
@@ -921,8 +947,10 @@ foam.CLASS({
             foam.dao.java.JDAO jdao = new foam.dao.java.JDAO();
             jdao.setX(x);
             jdao.setFilename(getJournalName());
-            jdao.setCluster(getCluster() && !getSAF());
+            jdao.setCluster(getCluster() && !getSaf());
             jdao.setWaitReplay(getWaitReplay());
+            jdao.setSyncReplay(getSyncReplay());
+            jdao.setNdiff(getNdiff());
             // Setting of delegate must be last as it triggers replay
             jdao.setDelegate(delegate);
             delegate = jdao;
@@ -1304,6 +1332,8 @@ foam.CLASS({
       args: 'Context x, Object obj',
       type: 'Object',
       code: function cmd_(x, obj) {
+        if ( obj === 'serviceName?' ) return this.serviceName;
+
         return this.delegate.cmd_(x, obj);
       },
       javaCode: `

@@ -44,6 +44,16 @@ foam.CLASS({
       factory: function() {
         return foam.u2.theme.ThemeGlyphs.create({}, this);
       }
+    },
+    {
+      class: 'Map',
+      name: 'activeVariants'
+    },
+    {
+      // Set to true when dark mode is cleared for prod
+      name: 'useVariants',
+      class: 'Boolean',
+      value: true
     }
   ]
 });

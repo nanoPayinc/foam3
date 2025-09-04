@@ -59,7 +59,7 @@ foam.CLASS({
     ^ .prefix { margin-left: 10px; }
     ^ button { margin-top: 16px; }
     ^ .summaryPane { width: 49%; display: inline-block; vertical-align: top; }
-    ^ .foam-u2-view-ScrollTableView { height: 227px; outline: none; margin-top: 16px; }
+    ^ .foam-u2-table-TableView { height: 227px; outline: none; margin-top: 16px; }
     ^ .foam-u2-DetailView-title { background: none; border: none; }
   `,
 
@@ -86,7 +86,7 @@ foam.CLASS({
         return dao.where(this.STARTS_WITH_IC(this.Person.SURNAME, prefix));
       },
       view: {
-        class: 'foam.u2.view.ScrollTableView',
+        class: 'foam.u2.table.TableView',
         of: foam.demos.sevenguis.Person,
         title: '',
         editColumnsEnabled: false

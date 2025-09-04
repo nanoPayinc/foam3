@@ -39,7 +39,6 @@ foam.CLASS({
       name: 'position',
       postSet: function(_, n) {
         if ( this.posFeedback_ ) return;
-
         while ( n < this.stackSize_ ) this.back();
         while ( n > this.stackSize_ ) this.forth();
       }
@@ -52,6 +51,22 @@ foam.CLASS({
   methods: [
     function init() {
       this.memento$.sub(this.onMementoChange);
+    },
+
+    function clear() {
+      this.stack = [];
+      this.redo  = [];
+      this.updateSizes();
+    },
+
+    function undoAll() {
+      this.posFeedback_  = true;
+      this.memento = this.stack[0];
+      this.stack.shift();
+      this.redo = [...this.stack.reverse(), ...this.redo];
+      this.stack = [];
+      this.updateSizes();
+      this.dumpState('undoAll');
     },
 
     function updateSizes() {
@@ -91,9 +106,10 @@ foam.CLASS({
   actions: [
     {
       name:  'back',
-      label: ' <-- ',
+      label: '',
       help:  'Go to previous view',
-
+      buttonStyle: 'BLACK',
+      themeIcon: 'redo',
       isEnabled: function(stackSize_) { return !! stackSize_; },
       code: function() {
         this.dumpState('preBack');
@@ -105,9 +121,10 @@ foam.CLASS({
     },
     {
       name:  'forth',
-      label: ' --> ',
+      label: '',
       help:  'Undo the previous back.',
-
+      buttonStyle: 'BLACK',
+      themeIcon: 'undo',
       isEnabled: function(redoSize_) { return !! redoSize_; },
       code: function() {
         this.dumpState('preForth');
@@ -123,7 +140,7 @@ foam.CLASS({
     function onMementoChange(_,__,___,memento$) {
       if ( this.ignore_ ) return;
 
-      // console.log('MementoMgr.onChange', oldValue, newValue);
+//      console.log('MementoMgr.onChange old: ', memento$.oldValue, 'new:',memento$.get());
       this.remember(memento$.oldValue);
       this.redo = [];
       this.updateSizes();

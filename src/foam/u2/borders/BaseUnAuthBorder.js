@@ -14,22 +14,22 @@ foam.CLASS({
 
   css: `
     ^ .cover-img-block1 {
+      align-items: center;
+      border-radius: 8px;
       display: flex;
       flex-direction: column;
       flex-wrap: nowrap;
-      align-items: center;
-      border-radius: 8px;
     }
     ^image-one {
-      width: 80%;
-      padding-bottom: 8rem;
-      max-width: 400px;
+      height: auto;
+      padding: 4rem;
     }
     ^grid {
       grid-gap: 0;
     }
     ^split-screen {
       position: relative;
+      padding-right: 2rem;
     }
   `,
 
@@ -61,7 +61,7 @@ foam.CLASS({
     },
     {
       name: 'columnsConfigLeft',
-      value: { 
+      value: {
         class: 'foam.u2.layout.GridColumns',
         columns: 6,
         lgColumns: 7,

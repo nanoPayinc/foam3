@@ -23,7 +23,7 @@
   values: [
     {
       name: 'DEFAULT',
-      color: '$primary400',
+      color: '$textBrand',
       glyph: 'checkmark'
     },
     {
@@ -38,7 +38,7 @@
     },
     {
       name: 'INFO',
-      color: '$primary400',
+      color: '$textBrand',
       glyph: 'checkmark'
     },
     {
@@ -48,7 +48,7 @@
     },
     {
       name: 'UNSTYLED',
-      color: '$white'
+      color: '$backgroundDefault'
     }
   ]
 });

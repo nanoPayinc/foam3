@@ -49,7 +49,7 @@ foam.CLASS({
       width: 448px;
       height: 231px;
       border-radius: 2px;
-      background-color: $white;
+      background-color: $backgroundDefault;
     }
     ^ .Rectangle-7 {
       float: left;

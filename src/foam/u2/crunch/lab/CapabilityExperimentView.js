@@ -25,7 +25,7 @@ foam.CLASS({
   requires: [
     'foam.u2.Tab',
     'foam.u2.Tabs',
-    'foam.u2.borders.CollapseBorder',
+    'foam.u2.Accordion',
     'foam.u2.tag.Button',
     'foam.util.AddBeforeFluentSpec',
     'foam.util.RemoveFluentSpec'
@@ -100,7 +100,7 @@ foam.CLASS({
             .tag(this.SEQUENCE_REFERENCE_ID)
           .endContext()
           .start({
-            class: 'foam.u2.borders.CollapseBorder',
+            class: 'foam.u2.Accordion',
             expanded: false,
             title: 'Sequence Modifications'
           })
@@ -125,7 +125,7 @@ foam.CLASS({
                 console.log('sequence', sequence)
                 return self.E()
                   .start({
-                    class: 'foam.u2.borders.CollapseBorder',
+                    class: 'foam.u2.Accordion',
                     expanded: false,
                     title: 'Resulting Sequence'
                   })

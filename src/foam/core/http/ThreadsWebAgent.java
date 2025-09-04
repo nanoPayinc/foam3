@@ -6,16 +6,16 @@
 
 package foam.core.http;
 
-import foam.lang.*;
 import foam.core.session.Session;
-import foam.util.SafetyUtil;
+import foam.lang.VirtualThreadAgency;
+import foam.lang.X;
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.io.PrintWriter;
-import java.lang.StackTraceElement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import jakarta.servlet.http.HttpServletRequest;
 
 /** Display thread information. **/
 public class ThreadsWebAgent
@@ -49,18 +49,31 @@ public class ThreadsWebAgent
   public void execute(X x) {
     PrintWriter        out         = x.get(PrintWriter.class);
     HttpServletRequest req         = x.get(HttpServletRequest.class);
-    Set<Thread>        threadSet   = Thread.getAllStackTraces().keySet();
     Session            session     = x.get(Session.class);
-    Thread[]           threadArray = threadSet.toArray(new Thread[threadSet.size()]);
-    boolean            showAll     = "y".equals(req.getParameter("showAll"));
+    boolean            showAll     = req != null ? "y".equals(req.getParameter("showAll")) : true;
+    String             id          = req != null ? req.getParameter("id") : null;
+
+    Set<Thread>  platformThreadSet = Thread.getAllStackTraces().keySet();
+    Set<Thread>   virtualThreadSet = VirtualThreadAgency.getRunningThreads();
+    Thread[]           threadArray = new Thread[platformThreadSet.size() + virtualThreadSet.size() ];
+    int i = 0;
+    for ( Thread t : platformThreadSet ) threadArray[i++] = t;
+    for ( Thread t : virtualThreadSet  ) threadArray[i++] = t;
 
     out.println("<HTML>");
     out.println("<HEAD><TITLE>Threads</TITLE></HEAD>\n");
+    out.println("<STYLE>");
+    out.println("  tr:hover {");
+    out.println("    background-color: #f2f2f2;");
+    out.println("  }");
+    out.println("</STYLE>");
     out.println("<BODY>");
-    if ( showAll ) {
-     out.println("<a href=\"?showAll=n&sessionId=" + session.getId() + "\">Hide parked threads.</a>");
-    } else {
-      out.println("<a href=\"?showAll=y&sessionId=" + session.getId() + "\">Show parked threads.</a>");
+    if ( session != null ) {
+      if ( showAll ) {
+        out.println("<a href=\"?" + showAllParam(false) + "sessionId=" + session.getId() + "\">Hide parked threads.</a>");
+      } else {
+        out.println("<a href=\"?" + showAllParam(true) + "sessionId=" + session.getId() + "\">Show parked threads.</a>");
+      }
     }
     out.println("<br><H1>Threads</H1>\n");
     out.println("<pre>");
@@ -72,10 +85,17 @@ public class ThreadsWebAgent
     out.println("<tr>");
     out.println("<th style=\"text-align: left\">Thread Name</th>");
     out.println("<th style=\"text-align: left\">State</th>");
+    out.println("<th style=\"text-align: left\">Virtual</th>");
     out.println("<th>Last Method Call</th>");
     out.println("</tr>");
 
+    Thread selected = null;
     for ( Thread thread : threadArray ) {
+      if ( ! thread.isAlive() ) continue;
+
+      Boolean isSelected = String.valueOf(thread.getId()).equals(id);
+      if ( isSelected ) selected = thread;
+
       StackTraceElement[] elements   = thread.getStackTrace();
       String              methodName = null;
 
@@ -85,7 +105,7 @@ public class ThreadsWebAgent
         switch ( methodName ) {
           case "park":
             parkedThreads += 1;
-            if ( showAll ) { break; } else { continue; }
+            if ( showAll || isSelected ) { break; } else { continue; }
           case "sleep":
             sleepingThreads += 1;
             methodName = getMethodName(elements);
@@ -98,9 +118,11 @@ public class ThreadsWebAgent
         methodName = "Unscheduled";
       }
 
-      out.println("<tr>");
+      out.println(isSelected ? "<tr style=\"background-color:aliceblue\">" : "<tr>");
       out.println("<td>");
-      out.println("<a href=\"threads?id=" + thread.getId() + "&sessionId=" + session.getId() + "\">" + thread.toString() + "</a>");
+      if ( isSelected ) out.println("<b> &gt;&gt;");
+      out.println("<a href=\"threads?" + showAllParam(showAll) + "id=" + thread.getId() + "&sessionId=" + session.getId() + "\">" + thread.toString() + "</a>");
+      if ( isSelected ) out.println("</b>");
       out.println("</td>");
       out.println("<td>");
       out.println(thread.getState());
@@ -110,6 +132,9 @@ public class ThreadsWebAgent
       } else {
         threadsInState.put(thread.getState(), Integer.valueOf(count.intValue() + 1));
       }
+      out.println("</td>");
+      out.println("<td>");
+      out.println(thread.isVirtual() ? "TRUE" : "FALSE");
       out.println("</td>");
       out.println("<td>");
       out.println(methodName);
@@ -123,27 +148,25 @@ public class ThreadsWebAgent
     out.format("<br>");
     out.println(threadsInState.keySet().stream().map(key -> key + " : " + threadsInState.get(key)).collect(Collectors.joining(" ; ")));
 
-    String param = req.getParameter("id");
-    if ( ! SafetyUtil.isEmpty(param) ) {
+    if ( selected != null ) {
       out.println("<br><br><H2>Stack Trace</H2>\n");
+      out.println("<b>Thread: " + selected.getName() + "</b>\n");
 
-      for ( Thread thread : threadArray ) {
-        if ( param.equals(String.valueOf(thread.getId())) ) {
-          out.println("<b>Thread: " + thread.getName() + "</b>\n");
-          StackTraceElement[] elements = thread.getStackTrace();
+      StackTraceElement[] elements = selected.getStackTrace();
 
-          if ( elements.length > 0 ) {
-            for ( StackTraceElement element : elements ) {
-              out.println(element.toString());
-            }
-          } else {
-            out.println("This thread has not started, has started but not yet been scheduled to run, or has terminated.");
-          }
-          break;
+      if ( elements.length > 0 ) {
+        for ( StackTraceElement element : elements ) {
+          out.println(element.toString());
         }
+      } else {
+        out.println("This thread has not started, has started but not yet been scheduled to run, or has terminated.");
       }
     }
 
     out.println("</pre></BODY></HTML>");
+  }
+
+  protected String showAllParam(Boolean value) {
+    return value ? "showAll=y&" : "";
   }
 }

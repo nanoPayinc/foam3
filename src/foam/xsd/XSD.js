@@ -545,16 +545,6 @@ foam.CLASS({
       /*
       // for ISO 20022 properties convert short name to long name and add documentation
       let iso20022Type = iso20022Types[m.name];
-      if ( iso20022Type && iso20022Type.properties && this.package === 'net.nanopay.iso20022' ) {
-        var iso20022Props = iso20022Type.properties;
-        var iso20022Prop  = iso20022Props[doc.getAttribute('name')];
-
-        if ( iso20022Prop && iso20022Prop.name ) {
-          property.name = iso20022Prop.name;
-          property.shortName = doc.getAttribute('name');
-          property.documentation = iso20022Prop.documentation;
-        }
-      }
       */
 
       // check if enum

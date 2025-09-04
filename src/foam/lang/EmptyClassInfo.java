@@ -21,6 +21,10 @@ public class EmptyClassInfo
     return this;
   }
 
+  public String getPlural() {
+    return "";
+  }
+
   public ClassInfo getParent() {
     return this;
   }
@@ -46,6 +50,12 @@ public class EmptyClassInfo
   public ClassInfo setObjClass(Class cls) {
     return null;
   }
+
+  public boolean isAssignableFrom(Class cls) { return false; }
+
+  public String getName() { return ""; }
+
+  public String getSimpleName() { return ""; }
 
   public Class getObjClass() {
     return null;

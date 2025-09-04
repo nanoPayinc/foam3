@@ -1,0 +1,5 @@
+p({
+  "class":"foam.net.Host",
+  "id":"test",
+  "address":"localhost"
+})

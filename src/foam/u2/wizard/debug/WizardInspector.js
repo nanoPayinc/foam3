@@ -60,7 +60,7 @@ foam.CLASS({
       border-left-size: 6px;
     }
     ^current.foam-u2-borders-Block {
-      border-color: $primary400;
+      border-color: $borderBrand;
     }
   `,
 
@@ -78,7 +78,7 @@ foam.CLASS({
             return;
           }
           this.start('h1').add(wizardController$.get().title || 'Untitled Wizard').end()
-          .startContext({ data: this.crunchController.lastActiveWizard$ })
+          .startContext({ data: self.crunchController.lastActiveWizard$ })
             .tag(self.STORE_GLOBAL)
           .endContext()
           .start('h2').add('wizardlets').end()

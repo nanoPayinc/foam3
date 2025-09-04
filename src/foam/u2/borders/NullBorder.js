@@ -17,13 +17,14 @@ foam.CLASS({
   properties: [
     {
       class: 'StringArray',
-      name: 'cssClasses'
-    },
+      name: 'cssClasses',
+      hidden: true
+    }
   ],
 
   methods: [
     function render() {
-      this.addClass(...this.cssClasses).tag('', {}, this.content$);
+      this.addClass(...this.cssClasses);
     }
   ]
 });

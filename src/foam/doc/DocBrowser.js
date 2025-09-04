@@ -33,7 +33,7 @@ foam.CLASS({
     }
     ^title { padding: 6px; align-content: center; background: #c8e2f9; }
     ^info { float: right; font-size: smaller; }
-    ^content { padding: 6px; min-width: 220px; height: 100%; background:$white; }
+    ^content { padding: 6px; min-width: 220px; height: 100%; background:$backgroundDefault; }
   `,
 
   properties: [
@@ -166,7 +166,7 @@ foam.CLASS({
     'foam.dao.ArrayDAO',
     'foam.doc.ClassLink',
     'foam.doc.EnumInfo',
-    'foam.u2.view.TableView'
+    'foam.u2.table.TableView'
   ],
 
   imports: [
@@ -227,7 +227,7 @@ foam.CLASS({
     'foam.doc.AxiomInfo',
     'foam.doc.ClassLink',
     'foam.doc.Link',
-    'foam.u2.view.TableView'
+    'foam.u2.table.TableView'
   ],
 
   imports: [
@@ -235,10 +235,6 @@ foam.CLASS({
     'showInherited',
     'showOnlyProperties'
   ],
-
-  css: `
-    ^ .foam-u2-view-TableView-row { height: auto; }
-  `,
 
   methods: [
     function render() {

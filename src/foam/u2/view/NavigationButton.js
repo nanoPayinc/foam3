@@ -37,23 +37,25 @@ foam.CLASS({
       name: 'NavButtonBackgroundColor',
       class: 'foam.u2.ColorToken',
       value: '$foam.core.menu.VerticalMenu.menuBackground',
-      onLight: '$grey700',
+      onLight: '$textSecondary',
       disabledModifier: -10,
       hoverModifier: -10,
       activeModifier: -15
     },
     {
       name: 'NavSelectedIconColor',
-      value: function(e) { return e.LIGHTEN(e.TOKEN('$NavButtonSelectedLabelColor'), 10) }
+      value: function(e) { return e.LIGHTEN(e.TOKEN('$NavButtonSelectedLabelColor'), 10) },
+      variantKey: 'color'
     },
     {
       class: 'foam.u2.ColorToken',
       name: 'NavButtonSelectedLabelColor',
-      value: '$primary600'
+      value: '$textBrandSecondary'
     },
     {
       name: 'NavButtonSelectedBackgroundColor',
-      value: '$NavButtonBackgroundColor$hover'
+      value: '$NavButtonBackgroundColor$hover',
+      variantKey: 'color'
     }
   ],
   css: `

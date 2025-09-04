@@ -22,7 +22,11 @@ foam.CLASS({
     {
       class: 'Map',
       name: 'criterias',
-      documentation: 'Map containing all criterias',
+      documentation: `Map containing all criterias
+      Criterias are a set of predicates applied at a time to a dao
+      The idea is to eventually let users save these to make custom "filter views" 
+      For now filter controller only uses one criteria.
+      `,
       factory: function() {
         // Example structure
         // {
@@ -37,14 +41,6 @@ foam.CLASS({
       }
     },
     {
-      class: 'Map',
-      name: 'previewCriterias',
-      documentation: `
-        To keep the information separated when moving between preview and simple
-        modes.
-      `
-    },
-    {
       name: 'finalPredicate',
       factory: function() {
         return this.TRUE;
@@ -57,51 +53,25 @@ foam.CLASS({
       }
     },
     {
-      name: 'previewPredicate',
-      documentation: `
-        This enables advanced mode to preview a predicate without actually applying
-        it. Storing it here also gives us the capability to restore the predicate if
-        the user wishes to edit the predicate. This is for UX purposes.
-      `,
-      factory: function() {
-        return this.TRUE;
-      }
-    },
-    {
       name: 'dao',
-      documentation: 'The pure unadulterated DAO as a basis for the criterias'
-    },
-    {
-      class: 'Boolean',
-      name: 'isPreview'
-    },
-    {
-      class: 'Boolean',
-      name: 'isAdvanced'
-    },
-    {
-      class: 'Long',
-      name: 'resultsCount'
-    },
-    {
-      class: 'Long',
-      name: 'totalCount'
+      documentation: 'The unfiltered DAO as a basis for the criterias'
     },
     {
       class: 'Int',
       name: 'activeFilterCount',
-      defaultValue: 0
+      expression: function(activeFilters) {
+        return Object.values(activeFilters)?.filter(v => v).length ?? 0;
+      }
+    },
+    {
+      class: 'Map',
+      name: 'activeFilters'
     }
   ],
 
   methods: [
     function init() {
       this.addCriteria();
-      this.onDetach(this.dao$.sub(this.onDAOUpdate));
-      this.onDAOUpdate();
-      this.onDetach(this.isPreview$.sub(this.getResultsCount)); //Switching
-      this.onDetach(this.finalPredicate$.sub(this.getResultsCount));
-      this.onDetach(this.previewPredicate$.sub(this.getResultsCount));
     },
 
     function and(predicates) {
@@ -111,7 +81,7 @@ foam.CLASS({
     },
 
     function addCriteria(key) {
-      var criterias = this.isPreview ? this.previewCriterias : this.criterias;
+      var criterias = this.criterias;
       var keys = Object.keys(criterias);
       var newKey;
       if ( key ) {
@@ -119,28 +89,16 @@ foam.CLASS({
       } else {
         newKey = keys.length > 0 ? Number.parseInt(keys[keys.length - 1]) + 1 : 0;
       }
-
-      if ( ! this.isPreview ) {
-        this.criterias$set(newKey, {
-          views: {},
-          subs: {},
-          predicates: {},
-          memorable: {}
-        });
-        return;
-      }
-
-      this.previewCriterias$set(newKey, {
+      this.criterias$set(newKey, {
         views: {},
         subs: {},
         predicates: {},
         memorable: {}
       });
-      this.updateFilterPredicate();
     },
 
     function add(view, name, criteriaKey, memorable) {
-      var criterias = this.isPreview ? this.previewCriterias : this.criterias;
+      var criterias = this.criterias;
       criterias[criteriaKey].views[name] = view;
       criterias[criteriaKey].memorable[name] = memorable ?? true;
       criterias[criteriaKey].subs[name] = view.predicate$.sub(() => {
@@ -150,8 +108,13 @@ foam.CLASS({
     },
 
     function onViewPredicateUpdate(criteriaKey, name) {
-      var criteria = this.isPreview ? this.previewCriterias[criteriaKey] : this.criterias[criteriaKey];
+      var criteria = this.criterias[criteriaKey];
       var predicate = criteria.views[name].predicate;
+      if ( predicate != this.TRUE && criteria.memorable[name] ) {
+        this.activeFilters$set(name, true);
+      } else {
+        this.activeFilters$set(name, false);
+      }
       criteria.predicates[name] = predicate;
 
       this.reciprocateInCriteria(criteriaKey);
@@ -159,7 +122,7 @@ foam.CLASS({
 
     function reciprocateInCriteria(criteriaKey) {
       // This function reciprocates the other filters
-      var criteria = this.isPreview ? this.previewCriterias[criteriaKey] : this.criterias[criteriaKey];
+      var criteria = this.criterias[criteriaKey];
       var predicates = criteria.predicates;
       foam.Object.forEach(predicates, function(_, name) {
         var temp = {};
@@ -177,11 +140,12 @@ foam.CLASS({
     },
 
     function updateFilterPredicate() {
-      var criterias = this.isPreview ? this.previewCriterias : this.criterias;
+      var criterias = this.criterias;
       var orPredicate = this.Or.create({
         args: Object.values(criterias).map((criteria) => { return this.and(criteria.predicates); })
       }).partialEval();
       if ( orPredicate === this.FALSE ) orPredicate = this.TRUE;
+      if ( foam.util.equals(orPredicate, this.finalPredicate) ) return;
 
       this.mementoPredicate = this.Or.create({
         args: Object.values(criterias)
@@ -195,28 +159,17 @@ foam.CLASS({
                 })
       }).partialEval();
 
-      if ( ! this.isPreview ) {
-        this.finalPredicate = orPredicate;
-        return;
-      }
-      this.previewPredicate = orPredicate;
+      this.finalPredicate = orPredicate;
     },
 
     function getExistingPredicate(criteriaKey, property) {
       // Check if there is an existing predicate to rebuild from
       var propertyName = typeof property === 'string' ? property : property.name;
-      var previewCriteria = this.previewCriterias[criteriaKey];
       var criteria = this.criterias[criteriaKey];
-      if ( ! previewCriteria && ! criteria ) return null;
+      if ( ! criteria ) return null;
 
-      // Existing view can come from criterias or previewCriterias
+      // Existing view can come from criterias
       var existingPredicate;
-      // Preview predicate takes precendence
-      if ( previewCriteria ) {
-        existingPredicate = previewCriteria.predicates[propertyName]
-        if ( existingPredicate && existingPredicate !== this.TRUE ) return existingPredicate;
-      }
-      // Preview criteria predicate does not exist, check main criteria predicate
       if ( criteria ) {
         existingPredicate = criteria.predicates[propertyName]
         if ( existingPredicate && existingPredicate !== this.TRUE ) return existingPredicate;
@@ -227,16 +180,11 @@ foam.CLASS({
 
     function setExistingPredicate(criteriaKey, property, predicate) {
       var propertyName = typeof property === 'string' ? property : property.name;
-      var previewCriteria = this.previewCriterias[criteriaKey];
       var criteria = this.criterias[criteriaKey];
 
-      if ( ! previewCriteria && ! criteria ) {
+      if ( ! criteria ) {
         this.addCriteria(criteriaKey);
         criteria = this.criterias[criteriaKey];
-      }
-
-      if ( previewCriteria ) {
-        previewCriteria.predicates[propertyName] = predicate;
       }
       if ( criteria ) {
         criteria.predicates[propertyName] = predicate;
@@ -245,54 +193,11 @@ foam.CLASS({
       this.updateFilterPredicate();
     },
 
-    function applyPreview() {
-      // At this point, users should be coming from advanced mode
-      this.isAdvanced = true;
-      this.isPreview = false;
-      // Copy required information to be reconstructed
-      Object.keys(this.previewCriterias).forEach((criteriaKey) => {
-        this.addCriteria(criteriaKey);
-        Object.keys(this.previewCriterias[criteriaKey].views).forEach((viewKey) => {
-          var view = this.previewCriterias[criteriaKey].views[viewKey];
-          this.criterias[criteriaKey].views[viewKey] = {
-            property: view.property,
-            predicate: view.predicate
-          };
-        });
-        this.criterias[criteriaKey].predicate = this.previewCriterias[criteriaKey].predicate;
-      });
-      // This will apply the predicate onto the DAO
-      this.finalPredicate = this.previewPredicate;
-    },
-
-    function switchToPreview() {
-      // At this point, user should be going into advanced mode
-      this.isPreview = true;
-      this.clearAll(true);
-      // Assign the predicates to the previews to reconstruct the view
-      Object.keys(this.criterias).forEach((key) => {
-        this.addCriteria(key);
-        this.previewCriterias[key].predicates = this.criterias[key].predicates;
-      });
-      this.updateFilterPredicate();
-    },
-
-    function switchToSimple() {
-      // Essentially a reset
-      this.isPreview = true;
-      this.clearAll(true);
-      this.updateFilterPredicate();
-      this.isPreview = false;
-      this.clearAll(true);
-      this.updateFilterPredicate();
-      this.isAdvanced = false;
-    },
-
     function clear(viewOrName, criteria, remove) {
       var view;
       var name;
       // Get the right map to remove from
-      var criterias = this.isPreview ? this.previewCriterias : this.criterias;
+      var criterias = this.criterias;
 
       if ( typeof viewOrName === 'string' ) {
         // If view name given, obtain it from map
@@ -323,13 +228,12 @@ foam.CLASS({
     },
 
     function clearCriteria(criteria, remove) {
-      var criterias = this.isPreview ? this.previewCriterias : this.criterias;
+      var criterias = this.criterias;
       Object.values(criterias[criteria].views).forEach((view) => {
         this.clear(view, criteria, remove);
       });
       if ( remove ) {
-        if ( this.isPreview ) this.previewCriterias$remove(criteria);
-        else this.criterias$remove(criteria);
+        this.criterias$remove(criteria);
       }
 
       this.updateFilterPredicate();
@@ -337,37 +241,16 @@ foam.CLASS({
 
     function clearAll(remove) {
       // Get the right map to clear
-      var criterias = this.isPreview ? this.previewCriterias : this.criterias;
+      var criterias = this.criterias;
       // Clear each criteria properly (Which includes detaching subs)
       Object.keys(criterias).forEach((key) => {
         this.clearCriteria(key, remove);
       });
+      this.mementoPredicate = undefined;
+      this.finalPredicate = undefined;
       // Readd blank 1st criteria
       if ( remove ) this.addCriteria();
       this.activeFilterCount = 0;
-    }
-  ],
-
-  listeners: [
-    {
-      name: 'onDAOUpdate',
-      code: function() {
-        this.dao.select(this.COUNT()).then((count) => {
-          // This will need scalability testing (eg: 1mil items)
-          this.totalCount = count.value;
-          //to init resultsCount
-          this.resultsCount = count.value;
-        });
-      }
-    },
-    {
-      name: 'getResultsCount',
-      code: function() {
-        var predicate = this.isPreview ? this.previewPredicate : this.finalPredicate;
-        this.dao.where(predicate).select(this.COUNT()).then((count) => {
-          this.resultsCount = count.value;
-        });
-      }
     }
   ]
 });

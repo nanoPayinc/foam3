@@ -39,34 +39,12 @@ foam.CLASS({
       border: none;
       margin: 0 20px 20px;
     }
-    ^ .foam-u2-view-TableView-row:hover {
-      cursor: pointer;
-      background: $grey300;
-    }
-    ^ .foam-u2-view-TableView-row {
-      height: 40px;
-    }
     ^ .button-div{
       height: 40px;
-    }
-    ^ .foam-u2-view-TableView td{
-      width: 8px;
     }
     ^ .foam-u2-ListCreateController{
       top: 30px;
       position: relative;
-    }
-    ^ .foam-u2-view-TableView-th-editColumns{
-      width: 10px;
-    }
-    ^ .foam-u2-view-TableView-th-id{
-      width: 125px;
-    }
-    ^ .foam-u2-view-TableView-th-requestorEmail{
-      width: 200px;
-    }
-    ^ .foam-u2-view-TableView-th-requestorName{
-      width: 200px;
     }
   `,
 
@@ -116,7 +94,7 @@ foam.CLASS({
           this
             .start({
               selection$: this.selection$,
-              class: 'foam.u2.view.ScrollTableView',
+              class: 'foam.u2.table.TableView',
               data: this.subject.user.tickets,
             }).addClass(this.myClass('table')).end();
         }

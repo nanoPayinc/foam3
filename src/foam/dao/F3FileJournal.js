@@ -31,7 +31,7 @@ foam.CLASS({
       name: 'dao'
     },
     {
-      documentation: 'Perform replay synchronously. Manual workaround for deadlock with AsyncAssemblyLine',
+      documentation: 'Default journal replay is asynchronous. Some models with business logic that reference self can cause deadlock when parsed out of order.  If journal processing hangs, set syncReplay to true to replay synchronously.',
       class: 'Boolean',
       name: 'syncReplay'
     },
@@ -57,6 +57,8 @@ foam.CLASS({
         AtomicInteger passCount = new AtomicInteger();
         AtomicInteger failCount = new AtomicInteger();
 
+        getLogger().info("Replay starting", getFilename());
+
         // NOTE: explicitly calling PM constructor as create only creates
         // a percentage of PMs, but we want all replay statistics
         PM pm = new PM(dao.getOf(), "replay." + getFilename());
@@ -70,10 +72,17 @@ foam.CLASS({
           if ( reader == null ) {
             return;
           }
-          for (  CharSequence entry ; ( entry = getEntry(reader) ) != null ; ) {
+          for ( CharSequence entry ; ( entry = getEntry(reader) ) != null ; ) {
             int length = entry.length();
             if ( length == 0 ) continue;
             if ( COMMENT.matcher(entry).matches() ) continue;
+            if ( length < 3 ) {
+              // Don't bother reporting lines with just spaces
+              if ( entry.toString().trim().length() != 0 ) {
+                System.err.println("Malformed jrl entry " + getFilename() + " : " + entry);
+              }
+              continue;
+            }
             try {
               final char operation = entry.charAt(0);
               final String strEntry = entry.subSequence(2, length - 1).toString();
@@ -81,8 +90,7 @@ foam.CLASS({
                 FObject obj;
 
                 public void executeJob() {
-                  JSONParser parser = getParser(x);
-                  obj = parser.parseString(strEntry, dao.getOf().getObjClass());
+                  obj = getParser(x).parseString(strEntry, dao.getOf().getObjClass());
                 }
 
                 public void endJob(boolean isLast) {
@@ -101,7 +109,11 @@ foam.CLASS({
                       dao.remove(obj);
                       break;
                   }
-                  passCount.incrementAndGet();
+                  long pass = passCount.incrementAndGet();
+                  // Provide some feedback on long running replays
+                  if ( pass % 10000 == 0 ) {
+                    getLogger().info("Replay progress", getFilename(), "processed", pass, "in", Duration.ofMillis(pm.getTime()));
+                  }
                 }
               });
             } catch ( Throwable t ) {

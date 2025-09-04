@@ -605,7 +605,7 @@ foam.CLASS({
       view: {
         class: 'foam.u2.view.AltView',
         views: [
-          [ 'foam.u2.view.TableView',         'Table' ],
+          [ 'foam.u2.table.TableView',         'Table' ],
           [ 'foam.u2.view.EmbeddedTableView', 'Embedded Table' ],
           [
             {

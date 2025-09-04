@@ -33,7 +33,7 @@ foam.CLASS({
       width: 338px;
       height: 16px;
       text-align: center;
-      color: $black;
+      color: $textDefault;
       padding-left: 40px;
       margin-bottom: 100px;
 
@@ -42,7 +42,7 @@ foam.CLASS({
       width: 448px;
       height: 1000px;
       border-radius: 2px;
-      background-color: $white;
+      background-color: $backgroundDefault;
     }
     ^ .Rectangle-7 {
       float: left;

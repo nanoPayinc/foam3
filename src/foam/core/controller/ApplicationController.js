@@ -28,7 +28,6 @@ foam.CLASS({
   documentation: 'FOAM Application Controller.',
 
   implements: [
-    'foam.box.Context',
     'foam.mlang.Expressions'
   ],
 
@@ -71,7 +70,8 @@ foam.CLASS({
 
   imports: [
     'installCSS',
-    'window'
+    'window',
+    'populateDefaultThemeVariants'
   ],
 
   exports: [
@@ -83,6 +83,7 @@ foam.CLASS({
     'currentMenu',
     'defaultUserLanguage',
     'displayWidth',
+    'fetchSubject',
     'group',
     'initLayout',
     'initSubject',
@@ -113,9 +114,9 @@ foam.CLASS({
     'signUpEnabled',
     'stack',
     'subject',
+    'toolbar',
     'theme',
     'user',
-    'wrapCSS as installCSS',
     'breadcrumbs'
   ],
 
@@ -178,6 +179,11 @@ foam.CLASS({
     {
       name: 'THEME_OVERRIDE_REGEXP',
       factory: function() { return new RegExp(/\/\*\$(.*)\*\/[^;!]*/, 'g'); }
+    },
+    {
+      name: 'NOTIFICATION_TOAST_TTL',
+      documentation: 'Time to live for toast notifications in hours.',
+      value: 12
     }
   ],
 
@@ -199,6 +205,9 @@ foam.CLASS({
   `,
 
   properties: [
+    {
+      name: 'toolbar'
+    },
     {
       name: 'loginVariables',
       expression: function( client$userRegistrationDAO, group$emailRequired ) {
@@ -294,7 +303,7 @@ foam.CLASS({
     {
       class: 'Boolean',
       name: 'showNav',
-      value: true
+      factory: function() { return foam.flags.showNav === undefined ? true : foam.flags.showNav; }
     },
     {
       class: 'Boolean',
@@ -345,6 +354,7 @@ foam.CLASS({
       name: 'theme',
       postSet: function(o, n) {
         if ( o && n && o.equals(n)) return;
+        this.populateDefaultThemeVariants(n, this.__subContext__);
         this.__subContext__.cssTokenOverrideService.maybeReload();
         this.pub('themeChange');
       }
@@ -384,10 +394,6 @@ foam.CLASS({
     {
       name: 'languageDefaults_',
       factory: function() { return []; }
-    },
-    {
-      name: 'styles',
-      factory: function() { return {}; }
     },
     {
       class: 'foam.lang.FObjectProperty',
@@ -436,7 +442,7 @@ foam.CLASS({
       this.__subContext__.register(foam.u2.detail.SectionedDetailView, 'foam.u2.DetailView');
 
       // Reload styling on theme change
-      this.onDetach(this.sub('themeChange', this.reloadStyles));
+      this.onDetach(this.sub('themeChange', () => { foam.u2.CSS.reloadStyles(this.__subContext__) }));
     },
 
     async function initMenu() {
@@ -467,6 +473,9 @@ foam.CLASS({
         globalThis.x     = self.__subContext__;
         globalThis.MLang = foam.mlang.Expressions.create();
 
+        // Rebuild Stack in correct context
+        self.stack = self.Stack.create({}, self.__subContext__).copyFrom({ ...self.stack, __subSubContext__: undefined });
+        self.breadcrumbs = self.BreadcrumbManager.create({}, self.__subContext__).copyFrom({ ...self.breadcrumbs, __subSubContext__: undefined });
         self.fetchTheme();
         foam.locale = localStorage.getItem('localeLanguage') || self.theme?.defaultLocaleLanguage || foam.locale;
 
@@ -474,7 +483,7 @@ foam.CLASS({
           self.installLanguage();
         });
 
-        self.onDetach(self.__subContext__.cssTokenOverrideService?.cacheUpdated.sub(self.reloadStyles));
+        self.onDetach(self.__subContext__.cssTokenOverrideService?.cacheUpdated.sub(() => { foam.u2.CSS.reloadStyles(self.__subContext__) }));
 
         // group required for loginVariables before initMenu
         await self.fetchGroup();
@@ -530,7 +539,7 @@ foam.CLASS({
       this.subToNotifications();
       this.fetchGroup();
       this.fetchTheme();
-      this.onDetach(this.__subContext__.cssTokenOverrideService?.cacheUpdated.sub(this.reloadStyles));
+      this.onDetach(this.__subContext__.cssTokenOverrideService?.cacheUpdated.sub(() => { foam.u2.CSS.reloadStyles(this.__subContext__) }));
       this.subject = this.client.initSubject;
     },
 
@@ -632,7 +641,7 @@ foam.CLASS({
       // CSS because it's already in long form. By checking if */ follows the
       // macro, we can tell if it's already in long form and skip it.
       return val ? css.replace(
-        new RegExp('%' + M + '%(?!\\*/)', 'g'),
+        new RegExp('%' + M + '%(?!\\*\\/)', 'g'),
         '/*%' + M + '%*/ ' + val) : css;
     },
 
@@ -644,18 +653,6 @@ foam.CLASS({
       return val ? css.replace(
         new RegExp('/\\*%' + M + '%\\*/[^);!]*', 'g'),
         '/*%' + M + '%*/ ' + val) : css;
-    },
-
-    function wrapCSS(text, id) {
-      /** CSS preprocessor, works on classes instantiated in subContext. */
-      if ( ! text ) return;
-      var eid = 'style' + foam.next$UID();
-      this.styles[eid] = { text: text, cls: id };
-      for ( var i = 0 ; i < this.MACROS.length ; i++ ) {
-        const m = this.MACROS[i];
-        text = this.expandShortFormMacro(this.expandLongFormMacro(text, m), m);
-      }
-      this.installCSS(text, id, eid);
     },
 
     function returnExpandedCSS(text) {
@@ -825,13 +822,16 @@ foam.CLASS({
 
     function displayToastMessage(sub, on, put, obj) {
       if ( obj.toastState == this.ToastState.REQUESTED ) {
-        this.add(this.NotificationMessage.create({
-          message: obj.toastMessage,
-          type: obj.severity,
-          description: obj.toastSubMessage,
-          icon: obj.icon
-        }));
-        // only update and save non-transient messages
+        let toastExpiration = new Date();
+        toastExpiration.setHours(toastExpiration.getHours() + this.NOTIFICATION_TOAST_TTL);
+        if ( obj.created < toastExpiration ) {
+          this.add(this.NotificationMessage.create({
+            message: obj.toastMessage,
+            type: obj.severity,
+            description: obj.toastSubMessage,
+            icon: obj.icon
+          }));
+        }
         if ( ! obj.transient ) {
           var clonedNotification = obj.clone();
           clonedNotification.toastState = this.ToastState.DISPLAYED;
@@ -855,11 +855,10 @@ foam.CLASS({
       let check = await this.checkGeneralCapability();
       if ( ! check ) return;
       await this.fetchTheme();
-      var hash = this.window.location.hash;
-      if ( hash ) hash = hash.substring(1);
+      var hash = this.route;
       if ( ! hash || hash == 'null' /* How does it even get set to null? */ ) {
         await this.pushDefaultMenu();
-      } else if ( hash != this.currentMenu?.id || this.currentMenu.authorizationStatus !== this.AuthorizationStatus.PUBLIC ) {
+      } else if ( hash != this.currentMenu?.id || this.currentMenu.authorizationStatus == this.AuthorizationStatus.UNAUTHENTICATED ) {
         this.routeUpdated()
       }
       this.initLayout.resolve();
@@ -1000,26 +999,6 @@ foam.CLASS({
           .find(o => o.minWidth <= Math.min(this.window.innerWidth, this.window.screen.width) );
       }
     },
-    function replaceStyleTag(text, eid) {
-      if ( ! text ) return;
-      text = this.returnExpandedCSS(text);
-      this.styles[eid].text = text;
-      const el = this.getElementById(eid);
-      if ( text !== el?.textContent )
-        el.textContent = text;
-    },
-    {
-      name: 'reloadStyles',
-      isMerged: true,
-      mergeDelay: 500,
-      code: function() {
-        for ( const eid in this.styles ) {
-          const style = this.styles[eid];
-          text = foam.CSS.replaceTokens(style.text, style.cls, this.__subContext__, this.THEME_OVERRIDE_REGEXP);
-          this.replaceStyleTag(text, eid);
-        }
-      }
-    },
     {
       name: 'routeUpdated',
       on: ['this.propertyChange.route'],
@@ -1035,7 +1014,7 @@ foam.CLASS({
       /**
        * Replaces the url to redirect to the new menu without cleared tails
        */
-      this.window.location.hash = link;
+      this.window.location.hash = link ?? '';
     },
     async function routeToDAO(dao, id) {
       // Check if current menu has object

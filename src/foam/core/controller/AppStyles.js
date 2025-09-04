@@ -11,13 +11,6 @@ foam.CLASS({
 
   documentation: 'Generic CSS that can be included into the top level controller of foam app. Implement to foam class to use.',
 
-  cssTokens: [
-    {
-      name: 'background',
-      value: '$grey50',
-      fallback: 'white'
-    }
-  ],
   css: `
     :root{
       --max-height: calc(100vh - env(safe-area-inset-top, 0) - env(safe-area-inset-bottom, 0));
@@ -75,7 +68,7 @@ foam.CLASS({
       width: 60px;
       height: 20px;
       border-radius: 100px;
-      background-color: $black;
+      background-color: $backgroundInverse;
     }
     .Open {
       width: 49px;

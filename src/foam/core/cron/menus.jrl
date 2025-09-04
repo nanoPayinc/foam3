@@ -51,6 +51,7 @@ p({
         limit: 4,
         citationView: "foam.core.cron.CronCitationView",
         viewMore: true,
+        viewMoreMenuItem: "admin.cronjobs",
         emptyTitle: "No activity"
       },
       mode: "config"

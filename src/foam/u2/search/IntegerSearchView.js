@@ -142,10 +142,10 @@ foam.CLASS({
     }
 
     ^ .foam-u2-tag-Select {
-      background-color: $white;
+      background-color: $backgroundDefault;
       border-radius: 2px;
       border: 1px solid #dce0e7;
-      color: $black;
+      color: $textDefault;
       padding: 0 20px 0 8px;
       -webkit-appearance: none; /* Fix rounded corners in Chrome on OS X */
     }
@@ -153,7 +153,7 @@ foam.CLASS({
     ^ .foam-u2-FloatView {
       border-radius: 2px;
       border: 1px solid #dce0e7;
-      color: $black;
+      color: $textDefault;
       height: 40px;
       padding: 0 14px 0 21px;
       width: 92px;

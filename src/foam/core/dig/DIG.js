@@ -34,12 +34,12 @@ NOTE: when using the java client, the first call to a newly started instance may
     'foam.lib.formatter.FObjectFormatter',
     'foam.lib.formatter.JSONFObjectFormatter',
     'foam.lib.json.JSONParser',
-    'foam.core.dig.bench.DIGBenchmark',
     'foam.core.dig.exception.DigErrorMessage',
     'foam.core.dig.exception.DigSuccessMessage',
     'foam.core.logger.Loggers',
     'foam.core.pm.PM',
     'foam.core.session.Session',
+    'foam.net.Host',
     'foam.util.SafetyUtil',
     'java.net.Authenticator',
     'java.net.CookieHandler',
@@ -517,17 +517,6 @@ NOTE: when using the java client, the first call to a newly started instance may
   ],
 
   javaCode: `
-  public DIG(X x, String cSpecName, DIGBenchmark benchmark) {
-    this(x);
-    setCSpecName(cSpecName);
-    setPostURL(benchmark.getSetupUrl());
-    setSessionId(benchmark.getSetupSessionId());
-    setUserName(benchmark.getSetupUserName());
-    setPassword(benchmark.getSetupPassword());
-    setConnectionTimeout(benchmark.getConnectionTimeout());
-    setRequestTimeout(benchmark.getRequestTimeout());
-  }
-
   protected static final ThreadLocal<FObjectFormatter> formatter_ = new ThreadLocal<FObjectFormatter>() {
     @Override
     protected JSONFObjectFormatter initialValue() {
@@ -828,7 +817,15 @@ NOTE: when using the java client, the first call to a newly started instance may
         } else {
           sb.append("http://");
         }
-        sb.append(System.getProperty("hostname", "localhost"));
+        String address = System.getProperty("hostname", "localhost");
+        DAO hostDAO = (DAO) x.get("hostDAO");
+        if ( hostDAO != null ) {
+          Host host = (Host) hostDAO.find(address);
+          if ( host != null ) {
+            address = host.getAddress();
+          }
+        }
+        sb.append(address);
         sb.append(":");
         sb.append(System.getProperty("http.port", "8080"));
       }

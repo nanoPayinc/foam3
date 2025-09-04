@@ -32,8 +32,8 @@ foam.CLASS({
 
   css: `
     ^ {
-      background: $white;
-      border: 1px solid $grey50;
+      background: $backgroundDefault;
+      border: 1px solid $borderXLight;
       border-radius: 4px;
       box-sizing: border-box;
       height: 40px;
@@ -62,7 +62,7 @@ foam.CLASS({
     }
 
     ^name {
-      color: $primary400;
+      color: $textBrand;
       cursor: pointer;
       overflow: hidden;
       text-align: left;
@@ -71,7 +71,7 @@ foam.CLASS({
     }
 
     ^name:hover {
-      color: $primary700;
+      color: $borderBrand;
     }
 
     ^ .foam-u2-ActionView {
@@ -85,7 +85,7 @@ foam.CLASS({
     }
 
     ^size {
-      color: $grey500;
+      color: $textTertiary;
       white-space: nowrap;
     }
 
@@ -115,7 +115,7 @@ foam.CLASS({
       var self = this;
       if ( this.selected == this.index ) {
         this.style({
-          'border-color': '$primary700'
+          'border-color': foam.CSS.returnTokenValue('$borderBrandStrong', this.cls_, this.__subContext__)
         });
       }
       var indicator = this.theme && this.theme.glyphs.file.expandSVG({ fill: this.theme.grey1 });

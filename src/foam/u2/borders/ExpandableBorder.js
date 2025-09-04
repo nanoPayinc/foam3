@@ -23,9 +23,9 @@
       max-height: 500px;
     }
     ^container{
-      background:$white; 
+      background:$backgroundDefault; 
       border-radius: 4px;
-      border: 1px solid $grey400;
+      border: 1px solid $borderDefault;
       padding: 24px;
     }
     ^ h6{

@@ -2,9 +2,9 @@
 # Super simple launcher.
 
 HOST_NAME=`hostname -s`
-APP_HOME=$(dirname $(dirname $0))
-APP_ROOT=$(echo $APP_HOME | cut -d "/" -f2)
-APP_NAME=$(echo $APP_HOME | cut -d "/" -f3)
+APP_HOME=
+APP_ROOT=/opt
+APP_NAME=
 WEB_PORT=
 export DEBUG=0
 export DEBUG_SUSPEND=n
@@ -35,8 +35,9 @@ function usage {
 # When used locally, the build.js arguments c (clean) and r (restart) are
 # handled as the script is often passed all parameters from build.js.
 # Similarly m and C are support for Medusa mediator configuration
-while getopts "D:dH:mN:P:pR:sW:V:" opt ; do
+while getopts "A:D:dH:mN:P:pR:sW:V:" opt ; do
     case $opt in
+        A) APP_HOME=${OPTARG};;
         D) DEBUG=1;
            if [ -n "${OPTARG}" ]; then
                DEBUG_PORT=${OPTARG};
@@ -59,11 +60,20 @@ while getopts "D:dH:mN:P:pR:sW:V:" opt ; do
    esac
 done
 
-APP_HOME="/${APP_ROOT}/${APP_NAME}"
+if [ -z "${APP_HOME}" ]; then
+    if [ -z "${APP_NAME}" ]; then
+        echo "usage: $0 either APP_NAME or APP_HOME required"
+        exit 1;
+    fi
+    APP_HOME="/${APP_ROOT}/${APP_NAME}"
+fi
 
 echo "starting $APP_NAME @ $HOST_NAME:$WEB_PORT"
 
-JAVA_OPTS=""
+if [[ -z "${JAVA_OPTS}" ]]; then
+    JAVA_OPTS=""
+fi
+
 export JOURNAL_HOME="${APP_HOME}/journals"
 export DOCUMENT_HOME="${APP_HOME}/documents"
 export LOG_HOME="${APP_HOME}/logs"
@@ -99,7 +109,7 @@ export RES_JAR_HOME="${JAR}"
 
 export JAVA_TOOL_OPTIONS="${JAVA_OPTS}"
 echo ${JAVA_OPTS} > ${APP_HOME}/logs/opts.txt
-echo JAVA_OPTS=${JAVA_OPTS}
+#echo JAVA_OPTS=${JAVA_OPTS}
 java -server -jar "${JAR}"
 
 exit 0

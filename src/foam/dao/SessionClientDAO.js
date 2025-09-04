@@ -26,10 +26,6 @@ c.select().then(function(a1) {
 });
 `,
 
-  imports: [
-    'sessionID as jsSessionID'
-  ],
-
   // NOTE: Do not export, will invalidate the browser's current session
   // exports: [
   //   'sessionId as sessionID'
@@ -48,7 +44,7 @@ c.select().then(function(a1) {
       class: 'String'
     },
     {
-      documentation: 'Session token / BEARER token',
+      documentation: 'Session token',
       name: 'sessionId',
       class: 'String',
       factory: function() { return this.jsSessionID || localStorage.defaultSession; }
@@ -69,7 +65,7 @@ c.select().then(function(a1) {
 
         var box = this.HTTPBox.create({
           authorizationType: this.HTTPAuthorizationType.BEARER,
-          url: 'service/'+this.serviceName
+          url: 'service/' + this.serviceName
         }, x);
 
         this.delegate = this.ClientDAO.create({

@@ -20,25 +20,30 @@ foam.CLASS({
     'foam.u2.layout.Cols',
     'foam.u2.layout.Grid',
     'foam.u2.layout.GUnit',
-    'foam.u2.layout.Rows'
+    'foam.u2.layout.Rows',
+    'foam.u2.tag.Button'
   ],
 
   css: `
 
-    ^section-title {
-      padding-bottom: 16px;
+    ^rows {
+      gap: 10px;
     }
 
     .subtitle {
-      color: $grey500;
-      margin-bottom: 16px;
+      color: $textTertiary;
     }
 
     ^actionDiv {
       justify-content: end;
     }
-    ^grid {
+    ^grid.foam-u2-layout-Grid {
       grid-gap: 16px 12px;
+    }
+    ^collapsable-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
   `,
 
@@ -123,6 +128,10 @@ foam.CLASS({
           this.loadLatch = this.selected;
       },
       value: true
+    },
+    {
+      class: 'Boolean',
+      name: 'collapsed'
     }
   ],
 
@@ -130,9 +139,11 @@ foam.CLASS({
     function render() {
       var self = this;
       self.SUPER();
-
+      if ( this.__subContext__.controllerMode$ ) {
+        this.controllerMode$.follow(this.__subContext__.controllerMode$);
+      }
       if ( this.section )
-        this.shown$ = this.section.createIsAvailableFor(self.data$, self.__subContext__.controllerMode$);
+        this.shown$ = this.section.createIsAvailableFor(self.data$, self.controllerMode$);
 
       self
         .addClass(self.myClass())
@@ -141,7 +152,7 @@ foam.CLASS({
         })
         .add(self.slot(function(section, showTitle, section$title, section$subTitle, shown) {
           if ( ! section || ! shown ) return;
-          return self.Rows.create()
+          return self.Rows.create().addClass(self.myClass('rows'))
             .callIf(showTitle && section$title, function() {
               if ( foam.Function.isInstance(self.section.title) ) {
                 const slot$ = foam.lang.ExpressionSlot.create({
@@ -153,7 +164,14 @@ foam.CLASS({
                   this.start().add(slot$.value.toUpperCase()).addClass('h600', self.myClass('section-title')).end();
                 }
               } else {
-                this.start().add(section.title.toUpperCase()).addClass('h600', self.myClass('section-title')).end();
+                this.start().addClass('h600', self.myClass('section-title')).enableClass(self.myClass('collapsable-title'), section.collapsable$)
+                  .add(section.title)
+                  .callIf(section.collapsable, function() {
+                    this.startContext({ data: self })
+                      .start(self.COLLAPSE, { themeIcon$: self.collapsed$.map(c => c ? 'plus' : 'minus') }).addClass(this.myClass('collapse')).end()
+                    .endContext();
+                  })
+                .end();
               }
             })
             .callIf(section$subTitle, function() {
@@ -170,9 +188,13 @@ foam.CLASS({
                 this.start().addClass('p', 'subtitle').add(section.subTitle).end();
               }
             })
-            .add(this.slot(function(loadLatch) {
-              var view = this.E().start(self.Grid).addClass(self.myClass('grid'));
-
+            .add(this.slot(function(loadLatch, collapsed) {
+              if ( ! loadLatch || ! section.properties.length ) return;
+              var view = this.E().style({ display: 'contents' })
+                .start(self.Grid, {})
+                .hide(section.collapsable$.and(self.collapsed$))
+                .addClass(self.myClass('grid'));
+              let propVisArray = [];
               if ( loadLatch ) {
                 view.forEach(section.properties, function(p, index) {
                   var config = self.config && self.config[p.name];
@@ -193,21 +215,34 @@ foam.CLASS({
                       self.E();
                     }))
                   .end();
+                  propVisArray.push(shown$);
                 });
+                let propVisArray$ = foam.lang.ArraySlot.create({ slots: propVisArray }, this);
+                this.onDetach(propVisArray$.framed().sub(this.framed(function() { view.resizeChildren(); })));
               }
-
               return view;
             }))
-            .start(self.Cols)
-              .addClass(self.myClass('actionDiv'))
-              .style({
-                'margin-top': section.actions.length ? '16px' : 'initial'
-              })
-              .forEach(section.actions, function(a) {
-                this.add(a);
-              })
-            .end();
+            .add(this.dynamic(function(loadLatch) {
+              if ( ! loadLatch || ! section.actions.length )
+                return;
+              this.start(self.Cols)
+                  .hide(self.collapsed$.and(section.collapsable$))
+                  .addClass(self.myClass('actionDiv'))
+                  .forEach(section.actions, function(a) { this.add(a); })
+                .end();
+            }));
         }));
+    }
+  ],
+  actions: [
+    {
+      name: 'collapse',
+      label: '',
+      size: 'SMALL',
+      buttonStyle: 'TERTIARY',
+      code: function() {
+        this.collapsed = ! this.collapsed;
+      }
     }
   ]
 });

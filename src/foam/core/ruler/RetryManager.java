@@ -18,7 +18,7 @@ public class RetryManager {
   class Retry {
     final X            x_;
     final ContextAgent agent_;
-    final Timer        timer_ = new Timer();
+    final Timer        timer_ = new Timer(true);
     private boolean cancelled_ = false;
 
     public Retry(X x, ContextAgent agent) {

@@ -14,7 +14,7 @@ foam.CLASS({
     'clientLoginService',
     'currentMenu?',
     'loginVariables',
-    'logAnalyticEvent',
+    'logAnalyticEvent?',
     'oAuthProviderDAO',
     'params',
     'stack'
@@ -75,7 +75,7 @@ foam.CLASS({
   ^tc-link {
     background: none;
     border: 1px solid transparent;
-    color: $primary400;
+    color: $textBrand;
     text-decoration: none;
   }
   ^legal {
@@ -86,7 +86,7 @@ foam.CLASS({
     font-size: 0.8rem;
     width: 100%;
   }
-  
+
   ^buttonHolder {
     display: flex;
     flex-direction: column;
@@ -170,9 +170,9 @@ foam.CLASS({
       this.SUPER();
       var self = this;
       if ( this.currentMenu ) {
-        this.logAnalyticEvent({ name: "VIEW_LOAD_LoginView_" + this.currentMenu.id });
+        this.logAnalyticEvent && this.logAnalyticEvent({ name: "VIEW_LOAD_LoginView_" + this.currentMenu.id });
       } else {
-        this.logAnalyticEvent({ name: "VIEW_LOAD_LoginView" });
+        this.logAnalyticEvent && this.logAnalyticEvent({ name: "VIEW_LOAD_LoginView" });
       }
       // CREATE DATA VIEW
       this
@@ -299,9 +299,15 @@ foam.CLASS({
       name: 'signInAction',
       label: 'Sign in',
       buttonStyle: 'PRIMARY',
+      /*
+        This is disabled because the browser is suggesting values, but doesn't actually enter them until
+        you click the button, so we think the fields are empty and disable the login button.
+        The only solution (I know of) is to just remove this validation.
+
       isEnabled: function(data, data$errors_) {
         return data && ! data$errors_;
       },
+      */
       code: function(X) {
         this.clientLoginService.signin(X, this.data);
       }

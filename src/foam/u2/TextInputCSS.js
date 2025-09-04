@@ -26,37 +26,43 @@ foam.CLASS({
         padding-right: $inputHorizontalPadding;
         border: 1px solid;
         border-radius: $inputBorderRadius;
-        color: $black;
-        background-color:$white;
-        border-color: $grey400;
+        color: $textDefault;
+        background-color:$backgroundDefault;
+        border-color: $borderDefault;
         width: 100%;
       }
 
       .foam-u2-TextInputCSS:hover {
-        border-color: $grey500;
+        border-color: $borderStrong;
       }
 
       .foam-u2-TextInputCSS:hover::placeholder,
       .foam-u2-TextInputCSS:hover:-ms-input-placeholder,
       .foam-u2-TextInputCSS:hover::-ms-input-placeholder {
-        color: $grey500;
+        color: $textTertiary;
       }
 
       .foam-u2-TextInputCSS:focus-visible {
         outline: none;
-        border: 1px solid $primary400;
+        border: 1px solid $borderBrand;
       }
 
       .foam-u2-TextInputCSS:disabled {
-        color: $grey700;
-        background-color: $grey50;
-        border-color: $grey400;
+        color: $textSecondary;
+        background-color: $backgroundTertiary;
+        border-color: $borderDefault;
       }
 
       .foam-u2-TextInputCSS.error {
-        color: $destructive400;
-        background-color: $destructive50;
+        color: $textDestructive;
+        background-color: $backgroundDestructiveTertiary;
         border-color: $destructive400;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        input {
+          color-scheme: dark;
+        }
       }
       `,
       name: 'CSS-TextInputCSS',

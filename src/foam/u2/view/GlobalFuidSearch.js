@@ -29,7 +29,7 @@ foam.CLASS({
   css:
   `
     ^suggestions {
-      background-color: $grey50;
+      background-color: $backgroundSecondary;
       border: none;
       position: relative;
     }
@@ -37,7 +37,7 @@ foam.CLASS({
       margin-top: 8px;
     }
     ^row {
-      background-color: $grey50
+      background-color: $backgroundSecondary
       cursor: pointer;
       padding: 8px;
       text-align: center;

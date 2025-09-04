@@ -14,6 +14,7 @@ foam.ENUM({
     { name: 'SECONDARY' },
     { name: 'TERTIARY' },
     { name: 'TEXT' },
-    { name: 'LINK' }
+    { name: 'LINK' },
+    { name: 'BLACK' } 
   ]
 });

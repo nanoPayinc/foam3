@@ -32,11 +32,11 @@ foam.CLASS({
       updateVisibility: 'RO',
       tableCellFormatter: { class: 'foam.u2.view.ReferenceToSummaryCellFormatter'}
     },
-    // {
-    //   class: 'String',
-    //   name: 'variant',
-    //   documentation: 'Allows for variant based overrides - dark mode, Accessible themes etc'
-    // },
+    {
+      class: 'Map',
+      name: 'variants',
+      documentation: 'Allows for variant based overrides - dark mode, Accessible themes etc'
+    },
     {
       class: 'Boolean',
       name: 'enabled',

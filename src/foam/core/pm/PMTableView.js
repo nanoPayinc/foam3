@@ -13,7 +13,7 @@ foam.CLASS({
 
   implements: [ 'foam.mlang.Expressions' ],
 
-  requires: [ 'foam.core.pm.PMInfo', 'foam.u2.view.TableView' ],
+  requires: [ 'foam.core.pm.PMInfo', 'foam.u2.table.TableView' ],
 
   exports: [ 'maxTotalTime', 'as tableView' ],
 

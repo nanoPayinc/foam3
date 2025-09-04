@@ -9,7 +9,8 @@ foam.CLASS({
   name: 'AlarmNotificationDAO',
   extends: 'foam.dao.ProxyDAO',
 
-  documentation: `Generate Notification for WARN or ERROR Alarms.`,
+  documentation: `Deprecated: generate alarms via EventRecords.
+Generate Notification for WARN or ERROR Alarms.`,
 
   javaImports: [
     'foam.dao.DAO',
@@ -80,13 +81,7 @@ foam.CLASS({
 
       // create body for non-email notifications
       StringBuilder body = new StringBuilder();
-      body.append("[");
-      body.append(alarm.getHostname());
-      body.append("] ");
-      body.append(alarm.getSeverity().getLabel().toUpperCase());
-      body.append(" - ");
-      body.append(alarm.getName());
-      body.append("\\nname: ");
+      body.append("name: ");
       body.append(alarm.getName());
       body.append("\\nstatus: ");
       body.append(alarm.getIsActive() ? "Active": "Cleared");
@@ -104,7 +99,7 @@ foam.CLASS({
       }
       body.append("\\ninfo: ");
       body.append(alarm.getNote());
-      if ( alarm.getEventRecord() != null ) {
+      if ( SafetyUtil.isEmpty(alarm.getEventRecord()) ) {
         body.append("\\neventRecord: ");
         body.append("/#er?id="+alarm.getEventRecord());
       }

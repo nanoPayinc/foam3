@@ -5,7 +5,7 @@ p({
 import foam.core.er.EventRecord;
 import foam.log.LogLevel;
 d = x.get("eventRecordDAO");
-er = new EventRecord(x, this, "script test", "nanopay", "101", "nothing to report", LogLevel.ERROR, new Exception("stacktrace"));
+er = new EventRecord(x, this, "script test", "foam", "101", "nothing to report", LogLevel.ERROR, new Exception("stacktrace"));
 d.put(er);
 print("done");
 """

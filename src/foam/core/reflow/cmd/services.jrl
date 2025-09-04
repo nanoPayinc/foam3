@@ -1,0 +1,25 @@
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "commandDAO",
+  "description": "Console Commands.",
+  "serve": true,
+  "authenticate": false,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setPm(true)
+      .setAuthorize(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("cmds")
+      .setOf(foam.core.reflow.cmd.Command.getOwnClassInfo())
+      .build();
+  """,
+  "client": """
+    {
+      "of":"foam.core.reflow.cmd.Command",
+      "cache": true,
+      "ttlSelectPurgeTime": 0,
+      "ttlPurgeTime": 0
+    }
+  """,
+  "documentation": "Console Commands."
+})

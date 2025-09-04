@@ -50,39 +50,45 @@ foam.CLASS({
         .start(data.START_DATE.__).addClass(this.myClass('fullWidth')).end()
         .start(data.REPEAT.__).addClass(this.myClass('halfWidth')).end()
         .start(data.FREQUENCY.__).addClass(this.myClass('halfWidth')).end()
-        .add(this.slot(function(data$frequency) {
+        .add(this.dynamic(function(data$frequency) {
           if ( data$frequency == 'WEEK' )
-            return this.E().add(data.DAY_OF_WEEK.__).addClass(this.myClass('fullWidth'));
+            this.start().add(data.DAY_OF_WEEK.__).addClass(self.myClass('fullWidth')).end();
           if ( data$frequency == 'MONTH' )
-            return self.addGrid().addClass(this.myClass('fullWidth'))
-              .start(data.MONTHLY_CHOICE.__, { reserveLabelSpace: false }).addClass(this.myClass('fullWidth')).end()
+            this.start().call(self.addGrid, [self]).addClass(self.myClass('fullWidth'))
+              .start(data.MONTHLY_CHOICE.__, { reserveLabelSpace: false }).addClass(self.myClass('fullWidth')).end()
               .start()
-                .addClass(this.myClass('fullWidth'))
-                .add(this.slot(function(data$monthlyChoice) {
-                  if ( ! data$monthlyChoice ) return this.E().show(false);
+                .addClass(self.myClass('fullWidth'))
+                .add(self.dynamic(function(data$monthlyChoice) {
+                  if ( ! data$monthlyChoice ) return;
                   if ( data$monthlyChoice == 'EACH' )
-                    return this.E().add(data.DAY_OF_MONTH.__);
-                  return self.addGrid()
-                    .start(data.SYMBOLIC_FREQUENCY.__, { reserveLabelSpace: false }).addClass(this.myClass('halfWidth')).end()
-                    .start(data.EXPANDED_DAY_OF_WEEK.__, { reserveLabelSpace: false }).addClass(this.myClass('halfWidth')).end();
+                    return this.add(data.DAY_OF_MONTH.__);
+                  return this.start().call(self.addGrid, [self])
+                    .start(data.SYMBOLIC_FREQUENCY.__, { reserveLabelSpace: false }).addClass(self.myClass('halfWidth')).end()
+                    .start(data.EXPANDED_DAY_OF_WEEK.__, { reserveLabelSpace: false }).addClass(self.myClass('halfWidth')).end()
+                  .end();
                 }))
-              .end();
-          return this.E().show(false);
+              .end()
+            .end();
+          return;
         }))
         .start(data.ENDS.__).addClass(this.myClass('halfWidth')).end()
-        .start().addClass(this.myClass('halfWidth')).add(this.slot(function(data$ends) {
-          return data$ends ? (data$ends == foam.core.cron.ScheduleEnd.ON ? self.data.ENDS_ON.__ : self.data.ENDS_AFTER.__) : '';
-        })).end()
+        .add(this.dynamic(function(data$ends,data$repeat) {
+          if ( ! data$repeat ) return;
+          return this.start()
+            .addClass(self.myClass('halfWidth'))
+            .add(data$ends == foam.core.cron.ScheduleEnd.ON ? self.data.ENDS_ON.__ : self.data.ENDS_AFTER.__)
+            .end();
+        }))
       .end();
     },
-    function addGrid() {
-      return this.E().style(
-        { 'grid-template-columns': this.displayWidth$.map(dw => {
+    function addGrid(self) {
+      return this.style(
+        { 'grid-template-columns': self.displayWidth$.map(dw => {
             dw = dw || foam.u2.layout.DisplayWidth.XL;
             return `repeat(${dw.cols}, 1fr)`;
           })
         }
-      ).addClass(this.myClass('container'));
+      ).addClass(self.myClass('container'));
     }
   ]
 });

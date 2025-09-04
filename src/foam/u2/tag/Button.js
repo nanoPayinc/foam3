@@ -30,28 +30,42 @@ foam.CLASS({
     {
       class: 'foam.u2.ColorToken',
       name: 'buttonPrimaryColor',
-      value: '$primary400',
+      value: '$backgroundBrand',
       disabledModifier: 90,
+      // FIX THIS FOR LINK BUTTONS
       onLight: '$grey50'
     },
     {
       class: 'foam.u2.ColorToken',
       name: 'buttonSecondaryColor',
-      value: '$white',
-      onLight: '$grey600',
+      value: '$backgroundDefault',
+      onLight: '$textSecondary',
       disabledModifier: -10,
       hoverModifier: -5,
       activeModifier: -15
     },
     {
       name: 'buttonSecondaryBorderColor',
-      value: function(e) { return e.LIGHTEN(e.TOKEN('$buttonSecondaryColor'), -40) }
+      variantKey: 'color',
+      value: function(e) { return e.LIGHTEN(e.TOKEN('$buttonSecondaryColor'), -40) },
+      variants: {
+        dark: {
+          value: function(e) { return e.LIGHTEN(e.TOKEN('$buttonSecondaryColor'), 40) }
+        }
+      }
     },
     {
+      class: 'foam.u2.ColorToken',
       name: 'buttonPrimaryLightColor',
-      value: function(e) { return e.FROM_HUE(e.TOKEN('$buttonPrimaryColor'), 41, 90) }
+      value: function(e) { return e.FROM_HUE(e.TOKEN('$buttonPrimaryColor'), 41, 90) },
+      variants: {
+        dark: {
+          value: function(e) { return e.FROM_HUE(e.TOKEN('$buttonPrimaryColor'), 41, 20) }
+        }
+      }
     }
   ],
+
   css: `
     ^ {
       font: inherit;
@@ -69,7 +83,7 @@ foam.CLASS({
     }
 
     ^:focus-visible {
-      outline: 1px solid $primary700;
+      outline: 1px solid $borderBrandStrong;
     }
 
     ^iconAfter {
@@ -137,22 +151,22 @@ foam.CLASS({
     /* Primary destructive */
 
     ^primary-destructive,^primary-destructive svg {
-      background-color: $destructive400;
-      color: $white;
+      background-color: $backgroundDestructive;
+      color: $textOnDestructive;
     }
 
     ^primary-destructive:hover:not(:disabled) {
-      background-color: $destructive500;
+      background-color: $backgroundDestructiveSecondary;
     }
 
     ^primary-destructive:active:not(:disabled) {
-      background-color: $red500;
-      border: 1px solid $red700;
+      background-color: $backgroundDestructiveSecondary;
+      border: 1px solid $backgroundDestructiveSecondary;
       box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.06);
     }
 
     ^primary-destructive:disabled {
-      background-color: $destructive50;
+      background-color: $backgroundDestructiveTertiary;
     }
 
 
@@ -172,24 +186,24 @@ foam.CLASS({
     }
 
     ^secondary:active:not(:disabled) {
-      color: $buttonPrimaryColor;
+      color: $textBrandSecondary;
       background-color: $buttonSecondaryColor$hover;
-      border: 1px solid $buttonPrimaryColor;
+      border: 1px solid $borderDefault;
     }
 
     ^secondary:disabled{
       background-color: $buttonSecondaryColor$disabled;
       border-color: $buttonSecondaryColor$disabled;
-      color: $buttonSecondaryColor$active;
+      color: $textTertiary;
     }
 
 
     /* Secondary destructive */
 
     ^secondary-destructive{
-      background-color: $white;
-      border: 1px solid $destructive500;
-      color: $destructive400;
+      background-color: $backgroundDestructive;
+      border: 1px solid $backgroundDestructiveSecondary;
+      color: $textDestrucitve;
     }
 
     ^secondary-destructive svg { fill: currentColor; }
@@ -225,11 +239,11 @@ foam.CLASS({
 
     ^tertiary:active:not(:disabled) {
       background-color: $buttonSecondaryColor$hover;
-      color: $buttonPrimaryColor;
+      color: $textBrandSecondary;
     }
 
     ^tertiary:disabled {
-      color: $buttonSecondaryColor$active;
+      color: $textBrandTertiary;
     }
 
     /* Tertiary destructive */
@@ -273,6 +287,30 @@ foam.CLASS({
       text-decoration: underline;
     }
 
+     /* Black */
+
+    ^black{
+      background: none;
+      border: 1px solid transparent;
+      color: $textDefault;
+    }
+
+    ^black svg { fill: currentColor; }
+
+    ^black:hover:not(:disabled) {
+      background-color: $buttonPrimaryLightColor;
+      color: $textDefault;
+    }
+
+    ^black:active:not(:disabled) {
+      background-color: $buttonPrimaryLightColor;
+      border-color: $textDefault;
+    }
+
+    ^black:disabled {
+      color: $buttonSecondaryColor$active;
+    }
+    
     /* Text */
 
     ^text{
@@ -285,6 +323,7 @@ foam.CLASS({
 
     ^text:hover:not(:disabled) {
       background-color: $buttonPrimaryLightColor;
+      color: $buttonPrimaryLightColor$foreground;
     }
 
     ^text:active:not(:disabled) {
@@ -314,6 +353,10 @@ foam.CLASS({
     ^iconOnly{
       padding: 8px;
       max-height: inherit;
+    }
+
+    ^iconOnly^small {
+      padding: 4px;
     }
 
     ^link^small,
@@ -476,7 +519,7 @@ foam.CLASS({
         return this.myClass(styleClass_);
       }));
 
-      this.addClass(this.myClass(this.size.label.toLowerCase()));
+      this.addClass(this.slot(function(size) { return this.myClass(size.label.toLowerCase()) }));
       this.enableClass(this.myClass('iconOnly'), ! (this.contents || this.label));
       this.enableClass(this.myClass('iconAfter'), this.isIconAfter$);
       this.enableClass('destructive', this.isDestructive$);
@@ -489,24 +532,27 @@ foam.CLASS({
     async function addContent() {
       /** Add text or icon to button. **/
       var self = this;
-      if ( ( this.themeIcon && this.theme ) ) {
-        this
-          .start({ class: 'foam.u2.tag.Image', glyph: this.themeIcon, role: 'presentation' })
-            .addClass(this.myClass('SVGIcon'))
-          .end();
-      } else if ( this.icon ) {
-        this
-          .start({ class: 'foam.u2.tag.Image', data: this.icon, role: 'presentation', embedSVG: true })
-            .addClass(this.myClass('SVGIcon'), this.myClass('imgSVGIcon'))
-          .end();
-      } else if ( this.iconFontName ) {
-        this.nodeName = 'i';
-        this.addClass(this.action.name);
-        this.addClass(this.iconFontClass); // required by font package
-        this.attr(role, 'presentation')
-        this.style({ 'font-family': this.iconFontFamily });
-        this.add(this.iconFontName);
-      }
+      this.add(this.dynamic(function(themeIcon, icon) {
+        if ( ( themeIcon && self.theme ) ) {
+          this
+            .start({ class: 'foam.u2.tag.Image', glyph: themeIcon, role: 'presentation' })
+              .addClass(self.myClass('SVGIcon'))
+            .end();
+        } else if ( icon ) {
+          this
+            .start({ class: 'foam.u2.tag.Image', data: icon, role: 'presentation', embedSVG: true })
+              .addClass(self.myClass('SVGIcon'), self.myClass('imgSVGIcon'))
+            .end();
+        // TODO: Maybe deprecate, not really used
+        } else if ( self.iconFontName ) {
+          this.nodeName = 'i';
+          this.addClass(self.action.name);
+          this.addClass(self.iconFontClass); // required by font package
+          this.attr(role, 'presentation')
+          this.style({ 'font-family': self.iconFontFamily });
+          this.add(self.iconFontName);
+        }
+      }))
       this.add(this.slot(function(label) {
         let e = this.E().show(!! label).style({ display: 'contents' });
         if ( foam.String.isInstance(this.label)  ) {

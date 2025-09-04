@@ -46,9 +46,12 @@ foam.CLASS({
           if ( foam.Color.COLOR_TO_NAME[v] ) return foam.Color.COLOR_TO_NAME[v];
           return value;
         },
-        function (value) {
+        function(value) {
           if ( typeof value !== 'string' ) return value;
-
+          
+          // Resolve CSS tokens for display in the color picker
+          value = foam.CSS.returnTokenValue(value, self.cls_, self.__subContext__);
+          
           var v = value.toLowerCase();
           if ( foam.Color.NAME_TO_COLOR[v] ) return foam.Color.NAME_TO_COLOR[v];
           return value;

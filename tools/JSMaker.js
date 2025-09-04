@@ -12,9 +12,8 @@ const fs_      = require('fs');
 const path_    = require('path');
 const uglify_  = require('uglify-js');
 const zlib_    = require('zlib');
-const { adaptOrCreateArgs, ensureDir } = require("./buildlib");
 
-const licenses = {};
+var licenses   = {};
 var version    = '';
 var files      = {}; // filename to content map for uglify
 
@@ -25,7 +24,6 @@ function addLicense(l) {
 
 exports.args = [
   {
-    // Isn't used directly by this Maker, but is used in java/refinements.js
     name: 'outdir',
     description: 'location to write foam-bin files, default: {builddir}/js',
     factory: () => path_.resolve(path_.normalize(X.outdir || (X.builddir + '/js')))
@@ -33,11 +31,14 @@ exports.args = [
 ];
 
 exports.init = function() {
-  adaptOrCreateArgs(X, exports.args);
-  flags.java      = false;
-  flags.web       = true;
-  flags.loadFiles = true;
+  this.adaptOrCreateArgs(X, exports.args);
+  this.ensureDir(X.outdir);
+
   version = X.version || version;
+  licenses = {};
+  files    = {};
+
+  flags.loadFiles = true;
 }
 
 
@@ -52,10 +53,18 @@ exports.visitPOM = function(pom) {
 
 
 exports.end = function() {
+  var self = this;
   var loaded = Object.keys(globalThis.foam.loaded);
+  if ( Object.keys(loaded).length == 0 ) {
+    this.info('[JS] flags:');
+    Object.keys(globalThis.foam.flags).forEach(f => {
+      self.log(f, globalThis.foam.flags[f]);
+    });
+    this.error('[JS] No files loaded');
+  }
+
   loaded.unshift(path_.dirname(__dirname) + '/src/foam.js');
 
-  // console.log(X.stage, foam.stages);
   // Build array of files for Uglify
   loaded.forEach(l => {
     // POM's can be included in files: so just ignore
@@ -64,19 +73,20 @@ exports.end = function() {
     if ( l.endsWith('pom.js') ) return;
     try {
       l = path_.resolve(__dirname, l);
+      self.verbose('[JS] path', l);
       if ( X.stage === undefined ) {
         files[l] = fs_.readFileSync(l, "utf8");
       } else {
         var stage = foam.stages[l] ?? foam.defaultStage;
         if ( X.stage == stage ) {
-          // console.log('***** IN stage:', X.stage,' *** file:', l);
+          // this.log('***** IN stage:', X.stage,' *** file:', l);
           files[l] = fs_.readFileSync(l, "utf8");
         } else {
-          // console.log('***** EX stage:', X.stage, stage, ' *** file:', l);
+          // this.log('***** EX stage:', X.stage, stage, ' *** file:', l);
         }
       }
     } catch (x) {
-      // console.log('********************************* Unexpected Error: ', x);
+      // this.log('********************************* Unexpected Error: ', x);
     }
   });
 
@@ -91,7 +101,7 @@ exports.end = function() {
 
   license = license.split('\n').map(l => '// ' + l).join('\n');
 
-  console.log(`[JS] Version: ${version}, Licenses: ${Object.keys(licenses).length}, Files: ${Object.keys(files).length}, Stage: ${X.stage}`);
+  this.log(`[JS] Version: ${version}, Licenses: ${Object.keys(licenses).length}, Files: ${Object.keys(files).length}, Stage: ${X.stage}`);
   var result = Object.keys(files).length && uglify_.minify(
     files,
     {
@@ -105,13 +115,12 @@ exports.end = function() {
     });
 
   if (result && result.error) {
-    console.log("[JS] Error: ", result.error);
-    process.exit(1);
+    this.error('[JS]', result.error);
   }
   var code = result && result.code;
 
   if ( ! code ) {
-    console.log('No output for stage:', X.stage);
+    this.warning('[JS] No output for stage', X.stage);
 //    return;
     code = '';
   }
@@ -184,15 +193,14 @@ if ( ! foam.flags.skipStage2 ) {
   // code = code.replaceAll(/foam.CLASS\({/gm, '\nfoam.CLASS({');
 
   var filename = fn(X.stage);
-  console.log('[JS] Writing', filename + '.js');
-  ensureDir(X.outdir);
+  this.log('[JS] Writing', filename + '.js');
   fs_.writeFileSync(X.outdir + "/" + filename + '.js', code);
-  console.log('[JS] Writing', filename + '.js.gz');
+  this.log('[JS] Writing', filename + '.js.gz');
   zlib_.gzip(code, (err, buffer) => {
     if ( ! err ) {
       fs_.writeFileSync(X.outdir + "/" + filename + '.js.gz', buffer);
     } else {
-      console.error(err);
+      this.error('[JS] Writing', filename, err);
     }
   });
 }

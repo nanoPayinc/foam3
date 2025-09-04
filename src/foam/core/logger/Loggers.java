@@ -39,7 +39,7 @@ public class Loggers {
   public static Logger logger(X x, Object caller, boolean includeSubject, String... prefixes) {
     Logger logger = (Logger) x.get("logger");
     if ( logger == null ) {
-      logger = new StdoutLogger(x);
+      logger = StdoutLogger.instance();
     }
 
     List<String> p = new ArrayList();

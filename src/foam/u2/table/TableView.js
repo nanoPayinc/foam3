@@ -12,7 +12,7 @@
   cssTokens: [
     {
       name: 'borderSize',
-      value: '2px solid $grey300'
+      value: '2px solid $borderDefault'
     }
   ],
 
@@ -63,19 +63,19 @@
 */
     }
     ^tr {
-      background: $white;
       display: flex;
       height: 48px;
       justify-content: space-between;
     }
 
     ^tbody ^clickable^tr:hover {
-      background: $grey50;
+      background: $backgroundTertiary;
       border-radius: 4px;
       cursor: pointer;
     }
 
     ^thead {
+      background: $backgroundDefault;
       position: sticky;
       top: 0;
       z-index: 1;
@@ -93,7 +93,7 @@
     ^th {
       align-self: center;
       box-sizing: border-box;
-      color: $black;
+      color: $textDefault;
       display: block;
       line-height: 1.5;
       overflow: hidden;
@@ -116,7 +116,7 @@
      * OTHER
      */
     ^selected {
-      background: $primary50;
+      background: $backgroundBrandTertiary;
     }
 
     ^noselect {
@@ -137,7 +137,27 @@
     }
 
     ^row-group{
-      background: $grey50;
+      background: $backgroundSecondary;
+    }
+
+    ^group-content{
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 4px;
+    }
+    ^expand-icon.foam-u2-ActionView-expand {
+      transition: 0.1s ease;
+      transform: rotate(90deg);
+      padding: 4px;
+    }
+    ^expand-icon.foam-u2-ActionView-small svg {
+      width: 1.4rem;
+      height: 1.4rem;
+    }
+    ^expand-icon^collapsed {
+      transform: rotate(0deg);
     }
 
     ^resizeButton {
@@ -158,9 +178,8 @@
     /* PAGINATION */
     ^nav{
       align-items: center;
-      background: $white;
       border-radius: 0 0 4px 4px;
-      border-top: 1px solid $grey300;
+      border-top: 1px solid $borderDefault;
       box-sizing: border-box;
       gap: 8px;
       justify-content: flex-end;
@@ -177,7 +196,7 @@
       border-radius: 0px;
       padding: 0px;
       height: auto;
-      border-bottom: 2px solid $primary400;
+      border-bottom: 2px solid $borderBrand;
     }
   `,
 

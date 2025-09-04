@@ -1,0 +1,29 @@
+p({
+  class: "foam.core.browser.BrowserConfig",
+  id: "chrome",
+  type: "chrome",
+  enabled: true,
+  execPaths: [
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/usr/bin/google-chrome",
+    "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"
+  ],
+  headlessFlags: [
+    "--auto-open-devtools-for-tabs",
+    "--enable-automation",
+    "--disable-dev-shm-usage",
+    "--disable-features=VizDisplayCompositor",
+    "--disable-gpu",
+    "--disable-web-security",
+    "--headless",
+    "--remote-debugging-port=9222",
+    "--run-all-compositor-stages-before-draw",
+    "--no-sandbox"
+  ],
+  headedFlags: [
+    "--disable-gpu",
+    "--incognito",
+    "--new-window",
+    "--no-sandbox"
+  ]
+})

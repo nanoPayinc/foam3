@@ -64,7 +64,7 @@ foam.CLASS({
       height: 35px;
       z-index: 10000
       text-align: left;
-      color: $black;
+      color: $textDefault;
     }
     ^ .popUpDropDown > div > div:hover {
       background-color: rgba(89, 165, 213, 0.3);
@@ -82,14 +82,14 @@ foam.CLASS({
     }
     ^ .header {
       text-align: left;
-      color: $black;
+      color: $textDefault;
       margin: 30px 0 20px 0;
     }
     ^ .title {
       width: auto;
       height: 20px;
       text-align: left;
-      color: $black;
+      color: $textDefault;
       float:left;
       display: inline-block;
       padding-right: 20px;
@@ -101,7 +101,7 @@ foam.CLASS({
     ^ .subtitle {
       opacity: 0.7;
       text-align: left;
-      color: $black;
+      color: $textDefault;
       padding-top: 10px;
     }
   `,

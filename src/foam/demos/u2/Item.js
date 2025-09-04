@@ -268,7 +268,7 @@ foam.CLASS({
 var ctrl = ItemController.create();
 ctrl.write(document);
 
-var view = foam.u2.view.TableView.create({
+var view = foam.u2.table.TableView.create({
   of: Item,
   data: ctrl.items
 });

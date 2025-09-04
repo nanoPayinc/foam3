@@ -160,6 +160,9 @@ foam.CLASS({
         KeyStore keyStore = null;
         try {
           InputStream is = getX().get(foam.core.fs.Storage.class).getInputStream(storePath);
+          if ( is == null ) {
+            throw new IOException("Failed opening inputstream "+storePath);
+          }
 
           keyStore = KeyStore.getInstance(getStoreType());
           keyStore.load(is, storePass == null ? null : storePass.toCharArray());

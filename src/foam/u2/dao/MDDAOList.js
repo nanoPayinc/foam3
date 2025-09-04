@@ -61,10 +61,10 @@ foam.CLASS({
   }
   ^ .md-row {
     display: flex;
-    color: $grey700;
+    color: $textSecondary;
     height: 150px;
     padding: 3rem;
-    border-bottom: 1px solid $grey400;
+    border-bottom: 1px solid $borderDefault;
   }
 
   `

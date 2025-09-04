@@ -405,6 +405,7 @@ foam.SCRIPT({
   }
 });
 
+
 foam.CLASS({
   package: 'foam.lang',
   name: 'FObjectValidateImportsRefinement',
@@ -421,13 +422,13 @@ foam.CLASS({
 
         if ( imp.required && ! this.__context__[imp.key + '$'] ) {
           var m = 'Missing required import: ' + imp.key + ' in ' + this.cls_.id;
-          if ( this.cls_.id == 'foam.lang.Currency' ) debugger;
           foam.assert(false, m);
         }
       }
     }
   ]
 });
+
 
 foam.CLASS({
   package: 'foam.lang',

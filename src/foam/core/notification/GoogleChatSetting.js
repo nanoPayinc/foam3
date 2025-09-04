@@ -10,13 +10,15 @@ foam.CLASS({
   extends: 'foam.core.notification.NotificationSetting',
 
   javaImports: [
-    'foam.lang.FObject',
-    'foam.lang.X',
-    'foam.dao.DAO',
-    'foam.dao.ProxyDAO',
     'foam.core.app.AppConfig',
     'foam.core.logger.Logger',
     'foam.core.logger.Loggers',
+    'foam.core.notification.email.EmailMessage',
+    'foam.core.notification.email.EmailPropertyService',
+    'foam.dao.DAO',
+    'foam.dao.ProxyDAO',
+    'foam.lang.FObject',
+    'foam.lang.X',
     'foam.lib.json.Outputter',
     'foam.util.SafetyUtil',
     'java.net.http.HttpClient',
@@ -27,6 +29,19 @@ foam.CLASS({
     'java.util.HashMap',
     'java.util.Map',
     'java.net.URI'
+  ],
+
+  properties: [
+    {
+      name: 'throttler',
+      class: 'String',
+      value: 'googleChatNotificationThrottler'
+    },
+    {
+      name: 'template',
+      class: 'String',
+      value: 'googleChatCardsV2NotificationTemplate'
+    }
   ],
 
   methods: [
@@ -40,35 +55,36 @@ foam.CLASS({
         Map map = new HashMap();
 
         String URL = notification.getGoogleChatWebhook();
-        // Loggers.logger(x, this).debug("URL", URL);
-
-        if ( notification.getAlarm() != null ) {
-          StringBuilder threadKey = new StringBuilder();
-          threadKey.append(System.getProperty("CLUSTER_NAME", notification.getAlarm().getHostname()));
-          threadKey.append("-");
-          threadKey.append(notification.getAlarm().getName().replaceAll(" ", "_"));
-          if ( ! SafetyUtil.isEmpty(notification.getAlarm().getExternalId()) ) {
-            threadKey.append("-");
-            threadKey.append(notification.getAlarm().getExternalId());
-          }
-          Map thread = new HashMap();
-          thread.put("threadKey", threadKey.toString());
-          map.put("thread", thread);
-          URL += "&messageReplyOption=REPLY_MESSAGE_FALLBACK_TO_NEW_THREAD";
-        }
-
         String message = notification.getGoogleChatMessage();
         if ( foam.util.SafetyUtil.isEmpty(message) ) {
           message = notification.getBody();
         }
 
-        StringWriter sw  = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        Outputter outputter = new Outputter(x, pw);
-        map.put("text", message);
-        outputter.output(map);
-        String body = sw.toString();
-        // Loggers.logger(x, this).debug("body", body);
+        int count = 0;
+        String[] lines = message.split("\\n");
+        map.put("title", lines[0]);
+        map.put("subtitle", "Host: "+System.getProperty("hostname", "localhost"));
+        map.put("message", message);
+
+        String body = null;
+
+        try {
+          map.put("template", getTemplate());
+          EmailMessage emailMessage = new EmailMessage(x, user.getId(), map);
+          // satisfy EmailPropertyService
+          emailMessage.setSubject("nop");
+          emailMessage.setTo(new String[] {user.getEmail()});
+
+          EmailPropertyService service = (EmailPropertyService) x.get("emailPropertyService");
+          service.apply(x, null, emailMessage, null);
+          body = emailMessage.getBody();
+          // Loggers.logger(x, this).debug("body", body);
+        } catch (Exception e) {
+          Loggers.logger(x, this).warning("EmailPropertyService", e.getMessage(), e);
+          throw new RuntimeException("EmailPropertyService error: "+e.getMessage());
+        }
+
+        throttle(x);
 
         HttpRequest request = HttpRequest.newBuilder(URI.create(URL))
           .header("accept", "application/json; charset=UTF-8")
@@ -85,6 +101,14 @@ foam.CLASS({
       } catch (Throwable t) {
         Loggers.logger(x, this).error(t);
       }
+      `
+    },
+    {
+      name: 'throttle',
+      args: 'X x',
+      javaCode: `
+        var t = (foam.core.pool.Throttle) x.get(getThrottler());
+        if ( t != null ) t.throttle();
       `
     }
   ]

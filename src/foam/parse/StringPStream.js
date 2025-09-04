@@ -8,6 +8,8 @@ foam.CLASS({
   package: 'foam.parse',
   name: 'StringPStream',
 
+  documentation: "Doesn't take arguments in create(). Must call setString() to initialize.",
+
   properties: [
     {
       name: 'str',
@@ -27,9 +29,10 @@ foam.CLASS({
       name: 'tail',
       getter: function() {
         if ( ! this.instance_.tail ) {
-          var ps = this.cls_.create();
-          ps.str = this.str;
-          ps.pos = this.pos + 1;
+          var ps   = this.cls_.create();
+          ps.str   = this.str;
+          ps.pos   = this.pos + 1;
+          ps.apply = this.apply;
           this.instance_.tail = ps;
         }
         return this.instance_.tail;
@@ -56,7 +59,12 @@ foam.CLASS({
   ],
 
   methods: [
-    function initArgs() {},
+    function initArgs(args) {
+      if ( args ) {
+        if ( args.apply ) this.apply = args.apply;
+        if ( args.str   ) this.setString(args.str);
+      }
+    },
 
     function setValue(value) {
       // Force undefined values to null so that hasOwnProperty checks are faster.
@@ -65,13 +73,15 @@ foam.CLASS({
       ps.str   = this.str;
       ps.pos   = this.pos;
       ps.tail  = this.tail;
+      ps.apply = this.apply;
       ps.value = value;
       return ps;
     },
 
     function setString(s) {
-      if ( ! this.pos ) this.pos = 0;
-      if ( ! this.str ) this.str = [];
+      if ( ! this.pos   ) this.pos = 0;
+      if ( ! this.str   ) this.str = [];
+      if ( ! this.apply ) this.apply = function(p, obj) { return p.parse(this, obj); };
       this.str[0] = s;
     },
 
@@ -82,12 +92,12 @@ foam.CLASS({
       return this.str[0].substring(this.pos, end.pos);
     },
 
-    function apply(p, obj) {
-      return p.parse(this, obj);
-    },
-
     function compareTo(o) {
       return this.pos - o.pos;
+    },
+
+    function toString() {
+      return `StringPStream({str: ${this.str[0]}, pos: ${this.pos}, value: ${this.value}})`;
     }
   ]
 });

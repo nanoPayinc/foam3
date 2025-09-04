@@ -11,7 +11,7 @@ foam.CLASS({
 
   css: `
     ^ iframe {
-      border: 1px solid $grey300;
+      border: 1px solid $borderDefault;
       padding: 8px;
       max-width: 100%;
       box-sizing: border-box;

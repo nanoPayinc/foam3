@@ -13,7 +13,7 @@ foam.CLASS({
     'foam.core.COREService'
   ],
 
-  documentation: `Agent which retrieves a email folders messages`,
+  documentation: 'Agent which retrieves a email folders messages',
 
   javaImports: [
     'foam.blob.Blob',

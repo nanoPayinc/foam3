@@ -7,6 +7,7 @@
 foam.CLASS({
   package: 'foam.parse',
   name: 'ErrorReportingPStream',
+
   properties: [
     {
       class: 'Simple',
@@ -89,7 +90,7 @@ foam.CLASS({
 
     function apply(p, obj) {
       var res = p.parse(this, obj);
-      if ( ! res ) this.report(this, p, obj);
+      if ( ! res && this.report ) this.report(this, p, obj);
       return res;
     }
   ]

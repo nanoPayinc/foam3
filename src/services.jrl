@@ -8,7 +8,9 @@ p({
   """
     {
       "of":"foam.core.boot.CSpec",
-      "cache":true
+      "cache":true,
+      "ttlSelectPurgeTime": 0,
+      "ttlPurgeTime": 0
      }
   """
 })
@@ -28,10 +30,12 @@ p({
   "client":"""
     {
       "of":"foam.core.boot.CSpec",
-      "cache":true
+      "cache":true,
+      "ttlSelectPurgeTime": 0,
+      "ttlPurgeTime": 0
     }
   """,
-  documentation:"The authenticated version of cSpecDAO - for dig and docs."
+  documentation:"The authenticated version of cSpecDAO - for dig, reflow and docs. Users need the service.read.<serviceName> permission to see each service."
 })
 
 p({
@@ -106,7 +110,7 @@ p({
           report-uri /service/CSPReportWebAgent;
           worker-src 'self';
           style-src 'self' https://fonts.googleapis.com/css https://fonts.googleapis.com/css2 https://fonts.googleapis.com/icon data: chrome-extension-resource: 'unsafe-inline';
-          script-src 'self' https://cdn.plaid.com/link/v2/stable/link-initialize.js https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js 'unsafe-eval' 'sha256-HY1JzEwuxkis4xx0ggY23gbYY/MCEAE1T6+OQnWS2vA=' 'sha256-NiNrLgJ8wbIXIi5saiR3XTd1Mxm4k0nju66GJsw4b9U=' 'sha256-FLYDXBkz4oo/H5jEfYXqAGYUwERY44OO1yznaMCdMiU=' 'sha256-G3UfiJBy6rwOk3glkBQuQDFA7IoCtiOT56gTh+IfNF0=' 'sha256-VqQW98BZz58NothFoAKVTq/UrLorSsLU11mhJjLFzW0=';
+          script-src 'self' https://cdn.plaid.com/link/v2/stable/link-initialize.js https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js https://cdnjs.cloudflare.com/ajax/libs/ace/1.39.0/ https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js 'unsafe-eval' 'sha256-HY1JzEwuxkis4xx0ggY23gbYY/MCEAE1T6+OQnWS2vA=' 'sha256-NiNrLgJ8wbIXIi5saiR3XTd1Mxm4k0nju66GJsw4b9U=' 'sha256-FLYDXBkz4oo/H5jEfYXqAGYUwERY44OO1yznaMCdMiU=' 'sha256-G3UfiJBy6rwOk3glkBQuQDFA7IoCtiOT56gTh+IfNF0=' 'sha256-VqQW98BZz58NothFoAKVTq/UrLorSsLU11mhJjLFzW0=';
         """
       }
     }]
@@ -114,9 +118,6 @@ p({
 })
 
 p({"class":"foam.core.boot.CSpec", "name":"httprouter",                         "serviceClass":"foam.core.http.NanoRouter"})
-
-p({"class":"foam.core.boot.CSpec", "name":"websockets",                       "lazy":false, "serviceClass":"foam.core.ws.NanoWebSocketServer"})
-
 
 p({
   "class":"foam.core.boot.CSpec",
@@ -282,14 +283,6 @@ p({
   """
 })
 p({"class":"foam.core.boot.CSpec", "name":"emailDocService",                  "lazy":false, "serve":true,  "boxClass":"foam.core.auth.email.EmailDocInterfaceSkeleton", "serviceClass":"foam.core.auth.email.EmailDocService","client":"{\"class\":\"foam.core.auth.email.ClientEmailDocService\", \"delegate\": { \"class\":\"foam.box.HTTPBox\", \"url\":\"service/emailDocService\" } }"})
-p({
-  "class":"foam.core.boot.CSpec",
-  "name":"testRunnerConfig",
-  "lazy":false,
-  "service": {
-    "class":"foam.core.script.TestRunnerConfig"
-  }
-})
 
 p({
   "class":"foam.core.boot.CSpec",
@@ -310,6 +303,7 @@ p({
   """
   return new foam.dao.EasyDAO.Builder(x)
     .setOf(foam.flow.Document.getOwnClassInfo())
+    .setPm(false)
     .setAuthorize(false)
     .setInnerDAO(new foam.flow.DocumentationFolderDAO.Builder(x).build())
     .build();
@@ -324,14 +318,13 @@ p({
   """
     return new foam.dao.EasyDAO.Builder(x)
       .setOf(foam.flow.Document.getOwnClassInfo())
+      .setPm(false)
       .setPermissionPrefix("flow")
       .setInnerDAO(x.get("localDocumentDAO"))
       .build();
   """,
   "client": "{\"of\":\"foam.flow.Document\"\}"
 })
-
-p({"class":"foam.core.boot.CSpec", "name":"serializationTestEchoService", "boxClass": "foam.core.test.EchoServiceSkeleton",  "serve":true, "serviceClass":"foam.core.test.SerializationTestEchoService", "client":"{\"class\":\"foam.core.test.ClientEchoService\",\"delegate\":{\"class\":\"foam.box.SessionClientBox\",\"delegate\":{\"class\":\"foam.box.HTTPBox\",\"method\":\"POST\",\"url\":\"service/serializationTestEchoService\"}}}"})
 
 p({
   "class":"foam.core.boot.CSpec",
@@ -379,6 +372,7 @@ p({
     return new foam.dao.EasyDAO.Builder(x)
       .setOf(foam.lang.Currency.getOwnClassInfo())
       .setName("currency")
+      .setPm(false)
       .setInnerDAO(x.get("localCurrencyDAO"))
       .build();
   """,
@@ -421,6 +415,7 @@ p({
       .setOf(foam.core.google.api.auth.GoogleApiCredentials.getOwnClassInfo())
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("googleCredentials")
+      .setPm(false)
       .build();
   """,
   "client":
@@ -500,6 +495,7 @@ p({
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("reportTemplates")
       .setAuthorize(true)
+      .setPm(false)
       .setAuthorizer(new foam.core.auth.GlobalReadAuthorizer("reporttemplate"))
       .build();
   """,
@@ -560,6 +556,7 @@ p({
   "serve":true,
   "serviceScript": """
     return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
       .setAuthorizer(new foam.core.auth.GlobalReadAuthorizer("addressconfig"))
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("addressConfig")
@@ -581,6 +578,7 @@ p({
   "serviceScript": """
     return new foam.dao.EasyDAO.Builder(x)
       .setFuid(true)
+      .setPm(false)
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("approvalRequestClassifications")
       .setOf(foam.core.approval.ApprovalRequestClassification.getOwnClassInfo())

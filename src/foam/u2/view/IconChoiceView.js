@@ -24,7 +24,7 @@ foam.CLASS({
 
     ^ {
       display: flex;
-      background-color: $primary50;
+      background-color: $backgroundBrandTertiary;
       border-radius: 4px;
       display: flex;
       gap: 12px 24px;
@@ -39,7 +39,7 @@ foam.CLASS({
       align-items: center;
       background: none;
       border-radius: 4px;
-      color: $primary400;
+      color: $textBrand;
 
       display: flex;
       justify-content: center;
@@ -47,28 +47,28 @@ foam.CLASS({
     }
 
     ^label svg path {
-      fill: $primary400;
+      fill: currenyColor;
     }
 
     ^label:hover {
-      background: $primary700;
-      color: $white;
+      background: $backgroundBrand;
+      color: $textOnBrand;
       cursor: pointer;
     }
 
     ^label:hover svg path{
-      fill: $white;
+      fill: currentColor;
     }
 
     ^label^disabled-icon {
-      background: $primary400;
-      color: $white;
-      fill: $white;
+      background: $backgroundBrand;
+      color: $textOnBrand;
+      fill: currentColor;
       font-weight: 600;
     }
 
     ^label^disabled-icon svg path {
-      fill: $white;
+      fill: currentColor;
     }
   `,
 

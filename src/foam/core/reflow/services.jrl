@@ -1,0 +1,87 @@
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "consoleZACClient",
+  "authenticate": false,
+  "lazyClient": true,
+  "serve": true,
+  "client":"""{"class":"foam.core.reflow.ConsoleZACClient"}"""
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "modelDAO",
+  "authenticate": false,
+  "lazyClient": true,
+  "serve": true,
+  "client":"""{"class":"foam.core.reflow.ModelDAO"}"""
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"flowDAO",
+  "description": "Stores FLOWs.",
+  "serve":true,
+  "authenticate":false,
+  "serviceScript":
+  """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setPm(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("flows")
+      .setOf(foam.core.reflow.Flow.getOwnClassInfo())
+      .setRuler(true)
+      .build();
+  """,
+  "client":"""{"of":"foam.core.reflow.Flow"}"""
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "agentDAO",
+  "description": "Stores Reflow SinkView Agents",
+  "serve":true,
+  "authenticate":false,
+  "serviceScript":`
+    return new foam.dao.EasyDAO.Builder(x)
+      .setPm(true)
+      .setAuthorize(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("agents")
+      .setOf(foam.core.reflow.SinkAgent.getOwnClassInfo())
+      .build();
+    `,
+  "client":"""
+    {
+      "of":"foam.core.reflow.SinkAgent",
+      "cache":true,
+      "ttlSelectPurgeTime": 0,
+      "ttlPurgeTime": 0
+    }
+  """
+})
+
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "toolbarControlDAO",
+  "description": "Stores Reflow Toolbar Controls",
+  "serve":true,
+  "authenticate":false,
+  "serviceScript":`
+    return new foam.dao.EasyDAO.Builder(x)
+      .setPm(true)
+      .setAuthorize(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("controls")
+      .setOf(foam.core.reflow.ToolbarControl.getOwnClassInfo())
+      .build();
+    `,
+  "client":"""
+    {
+      "of":"foam.core.reflow.ToolbarControl",
+      "cache":true,
+      "ttlSelectPurgeTime": 0,
+      "ttlPurgeTime": 0
+    }
+  """
+})

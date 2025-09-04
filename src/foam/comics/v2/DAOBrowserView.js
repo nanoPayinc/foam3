@@ -27,7 +27,6 @@ foam.CLASS({
     'foam.u2.layout.Rows',
     'foam.u2.stack.StackBlock',
     'foam.u2.view.OverlayActionListView',
-    'foam.u2.view.ScrollTableView',
     'foam.u2.view.SimpleSearch',
     'foam.u2.view.TabChoiceView'
   ],
@@ -51,7 +50,7 @@ foam.CLASS({
     }
 
     ^top-bar {
-      border-bottom: solid 1px #e7eaec;
+      border-bottom: solid 1px $borderLight;
       align-items: center;
       padding-top: 16px;
     }
@@ -61,11 +60,11 @@ foam.CLASS({
     }
 
     ^query-bar {
-      padding: 12px 24px;
-      padding-top: 32px;
+      padding: 6px 8px;
     }
 
     ^buttons{
+      display: flex;
       gap: 0.5em;
       align-items: flex-start;
     }
@@ -103,14 +102,6 @@ foam.CLASS({
       padding: 0 16px;
     }
 
-    ^ .foam-u2-view-TableView th {
-      background: #ffffff
-    }
-
-    ^ .foam-u2-view-TableView td {
-      padding-left: 16px;
-    }
-
     ^ .foam-u2-view-SimpleSearch {
       flex-grow: 1;
     }
@@ -121,11 +112,17 @@ foam.CLASS({
       border-radius: 0 5px 5px 0;
       border: $borderSize;
     }
+    @media only screen and (min-width:  /*%DISPLAYWIDTH.MD%*/ 768px) {
+      ^query-bar {
+        padding: 12px 16px;
+      }
+    }
   `,
 
   messages: [
-    { name: 'REFRESH_MSG', message: 'Refresh Requested... ' },
-    { name: 'ACTIONS',     message: 'Actions' }
+    { name: 'LAST_REFRESHED', message: 'Last refreshed' },
+    { name: 'REFRESH_MSG',    message: 'Refresh Requested... ' },
+    { name: 'ACTIONS',        message: 'Actions' }
   ],
 
   imports: [
@@ -145,6 +142,10 @@ foam.CLASS({
   ],
 
   properties: [
+    {
+      name: 'lastRefresh',
+      factory: function() { return new Date(); }
+    },
     {
       class: 'StringArray',
       name: 'filteredTableColumns'
@@ -348,11 +349,12 @@ foam.CLASS({
                     .startContext({
                       dao: self.searchFilterDAO
                     })
-                      .callIf(self.config.searchMode === self.SearchMode.SIMPLE, function() {
+                    .call(function() {
+                      if (self.config.searchMode === self.SearchMode.NONE) return;
+                      if (self.config.searchMode === self.SearchMode.SIMPLE)
                         this.add(simpleSearch);
-                      })
-                      .callIf(self.config.searchMode === self.SearchMode.FULL, function() {
-                        this.add(filterView);
+                      else
+                      this.add(filterView);
                     })
                     .endContext()
                     .start(self.Cols)
@@ -371,7 +373,12 @@ foam.CLASS({
                             controllerMode: foam.u2.ControllerMode.EDIT
                           });
                           for ( action of visibleActions ) {
-                            actions.start(action, buttonStyle).addClass(self.myClass('actions')).end();
+                            actions.start(action, buttonStyle).
+                              callIf(action === self.REFRESH_TABLE, function() {
+                                this.tooltip$ = self.lastRefresh$.map(l => self.LAST_REFRESHED + ' ' + l.toLocaleString());
+                              }).
+                              addClass(self.myClass('actions')).
+                            end();
                           }
                           if ( extraActions && extraActions.length ) {
                             el.start(self.OverlayActionListView, {
@@ -426,10 +433,10 @@ foam.CLASS({
       toolTip: 'Refresh Table',
       icon: 'images/refresh-icon-black.svg',
       isAvailable: function(config) {
-        if ( ! config.refreshPredicate.f() ) return false;
-        return true;
+        return config.refreshPredicate.f();
       },
       code: function(X) {
+        this.lastRefresh = new Date();
         this.config.dao.cmd_(X, foam.dao.DAO.PURGE_CMD);
         this.config.dao.cmd_(X, foam.dao.DAO.RESET_CMD);
         this.ctrl.notify(this.REFRESH_MSG, '', this.LogLevel.INFO, true, '/images/Progress.svg');
@@ -442,11 +449,10 @@ foam.CLASS({
       availablePermissions: [ "data.import.googleSheets" ],
       toolTip: 'Import From Google Sheet',
       isAvailable: function(config) {
-        if ( ! config.importPredicate.f() ) return false;
-        return true;
+        return config.importPredicate.f();
       },
       code: function(X) {
-        this.add(this.Popup.create(null, X).tag(this.importModal));
+        this.StyledModal.create({ title: 'Import', maxWidth: '90vw'}, X).tag(this.importModal).open();
       }
     }
   ]

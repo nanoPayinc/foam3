@@ -97,7 +97,7 @@ foam.CLASS({
 
   css: `
     ^ .table-row:hover {
-      background: $grey50;
+      background: $backgroundSecondary;
       cursor: pointer;
     }
     ^ .table-row {

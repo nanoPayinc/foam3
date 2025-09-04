@@ -30,7 +30,7 @@ foam.CLASS({
       width: 100%;
     }
     ^ {
-      border-left: 4px solid $grey300;
+      border-left: 4px solid $borderDefault;
       padding-left: 16px;
     }
   `,

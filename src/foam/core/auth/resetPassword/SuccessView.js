@@ -32,7 +32,7 @@ foam.CLASS({
       width: 490px;
       height: 121px;
       border-radius: 2px;
-      background-color: $white;
+      background-color: $backgroundDefault;
       padding-top: 5px;
     }
 
@@ -40,7 +40,7 @@ foam.CLASS({
       width: 225;
       height: 30px;
       text-align: left;
-      color: $black;
+      color: $textDefault;
       margin-top: 20px;
       margin-bottom: 30px;
     }
@@ -53,7 +53,7 @@ foam.CLASS({
       width: 450px;
       height: 16px;
       text-align: left;
-      color: $black;
+      color: $textDefault;
       margin-top: 15px;
       margin-left: 20px;
       margin-right: 288px;

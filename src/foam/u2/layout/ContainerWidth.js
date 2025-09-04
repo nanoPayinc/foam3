@@ -14,11 +14,13 @@ foam.CLASS({
   properties: [
     {
       name: 'containerWidth',
+      hidden: true,
       class: 'FObjectProperty',
       of: 'foam.u2.layout.DisplayWidth'
     },
     {
       name: 'inlineSize',
+      hidden: true,
       class: 'Float'
     }
   ],

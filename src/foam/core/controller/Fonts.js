@@ -16,7 +16,7 @@ foam.CLASS({
       name: 'fontFamily',
       value: '$font1',
       fallback: ' -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Cantarell, Ubuntu, roboto, noto, arial, sans-serif'
-    },
+    }
   ],
   css: `
     :root{
@@ -24,8 +24,8 @@ foam.CLASS({
     }
 
     body {
-      background: $background;
-      color: $black;
+      background: $backgroundDefault;
+      color: $textDefault;
       font-family: $fontFamily;
       font-size: 1.4rem;
       line-height: 1.5;
@@ -35,91 +35,91 @@ foam.CLASS({
     /* TYPOGRAPHY */ 
     .h100{
       font-style: normal;
-      font-weight: 700;
-      font-size: 3.5rem;
+      font-weight: $font-bold;
+      font-size: $header-xl;
       line-height: 1.14;
       margin: 0;
     }
     .h200{
       font-style: normal;
-      font-weight: 600;
-      font-size: 3rem;
+      font-weight: $font-medium;
+      font-size: $header-lg;
       line-height: 1.1;
       margin: 0;
     }
     .h300{
       font-style: normal;
-      font-weight: 600;
-      font-size: 2.4rem;
+      font-weight: $font-medium;
+      font-size: $header-md;
       line-height: 1.17;
       margin: 0;
     }
     .h400{
       font-style: normal;
-      font-weight: 600;
-      font-size: 2rem;
+      font-weight: $font-medium;
+      font-size: $header-sm;
       line-height: 1.2;
       margin: 0;
     }
     .h500{
       font-style: normal;
-      font-weight: 600;
-      font-size: 1.6rem;
+      font-weight: $font-medium;
+      font-size: $header-xs;
       line-height: 1.25;
       margin: 0;
     }
     .h600{
       font-style: normal;
-      font-weight: 600;
-      font-size: 1.4rem;
+      font-weight: $font-medium;
+      font-size: $header-xxs;
       line-height: 1.5;
       margin: 0;
     }
     .h700{
       font-style: normal;
-      font-weight: 600;
-      font-size: 1.2rem;
+      font-weight: $font-medium;
+      font-size: $header-xxxs;
       line-height: 1.5;
       margin: 0;
     }
     .p{
       font-style: normal;
-      font-weight: normal;
+      font-weight: $font-regular;
       font-size: 1.4rem;
       line-height: 1.71;
       margin: 0;
     }
     .p-light{
       font-style: normal;
-      font-weight: 300;
+      font-weight: $font-light;
       font-size: 1.4rem;
       line-height: 1.71;
       margin: 0;
     }
     .p-sm{
       font-style: normal;
-      font-weight: normal;
+      font-weight: $font-regular;
       font-size: 1.2rem;
       line-height: 1.71;
       margin: 0;
     }
     .p-xs{
       font-style: normal;
-      font-weight: normal;
+      font-weight: $font-regular;
       font-size: 1rem;
       line-height: 1.71;
       margin: 0;
     }
     .p-xxs{
       font-style: normal;
-      font-weight: normal;
+      font-weight: $font-regular;
       font-size: 0.8rem;
       line-height: 1.71;
       margin: 0;
     }
     .p-md{
       font-style: normal;
-      font-weight: normal;
+      font-weight: $font-regular;
       font-size: 1.6rem;
       line-height: 1.71;
       margin: 0;
@@ -127,41 +127,41 @@ foam.CLASS({
     .p-lg{
       font-size: 1.8rem;
       font-style: normal;
-      font-weight: normal;
+      font-weight: $font-regular;
       line-height: 1.78;
       margin: 0;
     }
     .p-xl{
       font-size: 2.4rem;
       font-style: normal;
-      font-weight: normal;
+      font-weight: $font-regular;
       margin: 0;
     }
     .p-semiBold{
       line-height: 1.78;
       font-size: 1.4rem;
       font-style: normal;
-      font-weight: 600;
+      font-weight: $font-medium;
       line-height: 1.71;
       margin: 0;
     }
     .p-bold{
       font-style: normal;
-      font-weight: 700;
+      font-weight: $font-semi-bold;
       font-size: 1.4rem;
       line-height: 1.71;
       margin: 0;
     }
     .p-light{
       font-style: normal;
-      font-weight: 300;
+      font-weight: $font-light;
       font-size: 1.4rem;
       line-height: 1.71;
       margin: 0;
     }
     .p-legal{
       font-style: normal;
-      font-weight: 500;
+      font-weight: $font-regular;
       font-size: 1.2rem;
       line-height: 1.17;
       margin: 0;
@@ -175,7 +175,7 @@ foam.CLASS({
     }
     .p-label {
       font-style: normal;
-      font-weight: 600;
+      font-weight: $font-medium;
       font-size: 1.2rem;
       line-height: 1.33;
       margin: 0;
@@ -189,14 +189,14 @@ foam.CLASS({
     }
     .p-label-lg {
       font-style: normal;
-      font-weight: 600;
+      font-weight: $font-medium;
       font-size: 1.4rem;
       line-height: 1.43;
       margin: 0;
     }
     .p-label-lg-light {
       font-style: normal;
-      font-weight: normal;
+      font-weight: $font-regular;
       font-size: 1.4rem;
       line-height: 1.43;
       margin: 0;
@@ -204,7 +204,7 @@ foam.CLASS({
 
     ^ .headerTitle {
       font-size: 2.4rem;
-      font-weight: 900;
+      font-weight: $font-extra-bold;
       font-style: normal;
       font-stretch: normal;
       line-height: 1.5;
@@ -212,7 +212,7 @@ foam.CLASS({
     }
     .title-light{
       font-size: 2.0rem;
-      font-weight: 300;
+      font-weight: $font-light;
       font-style: normal;
       font-stretch: normal;
       line-height: 1;
@@ -221,7 +221,7 @@ foam.CLASS({
 
     .enum-label {
       font-size: 1rem;
-      font-weight: 600;
+      font-weight: $font-medium;
       letter-spacing: normal;
       line-height: 2.1em;
       text-align: center;
@@ -229,7 +229,7 @@ foam.CLASS({
     ^ .generic-status {
       display: inline-block;
       font-size: 1.2rem;
-      font-weight: normal;
+      font-weight: $font-regular;
       font-style: normal;
       font-stretch: normal;
       line-height: 1.67;
@@ -257,16 +257,16 @@ foam.CLASS({
     }
 
     .lighter {
-      font-weight: 300;
+      font-weight: $font-light;
     }
 
     .bolder {
-      font-weight: 900;
+      font-weight: $font-extra-bold;
     }
 
     .dao-title {
       font-size: 3.6rem;
-      font-weight: 600;
+      font-weight: $font-medium;
     }
 
     /* mobile */
@@ -288,52 +288,52 @@ foam.CLASS({
       font-size: 3.5rem;
     }
     .md-title {
-      font-weight: 500;
+      font-weight: $font-regular;
       font-size: 3.5rem;
       line-height: 1;
       letter-spacing: 0.5px;
     }
     .md-title-sm {
       font-size: 3rem;
-      font-weight: bold;
+      font-weight: $font-semi-bold;
       line-height: 1;
       letter-spacing: 0.5px;
     }
     .md-text {
       font-size: 3rem;
-      font-weight: normal;
+      font-weight: $font-regular;
       line-height: normal;
       letter-spacing: normal;
     }
     .md-text-light {
       font-size: 3rem;
-      font-weight: 300;
+      font-weight: $font-light;
       line-height: normal;
       letter-spacing: normal;
     }
     .md-text-sm {
       font-size: 2.5rem;
-      font-weight: 300;
+      font-weight: $font-light;
     }
     .md-text-sm-bold {
       font-size: 2.5rem;
-      font-weight: 500;
+      font-weight: $font-regular;
     }
     .md-text-xs {
       font-size: 2rem;
-      font-weight: normal;
+      font-weight: $font-regular;
       line-height: normal;
       letter-spacing: normal;
     }
     .md-text-xs-bold {
       font-size: 2rem;
-      font-weight: 500;
+      font-weight: $font-regular;
       line-height: normal;
       letter-spacing: normal;
     }
     .md-text-xxs {
       font-size: 1.6rem;
-      font-weight: normal;
+      font-weight: $font-regular;
       line-height: normal;
       letter-spacing: normal;
     }

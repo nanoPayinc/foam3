@@ -53,7 +53,7 @@ foam.CLASS({
   css: `
     ^ {
       position: relative;
-      background-color: $grey50;
+      background-color: $backgroundSecondary;
       height: 100%;
       width: 100%;
       max-height: 100vh;
@@ -80,7 +80,7 @@ foam.CLASS({
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      background-color: $grey50;
+      background-color: $backgroundSecondary;
       overflow-y: hidden;
     }
     ^rightside ^entry {
@@ -151,7 +151,7 @@ foam.CLASS({
     ^fullscreen {
       display: flex;
       flex-direction: column;
-      background-color: $white!important;
+      background-color: $backgroundDefault!important;
       position: fixed !important;
       top: 0;
       left: 0;

@@ -9,11 +9,8 @@ p({
     "dayOfWeek":-1,
     "second":0
   },
-  "scheduledTime":"2019-09-09T16:56:00.000Z",
   "enabled":false,
   "id":"Alarming and Monitoring",
-  "lastRun":"2019-09-09T16:55:32.134Z",
-  "lastDuration":301,
   "code":"""
   import foam.core.alarming.AlarmConfig;
   import foam.core.alarming.MonitoringReport;

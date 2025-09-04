@@ -76,7 +76,7 @@ foam.CLASS({
     },
     {
       name: 'password',
-      class: 'String',
+      class: 'Password',
       value: null
     },
     {
@@ -93,13 +93,6 @@ foam.CLASS({
       name: 'protocol',
       class: 'String',
       value: 'smtp'
-    },
-    {
-      documentation: 'Relevant to send - Provider imposed rateLimit (per second), at which point they will throttle or block completely for some time window',
-      name: 'rateLimit',
-      class: 'Long',
-      units: 's',
-      value: 14 // default for smtp.gmail.com
     },
     {
       name: 'predicate',

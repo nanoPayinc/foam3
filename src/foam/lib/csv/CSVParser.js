@@ -6,6 +6,34 @@
 
 foam.CLASS({
   package: 'foam.lib.csv',
+  name: 'RepeatUntil',
+
+  documentation: "A faster version of repeat(not(literal(self.delimiter), anyChar()), '', 1)",
+
+  properties: [ 'delimiter' ],
+
+  methods: [
+    function parse(ps, obj) {
+      var ret = '';
+      while ( true ) {
+        if ( ! ps.valid || ps.head === this.delimiter ) {
+          return ret === '' ? undefined : ps.setValue(ret);
+        }
+
+        ret += ps.head;
+        ps = ps.tail;
+      }
+    },
+
+    function toString() {
+      return 'repeatUntil(' + this.delimiter + ')';
+    }
+  ]
+});
+
+
+foam.CLASS({
+  package: 'foam.lib.csv',
   name: 'CSVParser',
 
   requires: [
@@ -28,15 +56,15 @@ foam.CLASS({
         var self = this;
 
         return this.ImperativeGrammar.create({
-          symbols: function(alt, anyChar, literal, literalIC, not, notChars, optional,
-          plus, range, repeat, repeat0, seq, seq1, str, sym) {
+          symbols: function(
+            alt, anyChar, not, notChars, optional,
+            plus, range, repeat, repeat0, seq, seq1, str, sym, until) {
             return {
-
-              START: seq1(1, sym('ws'), repeat(sym('field'), literal(self.delimiter)), sym('ws')),
+              START: seq1(1, sym('ws'), repeat(sym('field'), self.delimiter), sym('ws')),
 
               field: alt(sym('quotedText'), sym('unquotedText'), ''),
 
-              unquotedText: repeat(not(literal(self.delimiter), anyChar()), '', 1),
+              unquotedText: foam.lib.csv.RepeatUntil.create({delimiter:self.delimiter}),
 
               quotedText: seq1(1, '"', repeat(alt(sym('escapedQuote'), not('"', anyChar()))), '"'),
 
@@ -50,7 +78,7 @@ foam.CLASS({
           }
         }).addActions({
           unquotedText: function(a) {
-            return { node: 'unquotedText', value: a.join('') };
+            return { node: 'unquotedText', value: a };
           },
 
           quotedText: function(a) {
@@ -99,7 +127,13 @@ foam.CLASS({
 
   methods: [
     function parseString(str, delimiter) {
-      this.delimiter = delimiter;
+      if ( ! this.delimiter )
+        this.delimiter = delimiter;
+
+      // Short circuit if no quoted strings
+      if ( str.indexOf('"') == -1 )
+        return str.split(this.delimiter).map(s => s ? { node: 'unquotedText', value: s } : '');
+
       return this.stringParser.parseString(str);
     },
 

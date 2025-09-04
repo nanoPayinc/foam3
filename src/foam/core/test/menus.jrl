@@ -1,0 +1,32 @@
+p({
+  "class":"foam.core.menu.Menu",
+  "id":"admin.tests",
+  "label":"Tests",
+  "handler":{
+    "class":"foam.core.menu.DAOMenu2",
+    "config":{
+      "class":"foam.comics.v2.DAOControllerConfig",
+      "daoKey":"testDAO",
+      "summaryView":{
+        "class":"foam.core.test.TestBorder"
+      }
+    }
+  },
+  "parent":"admin"
+})
+p({
+  "class":"foam.core.menu.Menu",
+  "id":"admin.testruns",
+  "label":"Test Runs",
+  "handler":{
+    "class":"foam.core.menu.DAOMenu2",
+    "config":{
+      "class":"foam.comics.v2.DAOControllerConfig",
+      "daoKey":"testRunDAO",
+      "createPredicate":{"class":"foam.mlang.predicate.False"},
+      "editPredicate":{"class":"foam.mlang.predicate.False"},
+      "deletePredicate":{"class":"foam.mlang.predicate.False"}
+    }
+  },
+  "parent":"admin"
+})

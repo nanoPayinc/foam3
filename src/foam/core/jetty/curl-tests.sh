@@ -18,7 +18,7 @@ curl -k -v --silent --write-out "%{size_download}\n" --output /dev/null -H "Acce
 curl -k -v --silent --write-out "%{size_download}\n" --output /dev/null https://localhost:8300/foam-bin-4.35.js
 
 # through load-balancer
-curl https://foree-staging.nanopay.net/service/health?format=html
+curl https://medusa-cluster-name/service/health?format=html
 
 # idm webagent
 curl -k -v --http1.1 https://localhost:8443/service/identityMindWebAgent

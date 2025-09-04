@@ -70,7 +70,7 @@ foam.CLASS({
       if ( ! dataToPut ) return Promise.resolve();
       let newData = await this.dao.put(dataToPut);
       if ( this.reloadAfterPut )
-        this.wizardlet[this.path || 'data'] = newData;
+       this.path$set(data, newData);
       return await this.delegate.save(newData);
     }
   ]

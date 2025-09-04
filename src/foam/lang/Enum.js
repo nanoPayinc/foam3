@@ -47,13 +47,15 @@
  *       class: 'Boolean',
  *       name: 'consideredOpen',
  *       value: true
- *     }
- *   ],
- *
- *   methods: [
- *     function foo() {
- *       return this.label + ( this.consideredOpen ? ' is' : ' is not' ) +
- *           ' considered open.';
+ *     },
+ *     {
+ *       // Methods that can be overridden by enum values should be defined
+ *       // as properties with function values, not in the methods array
+ *       name: 'foo',
+ *       value: function() {
+ *         return this.label + ( this.consideredOpen ? ' is' : ' is not' ) +
+ *             ' considered open.';
+ *       }
  *     }
  *   ],
  *
@@ -85,6 +87,15 @@
  *       name: 'FIXED',
  *       label: 'Fixed',
  *       consideredOpen: false
+ *     },
+ *     {
+ *       name: 'INVALID',
+ *       label: 'Invalid',
+ *       consideredOpen: false,
+ *       // Override the foo property/method for this specific enum value
+ *       foo: function() {
+ *         return 'Invalid issues require special handling!';
+ *       }
  *     }
  *   ]
  * });
@@ -100,6 +111,10 @@
  * // Methods can be called on the enum values.
  * // outputs "Fixed is not considered open."
  * console.log(IssueStatus.FIXED.foo());
+ * 
+ * // The INVALID enum value overrides foo() with its own implementation
+ * // outputs "Invalid issues require special handling!"
+ * console.log(IssueStatus.INVALID.foo());
  *
  * // To store enums on a class, it is recommended to use the Enum property
  * // type.

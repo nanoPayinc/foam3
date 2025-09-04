@@ -5,8 +5,9 @@
 
 package foam.lib.json;
 
-import foam.lib.parse.*;
 import foam.lang.ClassInfo;
+import foam.lang.X;
+import foam.lib.parse.*;
 
 public class PropertyReferenceParser
   extends ProxyParser
@@ -71,12 +72,10 @@ public class PropertyReferenceParser
       String propName = (String) x.get("name");
 
       try {
-        Class cls = Class.forName(classId);
+        X         ctx  = (X) x.get("X");
+        ClassInfo info = ctx.getClassInfo(classId);
 
-        // TODO(adamvy): Use the context to resolve the class rather than reflection
         // TODO(adamvy): Better handle errors.
-
-        ClassInfo info = (ClassInfo) cls.getMethod("getOwnClassInfo").invoke(null);
 
         Object axiom = info.getAxiomByName(propName);
         if ( axiom == null ) {

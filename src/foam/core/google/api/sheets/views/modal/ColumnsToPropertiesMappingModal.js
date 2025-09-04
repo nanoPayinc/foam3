@@ -58,7 +58,7 @@
           .start()
             .style({ 'padding-bottom': '120px' })
           .end()
-          .start({ class: 'net.nanopay.sme.ui.wizardModal.WizardModalNavigationBar', back: this.BACK, next: this.NEXT }).addClass(this.myClass('footer')).end();
+          .start({ class: 'foam.core.google.api.sheets.views.wizardModal.WizardModalNavigationBar', back: this.BACK, next: this.NEXT }).addClass(this.myClass('footer')).end();
     }
   ],
   actions: [

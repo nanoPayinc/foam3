@@ -1,0 +1,56 @@
+/**
+ * @license
+ * Copyright 2025 The FOAM Authors. All Rights Reserved.
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+foam.CLASS({
+  package: 'foam.core.reflow',
+  name: 'PropertyOptionCitationView',
+  extends: 'foam.u2.CitationView',
+
+  documentation: 'Custom row view for PropertyOption that displays label, and property name',
+
+  css: `
+    ^ {
+      border-bottom: 1px solid $borderXLight;
+    }
+
+    ^:last-child {
+      border-bottom: none;
+    }
+
+    ^propertyName {
+      font-family: monospace;
+      font-size: 12px;
+      color: $textSecondary;
+      line-height: 1.2;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap
+    }
+  `,
+
+  methods: [
+    function render() {
+
+      var self = this;
+      this
+        .addClass(this.myClass())
+        .add(this.data.dynamic(function(id, label) {
+          label = label || '';
+          id    = id    || '';
+
+          return this.
+            start('div')
+              .addClass(self.myClass('label'))
+              .add(label)
+            .end()
+            .start('div')
+              .addClass(self.myClass('propertyName'))
+              .add(id)
+            .end();
+        }));
+    }
+  ]
+});

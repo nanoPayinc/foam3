@@ -4,7 +4,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
- var path_ = require('path');
+const path_ = require('path');
 
 globalThis.foam = {
   isServer: true,
@@ -38,13 +38,23 @@ globalThis.foam = {
     if ( ! fn ) return;
 
     // ???: foam.resolve()?
-    var cwd = foam.cwd;
+    var cwd  = foam.cwd;
+    var path = path_.resolve(foam.cwd, fn + '.js');
     try {
-      var path = path_.resolve(foam.cwd, fn) + '.js';
       if ( ! isProject && globalThis.foam.seen(path) ) return;
       foam.cwd = path_.dirname(path);
       foam.sourceFile = path;
       require(path);
+
+      // Poms and model files are reloaded in the same scope.
+      // require() is used to invoke foam.POM for pom processing, for
+      // example.  Hence the cache must be cleared after each require.
+      delete require.cache[require.resolve(path)];
+    } catch (x) {
+      console.log('Error Loading:', path);
+      console.log(x);
+      console.trace();
+      throw x;
     } finally {
       foam.cwd = cwd;
     }

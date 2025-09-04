@@ -10,6 +10,8 @@ foam.INTERFACE({
 
   documentation: 'Interface for exporting data from a DAO',
 
+  constants: { LIMIT: 20000 },
+
   methods: [
     {
       name: 'exportFObject',

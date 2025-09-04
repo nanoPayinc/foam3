@@ -9,16 +9,14 @@ foam.INTERFACE({
   package: 'foam.core.notification',
   name: 'Notifiable',
 
-  documentation: `
-    A model should implement this interface if its objects can opt into receiving notifications.
-  `,
+  documentation: 'A notifiable object can generate notifications when it is written into a DAO.  Apple the NotifiableNotificationRuleAction to the associated DAO to utilize.',
 
   methods: [
     {
       name: 'doNotify',
       args: [
         { name: 'x', type: 'Context' },
-        { name: 'notification', type: 'foam.core.notification.Notification' }
+        { name: 'oldObj', type: 'foam.lang.FObject' }
       ]
     }
   ]

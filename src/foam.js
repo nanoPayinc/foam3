@@ -85,9 +85,10 @@
       });
     },
     checkFlags: function(flags) {
-      if ( ! flags ) return true;
+      if ( ! flags || flags.length == 0 ) return true;
 
       function and(fs) {
+        if ( ! fs ) return true;
         fs = fs.split('&');
         for ( var i = 0 ; i < fs.length ; i++ ) {
           if ( ! foam.flags[fs[i]] ) return false;
@@ -137,9 +138,25 @@
       return typeof flags === 'string' ? flags.split('|') : flags;
     },
     checkForFlag: function (flags, desired) {
-      if ( flags ) for ( var f of flags ) {
-        if ( f.split('&').includes(desired) ) return true;
+      if ( ! flags || ! desired ) return false;
+      desired = this.adaptFlags(desired);
+
+      function and(fs, ds) {
+        fs = fs.split('&');
+        ds = ds.split('&');
+        for ( var i = 0 ; i < ds.length ; i++ )
+          if ( ! fs.includes(ds[i]) )
+            return false;
+
+        return true;
       }
+
+      // OR AND clauses
+      for ( var i = 0 ; i < flags.length ; i++ )
+        for ( var j = 0; j < desired.length ; j++ )
+          if ( and(flags[i], desired[j]) )
+            return true;
+
       return false;
     },
     core: {},
@@ -185,6 +202,19 @@
       m.code();
     },
     poms: [],
+    checkFiles: function(files, passFnc) {
+      files && files.forEach(f => {
+        f.flags  = foam.adaptFlags(f.flags);
+
+        if ( ! foam.checkFlags(f.flags) ) return;
+
+        if ( f.predicate && ! f.predicate() ) return;
+
+        foam.currentFlags = f.flags || [];
+        // call visit function for those that pass checkFlags
+        passFnc(f);
+      });
+    },
     POM: function(pom) {
       var FILES = foam.CUR_FILES = [];
       foam.FILES.push(FILES);
@@ -197,20 +227,12 @@
       pom.path     = foam.sourceFile;
       foam.poms.push(pom);
       function loadFiles(files, isProjects) {
-        files && files.forEach(f => {
-          var name = f.name;
-          f.flags  = foam.adaptFlags(f.flags);
-
-          if ( ! foam.checkFlags(f.flags) ) return;
-
-          if ( f.predicate && ! f.predicate() ) return;
-
-          foam.currentFlags = f.flags || [];
+        foam.checkFiles(files, function(f) {
           if ( ! isProjects ) {
-//            console.log('*** FILES', name);
-            foam.CUR_FILES.push(name);
+//            console.log('*** FILES', f.name);
+            foam.CUR_FILES.push(f.name);
           }
-          foam.require(name, ! isProjects, isProjects);
+          foam.require(f.name, ! isProjects, isProjects);
         });
       }
 

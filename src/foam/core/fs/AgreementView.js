@@ -37,8 +37,7 @@ foam.CLASS({
   methods: [
     async function render() {
       this.SUPER();
-      // Temporary fix for agreement view. Update after
-      // https://nanopay.atlassian.net/browse/NP-5158 done
+      // Temporary fix for agreement view.
       
 //      let file = await this.fileDAO.find(this.fileId);
 //      if ( file ) {

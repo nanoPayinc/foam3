@@ -69,6 +69,10 @@ public class MDAO
     }
   }
 
+  // Safe mode clones objects in objIn(), which is safer but slower.
+  // When doing an initial bulk load, JDAO sets safeMode to false to speed up
+  // loading.
+  protected boolean  safeMode_  = true;
   protected AltIndex index_;
   protected Object   state_     = null;
   protected Object   writeLock_ = new Object();
@@ -107,9 +111,24 @@ public class MDAO
     index_ = new AltIndex(new TreeIndex((Indexer) this.of_.getAxiomByName("id"), true));
   }
 
+  public boolean getSafeMode() {
+    return safeMode_;
+  }
+
+  public void setSafeMode(boolean mode) {
+    safeMode_ = mode;
+  }
+
   public void addIndex(Index index) {
     synchronized ( writeLock_ ) {
       setState(index_.addIndex(state_, index));
+    }
+  }
+
+  // Add Index which skips bulkload
+  public void addStoreIndex(Index index) {
+    synchronized ( writeLock_ ) {
+      setState(index_.addStoreIndex(state_, index));
     }
   }
 
@@ -138,7 +157,7 @@ public class MDAO
   }
 
   public FObject objIn(FObject obj) {
-    return obj.fclone().freeze();
+    return getSafeMode() ? obj.fclone().freeze() : obj.freeze();
   }
 
   public FObject objOut(FObject obj) {
@@ -277,7 +296,9 @@ public class MDAO
     }
     if ( cmd instanceof AddIndexCommand ) {
       AddIndexCommand indexCmd = (AddIndexCommand) cmd;
-      if ( indexCmd.getIndex() != null ) {
+      if ( indexCmd.getStore() ) {
+        addStoreIndex((Index) indexCmd.getIndex());
+      } else if ( indexCmd.getIndex() != null ) {
          addIndex((Index) indexCmd.getIndex());
       } else {
         if ( indexCmd.getUnique() ) {

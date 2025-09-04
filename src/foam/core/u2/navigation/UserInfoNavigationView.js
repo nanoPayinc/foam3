@@ -38,7 +38,7 @@ foam.CLASS({
       margin-left: 8px;
     }
     ^dropdown svg {
-      fill:  $grey500;
+      fill:  $textTertiary;
     }
   `,
 

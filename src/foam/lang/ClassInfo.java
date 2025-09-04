@@ -9,18 +9,30 @@ package foam.lang;
 import java.util.List;
 
 /** Provides runtime information about a Class. **/
-// KGR: Why is this mutable?
+// KGR: Why is this mutable? TODO: remove unncessary methods
 public interface ClassInfo
-  extends java.lang.Comparable
+  extends Comparable
 {
   String      getId();
   ClassInfo   setId(String id);
+
+  String      getPlural();
 
   ClassInfo   getParent();
   ClassInfo   addAxiom(Axiom a);
 
   boolean     isInstance(Object o);
+  // TODO: should return FObject
   Object      newInstance() throws IllegalAccessException, InstantiationException;
+
+  boolean     isAssignableFrom(Class cls);
+
+  default
+  boolean     isAssignableTo(Class cls) { return cls.isAssignableFrom(getObjClass()); }
+
+  String      getName();
+
+  String      getSimpleName();
 
   ClassInfo   setObjClass(Class cls);
   Class       getObjClass();

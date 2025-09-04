@@ -19,7 +19,7 @@ p({
       .setFuid(true)
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("notifications")
-      .setSAF(true)
+      .setSaf(true)
       .setWaitReplay(false)
       .setFixedSize(new foam.dao.FixedSizeDAO.Builder(x)
         .setComparator(foam.mlang.MLang.COMPOUND(new foam.mlang.order.Comparator[] {
@@ -39,6 +39,7 @@ p({
   "serve": true,
   "serviceScript": """
     return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
       .setOf(foam.core.notification.Notification.getOwnClassInfo())
       .setAuthorize(true)
       .setInnerDAO((foam.dao.DAO) x.get("localNotificationDAO"))
@@ -59,6 +60,21 @@ p({
 
 p({
   "class": "foam.core.boot.CSpec",
+  "name": "userNotificationDAO",
+  "serve": false,
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
+      .setOf(foam.core.notification.Notification.getOwnClassInfo())
+      .setDecorator(new foam.core.notification.UserNotificationDAO(x, new foam.dao.NullDAO(x, foam.core.notification.Notification.getOwnClassInfo())))
+      .setEnableInterfaceDecorators(false)
+      .setNullify(true)
+      .build();
+  """
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
   "name": "myNotificationDAO",
   "lazy": false,
   "serve": true,
@@ -68,6 +84,7 @@ p({
     import foam.core.notification.Notification;
 
     return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
       .setOf(foam.core.notification.Notification.getOwnClassInfo())
       .setAuthorize(false)
       .setDecorator( new foam.core.notification.MyNotificationDAO.Builder(x).build() )
@@ -185,6 +202,7 @@ p({
   "serve": true,
   "serviceScript": """
     return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
       .setOf(foam.core.notification.broadcast.BroadcastNotification.getOwnClassInfo())
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("broadcastNotifications")
@@ -264,3 +282,14 @@ p({
     class:"foam.core.notification.push.APNSPushService"
   }
 })
+p({
+  class: "foam.core.boot.CSpec",
+  name: "googleChatNotificationThrottler",
+  description: "Throttle Google Chat Notifications",
+  serviceScript: """
+    return new foam.core.pool.Throttle.Builder(x)
+      .setRate(1.0F) // 1 tps
+      .build();
+  """
+})
+

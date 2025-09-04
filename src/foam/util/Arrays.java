@@ -16,11 +16,11 @@ public class Arrays {
   /**
     Append an existing array to one or more Items of the same Type
     Example:
-      String[] s1 = new String[]{"a", "b", "c"};
-      String[] s2 = new String[]{"d", "e", "f"};
-      String [] merged = ArrayUtils.append(s1, s2); // Output : [{"a", "b", "c", "d", "e", "f"}]
-      String [] merged2 = ArrayUtils.append(s1, "Ball"); // Output : [{"a", "b", "c", "Ball"}]
-      String [] merged3 = ArrayUtils.append(s1, "Ball", "Soccer"); // Output : [{"a", "b", "c", "Ball", "Soccer"}]
+      String[] s1      = new String[]{"a", "b", "c"};
+      String[] s2      = new String[]{"d", "e", "f"};
+      String[] merged  = ArrayUtils.append(s1, s2); // Output : [{"a", "b", "c", "d", "e", "f"}]
+      String[] merged2 = ArrayUtils.append(s1, "Ball"); // Output : [{"a", "b", "c", "Ball"}]
+      String[] merged3 = ArrayUtils.append(s1, "Ball", "Soccer"); // Output : [{"a", "b", "c", "Ball", "Soccer"}]
   *
   * @param <T> the component type of the array
   * @param array  the initial array
@@ -103,10 +103,10 @@ public class Arrays {
    * Often data needs to be sorted, but the end user will only view a range
    * of the data because of pagination or scrolling. This algorithm takes
    * into account the provided 'skip' (number of initial rows not seen) and
-   * 'limit' (numberof rows seen) to optimize the sort by only partially sorting
+   * 'limit' (number of rows seen) to optimize the sort by only partially sorting
    * the data. All data in the specified skip/limit range is fully sorted and
    * all data before the range is less than or equal to the first value in the
-   * range and all data after the range is greater to or euqal to the last
+   * range and all data after the range is greater to or equal to the last
    * value in the range. Data outside of the specified range is partitioned
    * but not sorted. The algorithm uses a quicksort (a dual-pivot variant),
    * which works by first partitioning the data and then recursing on each

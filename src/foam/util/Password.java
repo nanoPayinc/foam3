@@ -118,8 +118,6 @@ public class Password {
       System.out.println("Usage: java foam.util.Password <password>");
       System.exit(0);
     }
-
-    System.out.println("hash(" + argv[0]  + ") = " + hash(argv[0]));
+    System.out.println(hash(argv[0]));
   }
-
 }

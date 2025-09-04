@@ -9,10 +9,18 @@
  */
 package foam.core.boot;
 
-import foam.lang.X;
+import foam.core.app.AppConfig;
+import foam.core.app.Mode;
 import foam.core.logger.Logger;
-import foam.core.logger.StdoutLogger;
+import foam.core.logger.Loggers;
+import foam.lang.X;
 import java.util.Map;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class ShutdownHook
   extends Thread {
@@ -25,17 +33,49 @@ public class ShutdownHook
     factories_ = factories;
 
     Runtime.getRuntime().addShutdownHook(this);
-    StdoutLogger.instance().info("Shutdownhook,registered");
+    Loggers.logger(x).info("Shutdownhook,registered");
   }
 
   @Override
   public void run() {
-    Logger logger = StdoutLogger.instance();
+    X x = x_;
+    Logger logger = Loggers.logger(x_);
     logger.info("Shutdownhook,shutdown requested");
+    AppConfig appConfig = (AppConfig) x.get("appConfig");
 
-    if ( factories_ != null ) {
+    // Generate a thrump dump
+    try {
+      foam.core.http.ThreadsWebAgent agent = new foam.core.http.ThreadsWebAgent();
+      FileSystem fs = FileSystems.getDefault();
+      String tmp = System.getProperty("java.io.tmpdir", "tmp");
+      String appName = appConfig.getName().trim().replaceAll(" ","");
+      String hostname = System.getProperty("hostname", "localhost");
+      if ( hostname.equals("localhost") ) {
+        hostname = System.getProperty("user.name", "localhost");
+      }
+
+      Path path = fs.getPath(tmp, hostname, appName);
+      if ( ! Files.exists(path) ) {
+        path = Files.createDirectories(path);
+      }
+      path = path.resolve("threaddump.html");
+      FileWriter fw = new FileWriter(path.toFile());
+      PrintWriter pw = new PrintWriter(fw);
+      X y = x_.put(PrintWriter.class, pw);
+      agent.execute(y);
+      fw.flush();
+      logger.info("ShutdownHook,shutdown,Thread report", path.toString());
+    } catch (Throwable t) {
+      logger.warning("ShutdownHook,shutdown,Failed to generated thread report", t);
+    }
+
+    if ( factories_ != null &&
+         appConfig.getMode() != foam.core.app.Mode.TEST ) {
       for ( CSpecFactory factory : factories_.values() ) {
+        // Report factory shutdown to troubleshoot services not stoppinp
+        logger.debug("Shutdownhook,shutdown,factory",factory.getCSpecName(),"start");
         factory.shutdown();
+        logger.debug("Shutdownhook,shutdown,factory",factory.getCSpecName(),"end");
       }
     }
 

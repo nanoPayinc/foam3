@@ -28,7 +28,7 @@ foam.CLASS({
       },
       postSet: function(_, n) {
         try {
-          this.data = foam.json.parseString(n, this.__context__);
+          this.data = foam.json.parse(n, this.__context__);
           this.clearProperty('data_');
           this.error = '';
         } catch ( e ) {
@@ -48,7 +48,7 @@ foam.CLASS({
   ],
   methods: [
     function render() {
-      this.startContext({ data: this }).tag(this.DATA.__).endContext();
+      this.startContext({ data: this }).tag(this.DATA_).endContext();
     }
   ]
 });

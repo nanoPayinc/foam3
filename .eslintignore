@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+build/
+target/
+webroot/
+
+# Generated files
+*.min.js
+
+# Documentation
+doc/
+
+# Deployment scripts
+deployment/
+
+# Swift source (not JavaScript)
+swift_src/
+
+# Favicon files
+favicon/
+
+# Git directory
+.git/
+
+# IDE files
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db 

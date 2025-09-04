@@ -51,7 +51,7 @@ foam.CLASS({
     function forEach(array, fn) {
       if ( foam.lang.Slot.isInstance(array) ) {
         this.add(array.map(a => this.E().forEach(a, fn)));
-      } else {
+      } else if ( array ) {
         array.forEach(fn.bind(this));
       }
       return this;

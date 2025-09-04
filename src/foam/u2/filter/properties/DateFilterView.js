@@ -38,7 +38,7 @@ foam.CLASS({
 
       border-radius: 3px;
       border: solid 1px #cbcfd4;
-      background-color: $white;
+      background-color: $backgroundDefault;
     }
 
     ^ .foam-u2-DateView {
@@ -49,7 +49,7 @@ foam.CLASS({
 
       border-radius: 3px;
       border: solid 1px #cbcfd4;
-      background-color: $white;
+      background-color: $backgroundDefault;
     }
   `,
 

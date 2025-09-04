@@ -26,6 +26,7 @@ p({
   "serve":true,
   "serviceScript":"""
     return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
       .setOf(foam.core.notification.email.EmailTemplate.getOwnClassInfo())
       .setInnerDAO((foam.dao.DAO) x.get("localEmailTemplateDAO"))
       .setRuler(false)
@@ -41,13 +42,14 @@ p({
   "lazy":false,
   "serviceScript":"""
     return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
       .setOf(foam.core.notification.email.EmailMessage.getOwnClassInfo())
       .setAuthorize(false)
       .setFuid(true)
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("emailMessages")
       .setWaitReplay(false)
-      .setSAF(true)
+      .setSaf(true)
       .setServiceProviderAware(false)
       .setFixedSize(new foam.dao.FixedSizeDAO.Builder(x)
         .setComparator(foam.mlang.MLang.DESC(foam.core.notification.email.EmailMessage.CREATED) )
@@ -64,6 +66,7 @@ p({
   "serve":true,
   "serviceScript":"""
     return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
       .setOf(foam.core.notification.email.EmailMessage.getOwnClassInfo())
       .setInnerDAO((foam.dao.DAO) x.get("localEmailMessageDAO"))
       .setRuler(false)
@@ -80,12 +83,13 @@ p({
   "name":"localEmailMessageReceivedDAO",
   "serviceScript":"""
     return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
       .setOf(foam.core.notification.email.EmailMessage.getOwnClassInfo())
       .setFuid(true)
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("emailMessagesReceived")
       .setServiceProviderAware(false)
-      .setSAF(true)
+      .setSaf(true)
       .setFixedSize(new foam.dao.FixedSizeDAO.Builder(x)
         .setComparator(foam.mlang.MLang.DESC(foam.core.notification.email.EmailMessage.CREATED) )
         .setSize(100000)
@@ -101,6 +105,7 @@ p({
   "serve":true,
   "serviceScript":"""
     return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
       .setOf(foam.core.notification.email.EmailMessage.getOwnClassInfo())
       .setInnerDAO((foam.dao.DAO) x.get("localEmailMessageReceivedDAO"))
       .setRuler(false)
@@ -118,6 +123,7 @@ p({
   "name":"localEmailMessageProcessedDAO",
   "serviceScript":"""
     return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
       .setOf(foam.core.notification.email.EmailMessage.getOwnClassInfo())
       .setFuid(true)
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
@@ -138,6 +144,7 @@ p({
   "serve":true,
   "serviceScript":"""
     return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
       .setOf(foam.core.notification.email.EmailMessage.getOwnClassInfo())
       .setInnerDAO((foam.dao.DAO) x.get("localEmailMessageProcessedDAO"))
       .setRuler(false)
@@ -176,9 +183,10 @@ p({
   "class":"foam.core.boot.CSpec",
   "name":"emailConfigDAO",
   "serve":true,
-  "authorize":true,
+  "authenticate":true,
   "serviceScript":"""
     return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
       .setOf(foam.core.notification.email.EmailConfig.getOwnClassInfo())
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("emailConfig")
@@ -193,6 +201,7 @@ p({
   serve:true,
   serviceScript:"""
     return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
       .setOf(foam.core.notification.email.EmailServiceConfig.getOwnClassInfo())
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("emailServiceConfig")
@@ -217,8 +226,7 @@ p({
   lazy: false,
   service:{
     class:"foam.core.notification.email.EmailFolderAgent",
-    id: 'imap',
-    protocol: 'imaps'
+    id: 'imap'
   }
 })
 
@@ -230,4 +238,15 @@ p({
   "boxClass":"foam.core.notification.email.POP3EmailSkeleton",
   "serviceClass":"foam.core.notification.email.POP3EmailService",
   "client":"{ \"class\":\"foam.core.notification.email.ClientPOP3EmailService\", \"delegate\": { \"class\":\"foam.box.HTTPBox\", \"url\":\"service/pop3\" } }"
+})
+
+p({
+  class: "foam.core.boot.CSpec",
+  name: "smtpAgentThrottle",
+  description: "Throttle SMTP Send",
+  serviceScript: """
+    return new foam.core.pool.Throttle.Builder(x)
+      .setRate(14.0F) // 14 tps
+      .build();
+  """
 })

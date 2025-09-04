@@ -10,6 +10,8 @@ foam.CLASS({
   javaGenerateDefaultConstructor: false,
 
   javaImports: [
+    'foam.core.alarming.Alarm',
+    'foam.core.logger.Loggers',
     'foam.dao.DAO',
     'foam.log.LogLevel',
     'foam.net.Port',
@@ -17,7 +19,6 @@ foam.CLASS({
     'static foam.mlang.MLang.COUNT',
     'static foam.mlang.MLang.EQ',
     'foam.mlang.sink.Count',
-    'foam.core.alarming.Alarm',
     'foam.util.SafetyUtil',
     'java.lang.Runtime'
   ],
@@ -74,7 +75,8 @@ foam.CLASS({
       shortName: 's',
       class: 'Enum',
       of: 'foam.core.app.HealthStatus',
-      visibility: 'RO',
+      writePermissionRequired: true,
+      value: 'UP'
     },
     {
       name: 'mode',
@@ -269,13 +271,10 @@ foam.CLASS({
       setAlarms(0);
     }
 
-    // NOTE: this works in conjunction with heartbeat service -
-    // which creates entry for 'self'
     Health old = (Health) ((DAO) x.get("healthDAO")).find_(x, getId());
-    if ( old == null ) {
-      setStatus(HealthStatus.DOWN);
-    } else {
-      setStatus(HealthStatus.UP);
+    if ( old != null ) {
+      // creation via the factory sets the status to the default.
+      setStatus(old.getStatus());
     }
   }
   `,
@@ -291,8 +290,12 @@ foam.CLASS({
       sb.append(getHostname());
       sb.append("-");
       sb.append(getAppName());
-      sb.append("/");
-      sb.append(getAddress());
+      if ( ! foam.util.SafetyUtil.isEmpty(getAddress()) ) {
+        sb.append("/");
+        sb.append(getAddress());
+      }
+      sb.append(" ");
+      sb.append(getStatus());
       return sb.toString();
       `
     }

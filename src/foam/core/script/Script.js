@@ -8,7 +8,38 @@ foam.CLASS({
   package: 'foam.core.script',
   name: 'Script',
 
+  documentation: `
+Normally scripts are managed by an admin.  If an application requires
+finer grained control the model is Authorizable, so particular groups
+can have read and run access to particular scripts.
+
+NOTE:  'code' has it owns writePermission.  Granting read.id and run will
+allow an operations group to see and execute scripts but not edit the code.
+
+Example groupPermissionJunction setup:
+
+p({class:"foam.core.auth.GroupPermissionJunction",sourceId:"example-group",targetId:"menu.read.admin"})
+p({class:"foam.core.auth.GroupPermissionJunction",sourceId:"example-group",targetId:"service.scriptDAO"})
+p({class:"foam.core.auth.GroupPermissionJunction",sourceId:"example-group",targetId:"menu.read.admin.scripts"})
+// Access to see, possibly run all scripts
+// p({class:"foam.core.auth.GroupPermissionJunction",sourceId:"example-group",targetId:"script.read.*"})
+// Access to see, possibly run a single script
+// p({class:"foam.core.auth.GroupPermissionJunction",sourceId:"example-group",targetId:"script.read.ExampleScriptId"})
+p({class:"foam.core.auth.GroupPermissionJunction",sourceId:"example-group",targetId:"script.action.run"})
+// p({class:"foam.core.auth.GroupPermissionJunction",sourceId:"example-group",targetId:"script.action.inspect"})
+// p({class:"foam.core.auth.GroupPermissionJunction",sourceId:"example-group",targetId:"script.action.interrupt"})
+p({class:"foam.core.auth.GroupPermissionJunction",sourceId:"example-group",targetId:"service.scriptParameterDAO"})
+p({class:"foam.core.auth.GroupPermissionJunction",sourceId:"example-group",targetId:"scriptparameter.create"})
+p({class:"foam.core.auth.GroupPermissionJunction",sourceId:"example-group",targetId:"scriptparameter.read.*"})
+p({class:"foam.core.auth.GroupPermissionJunction",sourceId:"example-group",targetId:"scriptparameter.update.*"})
+p({class:"foam.core.auth.GroupPermissionJunction",sourceId:"example-group",targetId:"menu.read.admin.scriptparameters"})
+p({class:"foam.core.auth.GroupPermissionJunction",sourceId:"example-group",targetId:"service.scriptEventDAO"})
+p({class:"foam.core.auth.GroupPermissionJunction",sourceId:"example-group",targetId:"scriptevent.read.*"})
+p({class:"foam.core.auth.GroupPermissionJunction",sourceId:"example-group",targetId:"menu.read.admin.scriptevents"})
+  `,
+
   implements: [
+    'foam.core.auth.Authorizable',
     'foam.core.auth.EnabledAware',
     'foam.core.auth.LastModifiedAware',
     'foam.core.auth.LastModifiedByAware',
@@ -25,10 +56,12 @@ foam.CLASS({
 
   imports: [
     'notificationDAO',
+    'sessionID',
     'setTimeout',
     'scriptDAO',
     'scriptEventDAO',
-    'subject'
+    'subject',
+    'window'
   ],
 
   exports: [
@@ -109,6 +142,7 @@ foam.CLASS({
     { name: 'EXECUTION_INVOKED', message: 'execution invoked' },
     { name: 'EXECUTION_FAILED', message: 'execution failed' },
     { name: 'EXECUTION_COMPLETED', message: 'execution completed' },
+    { name: 'EXECUTION_INTERRUPTED', message: 'execution interrupted' },
     { name: 'ENABLED_YES', message: 'Y' },
     { name: 'ENABLED_NO', message: 'N' },
     { name: 'PRIORITY_LOW', message: 'Low' },
@@ -202,6 +236,7 @@ foam.CLASS({
       name: 'language',
       value: 'BEANSHELL'
     },
+    // TODO: port and remove
     {
       documentation: 'Legacy support for JS scripts created before JShell',
       class: 'Boolean',
@@ -310,6 +345,29 @@ foam.CLASS({
       visibility: 'HIDDEN',
       documentation: 'Name of dao to store script run/event report. To set from inheritor just change property value',
       tableWidth: 120
+    },
+    {
+      class: 'Long',
+      name: 'threadId',
+      storageTransient: true,
+      visibility: 'HIDDEN',
+      documentation: 'Id of thread on which the script is running'
+    },
+    {
+      class: 'Object',
+      name: 'threadExecution',
+      javaType: 'java.util.concurrent.Future<?>',
+      transient: true,
+      visibility: 'HIDDEN',
+      documentation: 'Object representing thread execution of the script. Used in ScriptRunnerDAO for halting the script on threadTimeout.',
+      javaCloneProperty: 'set(dest, get(source));'
+    },
+    {
+      class: 'Long',
+      name: 'threadStartTime',
+      transient: true,
+      visibility: 'HIDDEN',
+      documentation: 'Start time of thread execution of the running script'
     }
   ],
 
@@ -349,6 +407,7 @@ foam.CLASS({
           Script.X_HOLDER[0] = x.put("out",  ps)
             .put("currentScript", this)
             .put("scriptParameter", sp);
+// p({class:"foam.core.auth.GroupPermissionJunction",sourceId:"example-group",targetId:"script.read.*"})
           jShell.eval("import foam.lang.X;");
           jShell.eval("X x = foam.core.script.Script.X_HOLDER[0];");
           jShell.eval("void print(Object o) { ((java.io.PrintStream) x.get(\\\"out\\\")).println(String.valueOf(o));  }");
@@ -419,7 +478,14 @@ foam.CLASS({
           }
           pm.log(x);
        } catch (Throwable t) {
-          thrown = new RuntimeException(t);
+          var wasInterrupted = t instanceof InterruptedException;
+          var cause = t;
+          while ( ! wasInterrupted && cause != null ) {
+            cause = cause.getCause();
+            wasInterrupted = cause instanceof InterruptedException;
+          }
+
+          thrown = new RuntimeException(wasInterrupted ? cause : t);
           pm.error(x, t);
           ps.println();
           t.printStackTrace(ps);
@@ -467,6 +533,7 @@ foam.CLASS({
               self.copyFrom(script);
 
               if ( self.notify ) {
+p({class:"foam.core.auth.GroupPermissionJunction",sourceId:"nbp-fraud-ops",targetId:"scriptparameter.create"})
                 // create notification
                 var notification = self.ScriptRunNotification.create({
                   userId: self.subject && self.subject.realUser ?
@@ -503,6 +570,54 @@ foam.CLASS({
 
         self.setTimeout(check, delay);
       }
+    },
+    {
+      name: 'authorizeOnCreate',
+      args: 'Context x',
+      javaThrows: ['AuthorizationException'],
+      javaCode: `
+        AuthService auth = (AuthService) x.get("auth");
+        if ( ! auth.check(x, "script.create") ) {
+          throw new AuthorizationException();
+        }
+      `
+    },
+    {
+      name: 'authorizeOnRead',
+      args: 'Context x',
+      javaThrows: ['AuthorizationException'],
+      javaCode: `
+        AuthService auth = (AuthService) x.get("auth");
+        if ( ! auth.check(x, "script.read." + getId()) ) {
+          throw new AuthorizationException();
+        }
+      `
+    },
+    {
+      name: 'authorizeOnUpdate',
+      args: 'Context x',
+      javaThrows: ['AuthorizationException'],
+      javaCode: `
+        AuthService auth = (AuthService) x.get("auth");
+        if ( ! auth.check(x, "script.update." + getId()) &&
+               // Allow read.id + run to update as the run action
+               // simply changes the state.
+             ! ( auth.check(x, "script.read." + getId()) &&
+                 auth.check(x, "script.action.run") ) ) {
+          throw new AuthorizationException();
+        }
+      `
+    },
+    {
+      name: 'authorizeOnDelete',
+      args: 'Context x',
+      javaThrows: ['AuthorizationException'],
+      javaCode: `
+        AuthService auth = (AuthService) x.get("auth");
+        if ( ! auth.check(x, "script.remove." + getId()) ) {
+          throw new AuthorizationException();
+        }
+      `
     }
   ],
 
@@ -510,6 +625,7 @@ foam.CLASS({
     {
       name: 'run',
       tableWidth: 90,
+      availablePermissions: ['script.action.run'],
       confirmationRequired: function() {
         return true;
       },
@@ -590,6 +706,43 @@ foam.CLASS({
             }
           );
         }
+      }
+    },
+    {
+      name: 'inspect',
+      availablePermissions: ['script.action.inspect'],
+      isAvailable: function(status, threadId) {
+        return status == this.ScriptStatus.RUNNING && threadId;
+      },
+      code: function() {
+        var url = this.window.location.origin + '/service/threads?id=' + this.threadId + '&sessionId=' + this.sessionID;
+        this.window.open(url, '_blank');
+      }
+    },
+    {
+      name: 'interrupt',
+      availablePermissions: ['script.action.interrupt'],
+      confirmationRequired: function() {
+        return true;
+      },
+      isAvailable: function(status, threadId) {
+        return status == this.ScriptStatus.RUNNING && threadId;
+      },
+      code: async function() {
+        var self = this;
+
+        this.status = this.ScriptStatus.INTERRUPTED;
+        return this.__context__[this.daoKey].put(this).then(function(script) {
+          var notification = self.Notification.create({});
+          notification.userId = self.subject && self.subject.realUser ?
+            self.subject.realUser.id : self.user.id;
+
+          notification.toastMessage = `"${self.id}" ${self.EXECUTION_INTERRUPTED}`;
+          notification.severity = foam.log.LogLevel.WARN;
+          notification.toastState = self.ToastState.REQUESTED;
+          notification.transient = true;
+          self.__subContext__.myNotificationDAO.put(notification);
+        });
       }
     }
   ]

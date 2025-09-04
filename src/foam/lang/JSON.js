@@ -416,7 +416,7 @@ foam.CLASS({
       return cls.package === this.defaultPackage ? cls.name : cls.id;
     },
 
-    function outputFObject_(o, opt_cls) {
+    function outputFObject_(o, opt_cls, opt_axioms) {
       /** Output an FObject without checking if it implements outputJSON. **/
       this.start('{');
       var cls = this.getCls(opt_cls);
@@ -431,7 +431,7 @@ foam.CLASS({
           this.classId_(o.cls_),
           '"');
       }
-      var ps = o.cls_.getAxiomsByClass(foam.lang.Property);
+      var ps = opt_axioms || o.cls_.getAxiomsByClass(foam.lang.Property);
       var outputComma = outputClassName;
       for ( var i = 0 ; i < ps.length ; i++ ) {
         outputComma = this.outputProperty(o, ps[i], outputComma) || outputComma;

@@ -35,7 +35,6 @@ foam.CLASS({
 
   methods: [
     function requestLogin() {
-      debugger;
     }
   ]
 });
@@ -55,7 +54,6 @@ foam.CLASS({
   ],
 
   implements: [
-    'foam.box.Context',
     'foam.core.zac.MissingStuff'
   ],
 

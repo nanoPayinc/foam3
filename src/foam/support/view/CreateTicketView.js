@@ -61,13 +61,13 @@ foam.CLASS({
     ^ .label{
       height: 16px;
       text-align: left;
-      color: $black;
+      color: $textDefault;
       margin: 0px;
     }
     ^ .foam-u2-TextField {
       margin-bottom:20px;
       margin-top:8px;
-      background-color: $white;
+      background-color: $backgroundDefault;
       border: solid 1px rgba(164, 179, 184, 0.5);
     }
     ^ .foam-u2-tag-TextArea {
@@ -92,12 +92,12 @@ foam.CLASS({
       height: 20px;
       opacity: 0.6;
       text-align: left;
-      color: $black;
+      color: $textDefault;
     }
     ^ .bg2 {
       margin-top:20px;
       border-radius: 2px;
-      background-color: $white;
+      background-color: $backgroundDefault;
       padding: 20px;
     }
     ^ .popUpDropDown {
@@ -114,7 +114,7 @@ foam.CLASS({
       height: 35px;
       z-index: 10000
       text-align: left;
-      color: $black;
+      color: $textDefault;
     }
     ^ .popUpDropDown > div > div:hover {
       background-color: rgba(89, 165, 213, 0.3);

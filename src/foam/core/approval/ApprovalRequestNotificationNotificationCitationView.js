@@ -128,11 +128,11 @@ foam.CLASS({
       align-items: center;
     }
     ^userSummary {
-      color: $black;
+      color: $textDefault;
     }
     ^classification {
-      background-color: $grey50;
-      color: $grey700;
+      background-color: $backgroundSecondary;
+      color: $textSecondary;
       display: inline-block;
       min-width: 8.4rem;
       line-height: 2.1;

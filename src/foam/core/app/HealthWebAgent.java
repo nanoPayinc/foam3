@@ -28,13 +28,14 @@ public class HealthWebAgent
   public void execute(X x) {
     PrintWriter         out      = x.get(PrintWriter.class);
     HttpServletResponse response = x.get(HttpServletResponse.class);
-    HttpParameters      p       = x.get(HttpParameters.class);
-    Format              format  = (Format) p.get(Format.class);
+    HttpParameters      p        = x.get(HttpParameters.class);
+    Format              format   = (Format) p.get(Format.class);
 
     Health health = (Health) x.get("Health");
     health.setHeartbeatTime(System.currentTimeMillis());
 
     Health lastHealth = (Health) ((DAO) x.get("healthDAO")).find(health);
+
     if ( lastHealth != null ) {
       health.setAddress(lastHealth.getAddress());
     }
@@ -52,10 +53,10 @@ public class HealthWebAgent
       formatter.setOutputDefaultClassNames(false);
       formatter.setMultiLine(true);
       formatter.setPropertyPredicate(
-                                     new foam.lib.AndPropertyPredicate(x,
-                                                                       new foam.lib.PropertyPredicate[] {
-                                                                         new foam.lib.ExternalPropertyPredicate(),
-                                                                         new foam.lib.PermissionedPropertyPredicate()}));
+        new foam.lib.AndPropertyPredicate(x,
+        new foam.lib.PropertyPredicate[] {
+        new foam.lib.ExternalPropertyPredicate(),
+        new foam.lib.PermissionedPropertyPredicate()}));
 
       formatter.output(health);
 

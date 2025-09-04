@@ -11,8 +11,7 @@ foam.INTERFACE({
 
   skeleton: true,
 
-  documentation: `
-  A nanoService for resend notification for a specific user base on the notification.`,
+  documentation: 'A service for resending a notification to a user.',
 
     methods: [
       {

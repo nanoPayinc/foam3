@@ -79,7 +79,7 @@ public class CSpecFactory
       if (service == null) {
         throw new RuntimeException("createService returned null");
       }
-      setNS(service);
+      setCoreService(service);
       logger.info("Created Service", spec_.getName());
     } catch (Throwable t) {
       logger.error("Error Creating Service", spec_.getName(), t);
@@ -190,7 +190,7 @@ public class CSpecFactory
     }
   }
 
-  void setNS(Object ns) {
+  void setCoreService(Object ns) {
     if ( ns instanceof DAO ) {
       if ( ns_ == null ) {
         ns_ = new ProxyDAO();

@@ -40,7 +40,7 @@ foam.CLASS({
     ^ {
       height: 250px;
       border-radius: 2px;
-      background-color: $white;
+      background-color: $backgroundDefault;
     }
     ^ .firstdiv {
       width: 1200px;
@@ -56,7 +56,7 @@ foam.CLASS({
     }
     ^ .Public-Reply {
       text-align: left;
-      color: $black;
+      color: $textDefault;
       border: none;
       background: none;
       position: relative;
@@ -64,7 +64,7 @@ foam.CLASS({
     }
     ^ .Internal-Note {
       text-align: left;
-      color: $black;
+      color: $textDefault;
       border: none;
       background: none;
       position: relative;
@@ -80,13 +80,13 @@ foam.CLASS({
       width: 820px;
       height: 160px;
       border-radius: 2px;
-      background-color: $white;
+      background-color: $backgroundDefault;
       border: solid 1px rgba(164, 179, 184, 0.5);
       margin-left:77px;
       margin-top:40px;
     }
     ^ .background-color{
-      background: $black;
+      background: $backgroundInverse;
       color:white
     }
     ^ .border{

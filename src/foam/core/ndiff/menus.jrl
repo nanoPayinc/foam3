@@ -8,7 +8,7 @@ p({
       "class":"foam.comics.v2.DAOControllerConfig",
       "daoKey":"ndiffDAO",
       "summaryView": {
-        "class": "foam.u2.view.TableView",
+        "class": "foam.u2.table.TableView",
         "editColumnsEnabled": true,
         "css": {
           "width": "100%"

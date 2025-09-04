@@ -11,7 +11,7 @@ foam.ENUM({
   values: [
     {
       name: 'DEFAULT',
-      color: '$white'
+      color: '$backgroundDefault'
     },
     {
       name: 'DESTRUCTIVE',
@@ -51,8 +51,8 @@ foam.CLASS({
       z-index: 4;
     }
     ^inner {
-      background-color: $white;
-      border: 1px solid $grey300;
+      background-color: $backgroundDefault;
+      border: 1px solid $borderDefault;
       border-radius: 0 0 3px 3px;
       border-top: none;
       box-shadow: 0 24px 24px 0 rgba(0, 0, 0, 0.12), 0 0 24px 0 rgba(0, 0, 0, 0.15);      
@@ -67,12 +67,6 @@ foam.CLASS({
       overflow: auto;
       position: relative;
     }
-    ^title{
-      padding-bottom: 16px;
-    }
-    ^inner^closeable ^title {
-      margin-right: min(10%, 16px);
-    }
     ^actionBar {
       display: flex;
       justify-content: flex-end;
@@ -83,6 +77,26 @@ foam.CLASS({
       height: 100%;
       width: 100%;
       border-radius: 0;
+    }
+    ^header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 16px;
+      border-bottom: 1px solid $borderLight;
+    }
+    ^title {
+      font-weight: $font-bold;
+    }
+    ^X {
+      position: relative;
+      right: 0;
+      top: 0;
+    }
+    ^description {
+      padding-block: 16px;
+      border-bottom: 1px solid $borderLight;
+      font-size: $body-md;
     }
   `,
 
@@ -119,6 +133,10 @@ foam.CLASS({
       name: 'isTop',
       value: false,
       documentation: 'Positions the modal to the top of the screen'
+    },
+    {
+      class: 'String',
+      name: 'description'
     }
   ],
 
@@ -147,17 +165,20 @@ foam.CLASS({
           .enableClass(this.myClass('top'), this.isTop$)
           .start()
               .enableClass(this.myClass('colorBar'), this.isStyled$)
-              .style({ 'background-color': bgColor, 'border-color': this.modalStyle != 'DEFAULT' ? bgColor : getColor('$grey300')})
+              .style({ 'background-color': bgColor, 'border-color': this.modalStyle != 'DEFAULT' ? bgColor : getColor('$borderDefault')})
           .end()
           .start()
             .enableClass(this.myClass('inner'), this.isStyled$)
             .enableClass(this.myClass('closeable'), this.closeable$)
-            .startContext({ data: this })
-              .start(this.CLOSE_MODAL, { buttonStyle: 'TERTIARY' }).show(this.closeable$)
-                .addClass(this.myClass('X'))
-              .end()
-            .endContext()
-            .start().addClass('h400', this.myClass('title')).add(this.title).end()
+            .start().addClass(this.myClass('header'))
+              .start().addClass('h400', this.myClass('title')).add(this.title).end()
+              .startContext({ data: this })
+                .start(this.CLOSE_MODAL, { buttonStyle: 'TERTIARY' }).show(this.closeable$)
+                  .addClass(this.myClass('X'))
+                .end()
+              .endContext()
+            .end()
+            .start().show(this.description$).addClass(this.myClass('description')).add(this.description$).end()
             .start()
               .addClass(this.myClass('modal-body'))
               .add(this.addBody())

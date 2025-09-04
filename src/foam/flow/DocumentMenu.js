@@ -37,7 +37,7 @@ foam.CLASS({
               id:     this.id + '/' + doc.id,
               keywords: ["flow", "doc", "document", "help"],
               label:  doc.title || foam.String.labelize(doc.id),
-              parent: "flowdoc", //this.id,
+              parent: this.id,
               handler: this.DocumentFileMenu.create({
                 docKey: doc.id,
               })

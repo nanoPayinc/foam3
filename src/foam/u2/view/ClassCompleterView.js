@@ -24,10 +24,18 @@ foam.CLASS({
     {
       name: 'clsDAO',
       factory: function() {
-        let a = foam.dao.ArrayDAO.create({ of: this.ClassHolder }, this);
-        Object.keys(foam.USED).map(v => { a.put(this.ClassHolder.create({ id: v, cls: foam.USED[v] })); })
+        let a = foam.dao.MDAO.create({ of: this.ClassHolder }, this);
+        Object.keys(foam.USED).map(v => {
+          if ( this.filterPredicate.f(v) )
+            a.put(this.ClassHolder.create({ id: v, cls: foam.USED[v] }));
+        });
         return a;
       }
+    },
+    {
+      class: 'foam.mlang.predicate.PredicateProperty',
+      name: 'filterPredicate',
+      factory: function() { return foam.mlang.predicate.True.create(); }
     },
     {
       name: 'autocompleter',

@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # TODO:
-# - configuration to set deployment root /opt
 # - configuration to not split deployment between /mnt and /opt
 # - configuration for group name and id
 
 APP_NAME=
+APP_HOME=
 VERSION=
 USER=
 USER_ID=
@@ -26,29 +26,40 @@ elif [[ $OSTYPE =~ $LINUXOS ]]; then
     IS_LINUX=1
 fi
 
+function info {
+    # Redirect stdout to stderr, as stderr is reported to remote caller
+    >&2 echo "INFO :: "$@;
+}
+
+function error {
+    >&2 echo "ERROR :: "$@;
+}
+
 function quit {
-    echo "ERROR :: [$HOSTNAME] Remote Install Failed"
+    error "[$HOSTNAME] Remote Install Failed"
     exit 1
 }
 
 function usage {
-    echo "Usage: $0 [OPTIONS]"
-    echo ""
-    echo "Options are:"
-    echo "  -B <true | false> : Backup"
-    echo "  -C <true | false> : Configure as Medusa mediator"
-    echo "  -T <path>         : Remote location of tarball"
-    echo "  -E <path>         : Remote directory tarball is extracted to, default to /tmp/tar_extract"
-    echo "  -N <app-name>     : Application name, also prefix of jar file"
-    echo "  -U user name      : Configure to run application under this user (and group)"
-    echo "  -Y user id        : Confiugre to run application under this user id (and group id)"
-    echo "  -V version        : Application version"
-    echo "  -W port           : Configure application Web port"
-    echo ""
+    info "Usage: $0 [OPTIONS]"
+    info ""
+    info "Options are:"
+    info "  -A app-home       : Application deployment directory"
+    info "  -B <true | false> : Backup"
+    info "  -C <true | false> : Configure as Medusa mediator"
+    info "  -T <path>         : Remote location of tarball"
+    info "  -E <path>         : Remote directory tarball is extracted to, default to /tmp/tar_extract"
+    info "  -N <app-name>     : Application name, also prefix of jar file"
+    info "  -U user name      : Configure to run application under this user (and group)"
+    info "  -Y user id        : Confiugre to run application under this user id (and group id)"
+    info "  -V version        : Application version"
+    info "  -W port           : Configure application Web port"
+    info ""
 }
 
-while getopts "B:C:E:N:T:U:V:W:Y:" opt ; do
+while getopts "A:B:C:E:N:T:U:V:W:Y:" opt ; do
     case $opt in
+        A) APP_HOME=${OPTARG};;
         B) BACKUP=${OPTARG};;
         C) CLUSTER=${OPTARG};;
         E) FOAM_REMOTE_OUTPUT=$OPTARG;;
@@ -63,7 +74,11 @@ while getopts "B:C:E:N:T:U:V:W:Y:" opt ; do
 done
 
 FOAM_ROOT=/opt/${APP_NAME}
-FOAM_HOME=/opt/${APP_NAME}-${VERSION}
+if [ -n "${APP_HOME}" ]; then
+    FOAM_ROOT=${APP_HOME}
+fi
+info "FOAM_ROOT [$FOAM_ROOT]"
+FOAM_HOME=${FOAM_ROOT}-${VERSION}
 MNT_HOME=/mnt/${APP_NAME}
 SHARED_HOME=${MNT_HOME}
 UNIQUE_HOME=${MNT_HOME}/$HOSTNAME
@@ -79,7 +94,7 @@ GROUP=$USER
 GROUP_ID=$USER_ID
 
 function backupFiles {
-    echo "INFO :: [$HOSTNAME] Running Files backup"
+    info "[$HOSTNAME] Running Files backup"
     # skip on first install
     if [ ! -d ${MNT_HOME} ]; then
         return;
@@ -111,13 +126,13 @@ function backupFiles {
     # Move same/duplicate version installation.
     if [ -d $FOAM_HOME ]; then
         FOAM_BACKUP=${BACKUP_HOME}/$(basename ${FOAM_HOME})-$(date +%s)-backup.tar.gz
-        echo "INFO :: [$HOSTNAME] ${FOAM_HOME} found, backing up to ${FOAM_BACKUP}"
+        info "[$HOSTNAME] ${FOAM_HOME} found, backing up to ${FOAM_BACKUP}"
         if [ -d ${BACKUP_HOME}/journals ]; then
             tar -czf  ${FOAM_BACKUP} -C ${FOAM_HOME} . ${BACKUP_HOME}/journals ${BACKUP_HOME}/logs
         fi
 
         if [ ! $? -eq 0 ]; then
-            echo "ERROR :: [$HOSTNAME] Couldn't backup ${FOAM_HOME} to ${FOAM_BACKUP}"
+            error "[$HOSTNAME] Couldn't backup ${FOAM_HOME} to ${FOAM_BACKUP}"
             quit
         fi
         if [ -d ${FOAM_BACKUP} ]; then
@@ -134,7 +149,7 @@ function cleanupFiles {
 }
 
 function installFiles {
-    echo "INFO :: [$HOSTNAME] Installing ${APP_NAME} to ${FOAM_HOME}"
+    info "[$HOSTNAME] Installing ${APP_NAME} to ${FOAM_HOME}"
 
     if [ ! -d $FOAM_HOME ]; then
         mkdir -p ${FOAM_HOME}
@@ -179,12 +194,12 @@ function installFiles {
     fi
 
     if [ ! -f "${CONF_HOME}/shrc.custom" ]; then
-        echo '#!/bin/bash' > ${CONF_HOME}/shrc.custom
+        info '#!/bin/bash' > ${CONF_HOME}/shrc.custom
         if [[ ${CLUSTER} = "true" ]]; then
-            echo 'JAVA_OPTS="${JAVA_OPTS} -DCLUSTER=true"' >> ${CONF_HOME}/shrc.custom
-            echo 'JAVA_OPTS="${JAVA_OPTS} -Xmx8096m"' >> ${CONF_HOME}/shrc.custom
+            info 'JAVA_OPTS="${JAVA_OPTS} -DCLUSTER=true"' >> ${CONF_HOME}/shrc.custom
+            info 'JAVA_OPTS="${JAVA_OPTS} -Xmx8096m"' >> ${CONF_HOME}/shrc.custom
         else
-            echo 'JAVA_OPTS="${JAVA_OPTS} -Xmx4096m"' >> ${CONF_HOME}/shrc.custom
+            info 'JAVA_OPTS="${JAVA_OPTS} -Xmx4096m"' >> ${CONF_HOME}/shrc.custom
         fi
     fi
     chown -R $USER:$GROUP ${CONF_HOME}
@@ -224,11 +239,11 @@ function installFiles {
 }
 
 function setupUser {
-    echo "INFO :: [$HOSTNAME] Verify user and group"
+    info "[$HOSTNAME] Verify user and group"
     if [[ $IS_LINUX -eq 1 ]]; then
         id -u $USER > /dev/null
         if [ $? -eq 1 ]; then
-            echo "INFO :: [$HOSTNAME] User $USER not found, creating user"
+            info "[$HOSTNAME] User $USER not found, creating user"
             groupadd --force --gid $GROUP_ID $GROUP
             useradd -g $USER --uid $USER_ID -m -s /bin/false $USER
             usermod -L $USER
@@ -243,7 +258,7 @@ function setupUser {
         if grep -Fxq "umask" "$BASHRC"; then
             sed -i 's/umask.*/umask 027/' "$BASHRC"
         else
-            echo "umask 027" >> "$BASHRC"
+            info "umask 027" >> "$BASHRC"
         fi
 
         # Setup ubuntu user
@@ -260,12 +275,12 @@ function setupUser {
 }
 
 function setupSymLink {
-    echo "INFO :: [$HOSTNAME] Running SymLink setup"
+    info "[$HOSTNAME] Running SymLink setup"
     if [ -h ${FOAM_ROOT} ]; then
         unlink ${FOAM_ROOT}
     elif [ -d ${FOAM_ROOT} ]; then
         BACKUP_DIR="${FOAM_ROOT}.$(date +%s).bak"
-        echo "INFO :: [$HOSTNAME] Found old ${FOAM_ROOT} dir, moving to ${BACKUP_DIR}"
+        info "[$HOSTNAME] Found old ${FOAM_ROOT} dir, moving to ${BACKUP_DIR}"
         mv ${FOAM_ROOT} ${BACKUP_DIR}
     fi
 
@@ -317,7 +332,7 @@ function setupSymLink {
 }
 
 function setupSystemd {
-    echo "INFO :: [$HOSTNAME] Running Systemd setup"
+    info "[$HOSTNAME] Running Systemd setup"
     if [[ ${CLUSTER} = "true" ]]; then
         # Allow mediator to offline gracefully 
         touch /tmp/OFFLINE;
@@ -337,7 +352,7 @@ function setupSystemd {
 
     SERVICE_FILE="${FOAM_HOME}/etc/${APP_NAME}.service"
     sudo -- sh -c "cd ${FOAM_HOME}/etc; cp system.service ${APP_NAME}.service; chown ${USER}:${GROUP} ${APP_NAME}.service"
-    sed -i -e "s/APP_NAME/${APP_NAME}/g" ${SERVICE_FILE}
+    sed -i -e "s/FOAM_ROOT/${FOAM_ROOT//\//\\\/}/g" ${SERVICE_FILE}
     sed -i -e "s/APP_NAME/${APP_NAME}/g" ${SERVICE_FILE}
     sed -i -e "s/VERSION/${VERSION}/g" ${SERVICE_FILE}
     sed -i -e "s/USER/${USER}/g" ${SERVICE_FILE}
@@ -355,10 +370,10 @@ function restart {
     sudo systemctl restart ${APP_NAME}
 }
 
-echo "INFO :: [$HOSTNAME] Installing ${APP_NAME} on remote server"
+info "[$HOSTNAME] Installing ${APP_NAME} on remote server"
 
 if [ ! -f ${FOAM_TARBALL} ]; then
-    echo "ERROR :: [$HOSTNAME] Tarball ${FOAM_TARBALL} doesn't exist on remote server"
+    error "[$HOSTNAME] Tarball ${FOAM_TARBALL} doesn't exist on remote server"
     quit
 fi
 
@@ -368,12 +383,12 @@ fi
 
 mkdir -p ${FOAM_REMOTE_OUTPUT}
 
-echo "INFO :: [$HOSTNAME] Extracting tarball ${FOAM_TARBALL}"
+info "[$HOSTNAME] Extracting tarball ${FOAM_TARBALL}"
 
 tar -xzf ${FOAM_TARBALL} -C ${FOAM_REMOTE_OUTPUT}
 
 if [ ! $? -eq 0 ]; then
-    echo "ERROR :: [$HOSTNAME] Extracting tarball failed"
+    error "[$HOSTNAME] Extracting tarball failed"
     quit
 fi
 

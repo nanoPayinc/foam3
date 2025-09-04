@@ -12,7 +12,6 @@ p({
     "dayOfWeek": -1,
     "second": 0
   },
-  "scheduledTime": "2019-09-09T17:00:00.000Z",
   "code":
   """
     rm = x.get("pmHourlyReduceManager");

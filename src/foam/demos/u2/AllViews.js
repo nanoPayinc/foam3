@@ -839,7 +839,21 @@ foam.CLASS({
           [ 'foam.core.menu.TabsMenu', 'Tabs'    ]
         ]
       }
-    }
+    },
+    {
+      class: 'String',
+      name: 'dayOfWeekView',
+      view: {
+        class: 'foam.u2.view.DayOfWeekView'
+      }
+    },
+    {
+      class: 'String',
+      name: 'dayOfMonthView',
+      view: {
+        class: 'foam.u2.view.DayOfMonthView'}
+      
+    },
   ],
 
   listeners: [

@@ -10,6 +10,39 @@ foam.CLASS({
 
   documentation: 'Axiom to install CSS.',
 
+  static: [
+    function reloadStyles(X) {
+      let document = X.document || document;
+      if ( ! document ) return;
+      // Legacy support for old form of theming using Theme variables
+      let expandingFunc = X.returnExpandedCSS;
+      var installedStyles = document.installedStyles || ( document.installedStyles = {} );
+      Object.keys(installedStyles).forEach(function(uid) {
+        // This function finds all installed styles in the document
+        // then calls expandCSS on each of them and finds the corresponding element in the document and replaces it.
+        let map = installedStyles[uid];
+        if ( Array.isArray(map) ) {
+          let id = map[0];
+          let ax = map[1];
+          let cls = map[2];
+          let el = document.getElementById(id);
+          if ( el ) {
+            el.textContent = expandingFunc(ax.expandCSS(cls, ax.code, X));
+          }
+        } else {
+          Object.keys(map).forEach(function(key) {
+            let args = map[key];
+            let el = document.getElementById(args.id);
+            let ax = args.axiom;
+            if ( el ) {
+              el.textContent = expandingFunc(ax.expandCSS(args.cls, ax.code, X));
+            }
+          });
+        }
+      });
+    }
+  ],
+
   properties: [
     {
       class: 'String',
@@ -32,18 +65,21 @@ foam.CLASS({
   methods: [
     function maybeInstallInDocument(X, cls) {
       var document = X.document;
+      // Legacy support for old form of theming using Theme variables
+      let expandingFunc = X.returnExpandedCSS;
       if ( ! document ) return;
       var installedStyles = document.installedStyles || ( document.installedStyles = {} );
+      var eid = 'CSS' + foam.next$UID();
       if ( this.expands_ ) {
         var map = installedStyles[this.$UID] || (installedStyles[this.$UID] = {});
         if ( ! map[cls.id] ) {
-          map[cls.id] = true;
-          X.installCSS(this.expandCSS(cls, this.code, X), cls.id);
+          map[cls.id] = {id: eid, axiom: this, cls: cls};
+          X.installCSS(expandingFunc(this.expandCSS(cls, this.code, X)), cls.id, eid);
         }
       } else {
         if ( ! installedStyles[this.$UID] ) {
-          installedStyles[this.$UID] = true;
-          X.installCSS(this.expandCSS(cls, this.code, X), cls.id);
+          installedStyles[this.$UID] = [eid, this, cls];
+          X.installCSS(expandingFunc(this.expandCSS(cls, this.code, X)), cls.id, eid);
         }
       }
     },

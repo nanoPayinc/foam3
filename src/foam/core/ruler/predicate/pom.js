@@ -1,6 +1,6 @@
 foam.POM({
   name: "predicate",
   projects: [
-    { name: 'test/pom' }
+    { name: "test/pom", flags: "test" }
   ]
-})
+});

@@ -1,0 +1,18 @@
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"browserConfigDAO",
+  "serve":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setOf(foam.core.browser.BrowserConfig.getOwnClassInfo())
+      .setFuid(true)
+      .setJournalName("browserconfigs")
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .build();
+  """,
+  "client":"""
+   {
+     "of":"foam.core.browser.BrowserConfig"
+   }
+  """
+})

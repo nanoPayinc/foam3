@@ -20,7 +20,7 @@ foam.CLASS({
   ],
 
   axioms: [
-    foam.u2.JsLib.create({src: 'https://cdn.jsdelivr.net/npm/ace-builds/src-min-noconflict/ace.js'})
+    foam.u2.JsLib.create({src: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.39.0/ace.js' })
   ],
 
   reactions: [

@@ -70,7 +70,14 @@ foam.CLASS({
             Benchmark benchmark = null;
             BenchmarkRunner runner = null;
             try {
-              dig = new DIG(x, "benchmarkDAO", digBenchmark);
+              dig = new DIG(x);
+              dig.setCSpecName("benchmarkDAO");
+              dig.setPostURL(digBenchmark.getSetupUrl());
+              dig.setSessionId(digBenchmark.getSetupSessionId());
+              dig.setUserName(digBenchmark.getSetupUserName());
+              dig.setPassword(digBenchmark.getSetupPassword());
+              dig.setConnectionTimeout(digBenchmark.getConnectionTimeout());
+              dig.setRequestTimeout(digBenchmark.getRequestTimeout());
               dig.setPostURL(url);
               benchmark = (Benchmark) getBenchmark(x);
               benchmark.setId(uid.getNextString());

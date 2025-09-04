@@ -44,7 +44,7 @@ foam.CLASS({
       box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 2px 8px 0 rgba(0, 0, 0, 0.16);
       border: solid 1px #cbcfd4;
       border-radius: 5px;
-      background-color: $white;
+      background-color: $backgroundDefault;
       padding-bottom: 25px;
       margin-top: 16px;
       z-index: 100002;
@@ -63,7 +63,7 @@ foam.CLASS({
 
     ^ .year {
       border-radius: 5px 5px 0px 0px;
-      background-color: $primary400;
+      background-color: $backgroundBrand;
       color: #ffffff;
       display: inline-block;
       align-items: center;
@@ -166,7 +166,7 @@ foam.CLASS({
     ^ .date-display-box {
       height: 36px;
       width: 100%;
-      background-color: $white;
+      background-color: $backgroundDefault;
       border: 1px solid #cbcfd4;
       border-radius: 3px;
     }

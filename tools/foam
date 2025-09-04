@@ -9,6 +9,5 @@ swift: true
 };
 
 require('../src/foam_node.js');
-require('../src/foam/nanos/nanos.js');
 
 foam.classloader.NodeJsModelExecutor.create().fromArgs(process.argv.slice(2)).execute();

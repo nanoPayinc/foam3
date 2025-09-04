@@ -15,10 +15,10 @@ foam.CLASS({
 
   css: `
     ^created {
-      color: $grey500;
+      color: $textTertiary;
     }
     ^description {
-      color: $black;
+      color: $textDefault;
       width: 100%;
     }
   `,

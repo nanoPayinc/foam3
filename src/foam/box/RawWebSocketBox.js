@@ -20,18 +20,62 @@ foam.CLASS({
   name: 'RawWebSocketBox',
   implements: ['foam.box.Box'],
   requires: [
-    'foam.box.ReplyBox'
-  ],
-  imports: [
+    'foam.box.ReplyBox',
     {
-      name: 'me',
-      key: 'me',
-      type: 'foam.box.Box'
+      path: 'foam.box.ReplyBox2',
+      flags: ['js']
     },
     {
-      key: 'registry',
-      name: 'registry',
-      type: 'foam.box.BoxRegistry',
+      path: 'foam.json.Parser',
+      flags: ['js']
+    },
+    'foam.box.ReturnBox',
+    'foam.box.SubBox',
+    'foam.net.ConnectionFailedException',
+    'foam.net.NotConnectedException',
+    {
+      path: 'foam.json.Outputter',
+      flags: ['js']
+    }
+  ],
+
+  exports: [
+    'subBox'
+  ],
+
+  javaCode: `
+    protected static final ThreadLocal<foam.lib.formatter.FObjectFormatter> formatter_ = new ThreadLocal<foam.lib.formatter.FObjectFormatter>() {
+      @Override
+      protected foam.lib.formatter.JSONFObjectFormatter initialValue() {
+        foam.lib.formatter.JSONFObjectFormatter formatter = new foam.lib.formatter.JSONFObjectFormatter();
+        // Needed because JS JSON parser doesn't support unquoted keys.
+        formatter.setQuoteKeys(true);
+        formatter.setOutputShortNames(true);
+        formatter.setOutputDefaultValues(false);
+        formatter.setPropertyPredicate(new foam.lib.AndPropertyPredicate(new foam.lib.PropertyPredicate[] {new foam.lib.NetworkPropertyPredicate(), new foam.lib.PermissionedPropertyPredicate()}));
+        return formatter;
+      }
+
+      @Override
+      public foam.lib.formatter.FObjectFormatter get() {
+        foam.lib.formatter.FObjectFormatter formatter = super.get();
+        formatter.reset();
+        return formatter;
+      }
+    };
+
+    protected static final ThreadLocal<foam.util.UIDGenerator> uidGenerator_ = new ThreadLocal<foam.util.UIDGenerator>() {
+      @Override
+      protected foam.util.UIDGenerator initialValue() {
+        return new foam.util.AUIDGenerator(null, "websockets");
+      }
+    };
+  `,
+  
+  constants: [
+    {
+      name: 'NEXT_ID',
+      value: [0]
     }
   ],
 
@@ -40,87 +84,146 @@ foam.CLASS({
       class: 'Object',
       name: 'socket',
       javaType: 'foam.net.WebSocket'
+    },
+    {
+      class: 'FObjectProperty',
+      of: 'foam.json.Parser',
+      name: 'parser',
+      generateJava: false,
+      factory: function() {
+        return this.Parser.create({
+          strict:          true,
+        });
+      },
+    },
+    {
+      class: 'FObjectProperty',
+      of: 'foam.json.Outputter',
+      swiftType: 'foam_swift_parse_json_output_Outputter',
+      name: 'outputter',
+      generateJava: false,
+      factory: function() {
+        return this.Outputter.create().copyFrom(foam.json.Network);
+      }
+    },
+    {
+      class: 'Map',
+      name: 'replies',
+      javaFactory: `return new java.util.concurrent.ConcurrentHashMap<String, Box>();`,
     }
   ],
 
-  classes: [
-    foam.lang.InnerClass.create({
-      generateJava: false,
-      model: {
-        name: 'JSONOutputter',
-        extends: 'foam.json.Outputter',
-        requires: [
-          'foam.box.ReturnBox'
-        ],
-        imports: [
-          'me'
-        ],
-        methods: [
-          function output(o) {
-            if ( o === this.me ) {
-              return this.SUPER(this.ReturnBox.create());
-            }
-            return this.SUPER(o);
-          }
-        ]
-      }
-    })
-  ],
-
   methods: [
-    {
-      name: 'send',
-      code: function send(msg) {
-        var replyBox = msg.attributes.replyBox;
-        var payload = this.JSONOutputter.create().copyFrom(foam.json.Network).stringify(msg);
-
-        try {
-          this.socket.send(payload);
-        } catch(e) {
-          replyBox && replyBox.send(foam.box.Message.create({ object: e }));
+    function init() {
+      this.socket.disconnected.sub(() => {
+        for ( let box of Object.values(this.replies) ) {
+          box.send(foam.box.Envelope.create({
+            message: this.ConnectionFailedException.create()
+          }));
         }
+      });
+
+      this.socket.message.sub(this.onMessage);
+    },
+    {
+      name: 'subBox',
+      args: [
+        { name: 'delegate', type: 'foam.box.Box' },
+        { name: 'once', type: 'Boolean' },
+      ],
+      code: function subBox(delegate, once = true) {
+        var self = this;
+        var name = this.NEXT_ID[0]++;
+        
+        this.replies[name] = {
+          send: function(message, replyBox) {
+            if ( once ) delete self.replies[name]
+            delegate.send(message, replyBox);
+          }
+        };
+
+        return this.SubBox.create({
+          name,
+          delegate: this.ReturnBox.create(),
+        });
       },
       javaCode: `
-foam.lib.json.Outputter outputter = new Outputter(getX());
-outputter.setX(getX());
 
-// TODO: Clone message or something when it clones safely.
-foam.box.Box replyBox = (foam.box.Box)msg.getAttributes().get("replyBox");
+`
+    },
+    {
+      name: 'send',
+      code: function send(envelope) {
+        if ( this.socket.isConnected ) {
+          envelope.replyBox?.send(foam.box.Envelope.create({ message: this.NotConnectedException.create() }));
+          return;
+        }
+        
+        var outgoing = foam.box.Envelope.create({
+          message: envelope.message,
+          replyBox: this.subBox(envelope.replyBox, true)
+        });
 
+        var payload = this.outputter.stringify(outgoing);
+        this.socket.send(payload);
+      },
+      javaCode: `
+foam.box.Envelope outgoing = envelope;
+foam.box.Box replyBox = envelope.getReplyBox();
 if ( replyBox != null ) {
-  foam.box.SubBox export = (foam.box.SubBox)getRegistry().register(null, null, replyBox);
+  foam.box.Box exportReplyBox = new foam.box.SubBox.Builder(getX())
+    .setName(uidGenerator_.get().generate())
+    .setDelegate(new foam.box.ReturnBox())
+    .build();
 
-  replyBox = new foam.box.ReplyBox(getX(), export.getName(), replyBox);
+  outgoing = new foam.box.Envelope(outgoing.getMessage(), exportReplyBox);
 }
 
-String payload = outputter.stringify(msg);
 
-msg.getAttributes().put("replyBox", replyBox);
+foam.lib.formatter.FObjectFormatter formatter = formatter_.get();
+formatter.setX(getX());
+formatter.output(outgoing);
+
+String payload = formatter.builder().toString();
+formatter.setX(null);
 
 try {
   getSocket().send(payload);
 } catch ( java.io.IOException e ) {
-  foam.box.Message reply = new foam.box.Message();
-  reply.setObject(e);
-  if ( replyBox != null ) replyBox.send(reply);
+  throw new RuntimeException(e);
 }
 `
     }
   ],
+  
+  listeners: [
+    {
+      name: 'onMessage',
+      code: function(s, _, msgStr) {
+        try {
+          var envelope = this.parser.parseString(msgStr, this.__context__);
+          var message = envelope.message;
+          var replyBox = envelope.replyBox;
 
-  javaCode: `
-    protected class Outputter extends foam.lib.json.Outputter {
-      public Outputter(foam.lang.X x) {
-        super(x);
-        setPropertyPredicate(new foam.lib.AndPropertyPredicate(x, new foam.lib.PropertyPredicate[] {new foam.lib.NetworkPropertyPredicate(), new foam.lib.PermissionedPropertyPredicate()}));
-      }
+          if ( ! foam.box.SubBoxMessage.isInstance(message) ) {
+            console.warn("Got a non sub box message to our websocket, ignoring");
+            return
+          }
 
-      protected void outputFObject(foam.lang.FObject o) {
-        if ( o == getMe() ) {
-          o = getX().create(foam.box.ReturnBox.class);
+          // unwrap sub box message
+          var name = message.name;
+          message = message.message;
+          
+          var delegate = this.replies[name]
+          if ( delegate ) {
+            delegate.send(foam.box.Envelope.create({ message, replyBox }));
+          } else {
+            console.log("Failed to find reply box for message, payload was", msgStr);
+          }
+        } catch (e) {
+          console.error("WSS Error:", e);
         }
-        super.outputFObject(o);
       }
     }
-  `
+  ]
 });

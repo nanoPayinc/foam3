@@ -16,7 +16,6 @@ foam.CLASS({
 
   javaImports: [
     'foam.box.Box',
-    'foam.box.ReplyBox',
     'foam.lang.Agency',
     'foam.lang.ContextAgent',
     'foam.lang.X',
@@ -62,7 +61,9 @@ foam.CLASS({
       name: 'boxes',
       javaFactory: `
         return java.util.Collections.synchronizedMap(new java.util.HashMap());
-      `
+      `,
+      transient: true,
+      visibility: 'HIDDEN'
     },
     {
       name: 'logger',

@@ -30,12 +30,16 @@ foam.CLASS({
     'static foam.mlang.MLang.AND',
     'static foam.mlang.MLang.DESC',
     'static foam.mlang.MLang.EQ',
+    'foam.core.auth.AuthService',
     'foam.core.pm.PM',
     'foam.core.theme.Theme',
+    'foam.core.logger.Logger',
     'foam.util.SafetyUtil',
     'java.util.ArrayList',
     'java.util.Arrays',
-    'java.util.List'
+    'java.util.List',
+    'foam.net.CIDR',
+    'foam.net.IPSupport'
   ],
 
   methods: [
@@ -59,12 +63,14 @@ foam.CLASS({
           .select(new ArraySink()))
           .getArray();
         List<SystemNotification> notifications = new ArrayList();
+        String remoteIp = foam.net.IPSupport.instance().getRemoteIp(x);
         for ( SystemOutage outage : outages ) {
           Theme theme = (Theme) x.get("theme");
           List<SystemOutageTask> tasks = (List) ((ArraySink) outage.getTasks(getX()).select(new ArraySink())).getArray();
           for ( SystemOutageTask task : tasks ) {
             if ( task instanceof SystemNotificationTask ) {
               SystemNotificationTask snt = (SystemNotificationTask) task;
+              if ( ! snt.getEnabled() ) continue;
               if ( snt.getThemes() != null &&
                    snt.getThemes().length > 0 ) {
                 boolean match = false;
@@ -74,6 +80,35 @@ foam.CLASS({
                       match = true;
                       break;
                     }
+                  }
+                }
+                if ( ! match ) continue;
+              }
+              if ( snt.getPermissions() != null &&
+                   snt.getPermissions().length > 0 ) {
+                boolean match = false;
+                AuthService auth = (AuthService) x.get("auth");
+                for ( String perm : snt.getPermissions() ) {
+                  if ( auth.check(x, perm) ) {
+                    match = true;
+                    break;
+                  }
+                }
+                if ( ! match ) continue;
+              }
+              if ( remoteIp != null && snt.getCidrWhiteList() != null &&
+                   snt.getCidrWhiteList().length > 0 ) {
+                boolean match = false;
+                foam.net.CIDR[] cidrs = snt.getCidrWhiteList();
+
+                for ( foam.net.CIDR cidr : cidrs ) {
+                  try {
+                    if ( cidr.inRange(x, remoteIp) ) {
+                      match = true;
+                      break;
+                    }
+                  } catch (java.net.UnknownHostException e) {
+                    ((foam.core.logger.Logger) x.get("logger")).warning(this.getClass().getSimpleName(), "getSystemNotifications", remoteIp, e.getMessage());
                   }
                 }
                 if ( ! match ) continue;

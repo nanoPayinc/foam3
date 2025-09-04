@@ -6,24 +6,17 @@
 
 foam.POM({
   name: "er",
+  projects: [
+    { name: "test/pom", flags: "test"}
+  ],
   files: [
-    { name: "EventRecord",
-      flags: "js|java" },
-    { name: "EventRecordAlarmRuleAction",
-      flags: "js|java" },
-    { name: "EventRecordCitationView",
-      flags: "js" },
-    { name: "EventRecordDAO",
-      flags: "js|java" },
-    { name: "EventRecordResponseDAO",
-      flags: "js|java" },
-    { name: "EventRecordNotificationRuleAction",
-      flags: "js|java" },
-    { name: "EventRecordSystemOutageRuleAction",
-      flags: "js|java" },
-    { name: "EventRecordResponse",
-      flags: "js|java" },
-    { name: "test/EventRecordTest",
-      flags: "js|java" }
+    { name: "EventRecord",                                            flags: "js|java" },
+    { name: "EventRecordAlarmRuleAction",                             flags: "js|java" },
+    { name: "EventRecordCitationView",                                flags: "js" },
+    { name: "EventRecordDAO",                                         flags: "js|java" },
+    { name: "EventRecordResponseDAO",                                 flags: "js|java" },
+    { name: "EventRecordNotificationRuleAction",                      flags: "js|java" },
+    { name: "EventRecordSystemOutageRuleAction",                      flags: "js|java" },
+    { name: "EventRecordResponse",                                    flags: "js|java" }
   ]
 })

@@ -82,6 +82,13 @@ foam.CLASS({
     },
     {
       class: 'Boolean',
+      name: 'updatePermissionRequired',
+      factory: function() {
+        return this.property.updatePermissionRequired;
+      }
+    },
+    {
+      class: 'Boolean',
       documentation: 'define a property is a XML attribute. eg <foo id="XMLAttribute"></foo>',
       name: 'xmlAttribute',
       factory: function() { return this.property.xmlAttribute; }
@@ -407,6 +414,13 @@ foam.CLASS({
           type: 'boolean',
           visibility: 'public',
           body: 'return ' + this.writePermissionRequired + ';'
+        });
+
+        m.push({
+          name: 'getUpdatePermissionRequired',
+          type: 'boolean',
+          visibility: 'public',
+          body: 'return ' + this.updatePermissionRequired + ';'
         });
 
         m.push({

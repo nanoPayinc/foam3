@@ -150,7 +150,7 @@ foam.CLASS({
       });
       var supportingLabelSlot = this.slot(function(prop$supportingLabel) {
         let el = this.E().addClass(this.myClass('supportingLabel'), this.myClass('supportingLabel' + '-' + prop.name), 'p-legal');
-        return prop$supportingLabel ? el.add(prop$supportingLabel) : this.E().style({ display: 'contents' }) 
+        return prop$supportingLabel ? el.add(prop$supportingLabel) : this.E().style({ display: 'contents' })
       });
 
       var viewSlot = prop.view$.map(v => {
@@ -183,25 +183,26 @@ foam.CLASS({
       gap: 0.4rem;
       width: 100%;
     }
-    ^ .error input, ^ .error input:focus {
+    ^view.error > span > input, ^view.error > span > input:focus {
       border-color: $destructive400!important;
     }
     ^colorText {
       color: $destructive400;
     }
     ^label {
-      display: contents;
       line-height: 1;
       min-height: 1em;
       width: 100%;
-      color: $grey700;
+      color: $textSecondary;
     }
     ^supportingLabel {
-      display: contents;
       line-height: 1;
       min-height: 1em;
       width: 100%;
-      color: $grey500;
+      color: $textTertiary;
+    }
+    ^u2 ^supportingLabel,^u2 ^label {
+      display: contents;
     }
     ^errorText {
       display: flex;
@@ -237,7 +238,6 @@ foam.CLASS({
     ^view {
       flex-grow: 1;
       max-width: 100%;
-      min-height: 34px;
     }
     ^helper-icon svg {
       fill: currentColor;
@@ -249,6 +249,7 @@ foam.CLASS({
       var self = this;
 
       this.
+        enableClass(this.myClass('u2'), ! this.U3).
         addClass().
         show(visibilitySlot).
         add(labelSlot).

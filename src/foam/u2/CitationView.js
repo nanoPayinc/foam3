@@ -23,11 +23,12 @@ foam.CLASS({
   css: `
     ^rw {
       padding: $padding;
-      color: $black;
+      color: $textDefault;
+      transition: all 0.2s ease;
     }
 
-    ^rw:hover {
-      background: $grey50;
+    ^rw:hover:not([disabled]) {
+      background: $backgroundBrandTertiary;
       cursor: pointer;
     }
   `,
@@ -73,11 +74,12 @@ foam.CLASS({
     function init() {
       this.enableClass(this.myClass('rw'), this.mode$.map(m => m === foam.u2.DisplayMode.RW))
     },
+
     function render() {
       this.SUPER();
       this.updateSummary();
       this
-        .addClass('p-legal-light', this.myClass('row'))
+        .addClass('p', this.myClass('row'))
         .add(this.summary$);
     },
 

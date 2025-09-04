@@ -52,6 +52,7 @@ foam.CLASS({
     'foam.mlang.predicate.EndsWith',
     'foam.mlang.predicate.True',
     'foam.mlang.predicate.MQLExpr',
+    'foam.mlang.predicate.FScriptPredicate',
     'foam.mlang.sink.Count',
     'foam.mlang.sink.Explain',
     'foam.mlang.sink.GroupBy',
@@ -65,6 +66,7 @@ foam.CLASS({
     'foam.mlang.sink.Unique',
     'foam.mlang.StringLength',
     'foam.mlang.Absolute',
+    'foam.mlang.Round',
     'foam.mlang.sink.Average',
     'foam.mlang.Mux',
     'foam.mlang.Partition'
@@ -138,6 +140,7 @@ foam.CLASS({
     function SUM(arg1) { return this.Sum.create({ arg1: arg1 }); },
     function AVG(arg1) { return this.Average.create({ arg1: arg1 }); },
     function ABS(arg1) { return this.Absolute.create({ delegate: arg1 }); },
+    function ROUND(arg1, opt_decimals) { return this.Round.create({ arg1: arg1, arg2: opt_Decimals || 0 }); },
     function ARRAY() { return this.ArraySink.create() },
     function MUX(cond, a, b) { return this.Mux.create({ cond: cond, a: a, b: b }); },
     function SEQ() { return this._nary_("Sequence", arguments); },
@@ -159,8 +162,11 @@ foam.CLASS({
     function THEN_BY(a, b) { return this.ThenBy.create({head: a, tail: b}); },
 
     function INSTANCE_OF(cls) { return this.IsInstanceOf.create({ of: cls }); },
-    function CLASS_OF(cls) { return this.IsClassOf.create({ of: cls }); },
+    function CLASS_OF(cls, propExpr) { return this.IsClassOf.create({ of: cls, propExpr: propExpr }); },
+
     function MQL(mql) { return this.MQLExpr.create({query: mql}); },
+    function FSCRIPT(query) { return this.FScriptPredicate.create({query: query}); },
+
     function STRING_LENGTH(a) { return this._unary_("StringLength", a); },
     function IS_VALID(o) { return this.IsValid.create({arg1: o}); },
     function YEARS(p) { return foam.mlang.Years.create({arg1: p}); },

@@ -6,66 +6,6 @@
 
 foam.CLASS({
   package: 'foam.core.crunch.lite',
-  name: 'CapableObjectDataProperties',
-
-  properties: [
-    {
-      name: 'capablePayloads',
-      class: 'FObjectArray',
-      // javaType: 'java.util.List<foam.core.crunch.crunchlite.CapablePayload>',
-      of: 'foam.core.crunch.CapabilityJunctionPayload',
-      columnPermissionRequired: true,
-      section: 'capabilityInformation',
-      autoValidate: true,
-      columnPermissionRequired: true,
-      externalTransient: true,
-      createVisibility: 'HIDDEN',
-      readVisibility: 'RO',
-      updateVisibility: 'RO'
-    },
-    {
-      name: 'userCapabilityRequirements',
-      class: 'StringArray',
-      columnPermissionRequired: true,
-      section: 'capabilityInformation',
-      columnPermissionRequired: true,
-      externalTransient: true,
-      createVisibility: 'HIDDEN',
-      readVisibility: 'RO',
-      updateVisibility: 'RO'
-    },
-    {
-      name: 'isWizardIncomplete',
-      class: 'Boolean',
-      section: 'systemInformation',
-      transient: true,
-      externalTransient: true,
-      visibility: 'HIDDEN'
-    },
-    {
-      class: 'StringArray',
-      name: 'capabilityIds',
-      columnPermissionRequired: true,
-      section: 'capabilityInformation',
-      externalTransient: true,
-      createVisibility: 'HIDDEN',
-      readVisibility: 'RO',
-      updateVisibility: 'RO'
-    },
-    {
-      class: 'String',
-      name: 'DAOKey',
-      columnPermissionRequired: true,
-      section: 'capabilityInformation',
-      externalTransient: true,
-      visibility: 'HIDDEN'
-    }
-  ]
-});
-
-
-foam.CLASS({
-  package: 'foam.core.crunch.lite',
   name: 'CapableObjectData',
 
   imports: [
@@ -114,19 +54,5 @@ foam.CLASS({
         }
       }
     }
-  ]
-});
-
-foam.CLASS({
-  package: 'foam.core.crunch.lite',
-  name: 'BaseCapable',
-
-  flags: [ 'java' ],
-
-  implements: [
-    'foam.core.crunch.lite.Capable'
-  ],
-  mixins: [
-    'foam.core.crunch.lite.CapableObjectData'
   ]
 });

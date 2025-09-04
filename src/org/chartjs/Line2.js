@@ -31,6 +31,15 @@ foam.CLASS({
       }
     },
     {
+      name: 'chartJSOptions',
+      factory: function() {
+        return {};
+      },
+      postSet: function() {
+        this.update();
+      }
+    },
+    {
       name: 'localOptions',
       factory: function() {
         return {
@@ -80,7 +89,19 @@ foam.CLASS({
       this.chart.render();
     },
     function allOptions() {
-      return this.options && new Map([...new Map(Object.entries(this.localOptions)), ...new Map(Object.entries(this.options))]) || this.localOptions;
+      var result = {...this.localOptions};
+      
+      // Merge chartJSOptions (used by DashboardDAOAgents)
+      if (this.chartJSOptions && Object.keys(this.chartJSOptions).length > 0) {
+        result = {...result, ...this.chartJSOptions};
+      }
+      
+      // Merge options (existing Line2 usage)
+      if (this.options && Object.keys(this.options).length > 0) {
+        result = {...result, ...this.options};
+      }
+      
+      return result;
     }
   ],
 
@@ -90,7 +111,8 @@ foam.CLASS({
       isFramed: true,
       on: [
         'this.propertyChange.data',
-        'this.propertyChange.options'
+        'this.propertyChange.options',
+        'this.propertyChange.chartJSOptions'
       ],
       code: function() {
         if ( ! this.chart ) return;

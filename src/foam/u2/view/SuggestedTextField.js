@@ -32,8 +32,8 @@
     }
     ^suggestions {
       box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.06), 0px 4px 6px rgba(0, 0, 0, 0.1);
-      background-color: $white;
-      border: 1px solid $grey400;
+      background-color: $backgroundDefault;
+      border: 1px solid $borderDefault;
       border-radius: 4px;
       display: flex;
       flex-direction: column;
@@ -47,7 +47,7 @@
       z-index: 100;
     }
     ^row {
-      color: $black;
+      color: $textDefault;
       cursor: pointer;
       padding: 8px;
       border-radius: 4px;
@@ -151,7 +151,8 @@
           self.inputFocused = true;
       }));
 
-      this.onDetach(this.onload.sub(this.loaded));
+      // Initialize loaded listener after render
+      this.loaded();
       this
       .addClass()
       .start(this.TextField, {
@@ -185,7 +186,7 @@
               // using mousedown not click since mousedown is fired before blur is fired so we can intercept rowClick
               // otherwise when using click the blur gets fired first and the row listener is never called
                 let fn = self.onRowSelect ? self.onRowSelect(obj) : self.onSelect.call(self, obj);
-                fn.then(() => {
+                fn?.then(() => {
                   self.inputFocused = false;
                 });
 

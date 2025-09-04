@@ -14,60 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-foam.CLASS({
-  package: 'foam.dao',
-  name: 'ResetSink',
-  extends: 'foam.dao.ProxySink',
-
-  methods: [
-    {
-      name: 'put',
-      code: function(obj, sub) { this.reset(sub); },
-      javaCode: 'reset(sub);'
-    },
-    {
-      name: 'remove',
-      code: function(obj, sub) { this.reset(sub); },
-      javaCode: 'reset(sub);'
-    }
-  ]
-});
-
-
-foam.CLASS({
-  package: 'foam.dao',
-  name: 'MergedResetSink',
-  extends: 'foam.dao.ResetSink',
-
-  methods: [
-    {
-      name: 'reset',
-      code: function(sub) { this.doReset(sub); },
-      javaCode: `doReset(sub);`
-    }
-  ],
-
-  listeners: [
-    {
-      name: 'doReset',
-      isMerged: true,
-      mergeDelay: 200,
-      code: function(sub) {
-        this.delegate.reset(sub);
-      },
-      javaCode: `
-try {
-  getDelegate().reset(sub);
-} catch(Exception e) {
-  sub.detach();
-}
-`
-    }
-  ]
-});
-
-
+ 
 foam.CLASS({
   package: 'foam.dao',
   name: 'ClientDAO',
@@ -183,12 +130,41 @@ return sink
     {
       name: 'listen_',
       code: function listen_(x, sink, predicate) {
-        if ( sink ) {
+        var sub = foam.lang.FObject.create();
+        var detached = false;
+        sub.onDetach(() => { detached = true; });
+
+        if ( ! sink ) {
+          return sub;
+        }
+
+
+        var super_ = this.SUPER.bind(this);
+        
+        var doListen = foam.util.backoff(function(fail) {
+          if ( detached ) {
+            return;
+          }
+          
           // RemoteSink handles registering a Skeleton callback instead of trying
           // to send the Sink across the network.
-          this.SUPER(null, foam.dao.RemoteSink.create({delegate: sink}), predicate);
-        }
-        return foam.lang.FObject.create();
+          var remote = foam.dao.RemoteSink.create({
+            delegate: sink
+          });
+          // reconnect on remote being lost
+          remote.onDetach(() => { doListen() });
+          
+          super_(null, remote, predicate)
+            .then(
+              function() {
+                sink?.reset?.();
+              },
+              fail);
+        }, 30000, -1);
+
+        doListen();
+        
+        return sub;
       },
       javaCode: `super.listen_(null, sink, predicate);`,
       swiftCode: `return try super.listen_(nil, sink, predicate)`

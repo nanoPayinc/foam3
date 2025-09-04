@@ -96,29 +96,11 @@ foam.CLASS({
       label: '',
       section: 'scheduling',
       autoValidate: true,
-      postSet: function(_, v) {
-        if ( ! v ) return;
-        this.frequency = v.frequency;
-        this.startDate = v.startDate;
-        this.endsOn = v.endsOn;
-      },
-      javaPostSet: `
-        if ( val == null ) return;
-        setFrequency(((SimpleIntervalSchedule)val).getFrequency());
-        setStartDate(((SimpleIntervalSchedule)val).getStartDate());
-        setEndsOn(((SimpleIntervalSchedule)val).getEndsOn());
-      `,
       factory: function() {
         var ret = foam.core.cron.SimpleIntervalSchedule.create();
-        this.SCHEDULE.postSet(null, ret);
         return ret;
       },
-      view: function (_, X) {
-        return {
-          class: 'foam.core.cron.SimpleIntervalScheduleView',
-          data$: X.data.schedule$
-        }
-      }
+      view: { class: 'foam.core.cron.SimpleIntervalScheduleView' }
     },
     {
       class: 'foam.dao.DAOProperty',
@@ -156,7 +138,10 @@ foam.CLASS({
     },
     {
       class: 'FObjectProperty',
-      name: 'objectToSchedule'
+      name: 'objectToSchedule',
+      postSet: async function(o, n) {
+        this.schedule.name = await n.toSummary?.();
+      }
     },
     {
       class: 'String',
@@ -212,19 +197,37 @@ foam.CLASS({
       of: 'foam.time.TimeUnit',
       name: 'frequency',
       createVisibility: 'HIDDEN',
-      transient: true
+      transient: true,
+      expression: function(schedule$frequency) {
+        return schedule$frequency;
+      },
+      javaGetter: `
+        return ((SimpleIntervalSchedule)getSchedule()).getFrequency();
+      `
     },
     {
       class: 'Date',
       name: 'startDate',
       label: 'Start On',
-      createVisibility: 'HIDDEN'
+      createVisibility: 'HIDDEN',
+      expression: function(schedule$startDate) {
+        return schedule$startDate;
+      },
+      javaGetter: `
+        return ((SimpleIntervalSchedule)getSchedule()).getStartDate();
+      `
     },
     {
       class: 'Date',
       name: 'endsOn',
       visibility: 'HIDDEN',
-      transient: true
+      transient: true,
+      expression: function(schedule$endsOn) {
+        return schedule$endsOn;
+      },
+      javaGetter: `
+        return ((SimpleIntervalSchedule)getSchedule()).getEndsOn();
+      `
     },
     {
       name: 'reattemptSchedule',
@@ -237,9 +240,10 @@ foam.CLASS({
       section: 'scheduling',
       view: function(_, X) {
         return X.E()
-          .start(foam.u2.borders.BackgroundCard, { backgroundColor: '#DADDE2' })
+          .start(foam.u2.borders.BackgroundCard, { backgroundColor: '$backgroundSecondary', padding: false })
+          .start(foam.u2.borders.SpacingBorder, { padding: '0.8rem 1rem' })
             .start(foam.u2.HTMLView, { data: X.data.schedulableNote }).end()
-          .end();
+          .end().end();
       }
     }
   ],

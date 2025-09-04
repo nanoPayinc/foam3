@@ -34,6 +34,7 @@ p({
         limit: 4,
         citationView: "foam.core.er.EventRecordCitationView",
         viewMore: true,
+        viewMoreMenuItem: "er",
         emptyTitle: "No activity"
       },
       mode: "config"

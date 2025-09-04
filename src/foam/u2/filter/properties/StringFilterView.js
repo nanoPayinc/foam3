@@ -36,7 +36,7 @@ foam.CLASS({
 
       border-radius: 3px;
       border: solid 1px #cbcfd4;
-      background-color: $white;
+      background-color: $backgroundDefault;
 
       background-image: url(images/ic-search.svg);
       background-repeat: no-repeat;
@@ -311,6 +311,8 @@ foam.CLASS({
   listeners: [
     {
       name: 'daoUpdate',
+      isMerged: true,
+      delay: 200,
       code: function() {
         this.isOverLimit = false;
         this.isLoading = true;

@@ -138,6 +138,8 @@ TODO:
   * Set to true to require a permission of the form `"<model name>.ro.<property name>"` or `"<model name>.rw.<property name>"` to read a given property on a given model. Eg: `"user.ro.emailVerified"` would be required to read the `emailVerified` property on the `User` model.
 * `writePermissionRequired :: Boolean`
   * Set to true to require a permission of the form `"<model name>.rw.<property name>"` to write/set a given property on a given model. Eg: `"user.rw.emailVerified"` would be required to write/set the `emailVerified` property on the `User` model and update the user. (Note that properties can be set locally, such as in the web console, but cannot be saved to the DAO.)
+* `updatePermissionRequired :: Boolean`
+  * Set to true to require a permission of the form `"<model name>.rw.<property name>"` to update a given property on a given model. Eg: `"user.rw.emailVerified"` would be required to update the `emailVerified` property on the `User` model and update the user however the permission will not be checked when creating the user object (i.e. first put into the DAO). updatePermissionReqired is also ignored if writePermissionRequired is set to true.
 
 Adding a `PermissionedPropertyDAO` decorator to the relevant DAO is required for property-level access control checks to be enforced.
 

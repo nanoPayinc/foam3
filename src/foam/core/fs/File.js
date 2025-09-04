@@ -157,13 +157,11 @@ foam.CLASS({
       expression: function () {
         return [this];
       },
-      view: function() {
-        let dataSlot = foam.lang.SimpleSlot.create({value: [this]});
-        let selectSlot = foam.lang.SimpleSlot.create({value: 0});
-        return foam.core.fs.fileDropZone.FilePreview.create({
-          data$: dataSlot,
-          selected$: selectSlot
-        });
+      view: function(_, X) {
+        return {
+          class: 'foam.core.fs.fileDropZone.FilePreview',
+          id: X.data.id
+        };
       },
       comparePropertyValues: function(o1, o2) { return 0; }
     },

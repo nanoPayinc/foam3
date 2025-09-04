@@ -18,8 +18,8 @@ foam.ENUM({
   ],
 
   values: [
-    { name: 'MONDAY',    label: 'Monday', shortName: 'Mon', ordinal: 1 },
-    { name: 'TUESDAY',   label: 'Tuesday', shortName: 'Tue', ordinal: 2 },
+    { name: 'MONDAY',    label: 'Monday',    shortName: 'Mon', ordinal: 1 },
+    { name: 'TUESDAY',   label: 'Tuesday',   shortName: 'Tue', ordinal: 2 },
     { name: 'WEDNESDAY', label: 'Wednesday', shortName: 'Wed', ordinal: 3 },
     { name: 'THURSDAY',  label: 'Thursday',  shortName: 'Thu', ordinal: 4 },
     { name: 'FRIDAY',    label: 'Friday',    shortName: 'Fri', ordinal: 5 },

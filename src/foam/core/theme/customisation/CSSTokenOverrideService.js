@@ -61,9 +61,22 @@ foam.CLASS({
         this.cacheUpdated.pub();
       })
       return this.tokenOverrideDAO
-        .where(this.AND(this.EQ(this.CSSTokenOverride.ENABLED, true), this.EQ(this.CSSTokenOverride.THEME, this.currentCache)))
+        .where(
+          this.AND(
+            this.EQ(this.CSSTokenOverride.ENABLED, true), 
+            this.OR(
+              this.EQ(this.CSSTokenOverride.THEME, this.currentCache),
+              this.EQ(this.CSSTokenOverride.THEME, '')
+            )
+          )
+        )
         .select(token => {
         this.themeMap(token.theme)[token.source] = token.target;
+        if ( token.variants ) {
+          Object.entries(token.variants).forEach(([variant, value]) => {
+            this.themeMap(token.theme)[token.source + '-' + variant] = value;
+          });
+        }
       }).then(() => this.initLatch.resolve());
     },
 
@@ -85,38 +98,45 @@ foam.CLASS({
         return this.initLatch;
       }
     },
-    function getTokenValue(tokenString, cls, ctx) {
-      if ( ! tokenString.startsWith('$') ) return tokenString;
+    function getTokenValue([tokenName, cls, fullString, tokenAxiom], ctx) {
       var self = this;
       if ( this.cached_ ) {
         let themeID = ctx?.theme?.id || this.theme?.id || '';
         let result  = null;
-        var [ tokenName, cls, fullString ] = foam.CSS.returnTokenAndClass(tokenString, cls);
+        let variantKey = tokenAxiom?.variantKey;
+        let variantToCheck = (ctx.theme ?? this.theme)?.activeVariants?.[variantKey];
+        /**
+         * Wildcarding:
+         * ThemeID = current theme
+         * tokenName = tokenString with $ removed, eg. "token1"
+         * fullString = cls.id + tokenName eg. "foam.somePackage.someClass.token1"
+         * variantToCheck = current active variant for the variantKey of the token
+         */
         var args = [
-          /**
-           * Wildcarding:
-           * ThemeID = current theme
-           * tokenName = tokenString with $ removed, eg. "token1"
-           * fullString = cls.id + tokenName eg. "foam.somePackage.someClass.token1"
-           */
           [themeID, fullString],
           [themeID, tokenName],
           ['', fullString],
           ['', tokenName]
         ];
-
+        if ( variantToCheck) {
+          args = [
+            [themeID, fullString + '-' + variantToCheck],
+            [themeID, tokenName + '-' + variantToCheck],
+            ...args
+          ];
+        }
         for ( var i = 0 ; i < args.length && ! result ; i ++) {
           result = this.tokenValueHelper.apply(self, args[i]);
           if ( result ) {
             if ( result.startsWith?.('$') )
-              return this.getTokenValue.call(this, result, cls, ctx);
+              return foam.CSS.returnTokenValue(result, cls, ctx);
             return result;
           }
         }
       }
 
       //TODO: Put to default theme in override dao
-      return foam.CSS.getTokenValue.call(this, tokenString, cls, ctx);
+      return foam.CSS.getTokenValue.call(this, [tokenName, cls, fullString, tokenAxiom], ctx);
     },
 
     function tokenValueHelper(theme, name) {

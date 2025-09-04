@@ -16,36 +16,35 @@ foam.CLASS({
   ],
 
   imports: [
-    'canBuildObjfromProj',
     'nestedPropsAndIndexes',
     'propertyNamesToQuery',
-    'props'
+    'props',
+    'table'
   ],
 
   messages: [
-    { name: 'EMPTY_MSG',  message: 'No' }
+    { name: 'EMPTY_MSG',  message: 'empty' }
   ],
 
   properties: [
-    'obj',
     'projection',
   ],
 
   methods: [
     function render() {
       var self = this;
-      var objForCurrentProperty = this.obj;
+      var objForCurrentProperty = this.data;
       var expr = foam.mlang.Expressions.create();
       var nestedPropertyValues = this.columnHandler.filterNestedPropertyValues(this.projection, this.nestedPropsAndIndexes[1]);
-      var nestedPropertiesObjsMap = this.columnHandler.groupRelatedObjects(this.data.of, this.nestedPropsAndIndexes[0], nestedPropertyValues);
-      this.addClass(this.data.myClass('tr')).
-      addClass(this.data.myClass('row-group'), this.data.myClass('row')).
+      var nestedPropertiesObjsMap = this.columnHandler.groupRelatedObjects(this.table.of, this.nestedPropsAndIndexes[0], nestedPropertyValues);
+      this.addClass(this.table.myClass('tr')).
+      addClass(this.table.myClass('row-group'), this.table.myClass('row')).
       // If multi-select is enabled, then we show a checkbox in the
       // header that allows you to select all or select none.
-      callIf(this.data.multiSelectEnabled, function() {
+      callIf(this.table.multiSelectEnabled, function() {
         var slot = self.SimpleSlot.create();
         this.start().
-          addClass(self.data.myClass('th')).
+          addClass(self.table.myClass('th')).
           tag(self.CheckBox, {}, slot).
           style({ width: '42px' }).
         end();
@@ -56,39 +55,44 @@ foam.CLASS({
           var checked = newValueSlot.get();
 
           if ( checked ) {
-            self.data.selectedObjects = {};
-            self.data.data.where(expr.EQ(self.data.groupBy, self.data.groupBy.f(objForCurrentProperty))).select(function(obj) {
-              self.data.selectedObjects[obj.id] = obj;
-              self.data.idsOfObjectsTheUserHasInteractedWith_[obj.id] = true;
-              if ( self.data.checkboxes_[obj.id] )
-                self.data.checkboxes_[obj.id].data = checked;
+            self.table.selectedObjects = {};
+            self.table.data.where(expr.EQ(self.table.groupBy, self.table.groupBy.f(objForCurrentProperty))).select(function(obj) {
+              self.table.selectedObjects[obj.id] = obj;
+              self.table.idsOfObjectsTheUserHasInteractedWith_[obj.id] = true;
+              if ( self.table.checkboxes_[obj.id] )
+                self.table.checkboxes_[obj.id].data = checked;
             });
           } else {
-            Object.keys(self.data.checkboxes_).forEach(function(key) {
-              if ( self.data.selectedObjects[key] && self.data.groupBy.f(self.data.selectedObjects[key]) == self.data.groupBy.f(objForCurrentProperty) )
-                self.data.checkboxes_[key].data = checked;
+            Object.keys(self.table.checkboxes_).forEach(function(key) {
+              if ( self.table.selectedObjects[key] && self.table.groupBy.f(self.table.selectedObjects[key]) == self.table.groupBy.f(objForCurrentProperty) )
+                self.table.checkboxes_[key].data = checked;
             });
-            self.data.selectedObjects = {};
+            self.table.selectedObjects = {};
           }
         }));
       }).
 
-      style({ 'min-width': this.data.tableWidth_$ });
-      [prop, objReturned] = this.getCellData(objForCurrentProperty, this.data.groupBy, nestedPropertiesObjsMap);
-      var elmt = this.E().style({ flex: '3 0 0' })
-        .addClass('h500', this.data.myClass('td'))
-        .call(function() {
-          prop.tableCellFormatter.format(
-            this,
-            prop.f ? prop.f(objReturned) : null,
-            objReturned,
-            prop
-          );
-          if ( ! prop.f(objReturned) ) {
-            this.add(self.EMPTY_MSG + ' ' + prop.label);
-          }
-        });
-      this.add(elmt);
+      style({ 'min-width': this.table.tableWidth_$ });
+      [prop, objReturned] = this.getCellData(objForCurrentProperty, this.table.groupBy, nestedPropertiesObjsMap);
+      this.start().addClass(self.table.myClass('group-content'),'h500')
+        .start('span')
+          .style({ flex: '3 0 0' })
+          .add(prop.columnLabel + ': ')
+          .call(function() {
+            if ( ! prop.f(objReturned) && prop.f(objReturned) !== 0) {
+              this.start('i').add(self.EMPTY_MSG).end()
+            } else {
+              prop.tableCellFormatter.format(
+                this,
+                prop.f ? prop.f(objReturned) : null,
+                objReturned,
+                prop
+              );
+            }
+          })
+        .end()
+      .end();
     }
-  ]
+  ],
+
 });

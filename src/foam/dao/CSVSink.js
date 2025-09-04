@@ -21,6 +21,7 @@ foam.CLASS({
     {
       class: 'String',
       name: 'csv',
+      reactive: false,
       view: 'foam.u2.tag.TextArea',
       factory: function() { return this.outputter.toString(); },
       javaGetter: 'return getOutputter().toString();'
@@ -28,11 +29,12 @@ foam.CLASS({
     {
       class: 'Class',
       name: 'of',
-      visibility: 'HIDDEN'
+      hidden: true
     },
     {
       class: 'StringArray',
       name: 'props',
+      hidden: true,
       factory: function() {
         if ( ! this.of ) return [];
         if ( tc = this.of.getAxiomByName('tableColumns') ) return tc.columns;
@@ -55,6 +57,7 @@ foam.CLASS({
       class: 'FObjectProperty',
       of: 'foam.lib.csv.CSVOutputter',
       transient: true,
+      hidden: true,
       factory: function() {
         return foam.lib.csv.CSVOutputterImpl.create({
           of: this.of,

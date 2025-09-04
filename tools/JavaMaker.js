@@ -6,9 +6,11 @@
 
 // JavaMaker
 
+// NOTE: JavaMaker and JavacMaker shared data through X, they must
+// be run in the same pmake call.
+
 const fs_   = require('fs');
 const path_ = require('path');
-const { adaptOrCreateArgs } = require('./buildlib');
 
 exports.description = 'generates .java files from .js models';
 
@@ -21,33 +23,46 @@ exports.args = [
   }
 ];
 
-
 exports.init = function() {
-  adaptOrCreateArgs(X, exports.args);
+  this.verbose('[Java] init');
+  this.adaptOrCreateArgs(X, exports.args);
+  this.ensureDir(X.outdir);
+
   // Turns on loading of foam/java/* models needed for java code generation.
   flags.genjava   = true;
+  flags.java      = true;
   flags.loadFiles = true;
 }
 
-
 exports.end = function() {
+  var self = this;
   // Promote all UNUSED Models to USED
   // 2 passes in case interfaces generated new classes in 1st pass
   for ( var i = 0 ; i < 2 ; i++ )
-    for ( var key in foam.UNUSED )
-      try { foam.maybeLookup(key); } catch(x) { }
+    for ( var key in foam.UNUSED ) {
+      try { foam.maybeLookup(key); }
+      catch(x) {
+        // this.warning('[Java] UNUSED Model not found', key);
+      }
+    }
 
   var mCount = 0, jCount = 0;
 
-  // Build Java Classes
+  // Generate Java Source files
   for ( var key in foam.USED ) try {
     mCount++;
     if ( foam.maybeLookup(key)?.model_.targetJava(X) ) {
       jCount++;
     }
-  } catch(x) {
-    console.error('[Java] Model error:', key, x);
+  } catch(e) {
+    Object.keys(globalThis.foam.flags).forEach(f => {self.log("flag", f, globalThis.foam.flags[f]); });
+    this.error('[Java] Model error:', key, e);
   }
 
-  console.log(`[Java]: ${jCount}/${mCount} models processed.`);
+  let msg = `[Java]: ${jCount}/${mCount} models processed.`;
+  if ( jCount == 0 ) {
+    this.warning(msg);
+  } else {
+    this.log(msg);
+  }
 }

@@ -92,7 +92,7 @@ foam.CLASS({
     {
       class: 'Long',
       name: 'id',
-      createVisibility: 'HIDDEN',
+      createVisibility: 'RW',
       updateVisibility: 'RO'
     },
     {
@@ -211,11 +211,28 @@ foam.CLASS({
       menuKeys: ['admin.groups']
     },
     {
+      class: 'foam.mlang.predicate.PredicateProperty',
+      name: 'predicate',
+      documentation: 'When set, this predicate is used to filter users the notification is sent to.',
+      factory: function() {
+        return foam.mlang.predicate.True.create();
+      },
+      javaFactory: `
+        return foam.mlang.MLang.TRUE;
+      `
+    },
+    {
       class: 'Map',
       name: 'emailArgs',
       visibility: 'HIDDEN',
       documentation: 'Arguments for email template.',
       javaFactory: 'return new java.util.HashMap<String, Object>();'
+    },
+    {
+      class: 'Map',
+      name: 'extra',
+      documentation: `Arguments for abstract extra properties that can be added to the notification
+      and consumed by various notificaition settings.`,
     },
     {
       name: 'emailName',

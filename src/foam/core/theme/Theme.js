@@ -816,6 +816,19 @@ foam.CLASS({
       The above code if added to a theme jrl will replace all instances of 'foam.u2.PropertyBorder' with 'foam.u2.DetailView' when that theme is being used by a client.
       `,
       name: 'registrations'
+    },
+    // TODO: Move to a CSpec instead when CSpec exports are fixed
+    {
+      name: 'activeVariants',
+      class: 'Map',
+      factory: function() {
+        return {};
+      }
+    },
+    {
+      // Set to true when dark mode is cleared for prod
+      name: 'useVariants',
+      class: 'Boolean'
     }
   ],
 

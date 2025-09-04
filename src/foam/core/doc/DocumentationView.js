@@ -12,6 +12,7 @@ foam.CLASS({
 
   css: `
     ^ {
+      padding-left: 12px;
       max-width: 800px;
     }
     ^ table { width: 100%; }
@@ -21,16 +22,16 @@ foam.CLASS({
     }
     ^ th {
       font-weight: bold;
-      background-color: $grey400;
+      background-color: $backgroundInverseTertiary;
     }
     ^ tr:nth-child(even) td:nth-child(odd) {
-      background-color: $grey50;
+      background-color: $backgroundSecondary;
     }
     ^ tr:nth-child(even) td:nth-child(even) {
-      background-color: $grey300;
+      background-color: $backgroundInverseTertiary;
     }
     ^ tr:nth-child(odd) td:nth-child(even) {
-      background-color: $grey50;
+      background-color: $backgroundSecondary;
     }
   `,
 
@@ -40,11 +41,11 @@ foam.CLASS({
       name: 'docKey',
       memorable: true,
       shortName: 'route',
-      documentation: 'ID of the document to render.',
-      postSet: function(o, n) {
-        if ( o == n ) return;
-        this.data = undefined;
-      }
+      documentation: 'ID of the document to render.'
+    },
+    {
+      class: 'String',
+      name: 'defaultDocument'
     },
     {
       class: 'String',
@@ -63,13 +64,15 @@ foam.CLASS({
 
   methods: [
     function render() {
+      var self = this;
       var dao = this.__context__[this.daoKey];
       this.addClass();
       if ( ! dao ) {
         this.add('No DAO found for key: ', this.daoKey);
       } else this.add(this.slot(function(data, error, docKey) {
-        if ( ! data && ! error) {
-          dao.find(this.docKey).then(function(doc) {
+        var key = docKey || self.defaultDocument;
+        if ( (! data || !foam.util.equals(data.id, key) ) && ! error) {
+          dao.find(key).then(function(doc) {
             if ( doc ) this.data = doc;
             else this.error = 'Not found.';
           }.bind(this), function(e) {

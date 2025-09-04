@@ -13,8 +13,8 @@ foam.CLASS({
     ^container {
       width: 100%;
       padding: 2.4rem;
-      background: #ffffff;
-      border: 1px solid $grey50;
+      background: $backgroundDefault;
+      border: 1px solid $borderXLight;
       border-top: none;
       border-bottom-left-radius: 4px;
       border-bottom-right-radius: 4px;

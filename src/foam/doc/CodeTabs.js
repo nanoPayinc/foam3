@@ -26,12 +26,12 @@ foam.CLASS({
       border-bottom: none;
     }
     ^tab.selected {
-      background:$white;
+      background:$backgroundDefault;
       position: relative;
       z-index: 1;
     }
     ^bottomEdge {
-      background:$white;
+      background:$backgroundDefault;
       height: 2.5px;
       left: 0;
       position: absolute;
@@ -41,8 +41,8 @@ foam.CLASS({
     ^content {
       margin: 4px;
       padding: 6px;
-      background:$white;
-      border: 1px solid black;
+      background:$backgroundDefault;
+      border: 1px solid $borderStrong;
       position: relative;
       top: -3px;
       left: -4px;

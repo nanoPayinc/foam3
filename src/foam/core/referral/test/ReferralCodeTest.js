@@ -36,7 +36,7 @@ foam.CLASS({
 
         testUser1 = new User.Builder(x)
           .setUserName("referralTest1")
-          .setEmail("referralTest1@nanopay.net")
+          .setEmail("referralTest1@foamdev.com")
           .setGroup("anonymous")
           .build();
         testUser1 = (User) userDAO.put(testUser1);
@@ -45,7 +45,7 @@ foam.CLASS({
         test(refCode != null, "ReferralCode Created");
 
         testUser2 = new User.Builder(x)
-          .setEmail("referralTest2@nanopay.net")
+          .setEmail("referralTest2@foamdev.com")
           .setUserName("referralTest2")
           .setReferralCode(refCode.getId())
           .setGroup("anonymous")

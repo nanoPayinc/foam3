@@ -33,7 +33,7 @@ foam.CLASS({
   cssTokens: [
     {
       name: 'menuBackground',
-      value: '$white'
+      value: '$backgroundDefault'
     },
     {
       name: 'borderSize',
@@ -53,9 +53,9 @@ foam.CLASS({
   ^ {
     background: $menuBackground;
     border-right: $borderSize;
-    border-right-color: $grey200;
+    border-right-color: $borderLight;
     box-shadow: $boxShadowSize;
-    color: $grey500;
+    color: $textTertiary;
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -133,7 +133,7 @@ foam.CLASS({
             .add(this.MENU_SEARCH)
               .addClass(this.myClass('search'))
             .end()
-            .endContext()
+            .endContext();
         })
         .start({
           class: 'foam.u2.view.TreeView',
@@ -144,8 +144,11 @@ foam.CLASS({
           onClickAddOn: function(data, hasChildren) { self.openMenu(data, hasChildren); },
           selection$: self.currentMenu$.map(m => m),
           formatter: function(data) {
-            this.translate(data.id + '.label', data.label);
-            if ( data.tooltip ) this.tooltip = data.tooltip;
+            if ( data.handler ) {
+              data.handler.renderMenuItem(this, data);
+            } else {
+              console.warn('VerticalMenu - No menu handler for',data.id);
+            }
           },
           defaultRoot: self.theme.navigationRootMenu
         })

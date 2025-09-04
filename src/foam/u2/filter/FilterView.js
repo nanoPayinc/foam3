@@ -25,15 +25,18 @@ foam.CLASS({
   requires: [
     'foam.u2.memento.Memento',
     'foam.lang.SimpleSlot',
+    'foam.log.LogLevel',
     'foam.u2.dialog.Popup',
     'foam.u2.filter.FilterController',
     'foam.u2.filter.properties.PropertyFilterView',
     'foam.u2.search.TextSearchView',
-    'foam.parse.QueryParser'
+    'foam.parse.QueryParser',
+    'foam.u2.filter.FilterConfigView'
   ],
 
   imports: [
     'auth',
+    'notify',
     'searchColumns'
   ],
 
@@ -56,6 +59,7 @@ foam.CLASS({
       border-color: transparent;
       border-radius: 5px;
       display: flex;
+      flex-direction: column;
       max-height: 0;
       overflow: hidden;
       padding: 0 24px;
@@ -65,11 +69,11 @@ foam.CLASS({
     }
 
     ^container-drawer-open {
-      align-items: center;
       max-height: -webkit-fill-available;
       max-height: -moz-available;
       overflow: auto;
       padding: 24 0px;
+      gap: 1.2rem;
     }
 
     ^container-filters {
@@ -85,21 +89,26 @@ foam.CLASS({
     }
 
     ^general-field input {
-      border: 1px solid $grey200;
+      border: 1px solid $borderLight;
       height: 34px;
       width: 100%;
     }
 
     ^container-handle {
+      display: flex;
       box-sizing: border-box;
       height: 34px;
-
+      gap: 10px;
       align-items: center;
       justify-content: center;
     }
 
     ^container-handle:hover {
       cursor: pointer;
+    }
+
+    ^container-search {
+      gap: 12px;
     }
 
     ^filter-button svg{
@@ -110,64 +119,38 @@ foam.CLASS({
     }
 
     ^filter-button-active{
-      color: $primary400;
-      background: $grey100;
+      color: $textBrand;
+      background: $backgroundTertiary;
+    }
+
+    ^filter-search-active {
+      border: 1px solid $borderBrand;
     }
 
     ^filter-button-active svg {
-      fill: $primary400;
+      fill: currentColor;
       transform: rotate(180deg);
     }
 
     ^link-mode {
-      margin-left: 16px;
       cursor: pointer;
     }
 
-    ^link-mode.advanced {
-      color: #9ba1a6;
-      text-decoration: underline;
-    }
-
-    ^link-mode.advanced:hover {
-      color: #5e6061;
-    }
-
-    ^link-mode.clear {
-      align-self: center;
-      color: $destructive400;
+    ^settings-wrapper {
+      display: flex;
+      gap: 0.8rem;
       flex-shrink: 0;
-      margin-right: 0;
-    }
-
-    ^link-mode.clear:hover {
-      color: $destructive700;
-    }
-
-    ^message-advanced {
-      margin: 16px;
-    }
-
-    ^message-view {
-      margin: 16px;
-      margin-left: auto;
-      color: #4D7AF7;
-    }
-
-    ^message-view:hover {
-      cursor: pointer;
-      color: #233E8B;
-    }
-
-    ^ .foam-u2-dialog-Popup-inner {
-      width: 75%;
-      height: 80%;
-      border-radius: 5px;
     }
     /* tablet and desktop */
     @media only screen and (min-width: 768px) {
       ^container-search {
         gap: 24px;
+      }
+      ^container-drawer {
+        flex-direction: row;
+      }
+      ^settings-wrapper {
+        flex-direction: column;
       }
     }
   `,
@@ -227,24 +210,9 @@ foam.CLASS({
     },
     {
       class: 'String',
-      name: 'resultLabel',
-      expression: function(isFiltering, filterController$totalCount, filterController$resultsCount ) {
-        if ( ! isFiltering ) return '';
-        return `${this.LABEL_RESULTS}${filterController$resultsCount} of ${filterController$totalCount}`;
-      }
-    },
-    {
-      class: 'String',
       name: 'iconPath',
       expression: function(isOpen) {
         return isOpen ? 'images/expand-less.svg' : 'images/expand-more.svg';
-      }
-    },
-    {
-      class: 'String',
-      name: 'modeLabel',
-      expression: function(filterController$isAdvanced) {
-        return filterController$isAdvanced ? this.LINK_SIMPLE : this.LINK_ADVANCED;
       }
     },
     {
@@ -272,25 +240,63 @@ foam.CLASS({
 
       await this.updateFilters();
 
-      this.onDetach(this.filterController$.dot('isAdvanced').sub(this.isAdvancedChanged));
-      var selectedLabel = ctrl.__subContext__.translationService.getTranslation(foam.locale, 'foam.u2.filter.FilterView.SELECTED', this.SELECTED);
-      this.addClass(self.myClass())
-        .add(this.slot(function(filters) {
+      self.filtersContainer = this.E().addClass(self.myClass('container-drawer'))
+      .enableClass(self.myClass('container-drawer-open'), self.isOpen$)
+      .show(self.isOpen$)
+      .tag(self.FilterConfigView, { dao$: self.dao$ })
+      .add(self.dynamic(function (filters) {
+        // This must be done as the predicate might change as the views are rendered;
+        let currentPredicate = self.filterController.finalPredicate;
+        if ( ! filters ) return;
+        this
+          .start().addClass(self.myClass('container-filters'))
+            .forEach(filters, function(f) {
+              var axiom = self.dao.of.getAxiomByName(f);
+              if ( axiom ) {
+                var propView = foam.u2.ViewSpec.createView(self.PropertyFilterView, {
+                  criteria: 0,
+                  searchView: axiom.searchView,
+                  property: axiom,
+                  dao: self.dao,
+                  preSetPredicate: self.assignPredicate(axiom, currentPredicate)
+                }, self, self.__subContext__);
 
+                this.start()
+                  .add(propView)
+                .end();
+              }
+            })
+          .end()
+      }))
+      .start()
+        .addClass(self.myClass('settings-wrapper'))
+        .start()
+          .addClass(self.myClass('link-mode'))
+          .addClass('clear')
+          .startContext({ data: self })
+            .tag(self.CLEAR_ALL, {
+              isDestructive: true,
+              buttonStyle: 'TERTIARY'
+            })
+          .endContext()
+        .end()
+        
+      .end();
+
+      this.addClass(self.myClass())
+        .add(this.dynamic(function(filters) {
           var generalSearchField = foam.u2.ViewSpec.createView(self.TextSearchView, {
-            richSearch: true,
             of: self.dao.of.id,
             onKey: true,
             name: 'filterSearch',
             searchData$: self.searchData$
-          }, this, self.__subContext__);
+          }, self, self.__subContext__);
 
 
-          var e = this.E();
-          var labelSlot = foam.lang.ExpressionSlot.create({ args: [this.filterController.activeFilterCount$],
+          var labelSlot = foam.lang.ExpressionSlot.create({ args: [self.filterController.activeFilterCount$],
             code: function(x) { return x > 0 ? `${self.LABEL_FILTER} (${x})` : self.LABEL_FILTER; }});
-          e.onDetach(self.filterController);
-          e.start().addClass(self.myClass('container-search'))
+
+          this.start().addClass(self.myClass('container-search'))
             .start()
               .add(generalSearchField)
               .addClass(self.myClass('general-field'))
@@ -298,9 +304,9 @@ foam.CLASS({
             .start().addClass(self.myClass('container-handle'))
             .startContext({ data: self })
               .start(self.TOGGLE_DRAWER, { label$: labelSlot, isIconAfter: true, themeIcon: 'dropdown', size: 'SMALL' })
-                .show(filters && filters.length)
-                .enableClass(this.myClass('filter-button-active'), this.isOpen$)
-                .addClass(this.myClass('filter-button'))
+                .show(filters.length)
+                .enableClass(self.myClass('filter-button-active'), self.isOpen$)
+                .addClass(self.myClass('filter-button'))
               .end()
             .endContext()
             .end()
@@ -308,60 +314,8 @@ foam.CLASS({
             .style({ overflow: 'hidden', 'align-self': 'center' })
             .end()
           .end();
-          self.filtersContainer = this.E().add(self.filterController.slot(function (criterias) {
-            if ( ! filters ) return self.E();
-            return self.E().start().addClass(self.myClass('container-drawer'))
-              .enableClass(self.myClass('container-drawer-open'), self.isOpen$)
-                .start().addClass(self.myClass('container-filters'))
-                  .show(self.isOpen$)
-                  .forEach(filters, function(f) {
-                    var axiom = self.dao.of.getAxiomByName(f);
-                    if ( axiom ) {
-                      var propView = foam.u2.ViewSpec.createView(self.PropertyFilterView, {
-                        criteria: 0,
-                        searchView: axiom.searchView,
-                        property: axiom,
-                        dao: self.dao,
-                        preSetPredicate: self.assignPredicate(axiom)
-                      }, self, self.__subContext__);
-
-                      this.start()
-                        .add(propView)
-                        .hide(self.filterController$.dot('isAdvanced'))
-                      .end();
-                    }
-                  })
-                  .start('p')
-                    .show(self.filterController$.dot('isAdvanced'))
-                    .addClass(self.myClass('message-advanced'))
-                    .add(self.MESSAGE_ADVANCEDMODE)
-                  .end()
-                  .start('p')
-                    .show(self.filterController$.dot('isAdvanced'))
-                    .addClass(self.myClass('message-view'))
-                    .startContext({ data: self })
-                      .tag(self.OPEN_ADVANCED, { buttonStyle: 'TERTIARY' })
-                    .endContext()
-                  .end()
-                .end()
-                .start()
-                  .hide(self.filterController$.dot('isAdvanced'))
-                  .addClass(self.myClass('link-mode'))
-                  .addClass('clear')
-                  .show(self.isOpen$)
-                  .startContext({ data: self })
-                    .tag(self.CLEAR_ALL, {
-                      isDestructive: true,
-                      buttonStyle: 'TERTIARY'
-                    })
-                  .endContext()
-                .end()
-            .end();
-          }));
           //set here to avoid prematured finalPredicate override
           self.generalSearchField = generalSearchField;
-
-          return e;
         }, this.filters$));
     },
 
@@ -413,8 +367,8 @@ foam.CLASS({
       var unorderedProperties = grantedProperties.concat(unpermissionedProperties);
       return properties.filter(v => unorderedProperties.includes(v));
     },
-    function assignPredicate(property) {
-      var predicate = this.filterController.finalPredicate;
+    function assignPredicate(property, predicate) {
+      predicate = predicate ?? this.filterController.finalPredicate;
       var retPred = null;
       if ( predicate ) {
         if ( foam.mlang.predicate.And.isInstance(predicate) ) {
@@ -484,30 +438,6 @@ foam.CLASS({
         });
       }
     },
-    {
-      name: 'toggleMode',
-      code: function() {
-        if ( this.filterController.isAdvanced ) {
-          // Switch back to simple mode
-          this.filterController.switchToSimple();
-          return;
-        }
-        this.filterController.switchToPreview();
-        this.openAdvanced();
-      }
-    },
-    {
-      name: 'isAdvancedChanged',
-      code: function() {
-        if ( ! this.filterController.isAdvanced ) {
-          this.filterController.add(this.generalSearchField, 'generalSearchField', 0);
-          this.generalSearchField.mode = foam.u2.DisplayMode.RW;
-        } else {
-          this.generalSearchField.data = '';
-          this.generalSearchField.mode = foam.u2.DisplayMode.DISABLED;
-        }
-      }
-    },
 
     async function updateFilters() {
       var of = this.dao && this.dao.of;
@@ -515,7 +445,7 @@ foam.CLASS({
       if ( ! of ) this.filters = [];
 
       var searchColumns_ = await this.filterPropertiesByReadPermission(this.searchColumns, of.id);
-      if ( searchColumns_ ) {
+      if ( searchColumns_?.length ) {
         this.filters =  searchColumns_;
         return;
       }
@@ -536,7 +466,6 @@ foam.CLASS({
       label: 'Clear all',
       code: function() {
         // clear all filters
-        if ( this.filterController.isAdvanced ) return;
         this.filterController.clearAll();
         if ( this.generalSearchField ) this.generalSearchField.view.data = '';
         this.mementoString = '';
@@ -548,16 +477,6 @@ foam.CLASS({
       icon: '/images/dropdown-icon.svg',
       code: function() {
         this.isOpen = ! this.isOpen;
-      }
-    },
-    {
-      name: 'openAdvanced',
-      label: 'View filters',
-      code: function() {
-        this.add(this.Popup.create().tag({
-          class: 'foam.u2.filter.advanced.AdvancedFilterView',
-          dao$: this.dao$
-        }));
       }
     }
   ]

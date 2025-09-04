@@ -16,7 +16,7 @@ foam.CLASS({
   cssTokens: [
     {
       name: 'indicatorColor',
-      value: '$primary400'
+      value: '$backgroundBrand'
     }
   ],
 
@@ -122,7 +122,7 @@ foam.CLASS({
       name: 'setColor',
       isFramed: true,
       code: function() {
-        this.color = this.theme ? foam.CSS.returnTokenValue('$primary400', this.cls_, this.__subContext__) : '#406dea';
+        this.color = this.theme ? foam.CSS.returnTokenValue('$backgroundBrand', this.cls_, this.__subContext__) : '#406dea';
       }
     },
     {

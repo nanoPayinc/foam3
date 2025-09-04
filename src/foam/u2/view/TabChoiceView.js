@@ -28,9 +28,9 @@ foam.CLASS({
     }
 
     ^ label:has(input[type=radio]:checked) {
-      border-bottom: solid 3px $primary400;
+      border-bottom: solid 3px $borderBrand;
       font-weight: bold;
-      color: $primary400;
+      color: $textBrand;
     }
 
     ^ label {

@@ -16,9 +16,9 @@ foam.CLASS({
   `,
 
   methods: [
-    async function exportFObject(X, obj) {      
+    async function exportFObject(X, obj) {
       var sheetId  = await this.exportFObjectAndReturnSheetId(X, obj);
-      
+
       if ( ! sheetId || sheetId.length === 0)
         return '';
       return `https://docs.google.com/spreadsheets/d/${sheetId}/edit#gid=0`;

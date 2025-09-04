@@ -37,9 +37,11 @@ p({
     mdao.addIndex(new foam.lang.PropertyInfo[] {foam.core.script.ScriptEvent.OWNER});
     mdao.addIndex(new foam.lang.PropertyInfo[] {foam.core.script.ScriptEvent.LAST_RUN});
     return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
       .setOf(foam.core.script.ScriptEvent.getOwnClassInfo())
       .setMdao(mdao)
       .setGuid(true)
+      .setAuthorizer(new foam.core.auth.GlobalReadAuthorizer("scriptEvent"))
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("scriptEvents")
       .setWriteOnly(true)
@@ -50,6 +52,7 @@ p({
       .setOrder(new foam.mlang.order.Comparator[] { new foam.mlang.order.Desc.Builder(x).setArg1(foam.core.script.ScriptEvent.LAST_RUN).build() })
       .setRuler(false)
       .setCluster(false)
+      .setSaf(false)
       .build();
   """,
   "client":"{\"of\":\"foam.core.script.ScriptEvent\"}"
@@ -64,6 +67,7 @@ p({
       .setOf(foam.core.script.ScriptParameter.getOwnClassInfo())
       .setGuid(true)
       .setPm(true)
+      .setAuthorizer(new foam.core.auth.GlobalReadAuthorizer("scriptParameter"))
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("scriptparameters")
       .setOrder(new foam.mlang.order.Comparator[] {

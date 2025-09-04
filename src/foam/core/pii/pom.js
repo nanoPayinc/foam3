@@ -7,7 +7,8 @@
 foam.POM({
   name: "pii",
   projects: [
-    { name: "test/pom"},
+    { name: "test/pom",
+      flags: "test" },
   ],
   files: [
     { name: "AddressRefine",

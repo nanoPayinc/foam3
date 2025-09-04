@@ -15,23 +15,24 @@
  * limitations under the License.
  */
 
-Object.defineProperty(
-  Object.prototype,
-  '$UID',
-  {
-    get: function() {
-      if ( ! Object.hasOwnProperty.call(this, '$UID__') && ! Object.isFrozen(this) ) {
-        Object.defineProperty(
-          this,
-          '$UID__',
-          {value: foam.next$UID(), enumerable: false});
-      }
-      return this.$UID__;
-    },
-    enumerable: false
-  }
-);
-
+if ( ! Object.prototype.hasOwnProperty('$UID') ) {
+  Object.defineProperty(
+    Object.prototype,
+    '$UID',
+    {
+      get: function() {
+        if ( ! Object.hasOwnProperty.call(this, '$UID__') && ! Object.isFrozen(this) ) {
+          Object.defineProperty(
+            this,
+            '$UID__',
+            {value: foam.next$UID(), enumerable: false});
+        }
+        return this.$UID__;
+      },
+      enumerable: false
+    }
+  );
+}
 
 /**
  * Creates a small library in the foam package. A LIB is a collection of

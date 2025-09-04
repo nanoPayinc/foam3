@@ -165,7 +165,7 @@ foam.CLASS({
             br().
             add(this.Example.CODE).
             start().
-              show(self.showOutput$).
+              show(self.showOutput$.or(this.data$.dot('error'))).
               br().
               start('span').style({'font-weight': 500}).add('Output:').end().
               start().
@@ -204,7 +204,7 @@ foam.CLASS({
                     args.push(arguments[i]);
                 }
 
-                self.dom.add.apply(self.dom, args);
+                self.dom.add(args);
                 self.dom.br();
               },
               print: function() {
@@ -226,13 +226,15 @@ foam.CLASS({
               }
             };
 
+            globalThis.scope = scope;
+
             with ( scope ) {
               with ( this.globalScope ) {
                 try {
                   eval(self.data.code);
                   if ( self.dom.children.length ) self.showOutput = true;
                 } catch (x) {
-                  scope.log(x.toString());
+                  scope.log(x.toString?.() ?? x);
                   self.data.error = true;
                 }
               }
@@ -307,15 +309,20 @@ foam.CLASS({
   ],
 
   css: `
-    ^ { background: white; }
+    body:has(.foam-demos-examples-Controller) {
+      margin: 0;
+      padding: 8px;
+      background: $backgroundDefault;
+      color: $textDefault; 
+    }
     ^index {
-      background: #f6f6f6;
+      background: $backgroundSecondary;
       margin-right: 20px;
       min-width: 400px;
       padding: 6px 0;
     }
     ^ .selected {
-      background: #ddf;
+      background: $backgroundBrandTertiary;
     }
     ^ .error {
       color: red;
@@ -331,10 +338,11 @@ foam.CLASS({
   ],
 
   constants: {
-    MODULES: 'views,u2all,u2,faq,validation,examples,dao'
+    MODULES: 'views,u2all,u2,faq,validation,examples,dao,parsers,cssTokens,services'
   },
 
   properties: [
+    { class: 'String', name: 'exampleRoot', hidden: true },
     { class: 'Int',    name: 'count' },
     { class: 'Int',    name: 'exampleCount' },
     { class: 'Int',    name: 'errorCount' },
@@ -368,7 +376,7 @@ foam.CLASS({
       var self = this;
 
       async function load(section) {
-        self.testData += await fetch(section).then(response => response.text()).catch(x => { debugger; });
+        self.testData += await fetch(self.exampleRoot + section).then(response => response.text()).catch(x => { debugger; });
       }
 
       // Note that you can specify modules (like 'scratch') not listed in the module with the 'modules' URL parameter

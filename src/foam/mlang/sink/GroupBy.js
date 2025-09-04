@@ -12,6 +12,12 @@ foam.CLASS({
 
   documentation: 'Sink which behaves like the SQL group-by command.',
 
+  requires: [
+    'foam.dao.SequenceNumberDAO',
+    'foam.mlang.sink.GroupByView',
+    'foam.mlang.sink.Sequence'
+  ],
+
   // TODO: it makes no sense to name the arguments arg1 and arg2
   // because this isn't an expression, so they should be more meaningful
   properties: [
@@ -36,14 +42,28 @@ foam.CLASS({
       hidden: true,
       javaCloneProperty: '// noop',
       factory: function() { return {}; },
-      javaFactory: 'return new java.util.HashMap<Object, foam.dao.Sink>();'
+      javaFactory: 'return new java.util.HashMap<Object, foam.dao.Sink>();',
+      cloneProperty: function(value, cloneMap) {
+        if ( value ) {
+          var tmp = cloneMap[this.name] = {};
+          for ( var key in value ) {
+            /// Need to clone to get expressions to re-evaluate (since without it expressions gets saved)
+            tmp[key] = foam.util.clone(value[key]);
+          }
+        }
+      }
+    
     },
     {
       class: 'List',
       hidden: true,
       name: 'groupKeys',
       javaCloneProperty: '// noop',
-      transient: true,
+      // IMPORTANT: Not transient - must be serialized to preserve backend order
+      // JavaScript automatically sorts numeric string keys (e.g., "554", "036") 
+      // which breaks the intended display order from the backend.
+      // TopNGroupBy sets this explicitly to maintain value-sorted order (DESC/ASC by sum, count, etc.)
+      // Without this, JavaScript would reorder keys numerically instead of by their aggregate values.
       javaFactory: 'return new java.util.ArrayList(this.getGroups().keySet());',
       factory: function() { return Object.keys(this.groups); },
     },
@@ -56,6 +76,9 @@ foam.CLASS({
         // TODO: it would be good if it could also detect RelationshipJunction.sourceId/targetId
         return ! foam.lang.MultiPartID.isInstance(this.arg1);
       }
+    },
+    {
+      name: 'selection', hidden: true
     }
   ],
 
@@ -67,7 +90,13 @@ foam.CLASS({
       code: function sortedKeys(opt_comparator) {
         var a1 = this.arg1;
         // Use the property as a comparator but adapt to the correct type since number types will be stored as String values
-        this.groupKeys.sort(opt_comparator || ((o1,o2) => a1.comparePropertyValues(a1.adapt(null, o1, a1), a1.adapt(null, o2, a1))));
+        function safeAdapt(p, v) { return p.adapt ? p.adapt(null, v, p) : v; }
+
+        if ( a1.comparePropertyValues ) {
+          this.groupKeys.sort(opt_comparator || ((o1,o2) => a1.comparePropertyValues(safeAdapt(a1, o1), safeAdapt(a1, o2))));
+        } else {
+          this.groupKeys.sort();
+        }
         return this.groupKeys;
       },
       javaCode:
@@ -87,10 +116,10 @@ return getGroupKeys();`
       args: 'foam.lang.Detachable sub, Object key, Object obj',
       code: function putInGroup_(sub, key, obj) {
         var group = this.groups.hasOwnProperty(key) && this.groups[key];
+
         if ( ! group ) {
           group = this.arg2.clone();
-          if ( ! this.groupKeys.includes(key) )
-            this.groupKeys.push(key);
+          this.groupKeys = undefined;
           this.groups[key] = group;
         }
         group.put(obj, sub);
@@ -101,11 +130,11 @@ return getGroupKeys();`
  if ( group == null ) {
    group = (foam.dao.Sink) (((foam.lang.FObject)getArg2()).fclone());
    getGroups().put(key, group);
-   if ( ! this.getGroupKeys().contains(key) )
-     getGroupKeys().add(key);
+   clearGroupKeys();
  }
  group.put(obj, sub);`
     },
+
     function reset() {
       this.arg2.reset();
       this.groups    = undefined;
@@ -149,7 +178,27 @@ if ( getGroupLimit() == getGroups().size() && sub != null ) sub.detach();
 `
     },
 
-    function eof() { },
+    {
+      name: 'eof',
+      code: function() { 
+        // Call eof on all nested sinks to ensure they finalize their state
+        for ( var key in this.groups ) {
+          var nestedSink = this.groups[key];
+          if ( nestedSink && nestedSink.eof ) {
+            nestedSink.eof();
+          }
+        }
+      },
+      javaCode: `
+// Call eof on all nested sinks to ensure they finalize their state
+for (Object key : getGroups().keySet()) {
+  foam.dao.Sink nestedSink = (foam.dao.Sink) getGroups().get(key);
+  if (nestedSink != null) {
+    nestedSink.eof();
+  }
+}
+      `
+    },
 
     {
       name: 'toString',
@@ -166,13 +215,102 @@ if ( getGroupLimit() == getGroups().size() && sub != null ) sub.detach();
     },
 
     function addToE(e) {
+      e.tag(this.GroupByView, {data: this, selection$: this.selection$});
+    },
+
+    function merge(other, opt_reducer) {
+      return this.cls_.create({
+        arg1: this.arg1,
+        arg2: this.arg2,
+        groups: this.mergeMaps(this.groups, other.groups, opt_reducer)
+      });
+    },
+
+    function mergeMaps(m1, m2, opt_reducer) {
+      var map = {};
+      Object.keys(m1).forEach(k => map[k] = true);
+      Object.keys(m2).forEach(k => map[k] = true);
+      Object.keys(map).forEach(k => {
+        var v1 = m1[k];
+        var v2 = m2[k];
+        map[k] = opt_reducer ? opt_reducer(v1, v2) : this.reduce(v1, v2);
+      });
+      return map;
+    },
+
+    function reduce(v1, v2) {
+      // TODO: handle when one is undefined
+      return this.Sequence.create({horizontal: true, args: [ v1, v2 ]});
+    },
+
+    function genModel() {
+      // Get name and label from the expression, with fallbacks
+      var exprName = this.arg1.name || this.arg1.delegate.name || 'group';
+      var exprLabel = this.arg1.label || foam.String.labelize(this.arg1.delegate.name) || 'Group';
+      
+      const model = {
+        package: 'foam.tmp',
+        name: 'GroupBy' + foam.next$UID(),
+        ids: [ 'row' ],
+        properties: [
+          { class: 'Long', name: 'row' },
+          { class: 'String', name: exprName, label: exprLabel }
+        ]
+      };
+
+      model.plural = model.name;
+      var props = this.arg2.toProperties ? this.arg2.toProperties() : this.arg2.VALUE ? [ this.arg2.VALUE ] : [];
+      model.properties.push.apply(model.properties, props);
+
+      return model;
+    },
+
+    function asDAO() {
+      const model = this.genModel();
+      foam.CLASS(model);
+      var cls = foam.lookup('foam.tmp.' + model.name);
+
+      // So that tableColumns aren't remembered from a previous run
+      delete localStorage[cls.id];
+
+      var props  = model.properties.slice(1).map(p => cls.getAxiomByName(p.name));
+      var dao    = foam.dao.MDAO.create({of: cls});
+      dao = this.SequenceNumberDAO.create({delegate: dao, property: 'row'});
+
+      var o = cls.create({});
+
+      this.processGroupValue(dao, o, props);
+
+      return dao;
+    },
+
+    function toProperties() {
+      return this.genModel().properties.slice(1);
+    },
+
+    function processGroupValue(dao, proto, props) {
       var groups = this.groups;
-      e.start('table').start('tbody').
-        forEach(this.sortedKeys(), function(g) {
-          this.start('tr').
-            start('td').add(g.toString()).end().
-            start('td').add(groups[g]);
-        });
+
+      var ID = props[0];
+
+      props = props.slice(1);
+
+      this.groupKeys.forEach(k => {
+        var group = groups[k];
+
+        var o = proto.clone();
+        ID.set(o, k);
+
+        if ( group.processGroupValue ) {
+          group.processGroupValue(dao, o, props);
+        } else if ( this.arg2.setPropertyValues ) {
+          this.arg2.setPropertyValues(o, groups[k], props);
+          dao.put(o);
+        } else {
+          o.value = groups[k].value;
+          dao.put(o);
+        }
+      });
     }
   ]
 });

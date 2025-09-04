@@ -8,25 +8,6 @@ p({
   "loginEnabled":false
 })
 p({
-  "class":"foam.core.auth.User",
-  "id":42,
-  "spid":"foam",
-  "lifecycleState":1,
-  "group":"system",
-  "firstName":"foam",
-  "middleName":"",
-  "lastName":"admin",
-  "email":"admin@foam-framwork.google.com",
-  "userName":"foam-admin",
-  "birthday":"1982-07-07T23:12:00.0Z",
-  "address":{"class":"foam.core.auth.Address","type":"","verified":false,"deleted":false,"structured":true,"address1":"","address2":"","suite":"300","city":"Toronto","postalCode":"M6G2H3","countryId":"CA","regionId":"ON","encrypted":false,"latitude":43.68018341064453,"longitude":-79.4206314086914,"streetNumber":"","streetName":"","hours":[{"class":"foam.time.Hours","day":0,"open":true},{"class":"foam.time.Hours","day":1,"open":true},{"class":"foam.time.Hours","day":2,"open":true},{"class":"foam.time.Hours","day":3,"open":true},{"class":"foam.time.Hours","day":4,"open":true},{"class":"foam.time.Hours","day":5,"open":true},{"class":"foam.time.Hours","day":6,"open":true}]},
-  "password":"yg2XT+KZBJk=:BljmCGq/fGkvm1POBiEJdzrMn2oEQSqsLK3OHKwvGmnaf99FrlJ7HZPtzeaXus2kHHyRUZU8iOHD8y5tB/AkWg==",
-  "emailVerified":true,
-  "compliance":1,
-  "onboarded":true,
-  "loginEnabled":true
-})
-p({
   class:"foam.core.auth.User",
   id:95250647,
   spid:"foam",
@@ -45,4 +26,20 @@ p({
   createdByAgent:1,
   compliance:2,
   isPublic: false
+})
+p({
+  "class":"foam.core.auth.User",
+  "id":42,
+  "spid":"foam",
+  "lifecycleState":1,
+  "group":"system",
+  "firstName":"foam",
+  "middleName":"",
+  "lastName":"admin",
+  "email":"admin@foamdev.com",
+  "userName":"foam-admin",
+  "birthday":"1982-07-07T23:12:00.0Z",
+  "password":"",
+  "emailVerified":true,
+  "loginEnabled":false
 })

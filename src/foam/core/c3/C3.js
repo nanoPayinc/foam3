@@ -12,8 +12,8 @@ foam.CLASS({
   css: `
     ^ { background: gray; padding: 10px; display: inline-block; }
     ^title { padding: 6px; align-content: center; background: aliceblue; }
-    ^footer { padding: 6px; align-content: left; background:$white; }
-    ^content { padding: 6px; width: 800px; height: 600px; background:$white; }
+    ^footer { padding: 6px; align-content: left; background:$backgroundDefault; }
+    ^content { padding: 6px; width: 800px; height: 600px; background:$backgroundDefault; }
   `,
 
   properties: [
@@ -140,7 +140,6 @@ foam.CLASS({
   extends: 'foam.u2.Controller',
 
   implements: [
-    'foam.box.Context',
     'foam.mlang.Expressions'
   ],
 

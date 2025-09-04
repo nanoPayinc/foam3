@@ -61,7 +61,7 @@ foam.CLASS({
       this
         .addClass()
         .addClass(this.myClass('operand'))
-        .add(this.data$.map(data => '' + data.toString()))
+        .add(this.data$.map(data => '' + data?.toString() ?? 'null'))
     }
   ]
 });
@@ -140,7 +140,7 @@ foam.CLASS({
                 .end();
             })
             .tag(this.ExprView, {
-              of: arg.cls_,
+              of: arg?.cls_,
               data: arg
             })
         })

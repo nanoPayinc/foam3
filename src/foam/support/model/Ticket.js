@@ -17,16 +17,18 @@ foam.CLASS({
   tableColumns: [
     'id', 'requestorEmail', 'subject', 'createdAt', 'status'
   ],
+
   exports: [
     'subject'
   ],
+
   properties: [
     {
       class: 'Long',
       name: 'id',
       visibility: 'RO',
       label:'Ticket ID'
-    }, 
+    },
     {
       class: 'String',
       name: 'requestorEmail'

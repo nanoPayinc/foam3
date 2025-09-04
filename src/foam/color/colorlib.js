@@ -186,6 +186,15 @@ foam.LIB({
         components = str.match(/../g).map(v => parseInt(v, 16));
       } else if ( str.startsWith('rgb') ) {
         components = str.substring(str.startsWith('rgba') ? 5 : 4, str.length-1).split(',');
+      } else if ( str.startsWith('hsl') ) {
+        // TODO: doesnt support relative HSL i.e. hsl(from....)
+        str = str.substring(str.startsWith('hsla') ? 5 : 4, str.length-1);
+        if ( str.indexOf(',') != -1 ) {
+          components = str.split(',');
+        } else {
+          components = str.split(' ').filter(v => v != '/')
+        }
+        components = foam.Color.hslToRgb(components);
       }
 
       return {
@@ -206,25 +215,10 @@ foam.LIB({
 
       return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
     },
-    
-    function getBestForeground(str, black, white) {
-      with ( foam.Color.parse(str) ) {
-        return red*0.299 + green*0.587 + blue*0.114 > 186 ? black : white;
-      }
-    },
 
-    function lighten(str, value) {
-      colorObj = foam.Color.parse(str);
-      var [r, g, b] = [colorObj.red, colorObj.green, colorObj.blue];
-      let l = foam.Color.rgbToGrey([r, g, b])*1000;
-      let scale;
-      if ( l > 186 ) {
-       scale = l + (l*(value/100));
-      } else {
-        scale = l - (l*(value/100));
-      }
-      var [r, g, b] = foam.Color.adjustRGBBrightness([r, g, b], scale/1000);
-      return `rgb(${r.toFixed(4)},${g.toFixed(4)},${b.toFixed(4)})`;
+    function rgbToGrey(rgb /*[0..255,0.255,0.255]*/) /* -> 0..1 */ {
+      var [r, g, b] = rgb;
+      return 0.299 * r/255 + 0.587 * g/255 + 0.114 * b/255;
     },
 
     function rgbToHsl(r, g, b) {
@@ -251,6 +245,69 @@ foam.LIB({
       return  [Math.floor(h * 360), Math.floor(s * 100), Math.floor(l * 100)];
     },
 
+    function hslToRgb(args){
+        let [h,s,l,a] = args
+        var r, g, b;
+        // Normalize arguments
+        function percentageToDecimal(percentageString) {
+          if ( typeof percentageString !== 'string' ) {
+            return percentageString;
+          } else if ( ! percentageString.indexOf('%') ) {
+            return Number(percentageString)
+          }
+          const numericalPart = percentageString.slice(0, -1);
+          return parseFloat(numericalPart) / 100;
+        }
+        s = percentageToDecimal(s);
+        l = percentageToDecimal(l)
+
+        if ( typeof h == 'string' && h.indexOf('deg') != -1 ) 
+          h = Number(h.slice(0, h.indexOf('deg')));
+
+        if ( s == 0 ) {
+            r = g = b = l; // achromatic
+        } else {
+            var hueToRGB = function(p, q, t){
+              if( t < 0 ) t += 1;
+              if( t > 1 ) t -= 1;
+              if( t < 1/6 ) return p + (q - p) * 6 * t;
+              if( t < 1/2 ) return q;
+              if( t < 2/3 ) return p + (q - p) * (2/3 - t) * 6;
+              return p;
+            }
+
+            var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            var p = 2 * l - q;
+            r = hueToRGB(p, q, h + 1/3);
+            g = hueToRGB(p, q, h);
+            b = hueToRGB(p, q, h - 1/3);
+        }
+
+        return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255), a];
+    },
+    
+    function getBestForeground(str, black, white) {
+      with ( foam.Color.parse(str) ) {
+        return red*0.299 + green*0.587 + blue*0.114 > 186 ? black : white;
+      }
+    },
+
+    function lighten(str, value) {
+      colorObj = foam.Color.parse(str);
+      var [r, g, b] = [colorObj.red, colorObj.green, colorObj.blue];
+      let l = foam.Color.rgbToGrey([r, g, b])*1000;
+      let scale;
+      l = Math.max(150, l);
+      if ( l > 200 ) {
+       scale = l + (l*(value/100));
+      } else {
+        scale = l - (l*(value/100));
+      }
+      var [r, g, b] = foam.Color.adjustRGBBrightness([r, g, b], scale/1000);
+      return `rgb(${r.toFixed(4)},${g.toFixed(4)},${b.toFixed(4)})`;
+    },
+
+   
     function fromHue(str, s, l) {
       // TODO: Fine for now but we need to normalise green/yellow hues
       // becuase they seem lighter than everything else
@@ -260,9 +317,11 @@ foam.LIB({
       return `hsl(${h} ${s}% ${l}%)`;
     },
 
-    function rgbToGrey(rgb /*[0..255,0.255,0.255]*/) /* -> 0..1 */ {
-      var [r, g, b] = rgb;
-      return 0.299 * r/255 + 0.587 * g/255 + 0.114 * b/255;
+    function adjustAlpha(str, desiredOpacity /*0-1*/) {
+      colorObj = foam.Color.parse(str);
+      var [r, g, b, a] = [colorObj.red, colorObj.green, colorObj.blue].map(v => Math.floor(v));
+      var [h, s, l] = foam.Color.rgbToHsl(r, g, b);
+      return `hsla(${h} ${s}% ${l}% / ${desiredOpacity})`;
     },
 
     function adjustRGBBrightness(rgb /*[0..255,0.255,0.255]*/, desired/*0..1*/) {

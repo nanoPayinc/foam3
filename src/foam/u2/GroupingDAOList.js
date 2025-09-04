@@ -36,7 +36,7 @@ foam.CLASS({
       padding: 32px 24px;
     }
     ^group-title {
-      color: $black;
+      color: $textDefault;
       margin-bottom: 24px;
     }
     ^row + ^row{

@@ -24,12 +24,14 @@ foam.CLASS({
     'foam.lang.Detachable',
     'foam.lang.FObject',
     'foam.dao.index.AddIndexCommand',
+    'static foam.mlang.MLang.COUNT',
     'foam.mlang.sink.Count',
     'foam.mlang.predicate.Predicate',
     'foam.mlang.predicate.True',
     'foam.core.logger.Logger',
     'foam.core.logger.Loggers',
     'foam.core.pm.PM',
+    'java.util.concurrent.TimeUnit',
     'foam.util.concurrent.AbstractAssembly',
     'foam.util.concurrent.AssemblyLine',
     'foam.util.concurrent.AsyncAssemblyLine'
@@ -130,7 +132,7 @@ foam.CLASS({
       class: 'String',
       name: 'permissionPrefix',
       javaFactory: `
-      return getSourceDAO().getOf().getObjClass().getSimpleName().toLowerCase();
+      return getSourceDAO().getOf().getSimpleName().toLowerCase();
      `
     },
     {
@@ -162,6 +164,16 @@ foam.CLASS({
       name: 'observedDAOs',
       documentation: 'A list of DAOs that will be listened to',
       javaFactory: 'return getAdapter().getObservedDAOs();'
+    },
+    {
+      class: 'Object',
+      name: 'thread',
+      javaType: 'Thread'
+    },
+    {
+      class: 'String',
+      name: 'instanceName',
+      javaFactory: 'return "MaterializedDAO-" + getSourceDAO().getOf().getSimpleName() + "-" + getDelegate().getOf().getSimpleName();'
     }
   ],
 
@@ -171,23 +183,30 @@ foam.CLASS({
       javaType: 'void',
       synchronized: true,
       javaCode: `
-        if ( getInitialized() ) return;
+        if ( getInitialized() )
+          return;
 
-        Logger logger = Loggers.logger(getX(), this, getSourceDAO().getOf().getObjClass().getSimpleName(), "start");
+        Logger logger = Loggers.logger(getX(), this, getInstanceName());
         logger.info("initializing");
 
         setInitialized(true);
 
-        Thread t = new Thread(this);
-        t.setName("MaterializedDAO Processor: " + getDelegate());
-        t.setDaemon(true);
-        t.start();
+        startThread();
 
         // Could take a long time
-        PM pm = new PM("MaterializedDAO", "initializing", getSourceDAO().getOf().getObjClass().getSimpleName());
+        PM pm = new PM("MaterializedDAO", "initializing", getSourceDAO().getOf().getSimpleName());
+
         AddIndexCommand cmd = new AddIndexCommand();
+        Count count = (Count) getDelegate().select(COUNT());
+        logger.info("maybeInit, count", count.getValue());
+        if ( count.getValue() > 0 ) {
+          // If delegate is already populated then skip bulkloading
+          // on index creation.
+          cmd.setStore(true);
+        }
         cmd.setIndex(new MaterializedDAOIndex(this));
         getSourceDAO().cmd(cmd);
+
         pm.log(getX());
         logger.info("initialized");
 
@@ -234,7 +253,6 @@ foam.CLASS({
         return this;
       `
     },
-
     {
       name: 'indexRemove',
       type: 'Object',
@@ -267,8 +285,17 @@ foam.CLASS({
         foam.lang.XLocator.set(getX());
         while ( true ) {
           try {
-            process((Object[]) getQueue().take());
-          } catch (InterruptedException e) {}
+            Object[] ret = (Object[]) getQueue().poll(10, TimeUnit.SECONDS);
+            if ( ret != null ) {
+              process(ret);
+            }
+          } catch (InterruptedException e) {
+            // stop method can terminate current thread.
+            Loggers.logger(getX(), this).warning("run,interrupted", Thread.currentThread().getId());
+            break;
+          } catch ( Throwable t ) {
+            Loggers.logger(getX(), this).error("run,failed to consume", Thread.currentThread().getId());
+          }
         }
       `
     },
@@ -300,7 +327,36 @@ foam.CLASS({
     },
     {
       name: 'start',
-      javaCode: 'if ( getAutoStart() ) maybeInit();'
+      javaCode: `
+        if ( getAutoStart() )
+          maybeInit();
+      `
+    },
+    {
+      name: 'startThread',
+      javaCode: `
+        Thread t = new Thread(this);
+        t.setName(getInstanceName());
+        t.setDaemon(true);
+        t.start();
+        setThread(t);
+      `
+    },
+    {
+      name: 'stop',
+      javaCode: `
+        if ( getThread() != null ) {
+          getThread().interrupt();
+          setThread(null);
+        }
+      `
+    },
+    {
+      name: 'reload',
+      javaCode: `
+        stop();
+        startThread();
+      `
     }
   ]
 });

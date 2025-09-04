@@ -13,7 +13,7 @@ foam.CLASS({
 
   documentation: `Provides the ability to switch between multiple views for a data set.
     Takes a views property which should be the value of an array containing arrays that contain desired views, and label.
-    Ex. views: [[ { class: 'foam.u2.view.TableView' }, 'Table' ]]`,
+    Ex. views: [[ { class: 'foam.u2.table.TableView' }, 'Table' ]]`,
 
   requires: [ 'foam.u2.view.RadioView' ],
 

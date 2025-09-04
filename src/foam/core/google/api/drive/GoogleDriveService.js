@@ -19,6 +19,7 @@ foam.CLASS({
     'com.google.api.services.drive.model.File',
     'com.google.api.services.drive.model.FileList',
 
+    'foam.core.app.AppConfig',
     'foam.core.google.api.auth.GoogleApiAuthService',
 
     'java.io.IOException',
@@ -61,7 +62,7 @@ foam.CLASS({
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         GoogleApiAuthService googleApiAuthService = (GoogleApiAuthService)getX().get("googleApiAuthService");
         Drive service = new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY,  googleApiAuthService.getCredentials(x, HTTP_TRANSPORT, SCOPES))
-          .setApplicationName("nanopay")
+          .setApplicationName(((AppConfig) x.get("appConfig")).getName())
           .build();
     
         service.files().delete(fileId).execute();
@@ -88,7 +89,7 @@ foam.CLASS({
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         GoogleApiAuthService googleApiAuthService = (GoogleApiAuthService)getX().get("googleApiAuthService");
         Drive service = new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY,  googleApiAuthService.addHttpTimeout(googleApiAuthService.getCredentials(x, HTTP_TRANSPORT, SCOPES)))
-          .setApplicationName("nanopay")
+          .setApplicationName(((AppConfig) x.get("appConfig")).getName())
           .build();
         FileList result = service.files().list()
           .setQ("mimeType = 'application/vnd.google-apps.folder' and name = '" + folderName + "'")
@@ -134,7 +135,7 @@ foam.CLASS({
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         GoogleApiAuthService googleApiAuthService = (GoogleApiAuthService)getX().get("googleApiAuthService");
         Drive service = new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY,  googleApiAuthService.addHttpTimeout(googleApiAuthService.getCredentials(x, HTTP_TRANSPORT, SCOPES)))
-          .setApplicationName("nanopay")
+          .setApplicationName(((AppConfig) x.get("appConfig")).getName())
           .build();
         File fileMetadata = new File();
         fileMetadata.setName(title);
@@ -179,7 +180,7 @@ foam.CLASS({
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         GoogleApiAuthService googleApiAuthService = (GoogleApiAuthService)getX().get("googleApiAuthService");
         Drive service = new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY,  googleApiAuthService.getCredentials(x, HTTP_TRANSPORT, SCOPES))
-          .setApplicationName("nanopay")
+          .setApplicationName(((AppConfig) x.get("appConfig")).getName())
           .build();
         File fileMetadata = new File();
         fileMetadata.setName(title);

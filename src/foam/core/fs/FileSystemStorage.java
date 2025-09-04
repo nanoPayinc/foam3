@@ -42,7 +42,6 @@ public class FileSystemStorage
   }
 
   public BasicFileAttributes getFileAttributes(String name) {
-
     try {
       Path file = this.getPath(name);
       BasicFileAttributes attr =

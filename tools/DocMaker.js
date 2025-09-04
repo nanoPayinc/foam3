@@ -7,25 +7,24 @@
 exports.description = 'copies .flow files into /build/documents';
 
 const fs_                                 = require('fs');
-const { copyFile, ensureDir, isExcluded } = require('./buildlib');
 
 const documentFiles = [];
 
 exports.init = function() {
-  X.documentdir = X.builddir + '/documents/';
-  ensureDir(X.documentdir);
+  X.documentdir = X.documentdir || (X.builddir + '/documents');
+  this.ensureDir(X.documentdir);
 }
 
 
 exports.visitFile = function(pom, f, fn) {
   if ( f.name.endsWith('.flow') ) {
-    if ( ! isExcluded(pom, fn) ) {
-      verbose('\t\tdocument source:', fn);
+    if ( ! this.isExcluded(pom, fn) ) {
+      this.verbose('\t\tdocument source:', fn);
 
       var i            = fn.lastIndexOf('/');
       var documentName = fn.substring(i+1);
 
-      copyFile(fn, X.documentdir + documentName);
+      this.copyFile(fn, X.documentdir + '/' + documentName);
       documentFiles.push(fn);
     }
   }
@@ -33,5 +32,5 @@ exports.visitFile = function(pom, f, fn) {
 
 
 exports.end = function() {
-  console.log(`[Doc Maker] Copied ${documentFiles.length} flow document files to ${X.documentdir}.`);
+  this.log(`[Doc Maker] Copied ${documentFiles.length} flow document files to ${X.documentdir}.`);
 }

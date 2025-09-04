@@ -49,6 +49,14 @@ foam.CLASS({
   axioms: [
     {
       class: 'foam.comics.v2.CannedQuery',
+      name: 'All',
+      label: 'All',
+      predicateFactory: function(e, cls) {
+        return e.TRUE;
+      }
+    },
+    {
+      class: 'foam.comics.v2.CannedQuery',
       name: 'DAOS',
       label: 'DAOs',
       predicateFactory: function(e, cls) {

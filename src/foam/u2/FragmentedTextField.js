@@ -38,10 +38,10 @@ foam.CLASS({
       width: 0px;
     }
     ^fragment:invalid {
-      background: $grey50;
+      background: $backgroundSecondary;
     }
     ^fragment:valid {
-      background: $white;
+      background: $backgroundDefault;
     }
     ^fragment::-webkit-outer-spin-button,
     ^fragment::-webkit-inner-spin-button {

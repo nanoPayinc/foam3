@@ -5,7 +5,7 @@
  */
 
 foam.CLASS({
-  package: 'foam.core.console',
+  package: 'foam.core.reflow',
   name: 'PropertyRefinement',
   refines: 'Property',
 
@@ -44,6 +44,10 @@ foam.CLASS({
         this.graphColors = keys.map((k,i) => {
           var c = this.arg1?.colorMap[k] ;
           if ( c ) return c;
+          if ( foam.lang.Enum.isInstance(this.arg1) ) {
+            var color = this.arg1.of[k].color;
+            if ( color ) return color;
+          }
           return this.hsl(i/(l+1)*360, 90, 50);
         });
         var seriesValues = Object.values(groups).map(sink => sink.value);

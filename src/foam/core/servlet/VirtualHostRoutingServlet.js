@@ -136,7 +136,7 @@ foam.CLASS({
           out.println("<script async fetchpriority='high' language='javascript' type='text/javascript' src='/foam-bin-"+appConfig.getVersion()+".js' ></script>");
         } else {
           // development
-          out.println("<script language=\\"javascript\\" src=\\"" + appConfig.getFoamUrl() + "\\" project=\\"" + appConfig.getPom() + "\\"></script>");
+          out.println("<script language=\\"javascript\\" src=\\"" + appConfig.getFoamUrl() + "\\" project=\\"" + appConfig.getPom() + "\\" flags=\\"" + appConfig.getFlags() + "\\"></script>");
         }
       }
 
@@ -251,7 +251,7 @@ foam.CLASS({
         out.print(theme.getAppName());
         out.println("\\" bootservices=\\"" + getBootservices() + "\\">");
 
-        out.print("<div style=\\" text-align:center;height:100%;display: flex;vertical-align:middle;width: 100%;flex-direction: column;justify-content: center;align-items: center; \\">");
+        out.print("<div style=\\" background: black; color:white;text-align:center;height:100%;display: flex;vertical-align:middle;width: 100%;flex-direction: column;justify-content: center;align-items: center; \\">");
         out.print("<img style=\\" max-width: 400px; \\" src=\\"");
         out.print(theme.getLargeLogo());
         out.println("\\"></img>");

@@ -6,39 +6,46 @@
 
 // JavacMaker
 
+// NOTE: JavaMaker and JavacMaker shared data through X, they must
+// be run in the same pmake call.
+
+const fs_   = require('fs');
+const path_ = require('path');
+
 exports.description = 'create /build/javacfiles file containing list of modified or static .java files, call javac';
 
 exports.args = [
   {
     name: 'javacParams',
     description: 'parameters to pass to javac',
-    value: '-proc:none'
+    factory: () => X.javacParams || '-proc:none'
+  },
+  {
+    name: 'libdir',
+    description: 'location to write generated .java files, default: {builddir}/lib',
+    factory: () => path_.resolve(path_.normalize(X.libdir || (X.builddir + '/lib')))
   }
 ];
 
-
-const fs_                                         = require('fs');
-const { execSync, isExcluded, adaptOrCreateArgs } = require('./buildlib');
-
 exports.init = function() {
-  adaptOrCreateArgs(X, exports.args);
+  this.verbose('[Javac] init');
+  this.adaptOrCreateArgs(X, exports.args);
+  this.ensureDir(X.libdir);
 
   X.javaFiles = [];
 }
 
-
-exports.visitFile = function(pom, f, fn) {
-  if ( f.name.endsWith('.java') ) {
-    if ( ! isExcluded(pom, fn) ) {
-      verbose('\t\tjava source:', fn);
-      X.javaFiles.push(fn);
-    }
-  }
+exports.visitPOM = function(pom) {
+  var self = this;
+  foam.checkFiles(pom.javaFiles, function(f) {
+    let path = path_.resolve(foam.cwd, f.name + '.java');
+    self.verbose('[Javac] include', path);
+    X.javaFiles.push(path);
+  });
 }
 
-
 exports.end = function() {
-  console.log(`[Javac] END ${X.javaFiles.length} Java files`);
+  this.log(`[Javac] END ${X.javaFiles.length} Java files`);
 
   // Filter out files that aren't newer than their corresponding .class file
   X.javaFiles = X.javaFiles.filter(f => {
@@ -60,13 +67,13 @@ exports.end = function() {
 
     var cmd = `javac -parameters ${X.javacParams} -d ${X.d} -classpath "${X.d}:${X.libdir}/*" @${X.builddir}/javacfiles`;
 
-    console.log('[Javac] Compiling', X.javaFiles.length ,'java files:', cmd);
+    this.log('[Javac] Compiling', X.javaFiles.length ,'java files:', cmd);
     try {
-      execSync(cmd, {stdio: 'inherit'});
+      this.execSync(cmd, {stdio: SILENT ? 'ignore' : 'inherit'});
     } catch(x) {
       process.exit(1);
     }
   } else {
-    console.log('[Javac] No Updates');
+    this.log('[Javac] No Updates');
   }
 }

@@ -51,7 +51,7 @@ foam.CLASS({
       align-items: center;
       background: $destructive400;
       border-radius: 50%;
-      color: $white;
+      color: $textOnInverse;
       display: flex;
       height: 15px;
       justify-content: center;
@@ -69,7 +69,7 @@ foam.CLASS({
     ^svgIcon svg {
       aspect-ratio: 1;
       width: 1.15em;
-      fill: $grey500;
+      fill: $textTertiary;
     }
   `,
 

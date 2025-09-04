@@ -54,15 +54,18 @@ foam.CLASS({
     {
       class: 'String',
       name: 'name',
-      label: 'name'
+      tableCellFormatter: function(value) {
+        if ( ! value ) return;
+        this.style({ 'font-weight': '600' }).add(value);
+      }
     },
     {
       class: 'Date',
       name: 'startDate',
       columnLabel: 'Start on',
       gridColumns: 12,
+      factory: function() { return new Date(); },
       validateObj: function(startDate) {
-
         if ( ! startDate ) return this.INVALID_DATE_ERROR;
         // check against current date
         var isToday = (new Date()).toDateString() === startDate.toDateString();
@@ -91,6 +94,7 @@ foam.CLASS({
       name: 'repeat',
       label: 'Repeat Every',
       gridColumns: 6,
+      value: 1,
       min: 0,
       postSet: function(_, n) {
         if ( n === 0 ) {
@@ -119,7 +123,7 @@ foam.CLASS({
       class: 'Enum',
       of: 'foam.time.TimeUnit',
       name: 'frequency',
-      label: 'Frequency',
+      value: 'DAY',
       view: function(_, X) {
         var arr = ['Day', 'Week', 'Month', 'Year'];
         var choices = X.data.typeOfLabel$.map(type => {
@@ -288,7 +292,6 @@ foam.CLASS({
       class: 'Enum',
       of: 'foam.core.cron.ScheduleEnd',
       name: 'ends',
-      label: 'Ends',
       gridColumns: 6,
       hidden: true,
       visibility: function(repeat) {
@@ -357,7 +360,7 @@ foam.CLASS({
           } else if ( i == 1 ) {
             ordinal = 'second';
           }
-          value += `Your ${ordinal} scheduled deposit is on ${obj.formatDate(nextDates[i])}.`;
+          value += `Your ${ordinal} scheduled transaction is on ${obj.formatDate(nextDates[i])}.`;
           value += '\n';
         }
         this.addClass('p-label', 'note').add(value);

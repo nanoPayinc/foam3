@@ -795,10 +795,11 @@ foam.CLASS({
     },
 
     function toE(args, X) {
-      return this.Canvas.create({ cview: this }, X).attrs({
-        width:  this.slot(function(x, width,  scaleX) { return x + width*scaleX; }),
-        height: this.slot(function(y, height, scaleY) { return y + height*scaleY; })
-      });
+      return this.Canvas.create({
+        cview: this,
+        width$:  this.slot(function(x, width,  scaleX) { return x + width*scaleX; }),
+        height$: this.slot(function(y, height, scaleY) { return y + height*scaleY; })
+      }, X);
     },
 
     function intersects(c) {
@@ -1153,10 +1154,11 @@ foam.CLASS({
     },
 
     function toE(args, X) {
-      return this.Canvas.create({ cview: this }, X).attrs({
-        width:  this.x + this.radius + this.arcWidth,
-        height: this.y + this.radius + this.arcWidth
-      });
+      return this.Canvas.create({
+        cview: this,
+        width$:  this.slot(function(x, radius, arcWidth, scaleX) { return x + (radius + arcWidth)*scaleX; }),
+        height$: this.slot(function(y, radius, arcWidth, scaleY) { return y + (radius + arcWidth)*scaleY; })
+      }, X);
     }
   ]
 });
@@ -1386,13 +1388,23 @@ foam.CLASS({
     'foam.input.Pointer'
   ],
 
+  imports: [
+    'window'
+  ],
+
   properties: [
     [ 'nodeName', 'CANVAS' ],
+    'width',
+    'height',
     {
       name: 'context',
       factory: function() {
         return this.el_().getContext('2d');
       }
+    },
+    {
+      name: 'devicePixelRatio',
+      factory: function() { return this.window.devicePixelRatio; }
     },
     {
       name: 'context3D',
@@ -1404,12 +1416,6 @@ foam.CLASS({
       name: 'cview',
       postSet: function(o, n) {
         n.canvas = this;
-
-        if ( this.getAttribute('width') === undefined || this.getAttribute('height') === undefined ) {
-          this.setAttribute('width',  n.width);
-          this.setAttribute('height', n.height);
-        }
-
         this.paint();
       }
     },
@@ -1424,8 +1430,33 @@ foam.CLASS({
   methods: [
     function render() {
       this.SUPER();
+
+      // Set canvas width/height in css pixels
+      this.style({
+        width: this.width$,
+        height: this.height$
+      });
+
+      // internal width/height in device pixels (css pixels * device pixel ratio)
+      this.attrs({
+        width: this.slot(function(devicePixelRatio, width) { return width * devicePixelRatio; }),
+        height: this.slot(function(devicePixelRatio, height) { return height * devicePixelRatio; })
+      });
+
+      const mqString = `(resolution: ${window.devicePixelRatio}dppx)`;
+      const media = matchMedia(mqString);
+      const callback = () => {
+        this.devicePixelRatio = window.devicePixelRatio;
+      };
+
+      media.addEventListener("change", callback);
+      this.onDetach(() => {
+        media.removeEventListener("change", callback);
+      });
+      
       this.sub('onload', this.paint);
       this.cview$.valueSub('invalidated', this.paint);
+      this.devicePixelRatio$.sub(this.paint);
     },
 
     function erase() {
@@ -1446,6 +1477,7 @@ foam.CLASS({
         if ( this.cview.paint3D ) {
           this.cview.paint3D(ctx);
         } else {
+          ctx.scale(this.devicePixelRatio, this.devicePixelRatio);
           this.cview.paint(ctx);
         }
       }

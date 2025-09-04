@@ -15,6 +15,7 @@ foam.CLASS({
       name: 'LabelView',
       extends: 'foam.u2.view.TreeViewRow.LabelView',
       css: `
+   
         ^select-level {
           justify-content: flex-start;
           gap: 8px;
@@ -26,35 +27,49 @@ foam.CLASS({
           let row = this.row;
           let self = this;
           this.
-          addClass(self.myClass('select-level')).
-          start(self.Image, { glyph: 'next' }).
-          addClass(self.myClass('toggle-icon')).
-          style({ 'transform': 'rotate(180deg)' }).
-          end().
-          callIfElse(row.rowConfig?.[row.data.id],
-            function() {
-              this.tag(row.rowConfig[row.data.id]);
-            },
-            function() {
-              this.start().
-                addClass('p-semiBold').
-                addClass(self.myClass('label')).
-                call(row.formatter, [row.data]).
-              end();
-            }
-          );
+             addClass(self.myClass('select-level'))
+            .start(self.Image, { glyph: 'next' })
+            .addClass(self.myClass('toggle-icon'))
+            .style({ 'transform': 'rotate(180deg)' })
+            .end()
+            .callIfElse(row.rowConfig?.[row.data.id],
+              function() {
+                this.tag(row.rowConfig[row.data.id]);
+              },
+              function() {
+                this.start()
+                  .addClass('p-semiBold')
+                  .addClass(self.myClass('label'))
+                  .call(row.formatter, [row.data])
+                .end();
+              }
+            );
         }
       ]
     }
   ],
+
   methods: [
     function render() {
-      var self = this;
+      var self        = this;
       var labelString = this.data.label;
+
       if ( this.translationService ) {
         labelString = self.translationService.getTranslation(foam.locale, self.data.label, self.data.label);
       }
+
+      // Check if handler has a custom row view
+      if ( this.data.createRowView ) {
+        this.start()
+          .style({
+            'padding-left': (((self.level - 1) * 16) + 'px')
+          })
+          .tag(this.data.createRowView(this.__context__, this.data))
+        .end();
+        return;
+      }
         
+      // Regular menu item rendering
       this.
         addClass(this.myClass()).
         enableClass(this.myClass('selected'), this.selected_$).
@@ -142,7 +157,7 @@ foam.CLASS({
               self.selection = obj;
               isFirstSet = true;
             }
-            return this.E().tag({
+            let t = {
               class:        foam.u2.view.TreeViewRow,
               data:         obj,
               relationship: self.relationship,
@@ -152,7 +167,12 @@ foam.CLASS({
               // Unless specified, stop nesting after one level
               onClickAddOn: this.continueNesting || ! currentRoot ? self.onClickAddOn1 : self.onClickAddOn,
               level:        1
-            });
+            }
+            if ( this.U3 ) {
+              this.tag(t);
+            } else {
+              return this.E().tag(t);
+            }
           });
         }));
     }

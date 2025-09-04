@@ -68,7 +68,7 @@ foam.CLASS({
           } else if ( l.match(this.REGEX) ) {
             // Jira Ticket
             // TODO: make this configurable
-            this.start('a').attrs({href: 'https://nanopay.atlassian.net/browse/' + l.substring(1,l.length-1)}).add(l).end();
+            this.start('a').attrs({href: 'https://your-company.atlassian.net/browse/' + l.substring(1,l.length-1)}).add(l).end();
           } else {
             this.add(l);
           }

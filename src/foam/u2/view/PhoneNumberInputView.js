@@ -64,6 +64,10 @@ foam.CLASS({
       }
     },
     {
+      name: 'countrySelectionVisibility',
+      value: 'RW'
+    },
+    {
       class: 'String',
       name: 'localPhoneNumber',
       view: { class: 'foam.u2.TextField', type: 'tel' }
@@ -79,11 +83,13 @@ foam.CLASS({
       this.parsePhoneNumber().then(() => {
         this.setCountryCodeFromIP();
       });
-
+      let countryMode$ = this.slot(function(countrySelectionVisibility, controllerMode) {
+        return controllerMode.restrictDisplayMode(countrySelectionVisibility);
+      }, this.countrySelectionVisibility$, this.controllerMode$);
       this
         .addClass(this.myClass())
         .startContext({data: this})
-          .add(this.COUNTRY_CODE)
+          .tag(this.COUNTRY_CODE, { mode$: countryMode$ })
           .add(this.LOCAL_PHONE_NUMBER)
         .endContext();
     }
@@ -108,6 +114,7 @@ foam.CLASS({
       on: ['this.propertyChange.localPhoneNumber', 'this.propertyChange.countryObject'],
       code: function() {
         this.deFeedback(() => {
+          if ( ! this.localPhoneNumber || ! this.countryObject ) return this.data = undefined;
           this.data = '+' + this.countryObject.phoneCode + '-' + this.localPhoneNumber;
         });
       }
@@ -124,6 +131,9 @@ foam.CLASS({
 
             this.countryCode = await this.countryDAO.find(this.EQ(this.Country.PHONE_CODE, countryCode));
             this.localPhoneNumber = parts[1];
+          } else if ( parts.length === 1 ) {
+            // Support for local phone numbers without a country code
+            this.localPhoneNumber = parts[0];
           }
         });
       }

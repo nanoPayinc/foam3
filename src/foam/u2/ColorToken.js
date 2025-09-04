@@ -12,6 +12,7 @@ foam.CLASS({
   documentation: 'SubClass of CSS tokens that installs convenience tokens for different states',
 
   properties: [
+    ['variantKey', 'color'],
     {
       class: 'Int',
       name: 'hoverModifier',

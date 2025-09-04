@@ -488,16 +488,6 @@ p({class:"foam.i18n.Locale",locale:"pt",source:"foam.u2.dialog.ConfirmationModal
 
 p({class:"foam.i18n.Locale",locale:"pt",source:"foam.u2.SearchField.LABEL_SEARCH",target:"Pesquisa..."})
 
-p({class:"foam.i18n.Locale",locale:"pt",source:"foam.u2.filter.advanced.AdvancedFilterView.TITLE_HEADER",target:"Filtros Avançados"})
-p({class:"foam.i18n.Locale",locale:"pt",source:"foam.u2.filter.advanced.AdvancedFilterView.LABEL_CRITERIA",target:"Critério"})
-p({class:"foam.i18n.Locale",locale:"pt",source:"foam.u2.filter.advanced.AdvancedFilterView.LABEL_REMOVE",target:"Retirar"})
-p({class:"foam.i18n.Locale",locale:"pt",source:"foam.u2.filter.advanced.AdvancedFilterView.LABEL_RESULTS",target:"Visualização dos resultados do filtro: "})
-p({class:"foam.i18n.Locale",locale:"pt",source:"foam.u2.filter.advanced.AdvancedFilterView.LABEL_INSTRUCTION",target:"No Modo Avançado, os resultados são uma acumulação de cada critério. Dentro de cada critério, os resultados serão um reflexo que corresponde totalmente à sua seleção"})
-p({class:"foam.i18n.Locale",locale:"pt",source:"foam.u2.filter.advanced.AdvancedFilterView.ADD_CRITERIA.label",target:"Adicionar outro critério"})
-p({class:"foam.i18n.Locale",locale:"pt",source:"foam.u2.filter.advanced.AdvancedFilterView.CLOSE_MODAL.label",target:"Cancelar"})
-p({class:"foam.i18n.Locale",locale:"pt",source:"foam.u2.filter.advanced.AdvancedFilterView.CLEAR_ALL.label",target:"Limpar mudanças"})
-p({class:"foam.i18n.Locale",locale:"pt",source:"foam.u2.filter.advanced.AdvancedFilterView.FILTER.label",target:"Aplicar filtros"})
-
 p({class:"foam.i18n.Locale",locale:"pt",source:"foam.u2.view.FObjectView.PLACEHOLDER_TEXT",target:"selecionar..."})
 
 p({class:"foam.i18n.Locale",locale:"pt",source:"foam.u2.view.ViewReferenceFObjectView.BACK_LABEL",target:"Voltar"})
@@ -640,10 +630,10 @@ p({class:"foam.i18n.Locale",locale:"pt",source:"foam.comics.v2.DAOSummaryView.ED
 p({class:"foam.i18n.Locale",locale:"pt",source:"foam.comics.v2.DAOSummaryView.COPY.label",target:"Cópia"})
 p({class:"foam.i18n.Locale",locale:"pt",source:"foam.comics.v2.DAOSummaryView.DELETE.label",target:"Excluir"})
 
-p({class:"foam.i18n.Locale",locale:"pt",source:"foam.u2.view.ScrollTableView.NEXT_PAGE.toolTip",target:"Próxima página"})
-p({class:"foam.i18n.Locale",locale:"pt",source:"foam.u2.view.ScrollTableView.FIRST_PAGE.toolTip",target:"Primeira página"})
-p({class:"foam.i18n.Locale",locale:"pt",source:"foam.u2.view.ScrollTableView.PREV_PAGE.toolTip",target:"Página anterior"})
-p({class:"foam.i18n.Locale",locale:"pt",source:"foam.u2.view.ScrollTableView.LAST_PAGE.toolTip",target:"Última página"})
+p({class:"foam.i18n.Locale",locale:"pt",source:"foam.u2.table.TableView.NEXT_PAGE.toolTip",target:"Próxima página"})
+p({class:"foam.i18n.Locale",locale:"pt",source:"foam.u2.table.TableView.FIRST_PAGE.toolTip",target:"Primeira página"})
+p({class:"foam.i18n.Locale",locale:"pt",source:"foam.u2.table.TableView.PREV_PAGE.toolTip",target:"Página anterior"})
+p({class:"foam.i18n.Locale",locale:"pt",source:"foam.u2.table.TableView.LAST_PAGE.toolTip",target:"Última página"})
 
 p({class:"foam.i18n.Locale",locale:"pt",source:"foam.u2.table.TableHeaderComponent.DRAG_TO_RESIZE.toolTip",target:"Arraste para redimensionar"})
 

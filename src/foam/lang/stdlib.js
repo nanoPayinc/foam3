@@ -1297,9 +1297,30 @@ foam.LIB({
 foam.LIB({
   name: 'foam.CSS',
   methods: [
-    function getTokenValue(tokenString, cls, ctx) {
-      if ( ! tokenString?.startsWith('$') ) return tokenString;
-      var [ tokenName, cls ] = foam.CSS.returnTokenAndClass(tokenString, cls);
+    function getTokenValue([tokenName, cls, _, tokenAxiom], ctx) {
+      let result = tokenAxiom;
+      if ( ! result ) return `/* failed token replacement ${tokenName}, ${cls}*/`
+      if ( result.variantKey && ctx.theme?.activeVariants?.[result.variantKey] ) {
+        // If the token is in a variant group, check if the variant is active
+        // and return the value for that variant is available.
+        result = result.variants?.[ctx.theme.activeVariants[result.variantKey]] || result;
+      }
+      if ( foam.Function.isInstance(result.value) ) {
+        const expr = foam.css.TokenUtilsBuilder.create();
+        // Fake an fobject to get token value in current ctx from mlang
+        var ret = result.value(expr).f({cls_: cls, __subContext__: ctx});
+        if ( ret )
+          ret = foam.CSS.returnTokenValue(ret, cls, ctx);
+        return ret || result.fallback || `/* failed mlang token replacement ${tokenName}, ${cls}*/`
+      }
+      if ( result.value?.startsWith('$') ) {
+        var ret = foam.CSS.returnTokenValue(result.value, cls, ctx);
+        return ret || result.fallback || `/* failed token replacement ${tokenName}, ${cls}*/`;
+      }
+      return result.value ||
+        result.fallback;
+    },
+    function findTokenAxiom(tokenName, cls, ctx) {
       var result = cls && cls[foam.String.constantize(tokenName)];
       if ( ! result ) {
         // Try to find in global tokens
@@ -1307,23 +1328,9 @@ foam.LIB({
         var defaultsCls = ctx.lookup('foam.u2.CSSTokens');
         result = defaultsCls[foam.String.constantize(tokenName)];
       }
-      if ( foam.Function.isInstance(result?.value) ) {
-        const expr = foam.css.TokenUtilsBuilder.create();
-        // Fake an fobject to get token value in current ctx from mlang
-        var ret = result.value(expr).f({cls_: cls, __subContext__: ctx});
-        if ( ret )
-          ret = foam.CSS.returnTokenValue(ret, cls, ctx);
-        return ret || result.fallback || `/* failed mlang token replacement ${tokenString}, ${cls}*/`
-      }
-      if ( result?.value?.startsWith('$') ) {
-        // Using await as this method may be overriden with one that returns a promise
-        var ret = foam.CSS.returnTokenValue(result.value, cls, ctx);
-        return ret || result.fallback || `/* failed token replacement ${tokenString}, ${cls}*/`;
-      }
-      return result?.value ||
-        result?.fallback;
-    },
-    function returnTokenAndClass(tokenString, cls) {
+      return result;
+    },  
+    function returnTokenAndClass(tokenString, cls, ctx) {
       tokenString = tokenString.substring(1);
       if ( tokenString.indexOf('.') != -1 ) {
         fullString = tokenString;
@@ -1334,12 +1341,14 @@ foam.LIB({
         cls = foam.String.isInstance(cls) ? ( foam.maybeLookup(cls) || '' ) : cls;
         fullString = cls?.id + '.' + tokenName;
       }
-      return [ tokenName, cls, fullString ]
+      let axiom = foam.CSS.findTokenAxiom(tokenName, cls, ctx);
+      return [ tokenName, cls, fullString, axiom ]
     },
     function returnTokenValue(token, cls, ctx) {
       // Safe method to always call the right getTokenValue() depending on ctx
+      if ( ! token.startsWith('$') ) return token;
       let tokenFinder = ctx?.cssTokenOverrideService?.getTokenValue || foam.CSS.getTokenValue;
-      return tokenFinder(token, cls, ctx);
+      return tokenFinder(foam.CSS.returnTokenAndClass(token, cls, ctx), ctx);
     },
     function replaceTokens(text, cls, ctx, opt_tokenPattern) {
       let foundTokens = [];

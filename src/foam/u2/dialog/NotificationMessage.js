@@ -51,8 +51,8 @@ foam.CLASS({
       align-items: center;
       animation-name: fade;
       animation-duration: 10s;
-      background: $white;
-      border: 1px solid $grey300;
+      background: $backgroundDefault;
+      border: 1px solid $borderDefault;
       border-radius: 3px;
       box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.1), 0px 4px 6px rgba(0, 0, 0, 0.05);
       box-sizing: border-box;
@@ -97,7 +97,7 @@ foam.CLASS({
       white-space: normal;
     }
     ^description {
-      color: $grey500;
+      color: $textTertiary;
       display: -webkit-box;
       -webkit-box-orient: vertical;
       -webkit-line-clamp: 2;

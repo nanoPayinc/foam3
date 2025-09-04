@@ -4,7 +4,7 @@
   * http://www.apache.org/licenses/LICENSE-2.0
   */
 
-  package foam.lib.json;
+package foam.lib.json;
 
 import foam.lib.parse.*;
 

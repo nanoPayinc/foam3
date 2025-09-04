@@ -44,7 +44,7 @@ foam.CLASS({
   css: `
     ^createWrapper {
       padding: 8px 16px;
-      background: $grey50;
+      background: $backgroundSecondary;
       display: flex;
       gap: 8px;
       flex-direction: column;

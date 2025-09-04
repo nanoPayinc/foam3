@@ -91,7 +91,7 @@ foam.CLASS({
           'word-wrap': 'break-word'
         })
         .start()
-          .style({ display: 'flex',overflow: 'hidden' })
+          .style({ display: 'flex',overflow: 'hidden', 'align-items': 'center' })
             .start('', { tooltip: colTooltip })
               .addClass('h600')
               .style({

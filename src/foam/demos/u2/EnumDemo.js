@@ -54,7 +54,7 @@ foam.CLASS({
     },
     {
       name: 'dao',
-      view: 'foam.u2.view.TableView',
+      view: 'foam.u2.table.TableView',
       factory: function() {
         return this.EasyDAO.create({
           of: EnumSampleData,

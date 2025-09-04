@@ -74,7 +74,9 @@ foam.CLASS({
     },
     {
       name: 'timer',
-      class: 'Object'
+      class: 'Object',
+      transient: true,
+      visibility: 'HIDDEN'
     },
     {
       name: 'formatter',
@@ -88,7 +90,9 @@ foam.CLASS({
       formatter.setOutputShortNames(true);
       formatter.setPropertyPredicate(new foam.lib.ClusterPropertyPredicate());
       return formatter;
-      `
+      `,
+      transient: true,
+      visibility: 'HIDDEN'
     }
   ],
 
@@ -190,11 +194,11 @@ foam.CLASS({
             health.setPropogationTime(Math.abs(now - health.getHeartbeatTime()));
             ((DAO) x.get("healthDAO")).put_(x, health);
           } catch ( NullPointerException e ) {
-            logger.debug("listener", "received", received, e.getMessage(), e);
+            logger.warning("listener", "received", received, e.getMessage());
           } catch ( ClassCastException e ) {
             logger.debug("listener", "received", received, e.getMessage(), e);
           } catch ( RuntimeException e ) {
-            logger.warning("listener", "parse", e);
+            logger.warning("listener", "received", received, e.getMessage(), e);
           } finally {
             pm.log(x);
           }

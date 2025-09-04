@@ -55,6 +55,13 @@ Suitable for usage against backends that don't support listen(), such as plain H
       if ( ! skip ) skip = 0;
       if ( ! limit ) limit = Number.MAX_SAFE_INTEGER;
 
+      // Sometimes its useful to be able to probe the DAO to see what queries will
+      // be supplied. The setPredicate() method can just throw an exception if it
+      // doesn't actually want to proceed with the query.
+      if ( sink.setPredicate ) {
+        sink.setPredicate(predicate);
+      }
+
       if ( ! this.Serializable.isInstance(sink) ) {
         var self = this;
 
@@ -105,20 +112,36 @@ Suitable for usage against backends that don't support listen(), such as plain H
     {
       name: 'cmd_',
       code: function cmd_(x, obj) {
-        /** Force the DAO to publish a 'reset' notification. **/
-        if ( foam.dao.DAO.RESET_CMD === obj ) {
-          this.on.reset.pub();
-          return true;
-        }
+        var self = this;
+        var superMethod = this.SUPER.bind(this);
+        
+        function processCmd() {
+          /** Force the DAO to publish a 'reset' notification. **/
+          if ( foam.dao.DAO.RESET_CMD === obj ) {
+            self.on.reset.pub();
+            return true;
+          }
+       
 //        ctrl.__subContext__.cSpecDAO.select(ns => { if ( ns.name.indexOf('DAO') == -1 ) return; try { var count = ctrl.__subContext__[ns.name].cmd(foam.dao.DAO.COUNT_LISTENERS_CMD); if ( count ) console.log(ns.name, count); } catch(x) {}});
-        if ( foam.dao.DAO.COUNT_LISTENERS_CMD === obj ) {
-          // pub() returns the number of listeners
-          return this.on.pub('ping');
+          if ( foam.dao.DAO.COUNT_LISTENERS_CMD === obj ) {
+            // pub() returns the number of listeners
+            return self.on.pub('ping');
+          }
+          if ( foam.dao.DAO.PURGE_CMD === obj ) {
+            return obj;
+          }
+          return superMethod(x, obj);
         }
-        if ( foam.dao.DAO.PURGE_CMD === obj ) {
-          return obj;
+        if (obj && obj.normalizeObj && typeof obj.normalizeObj === 'function') {
+          var result = obj.normalizeObj();
         }
-        return this.SUPER(x, obj);
+
+        // Handle both promise and non-promise returns
+        if ( result && typeof result.then === 'function' ) {
+          return result.then(processCmd);
+        } else {
+          return processCmd();
+        }
       }
     }
   ]

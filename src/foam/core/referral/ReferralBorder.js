@@ -33,7 +33,10 @@ foam.CLASS({
     ^wrapper > *:first-child {
       flex: 0 0 30%;
     }
-    @container outer (width < 768px) {
+    ^ .foam-comics-v2-DAOBrowserView-top-bar {
+      padding:0
+    } 
+    @container outer (width < 960px) {
       ^wrapper {
         flex-direction: column;
       }
@@ -44,7 +47,7 @@ foam.CLASS({
     }
   `,
 
-  messages: [{ name: 'TITLE', message: 'Available Rewards' }],
+  messages: [{ name: 'TITLE', message: 'Your Rewards' }],
 
   properties: [
     {
@@ -62,7 +65,6 @@ foam.CLASS({
           .addClass(this.myClass('wrapper'))
           .tag(this.contentView)
           .start()
-            .start().addClass('h500').add(this.TITLE).end()
             .start(foam.u2.borders.CardBorder).style({ width: '100%' }).tag('', {}, this.content$).end()
           .end()
         .end()

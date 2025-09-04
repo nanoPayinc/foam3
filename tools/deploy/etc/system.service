@@ -9,7 +9,7 @@ StartLimitBurst=3
 Type=simple
 Restart=always
 RestartSec=1
-ExecStart=/opt/APP_NAME/bin/run.sh -NAPP_NAME -VVERSION -WWEB_PORT
+ExecStart=FOAM_ROOT/bin/run.sh -AFOAM_ROOT -NAPP_NAME -VVERSION -WWEB_PORT
 User=USER
 Group=GROUP
 

@@ -7,9 +7,11 @@
 foam.CLASS({
   package: 'foam.swift.parse',
   name: 'StringPStream',
+
   implements: [
     'foam.swift.parse.PStream',
   ],
+
   properties: [
     {
       swiftType: '[Character]',

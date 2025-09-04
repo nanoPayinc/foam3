@@ -45,21 +45,21 @@ foam.CLASS({
     }
     ^tabRow { height: 40px; }
     ^tab {
-      background: lightgray;
-      border: 1px solid black;
+      background: $backgroundTertiary;
+      border: 1px solid $borderStrong;
       border-radius: 3px 3px 0 0;
       display: inline-block;
       height: 14px;
       padding: 8px;
     }
     ^tab.selected {
-      background:$white;
-      border-bottom: 1px solid white;
+      background:$backgroundDefault;
+      border-bottom: 1px solid $backgroundDefault;
       position: relative;
       z-index: 1;
     }
     ^bottomEdge {
-      background:$white;
+      background:$backgroundDefault;
       height: 2.5px;
       left: 0;
       position: absolute;
@@ -67,8 +67,8 @@ foam.CLASS({
       width: 100%;
     }
     ^content {
-      background:$white;
-      border: 1px solid black;
+      background:$backgroundDefault;
+      border: 1px solid $borderStrong;
       left: -4px;
       margin: 4px;
       padding: 6px;
@@ -150,14 +150,14 @@ foam.CLASS({
 
   css: `
     ^ {
-      background:$white;
+      background:$backgroundDefault;
       border-radius: 3px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.38);
       margin: 8px;
       transform-origin: top left;
       display: inline-block;
     }
-    ^content { padding: 6px; width: 300px; height: 200px; background:$white; }
+    ^content { padding: 6px; width: 300px; height: 200px; background:$backgroundDefault; }
   `,
 
   methods: [
@@ -181,8 +181,8 @@ foam.CLASS({
   css: `
     ^ { background: gray; padding: 10px; display: inline-block; }
     ^title { padding: 6px; align-content: center; background: aliceblue; }
-    ^footer { padding: 6px; align-content: left; background:$white; }
-    ^content { padding: 6px; width: 300px; height: 200px; background:$white; }
+    ^footer { padding: 6px; align-content: left; background:$backgroundDefault; }
+    ^content { padding: 6px; width: 300px; height: 200px; background:$backgroundDefault; }
   `,
 
   properties: [
@@ -221,7 +221,7 @@ foam.CLASS({
       padding: 10px 4px;
     }
     ^title {
-      background:$white;
+      background:$backgroundDefault;
       color: #666;
       display: inline;
       font-size: larger;
@@ -263,7 +263,7 @@ foam.CLASS({
       padding: 10px;
     }
     ^title {
-      background:$white;
+      background:$backgroundDefault;
       color: #666;
       display: inline;
       padding: 3px;
@@ -271,7 +271,7 @@ foam.CLASS({
       width: 33%;
     }
     ^content {
-      background:$white;
+      background:$backgroundDefault;
       display: inline-block;
       height: 200px;
       width: 66%;
@@ -313,7 +313,7 @@ foam.CLASS({
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.38);
     }
     ^control {
-      background:$white;
+      background:$backgroundDefault;
       display: inline;
       float: right;
       height: 30px;
@@ -331,14 +331,14 @@ foam.CLASS({
       width: 100%;
     }
     ^title {
-      background:$white;
+      background:$backgroundDefault;
       left: 6px;
       padding: 3px;
       position: relative;
       top: -3px;
     }
     ^content {
-      background:$white;
+      background:$backgroundDefault;
       display: initial;
      //  height: 200px;
       position: relative;
@@ -418,7 +418,7 @@ foam.CLASS({
     ^.expanded {
     }
     ^control {
-      background:$white;
+      background:$backgroundDefault;
       display: inline;
       float: right;
       height: 30px;
@@ -436,13 +436,13 @@ foam.CLASS({
       width: 100%;
     }
     ^title {
-      background: $white;
+      background: $backgroundDefault;
       padding: 3px;
       position: relative;
       top: -2px;
     }
     ^content {
-      background: $white;
+      background: $backgroundDefault;
       height: 200px;
       width: 300px;
     }
@@ -510,7 +510,7 @@ foam.CLASS({
 
   css: `
     ^ { background: gray; padding: 10px; display: inline-flex; }
-    ^content { margin: 4px; padding: 6px; width: 300px; height: 200px; background: $white; }
+    ^content { margin: 4px; padding: 6px; width: 300px; height: 200px; background: $backgroundDefault; }
   `,
 
   properties: [

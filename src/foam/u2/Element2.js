@@ -121,7 +121,7 @@ foam.CLASS({
 
   properties: [
     {
-      name: 'slot',
+      name: 'slot_',
       preSet: function(o, n) {
         return n.framed();
       }
@@ -139,8 +139,14 @@ foam.CLASS({
   ],
 
   methods: [
+    function detach() {
+      if ( this.slot_ ) this.slot_.detach();
+      this.SUPER();
+      this.element_ = null;
+    },
+
     function load() {
-      this.slot.sub(this.update);
+      this.onDetach(this.slot_.sub(this.update));
       this.update();
     },
 
@@ -166,7 +172,7 @@ foam.CLASS({
             n = foam.u2.Element.create({nodeName:'span'}, this);
             n.add.apply(n, val);
           } else if ( foam.lang.Slot.isInstance(val) ) {
-            n = this.cls_.create({ slot: val });
+            n = this.cls_.create({ slot_: val });
           } else if ( val.then ) {
             val.then(n => update_(n));
             return;
@@ -187,8 +193,61 @@ foam.CLASS({
           old.detach();
         };
 
-        update_(this.slot.get());
+        update_(this.slot_.get());
       }
+    }
+  ]
+});
+
+foam.CLASS({
+  package: 'foam.u2',
+  name: 'WrapperNode',
+  extends: 'foam.u2.Element',
+  documentation: `Special kind of node that can move itself and it's children between elements without causing rerenders
+  Uses the same fake element behaviour as FunctionNode but is not dynamic.
+  `,
+  properties: [
+    {
+      name: 'id',
+      factory: function() {
+        return 'wrapper' + foam.next$UID();
+      }
+    },
+    {
+      name: 'element_',
+      factory: function() { return this.document.createComment(this.id); }
+    },
+    {
+      name: 'endElement_',
+      hidden: true,
+      transient: true,
+      factory: function() { return this.document.createComment('/' + this.id); }
+    },
+    { class: 'Array', name: 'nodesToMove_', hidden: true }
+  ],
+  methods: [
+    function moveTo(e) {
+      this.nodesToMove_ = [];
+      if ( this.parentNode )
+        this.parentNode.childNodes = this.parentNode.childNodes.filter(v => v !== this);
+      this.parentNode = e;
+      for ( let el = this.element_.nextSibling;
+        el != this.endElement_; el = el.nextSibling ) {
+        this.nodesToMove_.push(el);
+      }
+      e.add(this);
+    },
+    function render() {
+      if ( ! this.parentNode ) { this.detach(); return; }
+      this.element_.parentNode.appendChild(this.endElement_);
+      this.nodesToMove_.forEach(v => this.appendChild_(v));
+      this.nodesToMove_ = undefined;
+    },
+
+    // Append 'children' before /dynamic comment
+    function appendChild_(c) {
+      if ( ! this.endElement_.parentNode ) { this.detach(); return; }
+      this.endElement_.parentNode.insertBefore(c, this.endElement_);
     }
   ]
 });
@@ -215,10 +274,27 @@ foam.CLASS({
     {
       name: 'endElement_',
       factory: function() { return this.document.createComment('/dynamic'); }
+    },
+    {
+      class: 'Boolean',
+      name: 'requiresRemoval'
     }
   ],
 
   methods: [
+    function maybeRemovePreviousChildren() {
+      if ( ! this.requiresRemoval ) return;
+      this.requiresRemoval = false;
+
+      for ( var i = 0 ; i < this.childNodes.length ; i++ )
+        this.childNodes[i].detach();
+      this.childNodes = [];
+
+      var element_ = this.element_, endElement_ = this.endElement_;
+      for ( var n ; ( n = element_.nextSibling ) && n !== endElement_ ; )
+        try { n.remove(); } catch (x) { debugger; }
+    },
+
     function render() {
       if ( ! this.parentNode ) { this.detach(); return; }
       this.parentNode.appendChild_(this.endElement_);
@@ -227,29 +303,21 @@ foam.CLASS({
       // Before rendering, remove all children between dynamic and /dynamic
       this.fn.pre = () => {
         this.before?.call?.(this);
-        var endElement_ = this.endElement_;
-
-        for ( var i = 0 ; i < this.childNodes.length ; i++ ) {
-          this.childNodes[i].detach();
-        }
-        this.childNodes = [];
-
-        function rm(n) {
-          if ( ! n || n === endElement_ ) return;
-          rm(n.nextSibling);
-          try { n.remove(); } catch (x) { debugger; }
-        }
-
-        rm(this.element_.nextSibling);
-
-        return this;
+        this.requiresRemoval = true;
+        //        this.maybeRemovePreviousChildren();
       };
 
       this.fn.post = () => {
+        this.maybeRemovePreviousChildren();
         this.after?.call?.(this);
       };
 
       this.onDetach(this.fn);
+    },
+
+    function addChild_(c, parentNode) {
+      this.maybeRemovePreviousChildren();
+      this.SUPER(c, parentNode);
     },
 
     // Append 'children' before /dynamic comment
@@ -287,16 +355,12 @@ foam.CLASS({
         var self = this;
         return this.dynamic(function(data_) {
           data_.forEach(d => {
-            this.startContext({ data: d });
-
-            var e = this.code.call(this.startContext({ data: d }), d);
+            var e = this.code.call(this, d);
             if ( e ) {
               // TODO: remove after port from U2 to U3
               console.log('Deprecated use of select({return E}). Just do self.start() instead in DAOSelectNode.', this.code);
               this.tag(e);
             }
-
-            this.endContext()
           })
         });
       }
@@ -389,7 +453,6 @@ foam.CLASS({
 
   requires: [
     'foam.lang.PromiseSlot',
-    'foam.dao.MergedResetSink',
     'foam.u2.AttrSlot',
     'foam.u2.Entity',
     'foam.u2.RenderSink',
@@ -465,6 +528,9 @@ foam.CLASS({
   properties: [
     {
       name: 'element_',
+      transient: true,
+      hidden: true,
+      copyValueFrom: () => { return true; },
       factory: function() {
         var ret = this.namespace ?
           this.document.createElementNS(this.namespace, this.nodeName) :
@@ -475,16 +541,25 @@ foam.CLASS({
     },
     {
       class: 'String',
-      name: 'id'
+      name: 'id',
+      hidden: true,
+      postSet: function(o,n) {
+        if ( this.hasOwnProperty('element_') ) {
+          this.element_.id = n;
+        }
+      }
     },
     {
       class: 'Enum',
       of: 'foam.u2.ControllerMode',
       name: 'controllerMode',
+      hidden: true,
       factory: function() { return this.__context__.controllerMode || foam.u2.ControllerMode.CREATE; }
     },
     {
       name: 'content',
+      hidden: true,
+      transient: true,
       preSet: function(o, n) {
         // Prevent setting to 'this', which wouldn't change the behaviour.
         return n === this ? null : n ;
@@ -494,6 +569,7 @@ foam.CLASS({
       class: 'String',
       name: 'tooltip',
       attribute: true,
+      hidden: true,
       postSet: function(o, n) {
         if ( n && ! o ) {
           this.Tooltip.create({target: this, text$: this.tooltip$});
@@ -502,11 +578,14 @@ foam.CLASS({
       }
     },
     {
-      name: 'extraStyle'
+      class: 'String',
+      name: 'extraStyle',
+      hidden: true
     },
     {
       name: 'parentNode',
       transient: true,
+      hidden: true,
       postSet: function(o, n) { n.onDetach(this); }
     },
     {
@@ -536,12 +615,14 @@ foam.CLASS({
     */
     {
       name: 'nodeName',
+      hidden: true,
       adapt: function(_, v) { return foam.String.toLowerCase(v); },
       value: 'div'
     },
     {
       class: 'String',
       name: 'namespace',
+      hidden: true,
       factory: function() {
         return this.__context__['namespace'] || (this.nodeName === 'svg' ? 'http://www.w3.org/2000/svg' : '');
       }
@@ -549,22 +630,30 @@ foam.CLASS({
     {
       name: 'classes',
       documentation: 'CSS classes assigned to this Element. Stored as a map of true values.',
+      transient: true,
+      hidden: true,
       factory: function() { return {}; }
     },
     {
+      class: 'Map',
       name: 'css',
+      transient: true,
+      hidden: true,
       documentation: 'Styles added to this Element.',
       factory: function() { return {}; }
     },
     {
       name: 'childNodes',
       documentation: 'Children of this Element.',
+      transient: true,
+      hidden: true,
       factory: function() { return []; }
     },
     {
       name: 'children',
       documentation: 'Virtual property of non-String childNodes.',
       transient: true,
+      hidden: true,
       getter: function() {
         return this.childNodes.filter(function(c) {
           return typeof c !== 'string';
@@ -574,34 +663,45 @@ foam.CLASS({
     {
       class: 'Boolean',
       name: 'focused',
+      hidden: true,
       postSet: function(o, n) {
         if ( n ) this.element_.focus();
       }
     },
     {
-      name: 'scrollHeight'
+      name: 'scrollHeight',
+      hidden: true
     },
     {
       class: 'Int',
       name: 'tabIndex',
+      hidden: true,
       postSet: function(o, n) {
         this.element_.setAttribute('tabindex', n);
       }
     },
     {
-      name: 'clickTarget_'
+      name: 'clickTarget_',
+      hidden: true
     },
     {
       name: '__subSubContext__',
+      transient: true,
+      hidden: true,
       documentation:
         `Current subContext to use when creating children.
         Defaults to __subContext__ unless in a nested startContext().`,
       factory: function() { return this.__subContext__; }
     },
-    'keyMap_',
+    {
+      name: 'keyMap_',
+      hidden: true
+    },
     {
       // TODO: remove after port from U2 to U3
       name: 'onload',
+      transient: true,
+      hidden: true,
       factory: function() {
         return { sub: function(f) {
           console.warn('Deprecated us of ELement.onload.sub().');
@@ -612,11 +712,22 @@ foam.CLASS({
   ],
 
   methods: [
+    function init() {
+      this.SUPER();
+      this.onDetach(this.visitChildren.bind(this, 'detach'));
+    },
+
+    function detach() {
+      this.SUPER();
+      this.childNodes = [];
+      this.children   = [];
+      this.private_ = this.parentNode = this.__subSubContext__ = this.instance_.subContext__ = undefined;
+    },
+
     // from state
 
     function replaceElement_(el) {
-      el.parentNode.replaceChild(this.element_, el);
-      this.load();
+      el.parentNode.replaceChild(this, el);
     },
 
     // TODO: for backward compatibility with U2, remove when all code ported
@@ -625,7 +736,7 @@ foam.CLASS({
     },
 
     function slotE_(slot) {
-      return foam.u2.SlotNode.create({slot: slot}, this);
+      return foam.u2.SlotNode.create({slot_: slot}, this);
     },
 
     function load() {
@@ -662,18 +773,25 @@ foam.CLASS({
       if ( this.extraStyle ) this.style(this.extraStyle);
     },
 
-    async function observeScrollHeight() {
+    function mutationObserver(fn, config = { attributes: true, childList: true, characterData: true }) {
+      var observer = new MutationObserver(fn);
+      observer.observe(this.element_, config);
+      this.onDetach(() => observer.disconnect());
+    },
+
+    function resizeObserver(fn, config = { box: 'content-box' }) {
+      var observer = new ResizeObserver(fn);
+      observer.observe(this.element_, config);
+      this.onDetach(() => observer.disconnect());
+    },
+
+    function observeScrollHeight() {
       // TODO: This should be handled by an onsub event when someone subscribes to
       // scroll height changes.
       var self = this;
-      var observer = new MutationObserver(async function(mutations) {
-        var el = await self.el();
-        self.scrollHeight = el.scrollHeight;
+      this.mutationObserver(() => {
+        self.scrollHeight = self.element_.scrollHeight;
       });
-      var config = { attributes: true, childList: true, characterData: true };
-
-      observer.observe(this.element_, config);
-      this.onDetach((s) => observer.disconnect());
       return this;
     },
 
@@ -976,7 +1094,7 @@ foam.CLASS({
         if ( cs[i] === oldE ) {
           cs[i] = newE;
           newE.parentNode = this;
-          oldE.element_.parentNode.replaceChild(oldE.element_, newE.element_);
+          oldE.element_.parentNode.replaceChild(newE.element_, oldE.element_);
 //          oldE.element_.outerHTML = '<' + this.nodeName + '></' + this.nodeName + '>';
           newE.load && newE.load();
           oldE.remove();
@@ -1138,13 +1256,13 @@ foam.CLASS({
       return this;
     },
 
-    function createChild_(spec, args) {
-      return foam.u2.ViewSpec.createView(spec, args, this, this.__subSubContext__);
+    function createChild_(spec, args, disableWarning) {
+      return foam.u2.ViewSpec.createView(spec, args, this, this.__subSubContext__, disableWarning);
     },
 
-    function start(spec, args, slot) {
+    function start(spec, args, slot, disableWarning) {
       /* Create a new Element and add it as a child. Return the child. */
-      var c = this.createChild_(spec, args);
+      var c = this.createChild_(spec, args, disableWarning);
 
       this.add(c);
 
@@ -1158,6 +1276,7 @@ foam.CLASS({
     },
 
     function translate(source, opt_default) {
+      /* Translate text before add()-ing to the Element. Lets text be edited if XMSG is in URL. */
       var translationService = this.translationService;
       if ( translationService ) {
         /* Add the translation of the supplied source to the Element as a String */
@@ -1219,7 +1338,7 @@ foam.CLASS({
         return;
       }
       if ( foam.lang.Slot.isInstance(c) ) {
-        c = foam.u2.SlotNode.create({slot: c}, this);
+        c = foam.u2.SlotNode.create({slot_: c}, this);
       }
         /*
         var v = this.slotE_(c);
@@ -1436,9 +1555,11 @@ foam.CLASS({
       code: function(evt) {
         var action = this.keyMap_[this.evtToCharCode(evt)];
         if ( action ) {
-          action();
-          evt.preventDefault();
-          evt.stopPropagation();
+          var ret = action();
+          if ( ret ) {
+            evt.preventDefault();
+            evt.stopPropagation();
+          }
         }
       }
     }
@@ -1560,7 +1681,7 @@ foam.CLASS({
     },
 
     function createElFromSpec_(spec, args, X) {
-      let el = foam.u2.ViewSpec.createView(spec, args, this, X);
+      let el = foam.u2.ViewSpec.createView(spec, args, this, X, true);
 
       if ( X.data$ && ! ( args && ( args.data || args.data$ ) ) ) {
         el.data$ = X.data$.dot(this.name);
@@ -1631,25 +1752,25 @@ foam.CLASS({
 
       var vis = this.combineControllerModeAndVisibility_(data$, controllerMode$)
 
-      if ( ! this.readPermissionRequired && ! this.writePermissionRequired ) return vis;
+      if ( ! this.readPermissionRequired && ! this.writePermissionRequired && ! this.updatePermissionRequired ) return vis;
 
       const DisplayMode = foam.u2.DisplayMode;
 
-      var perm = data$.map((data) => {
+      var perm = this.slot(function(data, controllerMode) {
         if ( ! data || ! data.__subContext__.auth ) return DisplayMode.HIDDEN;
         var auth     = data.__subContext__.auth;
         var propName = this.name.toLowerCase();
         var clsName  = data.cls_.name.toLowerCase();
         var canRead  = this.readPermissionRequired === false;
-
+        var allowCreate = this.writePermissionRequired === false && (this.updatePermissionRequired === false || controllerMode == 'CREATE');
         return auth.check(null, `${clsName}.rw.${propName}`)
           .then(function(rw) {
-            if ( rw      ) return DisplayMode.RW;
-            if ( canRead ) return DisplayMode.RO;
+            if ( rw || allowCreate ) return DisplayMode.RW;
+            if ( canRead           ) return DisplayMode.RO;
             return auth.check(null, `${clsName}.ro.${propName}`)
               .then((ro) => ro ? DisplayMode.RO : DisplayMode.HIDDEN);
           });
-      });
+      }, data$, controllerMode$);
 
       return foam.lang.ArraySlot.create({slots: [vis, perm]}).map((arr) => {
         // The || HIDDEN is required because slot.map() above which returns
@@ -2106,7 +2227,8 @@ foam.CLASS({
   properties: [
     {
       name: 'data',
-      attribute: true
+      attribute: true,
+      transient: true
     },
     // {
     //   class: 'String',
@@ -2127,6 +2249,11 @@ foam.CLASS({
   ],
 
   methods: [
+    function init() {
+      if ( this.id )
+        this.element_.u3 = this;
+      this.SUPER();
+    },
     function render() {
       this.SUPER();
       this.updateMode_(this.mode);
@@ -2152,7 +2279,14 @@ foam.CLASS({
 
   documentation: 'A Controller is an Element which exports itself as "data".',
 
-  exports: [ 'as data' ]
+  exports: [ 'as data' ],
+
+  properties: [
+    {
+      name: 'shown',
+      hidden: true
+    }
+  ]
 });
 
 
@@ -2287,10 +2421,17 @@ foam.CLASS({
   ],
 
   methods: [
+    function remove() {
+      // TODO: shouldn't be necessary but aren't being GC'ed properly, probably because of bug in
+      // FunctionNode. Remove this when fixed.
+      if ( this.element_ ) this.element_.innerHTML = '';
+      this.SUPER();
+    },
+
     function render() {
       this.addClass();
       this.update();
-      this.data$.framed().sub(this.update);
+      this.onDetach(this.data$.framed().sub(this.update));
     }
   ],
 

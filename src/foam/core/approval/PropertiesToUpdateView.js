@@ -46,8 +46,8 @@
       width: 80vw;
       border-radius: 6px;
       box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
-      border: solid 1px #e7eaec;
-      background-color:$white;
+      border: solid 1px $borderLight;
+      background-color:$backgroudDefault;
       box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
       margin-left: 1vw;
       z-index: -1;

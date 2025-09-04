@@ -11,7 +11,7 @@ foam.CLASS({
 
   requires: [
     'foam.core.menu.Menu',
-    'foam.u2.view.TableView',
+    'foam.u2.table.TableView',
     'foam.u2.view.TreeGraphView'
   ],
 
@@ -24,7 +24,7 @@ foam.CLASS({
   methods: [
     function init() {
       this.views = [
-        [{ class: 'foam.u2.view.TableView' }, 'Table'],
+        [{ class: 'foam.u2.table.TableView' }, 'Table'],
         /*
         [{
             class: 'foam.u2.view.TreeGraphView'

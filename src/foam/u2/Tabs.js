@@ -62,7 +62,7 @@ foam.CLASS({
       cursor: pointer;
     }
     ^tab.selected {
-      border-bottom: 3px solid $primary400;
+      border-bottom: 3px solid $borderBrand;
     }
   `
 });
@@ -76,24 +76,24 @@ foam.CLASS({
     {
       class: 'foam.u2.ColorToken',
       name: 'tabActiveColor',
-      value: '$primary700'
+      value: '$textBrandSecondary'
     },
     {
       class: 'foam.u2.ColorToken',
       name: 'tabInactiveColor',
-      value: '$primary700'
+      value: '$textBrandSecondary'
     },
     {
       name: 'tabActiveBackground',
-      value: '$primary50'
+      value: '$backgroundBrandTertiary'
     }
   ],
 
   css: `
     ^tabRow {
-      background-color: $white;
+      background-color: $backgroundDefault;
       border-radius: 4px 4px 0 0;
-      border-bottom: 1px solid $grey100;
+      border-bottom: 1px solid $borderLight;
       display: flex;
       gap: 12px 24px;
       padding: 12px;
@@ -130,7 +130,7 @@ foam.CLASS({
     {
       class: 'foam.u2.ColorToken',
       name: 'tabPrimaryColor',
-      value: '$primary300'
+      value: '$textBrand'
     }
   ],
 
@@ -155,11 +155,11 @@ foam.CLASS({
     ^tabRow {
       flex: 0 0 auto;
       border-radius: var(--tabRow-radius, 0.4rem);
-      border: 1px solid $grey100;
+      border: 1px solid $borderLight;
       gap: 8px;
       padding: var(--tabRow-padding, 0.4rem);
       white-space: nowrap;
-      background-color: $white;
+      background-color: $backgroundDefault;
       box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.06), 0px 1px 3px rgba(0, 0, 0, 0.1);
       align-self: center;
       display: grid;

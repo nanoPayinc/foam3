@@ -15,6 +15,26 @@
  * limitations under the License.
  */
 
+foam.LIB({
+  name: 'foam.Blob',
+  methods: [
+    function acquireUrl(blob) {
+      blob.count_ = (blob.count_ || 0) + 1;
+      if ( blob.count_ == 1 ) {
+        blob.url_ = URL.createObjectURL(blob);
+      }
+      return blob.url_
+    },
+    function releaseUrl(blob) {
+      blob.count_ = blob.count_ - 1;
+      if ( blob.count_ == 0 ) {
+        URL.revokeObjectURL(blob.url_);
+      }
+    }
+  ]
+});
+
+
 foam.CLASS({
   package: 'foam.u2.tag',
   name: 'Image',
@@ -22,7 +42,9 @@ foam.CLASS({
 
   requires: [
     'foam.net.HTTPRequest',
-    'foam.u2.HTMLView'
+    'foam.u2.HTMLView',
+    'foam.blob.Blob',
+    'foam.blob.BlobBlob'
   ],
 
   css: `
@@ -56,6 +78,10 @@ foam.CLASS({
     {
       class: 'Boolean',
       name: 'embedSVG'
+    },
+    {
+      class: 'Boolean',
+      name: 'sync'
     }
   ],
 
@@ -73,38 +99,53 @@ foam.CLASS({
     },
 
     function render() {
+      var self = this;
       this
         .addClass(this.myClass())
-        .add(this.slot(function(data, glyph, displayWidth, displayHeight, alpha) {
+        .add(this.dynamic(function(data, glyph, displayWidth, displayHeight, alpha) {
           if ( glyph ) {
-            var indicator = glyph.clone(this).expandSVG();
-            return this.E().start(this.HTMLView, { data: indicator })
-              .attrs({ role: this.role })
-              .end();
+            var indicator = glyph.clone(self).expandSVG();
+            this.start(self.HTMLView, { data: indicator })
+              .attrs({ role: self.role })
+            .end();
+            return;
           }
 
-          if ( this.embedSVG && data?.endsWith('svg') ) {
-            var e = this.E();
-            this.requestWithCache(data).then(data => {
-              if ( !this.U3 && this.state == this.OUTPUT ) return;
+          if ( self.embedSVG && data?.endsWith('svg') ) {
+            self.requestWithCache(data).then(data => {
+              if ( ! self.U3 && self.state == self.OUTPUT ) return;
 
-              e.start(this.HTMLView, { data: data })
-                .attrs({ role: this.role })
+              this.start(self.HTMLView, { data: data })
+                .attrs({ role: self.role })
               .end();
             });
 
-            return e;
+            return;
           }
-          if ( ! data) return null;
-          return this.E()
-            .start('img')
-              .attrs({ src: data, role: this.role })
-              .style({
-                height:  displayHeight,
-                width:   displayWidth,
-                opacity: alpha
-              })
-            .end();
+
+          if ( ! data ) return null;
+
+          var src = data;
+
+          /// TODO: A better polymorphic way of doing this
+          if ( self.BlobBlob.isInstance(src) ) {
+            var url = foam.Blob.acquireUrl(src.blob);
+            this.onDetach(() => {
+              foam.Blob.releaseUrl(src.blob);
+            })
+            src = url;
+          } else if ( self.Blob.isInstance(data) ) {
+            src = self.__context__.blobService.urlFor(data);
+          }
+          
+          this.start('img')
+            .attrs({ src: src, role: self.role })
+            .style({
+              height:  displayHeight,
+              width:   displayWidth,
+              opacity: alpha
+            })
+          .end();
         }));
     }
   ]

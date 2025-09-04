@@ -25,11 +25,11 @@ public class NanoHttpServer
       Class cls = Class.forName("org.apache.tomcat.SimpleInstanceManager");
       System.out.println("Tomcat is running!");
     } catch(ClassNotFoundException ex) {
-      startNanos();
+      startCORE();
     }
   }
 
-  public void startNanos() {
+  public void startCORE() {
     System.out.println("Starting HTTP Server on port " + port_);
 
     try {

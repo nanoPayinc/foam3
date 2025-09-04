@@ -10,3 +10,135 @@ p({
     "language.read.en-"
   ]
 })
+p({
+  class: 'foam.core.crunch.Capability',
+  id: 'foam.core.auth.VerifyEmailByCode',
+  name: 'Let\'s Verify Your Email Address',
+  of: 'foam.core.auth.email.EmailVerificationCode',
+  wizardlet: {
+    class: 'foam.core.crunch.ui.CapabilityWizardlet',
+    of: 'foam.core.auth.email.EmailVerificationCode',
+    subTitle: 'We have sent a verification code to your email. Please enter the code below to confirm that this account belongs to you.',
+     sections: [
+      {
+        class: "foam.u2.wizard.wizardlet.WizardletSection",
+        customView: {
+          "class": "foam.u2.detail.VerticalDetailView",
+          "useSections": ['verificationCodeWizardSection'],
+          "showTitle": false,
+          "centered": true
+        }
+      }
+    ],
+    wao: {
+      class: 'foam.u2.wizard.wao.SplitWAO',
+      loader: {
+        class: 'foam.u2.wizard.data.EasyLoader',
+        loaders: [
+          {
+            class: 'foam.u2.wizard.data.ContextLoader',
+            path: 'email',
+            loadIntoPath: 'email'
+          },
+          {
+            class: 'foam.u2.wizard.data.ContextLoader',
+            path: 'username',
+            loadIntoPath: 'userName'
+          },
+          {
+            class: 'foam.u2.wizard.data.CreateLoader',
+            of: 'foam.core.auth.email.EmailVerificationCode'
+          }
+        ]
+      },
+      saver: {
+        class: 'foam.u2.wizard.data.ExecuteActionsSaver',
+        actions: [ 'submit' ]
+      }
+    },
+    dynamicActions: [
+      {
+        class: 'foam.u2.wizard.axiom.WizardAction',
+        name: 'goNext',
+        label: 'Verify'
+      },
+      {
+        class: 'foam.u2.wizard.axiom.WizardletDataAction',
+        name: 'resendCode',
+        label: 'Resend Code',
+        buttonStyle: 'TERTIARY',
+        actionName: 'RESEND_CODE'
+      }
+    ]
+  },
+  wizardConfig: {
+    class: 'foam.u2.crunch.EasyCrunchWizard',
+    controller: {
+      class: 'foam.u2.wizard.controllers.IncrementalWizardController',
+      backDisabled: true,
+      discardAvailable: true
+    },
+    popup: {
+      class: 'foam.u2.dialog.ApplicationPopup',
+      fullscreen: true
+    }
+  },
+  enabled: true
+})
+
+p({
+  class: 'foam.core.crunch.Capability',
+  id: 'foam.core.auth.SignInByEmailCode',
+  name: 'Let\'s Verify Your Email Address',
+  of: 'foam.core.auth.email.EmailVerificationCode',
+  wizardlet: {
+    class: 'foam.core.crunch.ui.CapabilityWizardlet',
+    of: 'foam.core.auth.email.EmailVerificationCode',
+    saveOnAvailable: false,
+    subTitle: 'We have sent a verification code to your email. Please enter the code below to confirm that this account belongs to you.',
+    sections: [
+      {
+        class: "foam.u2.wizard.wizardlet.WizardletSection",
+        customView: {
+          "class": "foam.u2.detail.VerticalDetailView",
+          "useSections": ['verificationCodeSection'],
+          "showTitle": false,
+          "centered": true
+        }
+      }
+    ],
+    wao: {
+      class: 'foam.u2.wizard.wao.SplitWAO',
+      loader: {
+        class: 'foam.u2.wizard.data.EasyLoader',
+        loaders: [
+          { class: 'foam.core.auth.email.wizard.EmailVerificationCodeLoader' },
+          {
+            class: 'foam.u2.wizard.data.ContextLoader',
+            path: 'email',
+            loadIntoPath: 'email'
+          },
+          {
+            class: 'foam.u2.wizard.data.CreateLoader',
+            updateWithSpec: true,
+            spec: {
+              class: 'foam.core.auth.email.EmailVerificationCode',
+              signIn: true
+            }
+          }
+        ]
+      },
+      saver: {
+        class: 'foam.u2.wizard.data.ExecuteActionsSaver',
+        actions: [ 'SUBMIT' ]
+      }
+    },
+    dynamicActions: [
+      {
+        class: 'foam.u2.wizard.axiom.WizardAction',
+        name: 'goNext',
+        label: 'Verify'
+      }
+    ]
+  }
+})

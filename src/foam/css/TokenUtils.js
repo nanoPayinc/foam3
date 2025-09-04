@@ -59,6 +59,39 @@ foam.CLASS({
 
 foam.CLASS({
   package: 'foam.css',
+  name: 'AdjustAlphaExpr',
+  requires: [ 'foam.mlang.Constant'],
+  properties: [
+    {
+      name: 'arg1',
+      adapt: function(_, n) {
+        if ( foam.String.isInstance(n) ) {
+          return this.Constant.create({ value: n });
+        }
+        return n;
+      }
+    },
+    {
+      name: 'arg2',
+      adapt: function(_, n) {
+        if ( foam.Number.isInstance(n) ) {
+          return this.Constant.create({ value: n });
+        }
+        return n;
+      }
+    }
+  ],
+  methods: [
+    function f(o) {
+      const color = this.arg1.f(o);
+      const amount = this.arg2.f(o);
+      return foam.Color.adjustAlpha(color, amount);
+    }
+  ]
+});
+
+foam.CLASS({
+  package: 'foam.css',
   name: 'FromHueExpr',
   requires: ['foam.mlang.Constant'],
   properties: [
@@ -154,6 +187,7 @@ foam.CLASS({
   requires: [
     'foam.css.FindForegroundExpr',
     'foam.css.LightenExpr',
+    'foam.css.AdjustAlphaExpr',
     'foam.css.TokenExpr',
     'foam.css.FromHueExpr'
   ],
@@ -161,6 +195,7 @@ foam.CLASS({
   methods: [
     function TOKEN(name) { return this.TokenExpr.create({ arg1: name }); },
     function LIGHTEN(a, b) { return this.LightenExpr.create({ arg1: a, arg2: b }); },
+    function ADJUST_ALPHA(a, b) { return this.AdjustAlphaExpr.create({ arg1: a, arg2: b }); },
     function FROM_HUE(a, b, c) { return this.FromHueExpr.create({ arg1: a, arg2: b, arg3: c }); },
     function FOREGROUND(a, b, c) { return this.FindForegroundExpr.create({ baseColor: a, darkColor: b, lightColor: c }); },
   ]

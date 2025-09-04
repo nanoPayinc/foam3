@@ -6,6 +6,7 @@ p({
     dao = new foam.dao.EasyDAO.Builder(x)
       .setPm(true)
       .setCluster(false)
+      .setSaf(false)
       .setPipelinePm(false)
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName("cms")

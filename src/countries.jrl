@@ -9,7 +9,6 @@ p({"class": "foam.core.auth.Country", "code": "AL", "iso31661Code": "ALB", "isoN
 p({"class": "foam.core.auth.Country", "code": "AM", "iso31661Code": "ARM", "isoNumeric": "051", "name": "Armenia", "longName": "Republic of Armenia", "geographicRegion": "Europe & Central Asia", "phoneCode": "374", "emoji": "🇦🇲"})
 p({"class": "foam.core.auth.Country", "code": "AN", "isoNumeric": "525", "name": "Netherlands Antilles", "phoneCode": "599", "emoji": "🇳🇱"})
 p({"class": "foam.core.auth.Country", "code": "AO", "iso31661Code": "AGO", "isoNumeric": "024", "name": "Angola", "longName": "People's Republic of Angola", "geographicRegion": "Sub-Saharan Africa", "phoneCode": "244", "emoji": "🇦🇴"})
-p({"class": "foam.core.auth.Country", "code": "AQ", "iso31661Code": "ATA", "isoNumeric": "010", "name": "Antarctica", "phoneCode": "672", "emoji": "🇦🇶"})
 p({"class": "foam.core.auth.Country", "code": "AR", "iso31661Code": "ARG", "isoNumeric": "032", "name": "Argentina", "longName": "Argentine Republic", "geographicRegion": "Latin America & Caribbean", "phoneCode": "54", "emoji": "🇦🇷"})
 p({"class": "foam.core.auth.Country", "code": "AS", "iso31661Code": "ASM", "isoNumeric": "016", "name": "American Samoa", "longName": "American Samoa", "geographicRegion": "East Asia & Pacific", "phoneCode": "1", "emoji": "🇦🇸"})
 p({"class": "foam.core.auth.Country", "code": "AT", "iso31661Code": "AUT", "isoNumeric": "040", "name": "Austria", "longName": "Republic of Austria", "geographicRegion": "Europe & Central Asia", "phoneCode": "43", "emoji": "🇦🇹"})

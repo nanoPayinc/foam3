@@ -11,6 +11,7 @@ foam.CLASS({
 
   javaImports: [
     'foam.lang.X',
+    'foam.lang.ClientRuntimeException',
     'foam.dao.DAO',
     'foam.dao.MDAO',
     'foam.dao.Subscription',
@@ -18,7 +19,8 @@ foam.CLASS({
     'java.util.ArrayList',
     'java.util.List',
     'foam.dao.ArraySink',
-    'foam.core.crunch.CapabilityJunctionPayload'
+    'foam.core.crunch.CapabilityJunctionPayload',
+    'foam.core.crunch.lite.ReferencePayloadData'
   ],
 
   documentation: `
@@ -31,18 +33,63 @@ foam.CLASS({
       class: 'FObjectProperty',
       of: 'foam.core.crunch.lite.Capable'
     },
-    // {
-    //   name: 'of',
-    //   value: 'foam.core.crunch.lite.CapablePayloads'
-    // }
+    {
+      name: 'of',
+      javaFactory: `
+        return foam.core.crunch.CapabilityJunctionPayload.getOwnClassInfo();
+      `
+    }
   ],
 
+  javaCode: `
+  public CapableAdapterDAO(X x, Capable capable) {
+    setX(x);
+    setCapable(capable);
+  }
+  `,
+
   methods: [
+    {
+      name: 'populateReferencePayloads',
+      type: 'Void',
+      args: [
+        { name: 'x', type: 'Context' },
+        { name: 'payload', type: 'CapabilityJunctionPayload' }
+      ],
+      javaCode: `
+        if ( ReferencePayloadData.class.isInstance(payload.getData()) ) {
+          ReferencePayloadData payloadData = (ReferencePayloadData) payload.getData();
+          try {
+            payloadData.onSelect(x);
+          } catch (Throwable t) {
+            throw new ClientRuntimeException("Failed to populate reference payloads", t);
+          }
+        }
+      `
+    },
+    {
+      name: 'updateReferencePayloads',
+      type: 'Void',
+      args: [
+        { name: 'x', type: 'Context' },
+        { name: 'payload', type: 'CapabilityJunctionPayload' }
+      ],
+      javaCode: `
+        if ( ReferencePayloadData.class.isInstance(payload.getData()) ) {
+          ReferencePayloadData payloadData = (ReferencePayloadData) payload.getData();
+          try {
+            payloadData.onUpdate(x);
+          } catch (Throwable t) {
+            throw new ClientRuntimeException(t);
+          }
+        }
+      `
+    },
     {
       name: 'put_',
       javaCode: `
         CapabilityJunctionPayload payload = (CapabilityJunctionPayload) obj;
-
+        updateReferencePayloads(x, payload);
         CapabilityJunctionPayload[] payloads = getCapable().getCapablePayloads();
         for ( int i = 0 ; i < payloads.length ; i++ ) {
           if (
@@ -131,6 +178,7 @@ foam.CLASS({
           if ( payloads[i] == obj
             || payloads[i].getCapability().equals(idString)
           ) {
+            populateReferencePayloads(x, payloads[i]);
             return payloads[i];
           }
         }
@@ -155,6 +203,7 @@ foam.CLASS({
 
         for ( var payload : getCapable().getCapablePayloads() ) {
           if ( sub.getDetached() ) break;
+          populateReferencePayloads(x, payload);
           decoratedSink.put(payload, sub);
         }
 

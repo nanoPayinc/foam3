@@ -231,7 +231,7 @@ If empty then no permissions are required.`
           slot
         ],
         code: function(a, b) {
-          return a && b;
+          return !! ( a && b );
         }
       });
     },
@@ -246,8 +246,8 @@ If empty then no permissions are required.`
       // Helper method for creating isEnabled/isAvailable slots.
 
       var slot = expression ?
-          data.slot(expression) :
-          foam.lang.ConstantSlot.create({ value: true });
+        data.slot(expression) :
+        foam.lang.ConstantSlot.create({ value: true });
 
       return this.addPermissionsCheck_(x, slot, data, permissionsName);
     },
@@ -308,6 +308,8 @@ If empty then no permissions are required.`
         } catch (err) {
           running.set(false);
           throw err;
+        } finally {
+          data && data.pub && data.pub('action', self.name, self);
         }
       }
       // primitive types won't have a pub method
@@ -340,8 +342,8 @@ If empty then no permissions are required.`
 
     function installInProto(proto) {
       var action = this;
-      proto[this.name] = function(x) {
-        return action.maybeCall(x || this.__context__, this);
+      proto[this.name] = function(x, data) {
+        return action.maybeCall(x || this.__context__, data || this);
       };
     }
   ]

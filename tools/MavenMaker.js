@@ -16,14 +16,17 @@ exports.args = [
   }
 ];
 
-const path_                                                          = require('path');
-const { execSync, ensureDir, adaptOrCreateArgs, writeFileIfUpdated } = require('./buildlib');
+const path_ = require('path');
 
 const javaDependencies = [];
 
 exports.init = function() {
-  adaptOrCreateArgs(X, exports.args);
-  X.libdir = X.builddir + '/lib';
+  this.adaptOrCreateArgs(X, exports.args);
+  X.libdir = X.libdir || (X.builddir + '/lib');
+  if ( this.ensureDir(X.libdir) ) {
+    // build/lib may have been deleted without clearing pom.xml
+    this.rmfile('pom.xml');
+  }
 }
 
 
@@ -34,7 +37,6 @@ exports.visitPOM = function(pom) {
 
 exports.end = function() {
   // Build Maven file
-  ensureDir(X.libdir);
   var pom = foam.poms[0];
 
   var versions     = {};
@@ -79,13 +81,13 @@ exports.end = function() {
 
   // Print versions conflict info and abort
   if ( conflicts.length > 0 ) {
-    console.log('[Maven] Detected libs version conflict:');
+    this.log('[Maven] Detected libs version conflict:');
     var info = '';
     conflicts.forEach(c => {
       info += '\t' + c + '\n' +
         versions[c].map(d => '\t\t' + d['id'] + ' at ' + d['loc']).join('\n') + '\n';
     });
-    console.log(info);
+    this.log(info);
     throw new Error('Abort [Maven Builder] due to library versions conflict detected.');
   }
 
@@ -125,10 +127,10 @@ exports.end = function() {
     <dependencies>${dependencies}    </dependencies>
   </project>\n`.replaceAll(/^  /gm, '');
 
-  if ( writeFileIfUpdated('pom.xml', pomxml) ) {
-    console.log('[Maven] Updating pom.xml with', javaDependencies.length, 'dependencies.');
-    execSync(`mvn dependency:copy-dependencies -DoutputDirectory=${X.builddir + '/lib'}`, { stdio: 'inherit' });
+  if ( this.writeFileIfUpdated('pom.xml', pomxml) ) {
+    this.log('[Maven] Updating pom.xml with', javaDependencies.length, 'dependencies.');
+    this.execSync(`mvn dependency:copy-dependencies -DoutputDirectory=${X.builddir + '/lib'}`, { stdio: VERBOSE ? 'inherit' : 'ignore' });
   } else {
-    console.log('[Maven] Not Updating pom.xml. No changes to', javaDependencies.length, 'dependencies.');
+    this.log('[Maven] Not Updating pom.xml. No changes to', javaDependencies.length, 'dependencies.');
   }
 }

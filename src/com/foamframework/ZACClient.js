@@ -5,17 +5,25 @@ foam.CLASS({
   mixins: [
     'foam.u2.memento.Memorable'
   ],
+  requires: [
+    'foam.core.menu.VerticalMenu',
+  ],
   imports: [
+    'window',
     'ctrl',
+    'menuDAO',
     'documentDAO'
+  ],
+  exports: [
+    'routeTo',
+    'as stack',
   ],
   properties: [
     {
       name: 'route',
-      value: 'intro',
       memorable: true,
     },
-    'doc',
+    'stack',
     {
       class: 'Boolean',
       name: 'collapsed',
@@ -45,7 +53,7 @@ foam.CLASS({
     /* CSS Variables for easy customization */
     :root {
       --sidebar-width: 240px;
-      --sidebar-collapsed-width: 60px;
+      --sidebar-collapsed-width: 0px;
       --transition-duration: 0.3s;
       --primary-color: #2c3e50;  /* Sidebar background */
       --secondary-color: #ecf0f1; /* Light background for header */
@@ -142,7 +150,7 @@ foam.CLASS({
 
     /* When collapsed, reduce sidebar width */
     ^collapsed {
-      width: var(--sidebar-collapsed-width) !important;
+      width: var(--sidebar-collapsed-width) !important
     }
 
     /* Adjust list items when collapsed */
@@ -180,7 +188,7 @@ foam.CLASS({
     }
     ^document th {
       font-weight: bold;
-      background-color: $grey400;
+      background-color: $backgroundInverseTertiary;
     }
   `,
   methods: [
@@ -189,6 +197,13 @@ foam.CLASS({
       if ( foam?.core?.zac?.Client?.isInstance?.(this.ctrl) ) {
         this.ctrl.add(this);
       }
+    },
+    // emulate a stack
+    function set(viewSpec, context) {
+      this.stack = [viewSpec, context];
+    },
+    function routeTo(menu) {
+      this.window.location.hash = menu
     },
     function render() {
       this.SUPER();
@@ -209,46 +224,33 @@ foam.CLASS({
 
       // Sidebar
       this.start('div').addClass(this.myClass('container'))
-        // Sidebar Navigation
-        .start('nav').addClass(this.myClass('sidebar'))
+        .start('div').addClass(this.myClass('sidebar'))
         .enableClass(this.myClass('collapsed'), this.collapsed$)
-        .start('ul')
-        .select(this.documentDAO, function(obj) {
-          this.start('li')
-            .start('a')
-            .attrs({
-              href: `#${obj.id}`,
-              'data-icon': (obj.title || foam.String.labelize(obj.id))[0]
-            })
-            .add(obj.title || foam.String.labelize(obj.id))
-            .end('a')
-            .end('li');
-        })
-        .end() // end ul
-        .end() // end nav
+        .tag(this.VerticalMenu)
+        .end() // sidebar
         // Main Content Area
         .start('main').addClass(this.myClass('content'))
-        .add(this.dynamic(function(doc) {
-          this
-            .start()
-            .addClass(self.myClass('document'))
-            .add(doc?.toE?.(null, this.__subSubContext__))
-            .end()
+        .add(this.dynamic(function(stack) {
+          if ( stack ) {
+            this.add(foam.u2.ViewSpec.createView(stack[0], null, this, this, stack[1]));
+          }
         }))
-        .end()
         .end();
 
-      this.onDetach(this.route$.sub(this.updateDoc));
-      this.updateDoc();
-    }
-  ],
-  listeners: [
-    async function updateDoc() {
-      if ( ! this.route ) {
-        return
+      const listener = async () => {
+        var menu = await this.menuDAO.find(this.route);
+        menu && menu.launch(this.__subContext__);
       }
-      let doc = await this.documentDAO.find(this.route);
-      this.doc = doc;
-    }
+      this.onDetach((() => {
+        var s = this.route$.sub(listener);
+        return () => {
+          debugger;
+          s();
+        };
+      })());
+                       
+          
+      listener();
+    },
   ]
 });

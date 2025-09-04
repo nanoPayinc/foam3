@@ -1,5 +1,5 @@
 for local Google Sheets Api test:
-1. go to https://console.developers.google.com -> nanopay.net -> Google Sheets Export Test (https://console.developers.google.com/apis/dashboard?project=enhanced-kit-270019&folder=&supportedpurview=project)
+1. go to https://console.developers.google.com -> foamdev.net -> Google Sheets Export Test (https://console.developers.google.com/apis/dashboard?project=enhanced-kit-270019&folder=&supportedpurview=project)
 2. go to credentials tab on your left ( https://console.developers.google.com/apis/credentials?folder=&project=enhanced-kit-270019&supportedpurview=project ) 
 3. in OAuth 2.0 Client IDs table select Web client 1 ( https://console.developers.google.com/apis/credentials/oauthclient/115894150815-mlvta60lqk0v61522lt4v40dmgeie0cs.apps.googleusercontent.com?folder=&project=enhanced-kit-270019&supportedpurview=project )
 4. press "Download JSON" button to download app credentials, which will aprear at the top after navigation bar
@@ -15,4 +15,4 @@ for local Google Sheets Api test:
 
 *** make sure you are not using VPN
 
-**** make sure you are using your nanopay email and please follow up with google account authentication process
+**** make sure you are using your email and please follow up with google account authentication process

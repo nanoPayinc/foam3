@@ -1,3 +1,4 @@
+
 /**
  * @license
  * Copyright 2018 The FOAM Authors. All Rights Reserved.
@@ -610,6 +611,59 @@ return junction`
       javaCode: 'return getDao();',
       swiftCode: 'return dao!',
       code: function getDAO() { return this.dao; }
+    },
+    function browse_(x, add) {
+      var self = this;
+
+      var targetDAO = x[this.targetDAOKey];
+      var E = foam.mlang.ExpressionsSingleton.create();
+      var dao = foam.dao.PromisedDAO.create({
+        of: targetDAO.of,
+        promise: this.junctionDAO.
+          where(E.EQ(this.sourceProperty, this.sourceId)).
+          select(E.MAP(this.targetProperty)).
+          then(function(map) {
+            var pred = E.IN(targetDAO.of.ID, map.delegate.array);
+            if ( add ) {
+              pred = E.NOT(pred);
+            }
+            return targetDAO.where(pred)
+          })
+      })
+
+      var config = foam.comics.v2.DAOControllerConfig.create({
+        dao: dao,
+        selectMode: true,
+        click: function(obj, id) {
+          // TODO: Select the objects, this is hard because UnstyledTableRow/UnstyledTableView maintains a lot of state about selection
+          // this might be buggy if the user has used select all
+          
+          var result = { ...config.selectedObjs };
+          if ( result[id] ) {
+            delete result[id]
+          } else {
+            result[id] = obj
+          }
+          config.selectedObjs = result
+        }
+      }, x);
+
+      config.sub('select', async () => {
+        for ( var obj of Object.values(config.selectedObjs) ) {
+          if ( add ) {
+            await this.add(obj);
+          } else {
+            await this.remove(obj);
+          }
+        }
+        x.stack.jump(x.stack.pos - 1);
+      })
+
+      x.stack.push({
+        ...config.browseController,
+        config: config,
+        data: config.dao,
+      }, x);
     }
   ],
 
@@ -618,58 +672,14 @@ return junction`
       name: 'addItem',
       label: 'Add',
       code: function(x) {
-        var self = this;
-        var dao = x[self.targetDAOKey];
-
-        var controller = foam.comics.DAOController.create({
-          createEnabled: false,
-          editEnabled: false,
-          selectEnabled: true,
-          exportEnabled: false,
-          relationship: this,
-          data: dao,
-          createLabel: 'Add',
-          title: `Add ${dao.of.model_.plural}`,
-          subtitle: `Select ${dao.of.model_.plural} from the table and click "Add" to add them.`
-        }, x);
-
-        controller.sub('select', function(s, _, selectedObjects) {
-          Object.values(selectedObjects).forEach((obj) => {
-            self.add(obj);
-          });
-        });
-
-        x.stack.push(this.StackBlock.create({
-          view: { class: 'foam.comics.DAOControllerView', data: controller }, parent: x }));
+        this.browse_(x, true)
       }
     },
     {
       name: 'removeItem',
       label: 'Remove',
       code: function(x) {
-        var self = this;
-        var dao = self.dao;
-
-        var controller = foam.comics.DAOController.create({
-          createEnabled: false,
-          editEnabled: false,
-          selectEnabled: true,
-          relationship: this,
-          data: dao,
-          createLabel: 'Remove',
-          title: `Remove ${dao.of.model_.plural}`,
-          subtitle: `Select ${dao.of.model_.plural} from the table and click "Remove" to remove them.`
-        }, x);
-
-        controller.sub('select', function(s, _, selectedObjects) {
-          Object.values(selectedObjects).forEach((obj) => {
-            self.remove(obj);
-          });
-        });
-
-        x.stack.push(this.StackBlock.create({
-          view: { class: 'foam.comics.DAOControllerView', data: controller }
-        }));
+        this.browse_(x, false);
       }
     }
   ]
@@ -699,7 +709,7 @@ foam.CLASS({
       name: 'methodName',
       expression: function(propertyName) {
         return 'get' + foam.String.capitalize(propertyName);
-      },
+      }
     },
     ['transient', true],
     ['tableCellFormatter', null],
@@ -732,7 +742,7 @@ foam.CLASS({
     {
       class: 'Map',
       name: 'methodOverrides'
-    },
+    }
   ],
 
   methods: [
@@ -1123,10 +1133,7 @@ foam.CLASS({
     },
     {
       name: 'view',
-      value: {
-        class: 'foam.u2.view.FObjectPropertyView',
-        readView: { class: 'foam.u2.view.ReadManyToManyRelationshipPropertyView' }
-      }
+      value: { class: 'foam.u2.view.ManyToManyRelationshipPropertyView' }
     },
     [ 'copyValueFrom', function() { return false; } ],
     [ 'cloneProperty', function() { /* NOP */ } ]

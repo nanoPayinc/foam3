@@ -21,8 +21,11 @@ foam.CLASS({
   extends: 'foam.lang.FObjectProperty',
 
   documentation: `
-    Set a ViewFactory to be a string containing a class name,
-    a Class object, or a factory function(args, context).
+    Set a ViewFactory to be:
+      1. a string containing a class name (ex. 'com.acme.MyView')
+      2. a JSON representation of a View (ex. { class: 'com.acme.MyView', arg1: value1, arg2: value2 })
+      3. a Class object (ex. com.acme.MyView)
+      4. a factory function(args, context), (ex. function(args, context) { return com.acme.MyView.create(args, context); }
     Useful for rowViews and similar.`
   ,
 
@@ -72,7 +75,7 @@ foam.CLASS({
 
             if ( spec.children ) {
               for ( var i = 0 ; i < spec.children.length ; i++ ) {
-                ret.tag(spec.children[0]);
+                ret.tag(spec.children[i]);
               }
             }
 
@@ -107,7 +110,7 @@ foam.CLASS({
     ],
     {
       name: 'view',
-      value: { class: 'foam.u2.view.MapView' }
+      value: { class: 'foam.u2.view.JSONTextView' }
     },
     {
       name: 'adapt',

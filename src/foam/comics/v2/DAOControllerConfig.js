@@ -37,7 +37,7 @@ foam.CLASS({
         if ( typeof n === 'function' ) return n;
         // adapt a class method path
         var lastIndex = n.lastIndexOf('.');
-        var classObj = foam.lookup(n.substring(0, lastIndex));
+        var classObj  = foam.lookup(n.substring(0, lastIndex));
         return classObj[n.substring(lastIndex + 1)];
       }
     },
@@ -151,10 +151,11 @@ foam.CLASS({
     {
       class: 'foam.u2.ViewSpec',
       name: 'summaryView',
-      expression: function(tableColumns) {
+      expression: function(tableColumns, selectMode) {
         return {
           class: 'foam.u2.table.TableView',
           editColumnsEnabled: true,
+          multiSelectEnabled: selectMode,
           columns: tableColumns,
           css: {
             width: '100%'
@@ -176,7 +177,7 @@ foam.CLASS({
 
         return tableColumns
           ? tableColumns.columns
-          : of.getAxiomsByClass(foam.lang.Property).map(p => p.name);
+          : of.getAxiomsByClass(foam.lang.Property).filter(p => ! p.hidden).map(p => p.name);
       }
     },
     {
@@ -323,6 +324,17 @@ foam.CLASS({
     {
       class: 'Boolean',
       name: 'hideQueryBar'
+    },
+    {
+      class: 'Boolean',
+      name: 'selectMode',
+      documentation: 'Enables multi-select mode for choosing objects (e.g., for Many-to-Many relationships).'
+    },
+    {
+      class: 'String',
+      name: 'selectTitle',
+      value: 'Select',
+      documentation: 'Label for the select button when selectMode is true.'
     },
     {
       class: 'Int',

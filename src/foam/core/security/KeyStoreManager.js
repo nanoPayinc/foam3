@@ -8,10 +8,10 @@ foam.INTERFACE({
   package: 'foam.core.security',
   name: 'KeyStoreManager',
 
-  documentation: 'Simplified interface to work with File or Resource based Java KeyStore',
+  documentation: 'FOAM interface to Java KeyStore',
 
-  implements: [
-    'foam.core.COREService'
+  javaImports: [
+    'java.security.KeyStore'
   ],
 
   methods: [
@@ -23,7 +23,6 @@ foam.INTERFACE({
     {
       name: 'unlock',
       documentation: 'Unlocks the KeyStore.',
-      type: 'Void',
       javaThrows: [
         'java.security.cert.CertificateException',
         'java.security.NoSuchAlgorithmException',
@@ -39,72 +38,45 @@ foam.INTERFACE({
         'java.security.NoSuchAlgorithmException',
         'java.security.KeyStoreException'
       ],
-      args: [
-        {
-          name: 'alias',
-          type: 'String'
-        }
-      ]
+      args: 'String alias',
     },
     {
       name: 'loadKey_',
       documentation: 'Loads a key from the KeyStore using additional protection parameter.',
+      protected: true,
       javaType: 'java.security.KeyStore.Entry',
       javaThrows: [
         'java.security.UnrecoverableEntryException',
         'java.security.NoSuchAlgorithmException',
         'java.security.KeyStoreException'
       ],
-      args: [
-        {
-          name: 'alias',
-          type: 'String'
-        },
-        {
-          name: 'protParam',
-          javaType: 'java.security.KeyStore.ProtectionParameter'
-        }
-      ]
+      args: 'String alias, java.security.KeyStore.ProtectionParameter protParam',
+      javaCode: `
+        return getKeyStore().getEntry(alias, protParam);
+      `
     },
     {
       name: 'storeKey',
       documentation: 'Stores a new key.',
-      type: 'Void',
       javaThrows: [
         'java.security.KeyStoreException'
       ],
-      args: [
-        {
-          name: 'alias',
-          type: 'String'
-        },
-        {
-          name: 'entry',
-          javaType: 'java.security.KeyStore.Entry'
-        }
-      ]
+      args: 'String alias, java.security.KeyStore.Entry entry',
+      javaCode: `
+        storeKey_(alias, entry, null);
+      `
     },
     {
       name: 'storeKey_',
       documentation: 'Stores a new key using additional protection parameter.',
-      type: 'Void',
+      protected: true,
       javaThrows: [
         'java.security.KeyStoreException'
       ],
-      args: [
-        {
-          name: 'alias',
-          type: 'String'
-        },
-        {
-          name: 'entry',
-          javaType: 'java.security.KeyStore.Entry'
-        },
-        {
-          name: 'protParam',
-          javaType: 'java.security.KeyStore.ProtectionParameter'
-        }
-      ]
+      args: 'String alias, java.security.KeyStore.Entry entry, java.security.KeyStore.ProtectionParameter protParam',
+      javaCode: `
+        getKeyStore().setEntry(alias, entry, protParam);
+      `
     },
     {
       documentation: `Retrieve a password from the keystore imported via importpass.
@@ -140,7 +112,10 @@ keytool -importpass \
           name: 'algorithm',
           type: 'String'
         }
-      ]
+      ],
+      javaCode: `
+      throw new UnsupportedOperationException();
+      `
     }
   ]
 });

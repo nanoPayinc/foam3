@@ -313,7 +313,8 @@ public class JSONFObjectFormatter
     } else if ( value instanceof List ) {
       output((List) value);
     } else {
-      System.err.println(this.getClass().getSimpleName() + ".output, Unexpected value type: " + value.getClass().getName());
+      String s = builder().toString();
+      foam.core.logger.StdoutLogger.instance().error(this.getClass().getSimpleName() + ".output, Unexpected value type:", value.getClass().getName(), "value:", value, "builder:", s.substring(0, Math.min(400, s.length())),"...",s.substring(Math.max(0, s.length() - 500)));
       append("null");
     }
   }
@@ -386,7 +387,7 @@ public class JSONFObjectFormatter
     }
 
     ClassInfo newInfo  = newFObject.getClassInfo();
-    String    of       = newInfo.getObjClass().getSimpleName().toLowerCase();
+    String    of       = newInfo.getSimpleName().toLowerCase();
     List      axioms   = getProperties(parentProp, newInfo);
     int       size     = axioms.size();
     int       ids      = 0;

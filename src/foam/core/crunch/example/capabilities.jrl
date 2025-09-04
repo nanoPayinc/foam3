@@ -3,6 +3,5 @@ p({
   "id": "crunch.example",
   "name": "Example Capability",
   "of": "foam.core.crunch.example.ExampleData",
-  "enabled": true,
-  "visible": false
+  "enabled": true
 })

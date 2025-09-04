@@ -37,7 +37,7 @@
       .start()
         .tag(this.importConfig)
       .end();
-      this.start({ class: 'net.nanopay.sme.ui.wizardModal.WizardModalNavigationBar', back: this.BACK, next: this.NEXT }).addClass(this.myClass('footer')).end();
+      this.start({ class: 'foam.core.google.api.sheets.views.wizardModal.WizardModalNavigationBar', back: this.BACK, next: this.NEXT }).addClass(this.myClass('footer')).end();
     },
     function isColumnHeaderReferncePropertyId(columnHeader, p) {
       return foam.lang.Reference.isInstance(p) && p.of.getAxiomByName("id") && p.label === columnHeader.split('/')[0] && p.of.getAxiomByName("id").label === columnHeader.split('/')[1];

@@ -22,7 +22,7 @@ foam.CLASS({
     }
 
     ^black {
-      color: $black;
+      color: $textDefault;
     }
 
     ^white {

@@ -41,6 +41,10 @@ foam.CLASS({
     'foam.time.DayOfWeek'
   ],
 
+  imports: [
+    'controllerMode'
+  ],
+
   messages: [
     { name: 'INVALID_HOURS', message: 'Comma seperated list of hours in range 0 through 23, or -1 for all hours.'}
   ],
@@ -54,26 +58,32 @@ foam.CLASS({
       class: 'Reference',
       of: 'foam.time.TimeZone',
       name: 'timeZone',
+      reactive: false,
       order: 0,
+      gridColumns: 6,
       value: 'GMT'
     },
     {
       class: 'Int',
       name: 'second',
+      reactive: false,
       value: 0,
       min: 0,
       max: 59,
       order: 1,
+      gridColumns: 2,
       documentation: `Second of minute to execute the script.
            Ranges from 0 - 59.`
     },
     {
       class: 'Int',
       name: 'minute',
+      reactive: false,
       value: -1,
       min: -1,
       max: 59,
       order: 2,
+      gridColumns: 2,
       documentation: `Minute of hour to execute script.
           Ranges from 0 - 59.
           -1 acts as a flag to ignore minutes in getNextScheduledTime,
@@ -84,6 +94,7 @@ foam.CLASS({
       documentation: 'deprecated, replaced by hours',
       class: 'Int',
       name: 'hour',
+      reactive: false,
       transient: true,
       hidden: true,
       javaSetter: `
@@ -96,7 +107,9 @@ foam.CLASS({
       documentation: 'Comma seperated list of hours in range 0 through 23. Or -1 for all hours.',
       class: 'String',
       name: 'hours',
+      reactive: false,
       order: 3,
+      gridColumns: 2,
       validationPredicates: [
         {
           args: ['hours'],
@@ -183,8 +196,7 @@ foam.CLASS({
       transient: true,
       hidden: true,
       javaSetter: `
-      if ( ! daysOfWeekIsSet_ &&
-           ! daysOfMonthIsSet_ ) {
+      if ( ! daysOfWeekIsSet_ && ! daysOfMonthIsSet_ ) {
         if ( val == -1 ) {
           setDaysOfWeek(foam.time.DayOfWeek.values());
         } else if ( val > 0 ) {
@@ -215,8 +227,7 @@ foam.CLASS({
       transient: true,
       hidden: true,
       javaSetter: `
-      if ( val > 0 &&
-           ! daysOfMonthIsSet_ ) {
+      if ( val > 0 && ! daysOfMonthIsSet_ ) {
         setDaysOfMonth(new Integer[] { val });
       }
       `,
@@ -229,13 +240,13 @@ foam.CLASS({
       javaPreSet: 'if ( val != null ) { Arrays.sort(val); }',
       view: { class: 'foam.u2.view.DayOfMonthView' },
       visibility: function(daysOfWeek, daysOfMonth, weekOfMonth) {
-        if ( weekOfMonth > 0 ||
-             ( daysOfWeek.length > 0 && daysOfMonth.length == 0 ) )
+        if ( weekOfMonth > 0 || ( daysOfWeek.length > 0 && daysOfMonth.length == 0 ) )
           return foam.u2.DisplayMode.HIDDEN;
+
         if ( this.controllerMode == foam.u2.ControllerMode.EDIT )
           return foam.u2.DisplayMode.RW;
-        else
-          return foam.u2.DisplayMode.RO;
+
+        return foam.u2.DisplayMode.RO;
       }
     }
   ],

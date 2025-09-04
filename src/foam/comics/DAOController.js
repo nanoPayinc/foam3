@@ -54,7 +54,7 @@ foam.CLASS({
     },
     {
       name: 'filteredDAO',
-      view: { class: 'foam.u2.view.ScrollTableView' },
+      view: { class: 'foam.u2.table.TableView' },
       expression: function(data, predicate) {
         return predicate ? data.where(predicate) : data;
       }

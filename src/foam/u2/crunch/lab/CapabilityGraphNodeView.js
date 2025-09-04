@@ -23,14 +23,14 @@ foam.CLASS({
       border-radius: 10px;
       box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.2);
       border: solid 1px #e7eaec;
-      background-color: $white;
+      background-color: $backgroundDefault;
 
       overflow: hidden;
     }
 
     ^segment {
       border-bottom: 1px solid rgba(0,0,0,0.4);
-      background-color: rgba(255,255,255,0.7);
+      background-color: $backgroundDefault;
       padding: 8px 0;
       text-align: center;
       margin-bottom: 8px;

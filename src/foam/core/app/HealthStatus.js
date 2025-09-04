@@ -8,7 +8,7 @@ foam.ENUM({
   package: 'foam.core.app',
   name: 'HealthStatus',
 
-  documentation: 'Represents typical health status',
+  documentation: 'Represents typical health status. Intended for use by a Load Balancer.',
 
   values: [
     { name: 'DOWN',  label: 'down',  color: 'gray' },

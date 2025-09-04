@@ -14,6 +14,7 @@ p({
   return new foam.dao.EasyDAO.Builder(x)
     .setOf(foam.core.app.Health.getOwnClassInfo())
     .setCluster(false)
+    .setSaf(false)
     .setDecorator(new foam.core.app.HealthRemoveDAO.Builder(x)
       .setDelegate(new foam.dao.NullDAO(x, foam.core.app.Health.getOwnClassInfo()))
       .build())
@@ -47,6 +48,15 @@ p({
 })
 
 p({
+  "class":"foam.core.boot.CSpec",
+  "name":"healthSupport",
+  "lazy":false,
+  "service": {
+    "class": "foam.core.app.HealthSupport"
+  }
+})
+
+p({
   "class": "foam.core.boot.CSpec",
   "name": "healthHeartbeatService",
   "lazy": false,
@@ -74,3 +84,10 @@ p({
   "authenticate":false,
   "client":"{ \"class\": \"foam.core.app.AppDownloadBadgeService\" }"
 })
+
+// p({
+//   "class": "foam.core.boot.CSpec",
+//   "name": "shutdownWatcher",
+//   "lazy": false,
+//   "serviceClass": "foam.core.app.ShutdownWatcher"
+// })

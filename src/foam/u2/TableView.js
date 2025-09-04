@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/** Use foam.u2.view.TableView instead. **/
+/** Use foam.u2.table.TableView instead. **/
 
 foam.CLASS({
   package: 'foam.u2',
@@ -362,7 +362,7 @@ foam.CLASS({
     function init() {
       this.SUPER();
 
-      console.log('Deprecated use of foam.u2.TableView. Use foam.u2.view.TableView instead.');
+      console.log('Deprecated use of foam.u2.TableView. Use foam.u2.table.TableView instead.');
     },
 
     function render() {

@@ -1,0 +1,6 @@
+p({
+  class:"foam.core.notification.email.EmailTemplate",
+  id: "googleChatCardsV2NotificationTemplate",
+  name:"googleChatCardsV2NotificationTemplate",
+  body:"{\"cardsV2\":[{\"cardId\":\"{{cardId}}\",\"card\":{\"header\":{\"title\":\"{{title}}\", \"subtitle\":\"{{subtitle}}\"},\"sections\":[{\"widgets\":[{\"textParagraph\":{\"text\":\"{{message}}\"}}]}]}}]}"
+})

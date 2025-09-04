@@ -32,6 +32,7 @@ p({
     mdao.addIndex(new foam.lang.PropertyInfo[] {foam.core.script.ScriptEvent.OWNER});
     mdao.addIndex(new foam.lang.PropertyInfo[] {foam.core.script.ScriptEvent.LAST_RUN});
     return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
       .setOf(foam.core.script.ScriptEvent.getOwnClassInfo())
       .setMdao(mdao)
       .setGuid(true)
@@ -49,4 +50,29 @@ p({
       .build();
   """,
   "client":"{\"of\":\"foam.core.script.ScriptEvent\"}"
+})
+
+p({
+  "class":"foam.core.boot.CSpec",
+  "name":"testRunDAO",
+  "serve":true,
+  "serviceScript":"""
+    return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
+      .setOf(foam.core.test.TestRun.getOwnClassInfo())
+      .setFuid(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("testruns")
+      .setFixedSize(new foam.dao.FixedSizeDAO.Builder(x)
+        .setComparator(foam.mlang.MLang.DESC(foam.core.test.TestRun.LAST_MODIFIED))
+        .setSize(1000)
+        .build())
+      .setOrder(new foam.mlang.order.Comparator[] {
+        new foam.mlang.order.Desc.Builder(x).setArg1(foam.core.test.TestRun.LAST_MODIFIED).build()
+      })
+      .setRuler(false)
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.test.TestRun.LAST_MODIFIED });
+  """,
+  "client":"{\"of\":\"foam.core.test.TestRun\"}"
 })

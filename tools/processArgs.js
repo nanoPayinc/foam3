@@ -4,9 +4,12 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-function processArgs(usage, x, defaultFlags, cmds) {
-  var flags = globalThis.foam.flags;
-  var argv  = process.argv.slice(2);
+function processArgs(args, x, defaultFlags, cmds) {
+
+  var flags = globalThis.foam.flags || {};
+
+  // This supports calling directly or via exec_ where args are passed via process.
+  var argv = args && args[0].split(' ') || process.argv.slice(2);
 
   if ( defaultFlags ) for ( var key in defaultFlags ) {
     flags[key] = defaultFlags[key];
@@ -18,25 +21,10 @@ function processArgs(usage, x, defaultFlags, cmds) {
 
     var arg = argv.shift();
 
-    if ( arg === '-help' || arg === '--help' || arg === '-usage' || arg === '--usage' || arg === '-?' || arg === '--?' ) {
-      var flagKeys = defaultFlags ? Object.keys(defaultFlags) : [];
-      var argList  = Object.keys(x).map(k => ` [ -${k}="${x[k]}" ]`).join('');
-      var cmdList  = Object.keys(cmds || []).map(c => ` [ -${c} ]`).join('');
-      var flagList = '';
-      if ( flagKeys.length ) {
-        flagList = '[ -flags=' + flagKeys.map(k => (defaultFlags[k] ? '-' : '') + k).join(',') + ' ]';
-      }
-      console.log('USAGE:', process.argv[1], flagList + cmdList + argList, usage);
-
-      // If a 'usage' method is supplied in cmds, then call it to provide extra usage information.
-      cmds && cmds.usage && cmds.usage();
-
-      process.exit(1);
-    }
-
     var i = arg.indexOf('=');
     if ( i == -1 ) {
-      arg = arg.substring(1);
+      // console.log('command: ' + arg);
+      // arg = arg.substring(1);
       if ( cmds && cmds[arg] ) {
         cmds[arg]();
       } else {
@@ -47,6 +35,7 @@ function processArgs(usage, x, defaultFlags, cmds) {
       var value = arg.substring(i + 1);
       if ( key === 'flags' ) {
         value.split(',').forEach(f => {
+          if ( ! f ) return; // empty string ''
           if ( f.startsWith('-') ) {
             flags[f.substring(1)] = false;
           } else {
@@ -54,6 +43,13 @@ function processArgs(usage, x, defaultFlags, cmds) {
           }
         });
       } else {
+        if ( value.startsWith("'") ) {
+          while ( ! value.endsWith("'") ) {
+            value += ' ';
+            value += argv.shift();
+          }
+          value = value.substring(1, value.length-1);
+        }
         x[key] = value;
       }
     }

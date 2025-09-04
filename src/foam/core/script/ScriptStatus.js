@@ -19,8 +19,8 @@ foam.ENUM({
       name: 'UNSCHEDULED',
       label: 'Unscheduled',
       ordinal: 1,
-      color: '$grey700',
-      background: '$grey300',
+      color: '$textSecondary',
+      background: '$backgroundTertiary',
     },
     {
       name: 'RUNNING',
@@ -35,6 +35,13 @@ foam.ENUM({
       ordinal: 3,
       color: '$destructive500',
       background: '$destructive50'
+    },
+    {
+      name: 'INTERRUPTED',
+      label: 'Interrupted',
+      ordinal: 4,
+      color: '$warn700',
+      background: '$warn500'
     }
   ]
 });

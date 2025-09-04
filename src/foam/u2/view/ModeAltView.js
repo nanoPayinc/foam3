@@ -34,11 +34,21 @@ foam.CLASS({
       class: 'foam.u2.ViewSpec',
       name: 'writeView'
     },
-    'realView',
-    'prop',
-    'args',
+    {
+      name: 'realView',
+      transient: true
+    },
+    {
+      name: 'prop',
+      transient: true
+    },
+    {
+      name: 'args',
+      transient: true
+    },
     {
       name: 'contextData',
+      transient: true,
       documentation: "See the comment in 'exports' above as to why this is necessary.",
       factory: function() {
         return this.__context__.data;

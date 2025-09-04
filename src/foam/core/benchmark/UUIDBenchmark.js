@@ -54,7 +54,7 @@ foam.CLASS({
         {
           name: 'x',
           type: 'X'
-        },
+        }
       ],
       javaCode: `
     AppConfig config = (AppConfig) x.get("appConfig");

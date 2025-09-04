@@ -53,11 +53,25 @@ foam.CLASS({
 
       // test for email
       DAO emailMessageDAO = (DAO) x.get("emailMessageDAO");
-      List<EmailMessage> emailMessages = (List) ((ArraySink) emailMessageDAO.select(new ArraySink())).getArray();
       EmailMessage message = null;
-      for ( EmailMessage msg : emailMessages ) {
-        if ( msg.getSubject().contains("DAONotificationEmailTemplateTest") ) {
-          message = msg;
+
+      // notifications to group submitted to agency, so may have to wait for it
+      int loop = 0;
+      int maxLoops = 10;
+      boolean found = false;
+      while ( ! found && loop < maxLoops ) {
+        loop += 1;
+
+        List<EmailMessage> emailMessages = (List) ((ArraySink) emailMessageDAO.select(new ArraySink())).getArray();
+        for ( EmailMessage msg : emailMessages ) {
+          if ( msg.getSubject().contains("DAONotificationEmailTemplateTest") ) {
+            message = msg;
+            break;
+          }
+        }
+        try {
+          Thread.currentThread().sleep(100L);
+        } catch (InterruptedException e) {
           break;
         }
       }

@@ -13,6 +13,7 @@ foam.INTERFACE({
       class: 'Reference',
       of: 'foam.core.auth.User',
       name: 'lastModifiedBy',
+      value: 0, // Suppress compiler warnings
       createVisibility: 'HIDDEN',
       updateVisibility: 'RO',
       externalTransient: true,
@@ -27,6 +28,7 @@ foam.INTERFACE({
       class: 'Reference',
       of: 'foam.core.auth.User',
       name: 'lastModifiedByAgent',
+      value: 0, // Suppress compiler warning
       createVisibility: 'HIDDEN',
       updateVisibility: 'RO',
       externalTransient: true,

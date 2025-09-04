@@ -13,11 +13,11 @@ foam.CLASS({
 
   css: `
     ^summary {
-      color: $black;
+      color: $textDefault;
     }
 
     ^email {
-      color: $grey400;
+      color: $textTertiary;
     }
   `,
 

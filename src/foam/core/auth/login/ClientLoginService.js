@@ -73,6 +73,7 @@ foam.CLASS({
             await this.checkGeneralCapability();
             this.initLayout.resolve();
           }
+          return true;
         } catch (err) {
           let e = err && err.data ? err.data.exception : err;
           if ( this.DuplicateEmailException.isInstance(e) ) {
@@ -82,7 +83,7 @@ foam.CLASS({
                 loggedInInUser = await this.auth.login(x, data.username, data.password);
                 this.subject.user = loggedInInUser;
                 this.subject.realUser = loggedInInUser;
-                return;
+                return true;
               } catch ( err ) {
                 data.username = '';
               }
@@ -102,8 +103,8 @@ foam.CLASS({
             let res = await latch;
             // retry signin
             if ( res )
-              await this.signin(x, data, wizardFlow);
-            return;
+              return await this.signin(x, data, wizardFlow);
+            return res;
           }
           this.notify(err.data, this.SIGNIN_ERR, this.LogLevel.ERROR, true);
         }
@@ -186,7 +187,7 @@ foam.CLASS({
             password: data.desiredPassword,
             usernameRequired: true
           });
-          await this.signin(x, signinModel, wizardFlow);
+          return await this.signin(x, signinModel, wizardFlow);
         } else {
           this.notify(err.data, this.SIGNUP_ERR, this.LogLevel.ERROR, true);
         }
@@ -222,7 +223,7 @@ foam.CLASS({
         var ctx = this.__subContext__.createSubContext({ email: email, username: username })
         const wizardRunner = foam.u2.crunch.WizardRunner.create({
           wizardType: foam.u2.wizard.WizardType.TRANSIENT,
-          source: 'net.nanopay.auth.VerifyEmailByCode',
+          source: 'foam.core.auth.VerifyEmailByCode',
           options: { inline: false }
         }, ctx);
         wizardRunner.sequence.remove('ReturnToLaunchPointAgent');

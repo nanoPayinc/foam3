@@ -24,7 +24,7 @@ foam.CLASS({
   ],
 
   imports: [
-    'translationService'
+    'translationService?'
   ],
 
   javaImports: [
@@ -53,7 +53,8 @@ foam.CLASS({
         Street Number, Street Name, Suite Number. For an unstructured address field,
         use address1 and/or address2.
       `,
-      hidden: true
+      hidden: true,
+      comparePropertyValues: function() { return 0; }
     },
     {
       class: 'String',
@@ -687,7 +688,7 @@ foam.CLASS({
       class: 'String',
       name: 'postalCodeLabel',
       expression: function(countryId) {
-        let translatedPostalCodeLabel = this.translationService.getTranslation(foam.locale, `${countryId.toLowerCase()}.postalCode.label`);
+        let translatedPostalCodeLabel = this.translationService ? this.translationService.getTranslation(foam.locale, `${countryId.toLowerCase()}.postalCode.label`) : 'Postal Code';
         return translatedPostalCodeLabel ? translatedPostalCodeLabel : this.translationService.getTranslation(foam.locale, 'postalCode.label', 'Postal Code');
       },
       hidden: true
@@ -757,9 +758,7 @@ foam.CLASS({
           rtn += ' ';
           rtn += this.streetName;
         } else {
-          rtn += this.address1;
-          rtn += ' ';
-          rtn += this.address2;
+          rtn += [this.address1, this.address2].join(', ');
         }
         return rtn.trim();
       },

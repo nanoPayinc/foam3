@@ -5,8 +5,10 @@
  */
 package foam.lang;
 
- /**
- * ContextualizingAgency takes two contexts in constructor: systemX_ is set for agent.x, 
+import java.util.concurrent.Future;
+
+/**
+ * ContextualizingAgency takes two contexts in constructor: systemX_ is set for agent.x,
  * userX_ is used to submit the agent to agency.
  **/
 public class ContextualizingAgency
@@ -15,14 +17,14 @@ public class ContextualizingAgency
   X userX_, systemX_;
 
   public ContextualizingAgency(Agency delegate, X userX, X systemX) {
-    super(delegate);
+    setDelegate(delegate);
     userX_   = userX;
     systemX_ = systemX;
   }
 
-  public void submit(X x, ContextAgent agent, String description) {
+  public Future<?> submit(X x, ContextAgent agent, String description) {
     if ( agent instanceof ContextAware) ((ContextAware) agent).setX(systemX_);
-    super.submit(userX_, agent, description);
+    return super.submit(userX_, agent, description);
   }
 
   @Override

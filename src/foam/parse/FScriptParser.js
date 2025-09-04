@@ -33,6 +33,8 @@ foam.CLASS({
 
   documentation: 'A simple scripting language.',
 
+  constants: { CACHE: {} },
+
 /*
   static: [
     function test__() {
@@ -579,9 +581,20 @@ foam.CLASS({
 
   methods: [
     function parseString(str, opt_name) {
-      var query = this.grammar_.parseString(str, opt_name);
-      query = query && query.partialEval ? query.partialEval() : query;
-      return query;
+      var key = str + '/' + (opt_name || '');
+      var q   = this.CACHE[key];
+
+      if ( q == undefined ) {
+        q = this.grammar_.parseString(str, opt_name);
+        if ( q ) {
+          q = q.partialEval ? q.partialEval() : q;
+        } else {
+          q = null;
+        }
+        this.CACHE[key] = q;
+      }
+
+      return q;
     }
   ]
 });

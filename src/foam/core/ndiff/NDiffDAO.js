@@ -11,7 +11,7 @@ foam.CLASS({
 
   documentation: `
   Decorator for an existing DAO that logs puts to the ndiffDAO service
-  if it's running. 
+  if it's running.
   `,
   javaImports: [
     'foam.core.logger.Logger',
@@ -30,12 +30,12 @@ foam.CLASS({
   properties: [
     {
       name: 'cSpecName',
-      class: 'String',
+      class: 'String'
     },
     {
       name: 'runtimeOrigin',
-      class: 'Boolean',
-    },
+      class: 'Boolean'
+    }
   ],
   methods: [
     {
@@ -53,14 +53,14 @@ foam.CLASS({
         // NDiffRuntimeDAO populates runtimeFObject in real time
         // so do not continue unless we're recording stuff
         // created at startup
-        if ( getRuntimeOrigin() ) { 
+        if ( getRuntimeOrigin() ) {
           return storedObject;
         }
-        
+
         PM pm = PM.create(x, this.getClass(), "put_");
 
-        String cSpecName = getCSpecName();
-        String objectId = storedObject.getProperty("id").toString();
+        String cSpecName    = getCSpecName();
+        String objectId     = storedObject.getProperty("id").toString();
         NDiff existingNdiff = (NDiff) ndiffDao.find_(x, new NDiffId(cSpecName,
                                                                 objectId));
         NDiff ndiff = existingNdiff != null ?
@@ -70,9 +70,8 @@ foam.CLASS({
         ndiff.setObjectId(objectId);
         ndiff.setCSpecName(cSpecName);
         ndiff.setInitialFObject(storedObject);
-        
 
-        ndiffDao.put_(x, ndiff); 
+        ndiffDao.put_(x, ndiff);
         pm.log(x);
 
         return storedObject;

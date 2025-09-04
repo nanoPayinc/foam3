@@ -8,11 +8,7 @@ foam.CLASS({
   package: 'foam.comics.v2.userfeedback',
   name: 'UserFeedbackException',
 
-  implements: ['foam.lang.Exception'],
-
-  javaExtends: [
-    'java.lang.RuntimeException'
-  ],
+  extends: 'foam.lang.ClientRuntimeException',
 
   documentation: `
     In cases where the object is not returned to client user after a request,
@@ -26,6 +22,11 @@ foam.CLASS({
       class: 'FObjectProperty',
       of: 'foam.comics.v2.userfeedback.UserFeedback',
       name: 'userFeedback'
+    },
+    {
+      class: 'Enum',
+      of: 'foam.comics.v2.userfeedback.UserFeedbackAlertType',
+      name: 'alertType'
     }
   ]
 });

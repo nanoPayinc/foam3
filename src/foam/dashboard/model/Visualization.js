@@ -7,6 +7,7 @@
 foam.CLASS({
   package: 'foam.dashboard.model',
   name: 'Visualization',
+
   requires: [
     'foam.dao.NullDAO',
     'foam.dashboard.view.Card',

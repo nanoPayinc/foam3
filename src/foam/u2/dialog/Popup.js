@@ -35,6 +35,8 @@ foam.CLASS({
     'as controlBorder'
   ],
 
+  requires: ['foam.lang.Latch'],
+
   css: `
     ^ {
       display: flex;
@@ -81,6 +83,7 @@ foam.CLASS({
       border-radius: 3px;
       box-shadow: 0 24px 24px 0 rgba(0, 0, 0, 0.12), 0 0 24px 0 rgba(0, 0, 0, 0.15);
       overflow: auto;
+      background: $backgroundDefault;
       /* The following line fixes a stacking problem in certain browsers. */
       will-change: opacity;
     }
@@ -93,7 +96,9 @@ foam.CLASS({
  `,
 
   properties: [
-    [ 'backgroundColor', '#fff' ],
+    { 
+      name: 'backgroundColor'
+    },
     {
       class: 'Boolean',
       name: 'closeable',
@@ -114,6 +119,11 @@ foam.CLASS({
       class: 'Boolean',
       name: 'showActions',
       value: true
+    },
+    {
+      class: 'FObjectProperty',
+      of: 'foam.lang.Latch',
+      name: 'closedLatch',
     }
   ],
 
@@ -121,6 +131,7 @@ foam.CLASS({
     function init() {
       this.SUPER();
       var content;
+      this.onDetach({ detach: () => { this.closedLatch?.resolve(); } })
 
       this.addClass()
         .enableClass(this.myClass('fullscreen'), this.fullscreen$)
@@ -131,7 +142,9 @@ foam.CLASS({
         .start()
           .call(function() { content = this; })
           .enableClass(this.myClass('inner'), this.isStyled$)
-          .style({ 'background-color': this.isStyled ? this.backgroundColor : ''})
+          .callIf(this.backgroundColor && this.isStyled, function() {
+            this.style({ 'background-color': this.backgroundColor })
+          })
           .startContext({ data: this })
             .start(this.CLOSE_MODAL, { buttonStyle: 'TERTIARY' })
               .show(this.closeable$.and(this.showActions$))
@@ -144,6 +157,7 @@ foam.CLASS({
     },
 
     function open() {
+      this.closedLatch = this.Latch.create();
       this.write();
     }
   ],
@@ -160,11 +174,11 @@ foam.CLASS({
       keyboardShortcuts: [ 27 /* Escape */ ],
       code: function() {
         if ( this.onClose ) this.onClose();
-
+        this.closedLatch?.resolve();
         // Delay removal by 32ms (two animation frames) so the action.closeModal
         // topic has a chance to be published
         this.hide();
-        this.setTimeout(() => this.remove(), 32);
+        this.setTimeout(() => {this.remove()}, 32);
       }
     }
   ]

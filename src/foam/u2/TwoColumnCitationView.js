@@ -36,7 +36,7 @@ foam.CLASS({
       gap: 0.5rem;
     }
     ^primary{
-      color: $primary700;
+      color: $textBrandSecondary;
     }
   `,
 

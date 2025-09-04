@@ -1,0 +1,18 @@
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "myModelDAO",
+  "description": "",
+  "serve": true,
+  "authenticate": true,
+  "keywords": [ "" ],
+  "serviceScript": """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setPm(true)
+      .setSeqNo(true)
+      .setAuthorize(false)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setOf(com.abc.MyModel.getOwnClassInfo())
+      .build();
+  """,
+  "client": `{"of":"com.abc.MyModel"}`
+})

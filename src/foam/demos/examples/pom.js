@@ -9,6 +9,7 @@ foam.POM({
   projects: [
     { name: '../../../../foam3/src/pom' },
     { name: '../../../../foam3/src/io/c9/ace/pom' },
+    { name: '../../../../foam3/src/foam/core/pom' }
   ],
   files: [
     { name: 'FBE' },

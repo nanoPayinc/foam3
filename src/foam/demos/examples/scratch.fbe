@@ -1,5 +1,20 @@
-## Scratch Examples
-##  Binding
+# Scratch Examples
+## RadioView
+--
+foam.CLASS({
+  name: 'Example',
+  properties: [
+    { class: 'String', name: 'prop1', value: 'Yes', view: { class: 'foam.u2.view.RadioView', choices: [['Yes','Yes'], ['No','No']] } },
+    { class: 'String', name: 'prop2', view: { class: 'foam.u2.view.RadioView', choices: [['Yes','Yes'], ['No','No']] } },
+    { class: 'String', name: 'prop3' }
+  ]
+});
+
+var e = Example.create();
+e.prop1$ = e.prop3$;
+tag({class: 'foam.u2.DetailView', data: e});
+
+## Binding
 --
 
 foam.CLASS({

@@ -138,20 +138,8 @@ public class CachingAuthService
     } else if ( obj instanceof UserCapabilityJunction ) {
       userId = ((UserCapabilityJunction) obj).getSourceId();
     } else if ( obj instanceof GroupPermissionJunction ) {
-      GroupPermissionJunction gpj = (GroupPermissionJunction) obj;
-      for ( Object o  : userPermissionCache_.values() ) {
-        Map m = (Map) o;
-        String p = gpj.getTargetId();
-        if ( p.endsWith(".*") ) {
-          p = p.substring(0, p.length()-2);
-          for ( Object o2 : m.keySet() ) {
-            String p2 = (String) o2;
-            if ( p2.startsWith(p) )
-              m.remove(p2);
-          }
-        }
-        m.remove(p);
-      }
+      // Reset permission cache
+      userPermissionCache_.clear();
       return;
     }
 
@@ -173,7 +161,7 @@ public class CachingAuthService
   }
 
   public void start() throws Exception {
-    Timer timer = new Timer(this.getClass().getSimpleName());
+    Timer timer = new Timer(this.getClass().getSimpleName(), true);
     timer.schedule(new AgencyTimerTask(getX(), this), INITIAL_TIMER_DELAY);
   }
 

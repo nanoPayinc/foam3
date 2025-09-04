@@ -15,6 +15,7 @@ foam.CLASS({
   ],
 
   exports: [
+    'showTreeRow',
     'data'
   ],
 
@@ -115,31 +116,30 @@ foam.CLASS({
           var selectedSlot = row.slot(function(selected_) {
             return selected_ ? 'p-semiBold' : 'p';
           });
-          this.
-          addClass(this.myClass('select-level')).
-          enableClass(this.myClass('select-level-selected'), row.selected_$).
-          callIfElse(row.rowConfig?.[row.data.id],
-            function() {
-              this.tag(row.rowConfig?.[row.data.id])
-            },
-            function() {
-              this.start()
-                .addClass(selectedSlot)
-                .addClass(this.myClass('label')).
-                call(row.formatter, [row.data]).
-              end();
-            }
-          ).
-          add(row.hasChildren$.map(hasChildren => {
-            if ( ! hasChildren ) return self.E();
-            return self.E().
-              addClass(self.myClass('toggle-icon')).
-              style({
-                'transform': row.expanded$.map(function(c) { return c ? 'rotate(90deg)': 'rotate(0deg)'; })
-              }).
-              on('click', this.toggleExpanded).
-              tag(self.Image, { glyph: 'next' });
-          }));
+          this.addClass(this.myClass('select-level'))
+            .enableClass(this.myClass('select-level-selected'), row.selected_$)
+            .callIfElse(row.rowConfig?.[row.data.id],
+              function() {
+                this.tag(row.rowConfig?.[row.data.id])
+              },
+              function() {
+                this.start()
+                  .addClass(selectedSlot)
+                  .addClass(this.myClass('label'))
+                  .call(row.formatter, [row.data, self.__context__])
+                .end();
+              }
+            )
+            .add(row.hasChildren$.map(hasChildren => {
+              if ( ! hasChildren ) return self.E();
+              return self.E()
+                .addClass(self.myClass('toggle-icon'))
+                .style({
+                  'transform': row.expanded$.map(function(c) { return c ? 'rotate(90deg)': 'rotate(0deg)'; })
+                })
+                .on('click', this.toggleExpanded)
+                .tag(self.Image, { glyph: 'next' });
+            }));
         }
       ]
     }
@@ -205,6 +205,11 @@ foam.CLASS({
       expression: function(selection, data$id) {
         return selection && foam.util.equals(selection.id, this.data.id);
       }
+    },
+    {
+      class: 'Boolean',
+      name: 'showTreeRow',
+      value: true
     }
   ],
 
@@ -227,19 +232,37 @@ foam.CLASS({
       if ( self.showRootOnSearch )
         self.showRootOnSearch.set(self.showRootOnSearch.get() || self.doesThisIncludeSearch);
 
-      this.data[self.relationship.forwardName].select().then(function(val) {
-        self.hasChildren = val.array.length > 0;
-        self.subMenus    = val.array;
-      });
+      var cb = () => {
+        this.data[self.relationship.forwardName].select().then(function( val ) {
+          self.hasChildren = val.array.length > 0;
+          self.subMenus    = val.array;
+        });
+      }
+      
+      this.onDetach(this.data[self.relationship.forwardName].listen({ put: cb }));
+      cb();
 
       var labelString = this.data.label;
       if ( this.translationService ) {
         labelString = self.translationService.getTranslation(foam.locale, self.data.label, self.data.label);
       }
 
+      // Check if handler has a custom row view
+      if ( this.data && this.data.createRowView ) {
+        this.start()
+          .style({
+            'padding-left': (((self.level - 0.5) * 16) + 'px')
+          })
+          .tag(this.data.createRowView(this.__context__, this.data))
+        .end();
+        return;
+      }
+
+      // Regular menu item rendering
       this.
         addClass(this.myClass()).
-        show(this.slot(function(hasChildren, showThisRootOnSearch, updateThisRoot) {
+        show(this.slot(function( showTreeRow, hasChildren, showThisRootOnSearch, updateThisRoot ) {
+          if ( ! showTreeRow ) return false;
           if ( ! self.query ) return true;
           var isThisItemRelatedToSearch = false;
           if ( ! updateThisRoot ) {
@@ -279,28 +302,27 @@ foam.CLASS({
         }).
         start().
           addClass(self.myClass('heading')).
+          style({
+            'padding-left': (((self.level - 0.5) * 16 ) + 'px')
+          }).
           startContext({ data: self }).
             start(self.ON_CLICK_FUNCTIONS, {
               buttonStyle: 'UNSTYLED',
               label: { class: 'foam.u2.view.TreeViewRow.LabelView', row: self },
               ariaLabel: labelString,
               size: 'SMALL',
-              themeIcon: self.level === 1 ? self.data.themeIcon : '',
-              icon: self.level === 1 ? self.data.icon : ''
+              themeIcon: self.data.themeIcon || '',
+              icon: self.data.icon || ''
             }).
-              style({
-                'padding-left': (((self.level - 0.5) * 16 ) + 'px')
-              }).
               enableClass('selected', this.selected_$).
-              // make not be a button so that other buttons can be nested
               addClass(this.myClass('button')).
             end().
           endContext().
         end().
         start().
           show(this.expanded$).
-          add(this.slot(function(subMenus) {
-            return this.E().forEach(subMenus/*.dao*/, function(obj) {
+          add(this.slot(function( subMenus ) {
+            return this.E().forEach(subMenus/*.dao*/, function( obj ) {
               this.add(self.cls_.create({
                 data:             obj,
                 formatter:        self.formatter,
@@ -324,7 +346,7 @@ foam.CLASS({
     },
 
     function onDragOver(e) {
-      if ( ! e.dataTransfer.types.some(function(m) { return m === 'application/x-foam-obj-id'; }) )
+      if ( ! e.dataTransfer.types.some(function( m ) { return m === 'application/x-foam-obj-id'; }) )
         return;
 
       var id = e.dataTransfer.getData('application/x-foam-obj-id');
@@ -337,7 +359,7 @@ foam.CLASS({
     },
 
     function onDrop(e) {
-      if ( ! e.dataTransfer.types.some(function(m) { return m === 'application/x-foam-obj-id'; }) )
+      if ( ! e.dataTransfer.types.some(function( m ) { return m === 'application/x-foam-obj-id'; }) )
         return;
 
       var id = e.dataTransfer.getData('application/x-foam-obj-id');
@@ -349,14 +371,14 @@ foam.CLASS({
 
       var self = this;
       var dao  = this.__context__[this.relationship.targetDAOKey];
-      dao.find(id).then(function(obj) {
+      dao.find(id).then(function( obj ) {
         if ( ! obj ) return null;
 
         // TODO: We shouldn't have to remove then put,
         // We currently have to because the FLOW editor is not updating properly
         // on a put event for an object that it already has.
         dao.remove(obj).then(function() {
-          self.data[self.relationship.forwardName].put(obj).then(function(obj) {
+          self.data[self.relationship.forwardName].put(obj).then(function( obj ) {
             self.onObjDrop(obj, id);
           });
         });
@@ -480,7 +502,7 @@ foam.CLASS({
       var isFirstSet = false;
 
       this.addClass().
-        select(dao, function(obj) {
+        select(dao, function( obj ) {
           if ( ! isFirstSet && ! self.selection ) {
             self.selection = obj;
             isFirstSet = true;

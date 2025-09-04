@@ -30,6 +30,9 @@ p({
     auth = new foam.core.auth.SystemAuthService.Builder(x)
       .setDelegate(auth)
       .build();
+    auth = new foam.core.auth.FailedLoginAuthService.Builder(x)
+      .setDelegate(auth)
+      .build();
     return auth;
   """,
   "client":"""
@@ -66,6 +69,7 @@ p({
   "description": "DAO responsible for storing agent authentication permission information.",
   "serviceScript": """
     return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
       .setJournalName(\"agentJunctions\")
       .setOf(foam.core.auth.UserUserJunction.getOwnClassInfo())
@@ -102,6 +106,7 @@ p({
   "serviceScript":
   """
     return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
       .setOf(foam.core.auth.Country.getOwnClassInfo())
       .setName("countries")
       .setAuthorizer(new foam.core.auth.GlobalReadAuthorizer("country"))
@@ -133,6 +138,7 @@ p({
   "serve":true,
   "serviceScript":`
     return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
       .setOf(foam.core.auth.Credential.getOwnClassInfo())
       .setFuid(true)
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
@@ -149,6 +155,7 @@ p({
   "serve":false,
   "serviceScript":`
     return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
       .setOf(foam.core.auth.Credential.getOwnClassInfo())
       .setInnerDAO(x.get("credentialDAO"))
       .build();
@@ -207,6 +214,7 @@ p({
   "serve":true,
   "serviceScript":"""
     return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
       .setOf(foam.core.auth.GroupPermissionJunction.getOwnClassInfo())
       .setAuthorize(false)
       .setInnerDAO((foam.dao.DAO) x.get("localGroupPermissionJunctionDAO"))
@@ -297,6 +305,7 @@ p({
   "serve":true,
   "serviceScript":"""
     return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
       .setOf(foam.core.auth.Permission.getOwnClassInfo())
       .setInnerDAO((foam.dao.DAO) x.get("localPermissionDAO"))
       .build();
@@ -488,7 +497,6 @@ p({
       .setAuthorize(false)
       .setRuler(true)
       .setPm(true)
-      .setValidated(true)
       .setEnableInterfaceDecorators(false)
       .build();
   """,
@@ -497,6 +505,34 @@ p({
       "of": "foam.core.auth.User",
       "cache": true,
       "retryBoxMaxAttempts": 0
+    }
+  """
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "loginAttemptDAO",
+  "serve": true,
+  "description": "Keep track of login attempts made by users.",
+  "serviceScript":
+  """
+    return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
+      .setOf(foam.core.auth.LoginAttempt.getOwnClassInfo())
+      .setFuid(true)
+      .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
+      .setJournalName("loginattempts")
+      .setFixedSize(new foam.dao.FixedSizeDAO.Builder(x)
+        .setComparator(foam.mlang.MLang.DESC(foam.core.auth.LoginAttempt.CREATED))
+        .setSize(10000)
+        .build())
+      .setOrder(new foam.mlang.order.Comparator[] { new foam.mlang.order.Desc.Builder(x).setArg1(foam.core.auth.LoginAttempt.CREATED).build() })
+      .build()
+      .addPropertyIndex(new foam.lang.PropertyInfo[] {foam.core.auth.LoginAttempt.CREATED});
+  """,
+  "client": """
+    {
+      "of": "foam.core.auth.LoginAttempt"
     }
   """
 })

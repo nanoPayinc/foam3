@@ -65,8 +65,9 @@ foam.CLASS({
         The flag will then automatically be set to false.
         `,
       storageTransient: true,
-    },
+    }
   ],
+
   actions: [
     {
       name: 'apply',
@@ -78,7 +79,7 @@ foam.CLASS({
       code: function(X) {
         this.applyOriginal = true;
         X.dao.put(this);
-      },
+      }
     },
     {
       name: 'compare',

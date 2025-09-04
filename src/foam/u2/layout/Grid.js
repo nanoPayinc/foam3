@@ -62,7 +62,7 @@ foam.CLASS({
       code: function() {
         if ( ! this.U3 )
           if ( this.state == this.OUTPUT ) return;
-
+        let oldShown = this.shown;
         this.shown = false;
         this.children.forEach(ret => {
           var cols = 12, width = 12;
@@ -70,7 +70,7 @@ foam.CLASS({
             cols = this.containerWidth.cols;
             let propCols;
             if ( this.GUnit.isInstance(ret) ) {
-              propCols = (this.mode == 'RW' ? ret.rwColumns : ret.columns)[`${this.containerWidth.name.toLowerCase()}Columns`];
+              propCols = (this.__subContext__.controllerMode == 'EDIT' ? ret.rwColumns : ret.columns)[`${this.containerWidth.name.toLowerCase()}Columns`];
             }
             width = Math.min(propCols || cols, cols);
           }
@@ -79,7 +79,7 @@ foam.CLASS({
             'grid-column': `span ${width}`
           });
         });
-        this.shown = true;
+        this.shown = oldShown;
       }
     }
   ]

@@ -14,11 +14,11 @@ foam.CLASS({
   cssTokens: [
     {
       name: 'sidebarBoxShadow',
-      value: '1px 1px 7px 0px rgba(209, 217, 230, 0.60)',
+      value: 'none',
     },
     {
       name: 'borderColor',
-      value: '$grey300'
+      value: '$borderDefault'
     }
   ],
 
@@ -30,8 +30,8 @@ foam.CLASS({
     }
 
     /******************
-    Replace sidebar-width when Chrome 
-    and Safari add animation support 
+    Replace sidebar-width when Chrome
+    and Safari add animation support
     to grid-template-columns
     ---------
     ^ {
@@ -150,7 +150,8 @@ foam.CLASS({
 
       this.addClass()
         .add(this.slot( async function(loginSuccess, topNav) {
-          if ( ! loginSuccess || ! topNav ) return null;
+          let e = self.E().addClass(this.myClass('header'));
+          if ( ! loginSuccess || ! topNav || foam.flags.topNav == false ) return e;
           await this.initLayout;
           var topView = foam.u2.ViewSpec.createView(topNav, {}, self, self.navCtx_);
           this.headerSlot_$.set(topView);
@@ -159,7 +160,7 @@ foam.CLASS({
           this.headerSlot_?.el().then(el => {
             resize.observe(el);
           })
-          return self.E()
+          return e
             .addClass(this.myClass('header'))
             // Fix this
             // .tag(topNav, {}, self.headerSlot_$)
@@ -167,10 +168,11 @@ foam.CLASS({
             .show(this.showNav$);
         }))
         .add(this.slot( async function(loginSuccess, sideNav, showNav) {
-          if ( ! loginSuccess || ! sideNav || ! showNav ) return null;
+          let e = self.E().addClass(this.myClass('sideNav'));
+          if ( ! loginSuccess || ! sideNav || ! showNav ) return e;
           await this.initLayout;
           var sideView = foam.u2.ViewSpec.createView(sideNav, {}, self, self.navCtx_);
-          return this.E()
+          return e
             // .tag(sideNav)
             .add(sideView)
             .show(this.showNav$)
@@ -183,7 +185,7 @@ foam.CLASS({
             .add(mainView)
             .addClass(this.myClass('stack-view'));
         }))
-        
+
       // TODO: Maybe add footer support if needed
     }
   ],
@@ -208,13 +210,13 @@ foam.CLASS({
         this.isMenuOpen = false
       } else if ( this.displayWidth.ordinal >= this.DisplayWidth.MD.ordinal && this.prefersMenuOpen === true) {
         this.isMenuOpen = true
-      } 
+      }
     },
     function adjustTopBarHeight() {
       if ( ! this.headerSlot_ ) return;
       let root = this.document.documentElement;
-      this.headerSlot_.el().then(el => { 
-        root?.style.setProperty('--topbar-height', el.offsetHeight + 'px' ); 
+      this.headerSlot_.el().then(el => {
+        root?.style.setProperty('--topbar-height', el.offsetHeight + 'px' );
       })
     }
   ]

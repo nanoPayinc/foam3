@@ -22,6 +22,8 @@ foam.CLASS({
 
   documentation: 'Task for managing SystemNotification display',
 
+  implements: ['foam.core.auth.EnabledAware'],
+
   javaImports: [
     'foam.lang.X'
   ],
@@ -41,6 +43,29 @@ foam.CLASS({
         daoKey: 'themeDAO',
         allowDuplicates: false
       }
+    },
+    {
+      documentation: 'Optionally filter display to particular users via permissions',
+      class: 'StringArray',
+      name: 'permissions',
+      // Not all permissions and capabilities are in the permission dao.
+      // view: {
+      //   class: 'foam.u2.view.ReferenceArrayView',
+      //   daoKey: 'permissionDAO',
+      //   allowDuplicates: false
+      // }
+    },
+    {
+      documentation: `Restrict visibility of this notification to particular IP address range.
+@see https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing
+List entries are of the form: 172.0.0.0/24 - this would restrict visibility to the 172 network.`,
+      class: 'FObjectArray',
+      of: 'foam.net.CIDR',
+      name: 'cidrWhiteList'
+    },
+    {
+      name: 'enabled',
+      value: true
     }
   ],
 

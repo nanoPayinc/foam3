@@ -23,14 +23,14 @@ foam.ENUM({
     {
       name: 'DRAFT',
       label: 'Draft',
-      color: '$grey700',
-      background: '$grey50',
+      color: '$textSecondary',
+      background: '$backgroundSecondary',
     },
     {
       name: 'UNSENT',
       label: 'Unsent',
-      color: '$grey700',
-      background: '$grey50',
+      color: '$textSecondary',
+      background: '$backgroundSecondary',
     },
     {
       name: 'SENT',
@@ -53,8 +53,8 @@ foam.ENUM({
     {
       name: 'RECEIVED',
       label: 'Received',
-      color: '$blue500',
-      background: '$grey50',
+      color: '$textBrand',
+      background: '$backgroundSecondary',
     },
     {
       name: 'PROCESSED',

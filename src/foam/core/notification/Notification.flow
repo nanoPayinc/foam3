@@ -34,3 +34,31 @@ key-value arguments which are used to populate the email template.
 
 <h1>services localNotifcationDAO vs notificationDAO</h1>
 All DAO operations should be against the notificationDAO. The localNotificationDAO is only meant to be used by the Notification system itself.
+
+<h1>GoogleChat</h1>
+FOAM supports GoogleChat Cards V2 for notification. To enable, add your webhook url to notification template with templateName: foam-core-er-EventRecordNotificationTemplate.<br/>
+Copy template from src/foam/core/er/notificationTemplates.jrl to a deployment specific to your production environment and add your webhook.
+<code>
+deployment/some-production-environment/notificationTemplates.jrl
+
+p({
+  class:"foam.core.notification.Notification",
+  id: 3,
+  template: "foam-core-er-EventRecordNotificationTemplate",
+  emailName:"foam-core-er-EventRecordEmailTemplate",
+  groupId: "noc",
+  notificationType: "NOC",
+  googleChatWebhook: "https://chat.googleapis.com/v1/spaces/example/messages?key=example"
+})
+</code>
+
+Additionally, a <b>GoogleChatSetting</b> configuration must exist for spid, group, or user. Generally a default is provided for a spid. For example:<br/>
+<code>
+deployment/some-production-environment/notificationSettingDefaults.jrl
+
+p({
+  class:"foam.core.notification.GoogleChatSetting",
+  "id":"a-unique-id",
+  "spid":"your-spid"
+})
+</code>

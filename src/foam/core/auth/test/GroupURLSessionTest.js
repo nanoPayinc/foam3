@@ -59,7 +59,7 @@ foam.CLASS({
         user.setFirstName("session");
         user.setMiddleName("group");
         user.setLastName("url");
-        user.setEmail("test-session-group-url@nanopay.net");
+        user.setEmail("test-session-group-url@foamdev.com");
         user.setUserName("test-session-group-url");
         user.setGroup(group.getId());
         user.setEmailVerified(true);

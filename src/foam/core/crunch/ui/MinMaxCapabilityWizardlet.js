@@ -48,8 +48,7 @@ foam.CLASS({
       class: 'Int',
       factory: function(){
         if ( foam.core.crunch.MinMaxCapability.isInstance(this.capability) ){
-          // a capability min of 0 denotes no minimum limit
-          return this.capability.hasOwnProperty('min') ? this.capability.min : this.choices.length;
+          return this.capability.min ?? this.choices.length;
         }
       }
     },
@@ -78,18 +77,33 @@ foam.CLASS({
     },
     {
       class: 'Boolean',
+      name: 'goNextOnValid',
+      expression: function(capability$goNextOnValid){
+        return capability$goNextOnValid;
+      }
+    },
+    {
+      class: 'Boolean',
+      name: 'automaticallyReloadDataOnAvailable',
+      documentation: `When set to true, when this wizardlet becomes available the selectedData of this.data will be repopulated from it's last known value`,
+      value: true
+    },
+    {
+      class: 'Boolean',
       name: 'isValid',
-      value: false,
       postSet: function(o,n) {
         if ( ! n ) {
           this.isAvailablePromise =
             Promise.all(this.choiceWizardlets.map(cw => cw.isAvailablePromise))
               .then(() => { this.cancel(); });
         } else {
-          if ( this.capability.goNextOnValid ) {
+          if ( this.goNextOnValid ) {
             this.wizardController?.goNext();
           }
         } 
+      },
+      expression: function(min, max, data$selectedData){
+        return data$selectedData?.length >= min && data$selectedData?.length <= max;
       }
     },
     {
@@ -110,28 +124,13 @@ foam.CLASS({
       `,
       postSet: function(_,n){ 
         if ( !n ){
+          if ( this.automaticallyReloadDataOnAvailable && this.data.selectedData?.length ) this.data.lastPopulatedData = this.data.selectedData;
           this.data.selectedData = [];
-
-          // to cascade hiding all descendent wizardlets
-          // TODO: investigate why this is still needed,
-          // setting data to empty array should have made isAvailable automatically evaluate to false
-          // TODO: we could be able to deprecate this
-          let alternateFlow = this.__subContext__.sequence.contextAgentSpecs.filter(x => (x.spec.class == "foam.u2.wizard.agents.AlternateFlowAgent") || (x.name == "AlternateFlowAgent"));
-          this.choiceWizardlets.forEach(cw => {
-            for ( let af of alternateFlow ) {
-              if ( (af.args || af.spec).alternateFlow.available?.filter(x => x == cw.instance_.of).length != 0 ) {
-                cw.isAvailable = true;
-                return;
-              }
-            }
-
-            cw.isAvailable = false
-          });
-
           this.isAvailablePromise =
             Promise.all(this.choiceWizardlets.map(cw => cw.isAvailablePromise))
               .then(() => { this.cancel(); });
         } else {
+          if ( this.automaticallyReloadDataOnAvailable && this.data.lastPopulatedData?.length) this.data.selectedData = this.data.lastPopulatedData;
           this.save();
         }
       }
@@ -190,7 +189,7 @@ foam.CLASS({
             isLoaded: true,
             customView: {
               ...this.choiceSelectionView,
-              choices$: this.slot(function(choices) { return choices.sort(); }),
+              choices$: this.choices$,
               showValidNumberOfChoicesHelper: false,
               data$: this.data$.dot('selectedData'),
               minSelected$: this.min$,
@@ -302,7 +301,7 @@ foam.CLASS({
     function getPrerequisiteAvailabilitySlot(prereqWizardlet){
       var slot = foam.lang.SimpleSlot.create();
 
-      this.data.selectedData$.sub(
+      this.data$.dot('selectedData').sub(
         ()=> slot.set(this.isPrereqSelected(prereqWizardlet))
       );
 
@@ -341,7 +340,7 @@ foam.CLASS({
       code: function() {
         const choiceWizardlets = this.choiceWizardlets;
         if ( choiceWizardlets.length === 1 && this.min != 0) {
-          this.capability.goNextOnValid = true;
+          this.goNextOnValid = true;
           this.isVisible = false;
         }
       }

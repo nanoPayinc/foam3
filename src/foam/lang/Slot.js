@@ -432,7 +432,7 @@ foam.CLASS({
     {
       name: 'output',
       expression: function (a, b) {
-        return a && b;
+        return !! ( a && b );
       }
     }
   ]
@@ -638,10 +638,30 @@ foam.CLASS({
     {
       name: 'value',
       factory: function() {
+        /* ignoreWarning */
         var self = this.self || this.obj || this;
+
+        // running: if this factory is currently being run but returned a promise and
+        // hasn't completed. If running, then don't run again, instead just set rerun.
+        // rerun: means another update has occured and the currently running execution
+        // is stale. When done computing, invalidate so that it is updated again.
+        if ( this.running ) { this.rerun = true; return this.seqNo; }
+        this.running = true;
         this.pre.call(self);
-        this.code.apply(self, this.args.map(a => a && a.get()));
-        this.post.call(self);
+        var ret = this.code.apply(self, this.args.map(a => a && a.get()));
+        var after = () => {
+          this.post.call(self);
+          this.running = false;
+          if ( this.rerun ) {
+            this.rerun = false;
+            this.invalidate();
+          }
+        };
+        if ( ret && ret.then ) {
+          ret.then(after);
+        } else {
+          after();
+        }
         return this.seqNo++;
       }
     }
@@ -679,6 +699,7 @@ foam.CLASS({
       isFramed: true,
       code: function invalidate() {
         // Overrides implementation in ExpressionSlot, but also calls this.value
+        // which, unlike ExpressionSlot, forces value to be eagerly evaluated.
         this.clearProperty('value');
         this.value;
       }

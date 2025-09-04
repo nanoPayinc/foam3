@@ -43,8 +43,8 @@ foam.CLASS({
       align-items: center;
       height: 100%;
       justify-content: space-between;
-      background-color: $primary700;
-      box-shadow: 0px 0px 50px 0px $primary700;
+      background-color: $backgroundBrandSecondary;
+      box-shadow: 0px 0px 50px 0px $borderBrandStrong;
       color: $grey300;
     }
   `,

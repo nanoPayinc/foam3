@@ -16,10 +16,13 @@ foam.CLASS({
   ],
 
   javaImports: [
+    'foam.lang.Agency',
+    'foam.lang.ContextAgent',
     'foam.lang.Detachable',
     'foam.lang.FObject',
     'foam.lang.X',
     'foam.dao.AbstractSink',
+    'foam.dao.ArraySink',
     'foam.dao.DAO',
     'foam.dao.ProxyDAO',
     'foam.dao.Sink',
@@ -30,6 +33,7 @@ foam.CLASS({
     'foam.core.auth.User',
     'foam.core.logger.Logger',
     'foam.core.logger.Loggers',
+    'foam.core.pm.PM',
     'foam.util.SafetyUtil',
     'foam.core.auth.Subject',
     'static foam.mlang.MLang.*'
@@ -43,26 +47,23 @@ foam.CLASS({
         DAO userDAO = (DAO) x.get("localUserDAO");
         Notification notif = (Notification) obj;
 
-        if (getDelegate().find_(x, notif.getId()) != null)
-          return getDelegate().put_(x, notif);
+        if (getDelegate().find(notif.getId()) != null)
+          return getDelegate().put(notif);
 
         if ( notif.getBroadcasted() ) {
-          Notification notification = (Notification) notif.fclone();
-          Notification.ID.clear(notification);
-          Notification.GROUP_ID.clear(notification);
-          Notification.TEMPLATE.clear(notification);
-          notification.setBroadcasted(false);
-          userDAO.where(
-            AND(
-              EQ(User.LIFECYCLE_STATE, LifecycleState.ACTIVE),
-              HAS(User.GROUP)
-          )).select(new AbstractSink() {
+          Agency agency = (Agency) x.get("threadPool");
+          agency.submit(x, new ContextAgent() {
             @Override
-            public void put(Object o, Detachable d) {
-              User user = (User) o;
-              user.doNotify(x, notification);
+            public void execute(X x) {
+              PM pm = PM.create(x, "Notification:broadcast");
+              userDAO.where(
+                AND(
+                  EQ(User.LIFECYCLE_STATE, LifecycleState.ACTIVE),
+                  HAS(User.GROUP)
+              )).select(new UserNotificationSink(notif, (DAO) x.get("userNotificationDAO")));
+              pm.log(x);
             }
-          });
+          }, "Notification Broadcast");
         } else if ( Notification.GROUP_ID.isSet(notif) ) {
           Group group = (Group) ((DAO) x.get("groupDAO")).find(notif.getGroupId());
           if ( group == null ) {
@@ -73,32 +74,28 @@ foam.CLASS({
             logger.debug("Notification group disabled", notif.getGroupId(), notif);
             return obj;
           }
-          Notification notification = (Notification) notif.fclone();
-          Notification.ID.clear(notification);
-          Notification.GROUP_ID.clear(notification);
-          Notification.TEMPLATE.clear(notification);
-          notification.setBroadcasted(false);
-          Count count = new Count();
-          Sequence seq = new Sequence.Builder(x)
-            .setArgs(new Sink[] {
-              count,
-              new AbstractSink() {
-                @Override
-                public void put(Object o, Detachable d) {
-                  User user = (User) o;
-                  user.doNotify(x, notification);
-                }
+          Agency agency = (Agency) x.get("threadPool");
+          agency.submit(x, new ContextAgent() {
+            @Override
+            public void execute(X x) {
+              PM pm = PM.create(x, "Notification:group");
+              Count count = new Count();
+              UserNotificationSink userNotificationSink = new UserNotificationSink(notif, (DAO) x.get("userNotificationDAO"));
+              userNotificationSink.setX(x);
+              Sequence seq = new Sequence.Builder(x)
+                .setArgs(new Sink[] { count, userNotificationSink })
+                .build();
+              userDAO.where(
+                AND(
+                  EQ(User.GROUP, notif.getGroupId()),
+                  EQ(User.LIFECYCLE_STATE, LifecycleState.ACTIVE)
+              )).select(seq);
+              if ( count.getValue() == 0 ) {
+                logger.info("WARN,Notification group empty", notif);
               }
-            })
-            .build();
-          userDAO.where(
-            AND(
-              EQ(User.GROUP, notif.getGroupId()),
-              EQ(User.LIFECYCLE_STATE, LifecycleState.ACTIVE)
-          )).select(seq);
-          if ( count.getValue() == 0 ) {
-            logger.info("WARN,Notification group empty", notif);
-          }
+              pm.log(x);
+            }
+          }, "Notification Group");
         } else if ( notif.getUserId() > 0 ) {
           User user = notif.findUserId(x);
           if ( ! Notification.SPID.isSet(notif) ) {

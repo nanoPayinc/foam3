@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.doc',
   name: 'AxiomTableView',
-  extends: 'foam.u2.view.TableView',
+  extends: 'foam.u2.table.TableView',
 
   css: `
     ^ { border-collapse: collapse; height: auto; }
@@ -30,9 +30,20 @@ foam.CLASS({
     function render() {
       this.addClass(this.myClass());
       this.start('table').
-        start('tr').start('th').attrs({width: '250px'}).add('Class').end().start('th').add('Name').end().start('th').add('Description').end().end().
+        attr('cellpadding', '8').
+        start('tr').
+          start('th').attrs({width: '250px'}).add('Class').end().
+          start('th').add('Name').end().
+          start('th').add('Label').end().
+          start('th').add('Description').end().
+        end().
         select(this.data, function(a) {
-          this.start('tr').start('td').add(a.axiom.cls_.name).end().start('td').add(a.name).end().start('td').style({overflow: 'hidden', 'text-wrap':'pretty'}).add(a.documentation).end().end();
+          this.start('tr').
+            start('td').add(a.axiom.cls_.name).end().
+            start('td').add(a.name).end().
+            start('td').add(a.label).end().
+            start('td').style({overflow: 'hidden', 'text-wrap':'pretty'}).add(a.documentation).end()
+          .end();
         }).
       end();
     }

@@ -24,25 +24,33 @@ foam.CLASS({
 
   methods: [
     {
+      type: 'foam.mlang.predicate.Predicate',
+      name: 'predicateIn',
+      args: [ 'Context x' ],
+      code: function(x) { return this.predicate },
+      javaCode: 'return getPredicate();'
+    },
+    {
       name: 'find_',
       code: function find_(x, key) {
-        var predicate = this.predicate;
+        var predicate = this.predicateIn(x);
         return this.delegate.find_(x, key).then(function(o) {
           return ( o && predicate.f(o) ) ? o : null;
         });
       },
       javaCode: `foam.lang.FObject ret = super.find_(x, id);
-if ( ret != null && getPredicate().f(ret) ) return ret;
+if ( ret != null && predicateIn(x).f(ret) ) return ret;
 return null;`
     },
     {
       name: 'select_',
       code: function(x, sink, skip, limit, order, predicate) {
+        var thisPredicate = this.predicateIn(x);
         return this.delegate.select_(
           x, sink, skip, limit, order,
           predicate ?
-            this.And.create({ args: [this.predicate, predicate] }) :
-            this.predicate);
+            this.And.create({ args: [thisPredicate, predicate] }) :
+            thisPredicate);
       },
       swiftCode: `
 return try delegate.select_(
@@ -51,29 +59,31 @@ return try delegate.select_(
     And_create(["args": [self.predicate, predicate!] ]) :
     self.predicate)
      `,
-      javaCode: 'return super.select_(x, sink, skip, limit, order, predicate == null ? getPredicate() : foam.mlang.MLang.AND(getPredicate(), predicate));'
+      javaCode: 'return super.select_(x, sink, skip, limit, order, predicate == null ? predicateIn(x) : foam.mlang.MLang.AND(predicateIn(x), predicate));'
     },
 
     {
       name: 'removeAll_',
       code: function removeAll_(x, skip, limit, order, predicate) {
+        var thisPredicate = this.predicateIn(x);
         return this.delegate.removeAll_(
           x, skip, limit, order,
           predicate ?
-            this.And.create({ args: [this.predicate, predicate] }) :
-          this.predicate);
+            this.And.create({ args: [thisPredicate, predicate] }) :
+            thisPredicate);
       },
-      javaCode: 'super.removeAll_(x, skip, limit, order, predicate == null ? getPredicate() : foam.mlang.MLang.AND(getPredicate(), predicate));'
+      javaCode: 'super.removeAll_(x, skip, limit, order, predicate == null ? predicateIn(x) : foam.mlang.MLang.AND(predicateIn(x), predicate));'
     },
 
     {
       name: 'listen_',
       code: function listen_(x, sink, predicate) {
+        var thisPredicate = this.predicateIn(x);
         return this.delegate.listen_(
           x, sink,
           predicate ?
-            this.And.create({ args: [this.predicate, predicate] }) :
-            this.predicate);
+            this.And.create({ args: [thisPredicate, predicate] }) :
+            thisPredicate);
       },
       swiftCode: `
 return try delegate.listen_(

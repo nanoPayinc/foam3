@@ -35,7 +35,17 @@ foam.CLASS({
     {
       name: 'selectedDataStable',
       documentation: 'A more stable array property for wizard updates',
-      class: 'StringArray'
+      class: 'StringArray',
+      hidden: true
+    },
+    {
+      name: 'lastPopulatedData',
+      documentation: `Stores the last value that was selected for this minMax wizardlet, 
+      useful when minmax nests another minmax, this child minmax can recover it's choices using this property if it becomes available again.
+      Set by MinMaxWizardlet.isAvailable.postSet`,
+      class: 'StringArray',
+      networkTransient: true,
+      hidden: true
     }
   ],
 

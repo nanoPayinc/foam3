@@ -60,6 +60,7 @@ public class SyncAssemblyLine
           job.startJob();
         } catch (Throwable t) {
           synchronized ( qLock_ ) {
+            job.complete();
             q_ = previous;
           }
           throw t;

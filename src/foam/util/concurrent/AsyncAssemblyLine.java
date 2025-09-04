@@ -78,13 +78,11 @@ public class AsyncAssemblyLine
         }
 
         synchronized ( endLock_ ) {
-          PM pm = PM.create(x_, AsyncAssemblyLine.this.getClass(), "endJob");
           try {
             job.endJob(isLast);
           } catch (Throwable t) {
-            ((foam.core.logger.Logger) x.get("logger")).error(this.getClass().getSimpleName(), agencyName_, t);
-          } finally {
-            pm.log(x_);
+            ((foam.core.logger.Logger) x.get("logger")).
+              error(this.getClass().getSimpleName(), agencyName_, t);
           }
         }
       } finally {

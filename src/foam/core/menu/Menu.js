@@ -75,7 +75,9 @@
           [ 'foam.core.menu.ListMenu',         'List' ],
           [ 'foam.core.menu.SubMenu',          'Submenu' ],
           [ 'foam.core.menu.TabsMenu',         'Tabs' ],
-          [ 'foam.core.menu.ViewMenu',         'View' ]
+          [ 'foam.core.menu.ViewMenu',         'View' ],
+          [ 'foam.core.menu.SeparatorMenu',    'Separator' ],
+          [ 'foam.core.menu.FlowMenu',         'Flow' ]
         ]
       }
     },
@@ -170,6 +172,15 @@
       name: 'authorizationStatus',
       documentation: 'See. AuthorizationStatus',
       value: 'AUTHENTICATED'
+    },
+    {
+      name: 'createRowView',
+      getter: function(X, menu) {
+        if ( this.handler ) {
+          return this.handler.createRowView;
+        }
+        return null;
+      }
     }
   ],
 
@@ -193,19 +204,13 @@
       } else {
         X = X.createSubContext({ menu: this });
       }
-      var a = foam.u2.ViewSpec.createView(this.view, args, this, X);
-      return a;
+      return foam.u2.ViewSpec.createView(this.view, args, this, X);
     },
     {
       documentation: 'Desire to call read predicate with calling context but predicate may also need access to this menu; add the current menu as context key MENU',
       name: 'f',
       type: 'Boolean',
-      args: [
-        {
-          name: 'x',
-          type: 'Context'
-        }
-      ],
+      args: 'Context x',
       javaCode: `
         return getReadPredicate().f(
           x.put("MENU", this)
@@ -244,9 +249,8 @@
       documentation: 'See. AuthorizationStatus',
       javaCode: `
         // Check menu.readPredicate
-        if ( ! f(x) ) {
+        if ( ! f(x) )
           throw ACCESS_DENIED;
-        }
 
         // Check user permission to access authenticated menu
         AuthService auth = (AuthService) x.get("auth");
@@ -256,12 +260,23 @@
           throw ACCESS_DENIED;
         }
 
-        // Check subject to access unauthenticated menu
-        var subject = auth.getCurrentSubject(x);
-        if ( getAuthorizationStatus() == AuthorizationStatus.UNAUTHENTICATED
-          && subject != null && ! auth.isUserAnonymous(x, subject.getUser().getId())
-        ) {
-          throw ACCESS_DENIED;
+        if ( getAuthorizationStatus() == AuthorizationStatus.UNAUTHENTICATED ) {
+          boolean flag;
+
+          try {
+            // Check subject to access unauthenticated menu
+            var subject = auth.getCurrentSubject(x);
+
+            flag = subject != null && ! auth.isUserAnonymous(x, subject.getUser().getId());
+          } catch (foam.core.auth.AuthenticationException e) {
+            // ???: Why does this happen?
+            // foam.core.auth.UserAndGroupAuthService.getCurrentSubject(UserAndGroupAuthService.java:369)
+            // e.printStackTrace();
+            return;
+          }
+
+          if ( flag )
+            throw ACCESS_DENIED;
         }
       `
     }

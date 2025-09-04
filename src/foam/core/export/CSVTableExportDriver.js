@@ -18,24 +18,72 @@ foam.CLASS({
     'foam.core.column.TableColumnOutputter'
   ],
 
+  messages: [
+    { name: 'SPREADSHEET', message: 'Spreadsheet Compatible' },
+    { name: 'LOCALE',      message: 'Current Locale' },
+    { name: 'LONG',        message: 'Long' },
+    { name: 'DDMMYYYY',    message: 'DDMMYYYY' }
+  ],
+
   properties: [
     {
-      class: 'Boolean',
-      name: 'sheetsCompatibleDates',
-      value: true
+      name: 'choices',
+      hidden: true,
+      factory: function() {
+        return [
+          [ [
+              d => d.toLocaleDateString('en-us'),
+              d => d.toLocaleTimeString('en-us')
+            ],
+            this.SPREADSHEET
+          ],
+          [ 
+            [
+              d => ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2) + '/' + d.getFullYear(),
+              d => ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) + ':' + ('0' + d.getSeconds()).slice(-2)
+            ],
+            this.DDMMYYYY
+          ],
+          [ [
+              d => d.toString().substring(0, 15),
+              d => d.toString()
+            ],
+            this.LONG
+          ],
+          [ [
+              d => d.toLocaleDateString(foam.locale),
+              d => d.toLocaleTimeString(foam.locale)
+            ],
+            this.LOCALE + ' (' + foam.locale + ')'
+          ],
+        ].map(c => [ c[0], c[1] + ': ' + c[0][0](new Date()) ]);
+      }
+    },
+    {
+      name: 'dateFormat',
+      view: function(_, X) {
+        return {
+          class: 'foam.u2.view.RadioView',
+          choices: X.data.choices
+        };
+      },
+      factory: function(_, X) { return this.choices[0][0]; },
+      help: 'Select the format dates will appear in the output.'
     },
     {
       class: 'Boolean',
       name: 'addUnits',
+      label: '',
+      view: { class: 'foam.u2.CheckBox',  label: 'Add Units'},
       value: true
     },
     {
       name: 'outputter',
       hidden: true,
-      expression: function(sheetsCompatibleDates, addUnits) {
+      expression: function(dateFormat, addUnits) {
         return this.CSVTableOutputter.create({
-          sheetsCompatibleDates: sheetsCompatibleDates,
-          addUnits:              addUnits
+          dateFormat: dateFormat,
+          addUnits:   addUnits
         });
       }
     },

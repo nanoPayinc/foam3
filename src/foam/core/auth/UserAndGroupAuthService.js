@@ -70,12 +70,7 @@ foam.CLASS({
   methods: [
     {
       name: 'authorizeAnonymous',
-      args: [
-        {
-          name: 'x',
-          type: 'Context'
-        }
-      ],
+      args: 'Context x',
       documentation: `
         Authorizes an anonymous user that has no true ownership. The assigned anonymous user is relative to a spid,
         holding various permissions allowing a user who has not logged into the system to interact with it as if they had.
@@ -147,7 +142,7 @@ foam.CLASS({
           throw new InvalidPasswordException();
         }
 
-        return getLoginService().login(x, user); 
+        return getLoginService().login(x, user);
       `
     },
     {
@@ -227,12 +222,7 @@ foam.CLASS({
     {
       name: 'assertUserIsActive',
       documentation: `Given a user, we check whether the user is ACTIVE.`,
-      args: [
-        {
-          name: 'user',
-          type: 'foam.core.auth.User'
-        }
-      ],
+      args: 'foam.core.auth.User user',
       javaCode: `
       // check that the user is active
       if ( user instanceof LifecycleAware && ((LifecycleAware)user).getLifecycleState() != LifecycleState.ACTIVE ) {

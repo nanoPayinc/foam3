@@ -32,7 +32,6 @@ JSON.parse(localStorage.UNUSED).forEach(c => {
 
 function classToFile(f) {
   f = f.replaceAll('.', '/');
-  if ( f.indexOf('nanopay') != -1 ) return 'nanopay/src/' + f;
   return 'foam3/src/' + f;
 }
 
@@ -57,7 +56,6 @@ var a = Object.keys(foam.UNUSED).filter(f => {
   return true;
 }).map(f => {
   f = f.replaceAll('.', '/');
-  if ( f.indexOf('nanopay') != -1 ) return 'nanopay/src/' + f;
   return 'foam3/src/' + f;
 });
 document.body.innerText = JSON.stringify(a, null, 4);

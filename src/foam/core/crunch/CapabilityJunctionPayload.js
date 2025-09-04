@@ -53,6 +53,13 @@ foam.CLASS({
       value: foam.core.crunch.CapabilityJunctionStatus.ACTION_REQUIRED
     },
     {
+      name: 'hasBeenGranted',
+      class: 'Boolean',
+      writePermissionRequired: true,
+      documentation: `Set automatically on the UCJ when it gets granted the first time, 
+      useful for checking if the user ever had this UCJ granted such as during edit.`
+    },
+    {
       class: 'Boolean',
       name: 'hasSafeStatus',
       documentation: 'We get capable payloads sent to us, we want to confirm client calls with real status.',

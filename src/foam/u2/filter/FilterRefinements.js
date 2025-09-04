@@ -36,6 +36,20 @@ foam.CLASS({
 
 foam.CLASS({
   package: 'foam.u2.filter',
+  name: 'StringArrayRefinement',
+  refines: 'foam.lang.StringArray',
+
+  properties: [
+    {
+      class: 'foam.u2.ViewSpec',
+      name: 'searchView',
+      value: { class: 'foam.u2.filter.properties.StringArrayFilterView' }
+    }
+  ]
+});
+
+foam.CLASS({
+  package: 'foam.u2.filter',
   name: 'BooleanRefinement',
   refines: 'foam.lang.Boolean',
 

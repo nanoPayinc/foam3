@@ -145,7 +145,11 @@ foam.CLASS({
       name: 'getTime',
       type: 'Long',
       javaCode: `
-    return Math.max(0, getEndTime() - getStartTime());
+      if ( getEndTime() == 0 ) {
+        return System.currentTimeMillis() - getStartTime();
+      } else {
+        return getEndTime() - getStartTime();
+      }
       `
     },
     {

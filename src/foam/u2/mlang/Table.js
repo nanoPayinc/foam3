@@ -10,53 +10,54 @@ foam.CLASS({
   extends: 'foam.dao.ArraySink',
 
   requires: [
+    'foam.comics.v2.DAOControllerConfig',
     'foam.dao.MDAO',
-    'foam.u2.view.TableView'
+    'foam.u2.table.TableView'
   ],
 
   properties: [
     {
-      name: 'dao',
-      factory: function() {
-        var dao = this.MDAO.create({of: this.of});
-        this.array.forEach(a => dao.put(a));
-        return dao;
-      }
-    },
-    {
-      class: 'Class',
-      name: 'of'
-    },
-    {
-      name: 'view',
-      expression: function(columns) {
-        if ( ! this.array.length ) return 'No results';
-        if ( ! this.of ) this.of = this.array[0].cls_;
-
-        var tv = this.TableView.create({ data: this.dao });
-        if ( columns.length ) {
-          tv.columns = columns.map(function(c) { return of.getAxiomByName(c) });
-        }
-        return tv;
-      }
-    },
-    {
       class: 'StringArray',
       name: 'columns'
+    },
+    {
+      name: 'selection', hidden: true
     }
   ],
 
   methods: [
-    /*
-    function put(o) {
-      if ( ! this.of ) this.of = o.cls_
-      this.SUPER(o);
-      },*/
-    function toE(_, x) {
-      return x.E().add(this.view$);
-    },
+    function toE(_, x) { return this.addToE(x.E()); },
+
     function addToE(e) {
-      e.add(this.view$);
+      var self = this;
+      var of   = this.array[0].cls_;
+      var dao  = this.MDAO.create({of: of});
+
+      this.array.forEach(a => dao.put(a));
+
+      e.add(this.dynamic(function(columns) {
+        if ( ! self.array.length ) {
+          e.add('No results');
+          return;
+        }
+
+        var config = {
+          data: dao,
+          config: self.DAOControllerConfig.create({dao: dao, disableSelection: false})
+        };
+
+        if ( columns.length ) {
+          config.selectedColumnNames = columns;
+        }
+
+        this.startContext({click: self.click}).start(self.TableView, config);
+      }));
+    }
+  ],
+
+  listeners: [
+    function click(_, id) {
+      this.selection = id;
     }
   ]
 });

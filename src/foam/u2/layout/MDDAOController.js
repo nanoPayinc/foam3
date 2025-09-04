@@ -233,7 +233,7 @@ foam.CLASS({
       color: white;
       font-weight: 900;
       font-size: 4rem;
-      background-color: $primary500;
+      background-color: $backgroundBrand;
       box-shadow: inset 0px 0px 15px 0px white;
     }
   `

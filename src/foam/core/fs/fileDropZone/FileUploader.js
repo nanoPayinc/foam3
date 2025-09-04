@@ -31,7 +31,7 @@ foam.CLASS({
 
   css: `
     ^ {
-      background: $white;
+      background: $backgroundDefault;
       display: flex;
       flex-direction: column;
       gap: 10px;

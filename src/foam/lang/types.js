@@ -358,8 +358,11 @@ foam.CLASS({
         return typeof v === 'number' ? v : v ? parseFloat(v) : 0.0 ;
       }
     ],
-    [ 'type', 'Float' ]
-  ]
+    [ 'type', 'Float' ],
+    [ 'fromString', function floatFromString(str) {
+      return parseFloat(str);
+    }]
+  ],
 });
 
 
@@ -739,7 +742,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.lang',
   name: 'InternalLink',
-  extends: 'URL',
+  extends: 'String',
   label: 'Link to nano service (eg. /service/serviceA) or menu (eg. #menu_1) in the app.',
   help: 'Do not inclulde domain name in the link as it will be resolved on the client.',
   properties: [ [ 'displayWidth', 80 ] ],
@@ -868,6 +871,10 @@ foam.CLASS({
 
   // TODO: Remove need for sorting
   properties: [
+    [
+      'isDefaultValue',
+      function(v) { return ! v || ! Object.keys(v)?.length; }
+    ],
     [ 'factory', function() { return {} } ],
     [
       'comparePropertyValues',
@@ -1116,7 +1123,8 @@ foam.CLASS({
         }
 
         if ( ret === undefined ) {
-          console.warn('Default value is undefined for: ' + of.name + '.' + this.name);
+          if ( ! foam.lang.MultiPartID.isInstance(of.ID) )
+            console.warn('Default value is undefined for: ' + of.name + '.' + this.name);
           ret = null;
         }
 
@@ -1189,9 +1197,9 @@ foam.CLASS({
       name: 'supportingLabel',
       documentation: `A supporting label for the property. Useful when the label is not enough to describe the property to end users.
       Different from help in that this is a short description of the property that is typically always visible, not a detailed explanation.
-      Similar to Supporting Text in Material Design: https://m3.material.io/components/text-fields/guidelines#6aeaf1ef-d864-455d-9758-d0a0a6c0269e. 
+      Similar to Supporting Text in Material Design: https://m3.material.io/components/text-fields/guidelines#6aeaf1ef-d864-455d-9758-d0a0a6c0269e.
       See foam.u2.PropertyBorder for implementation.
-      
+
       String for now, can be upgraded to allow a formatter like label does in the future.
       `
     },

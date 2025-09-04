@@ -1,15 +1,45 @@
 package foam.lang;
 
-public class ProxyAgency implements Agency {
+import foam.core.COREService;
+
+import java.lang.Exception;
+import java.util.concurrent.Future;
+
+public class ProxyAgency implements Agency, COREService {
   public Agency delegate_;
 
-  public ProxyAgency(Agency delegate) {
+  public Agency getDelegate() {
+    return delegate_;
+  }
+
+  public void setDelegate(Agency delegate) {
     delegate_ = delegate;
   }
 
   @Override
-  public void submit(X x, ContextAgent agent, String description) {
-    delegate_.submit(x, agent, description);
+  public void start() throws Exception {
+    if ( delegate_ instanceof COREService service ) {
+      service.start();
+    }
+  }
+
+  @Override
+  public void stop() {
+    if ( delegate_ instanceof COREService service ) {
+      service.stop();
+    }
+  }
+
+  @Override
+  public void reload() {
+    if ( delegate_ instanceof COREService service ) {
+      service.reload();
+    }
+  }
+
+  @Override
+  public Future<?> submit(X x, ContextAgent agent, String description) {
+    return delegate_.submit(x, agent, description);
   }
 
   @Override

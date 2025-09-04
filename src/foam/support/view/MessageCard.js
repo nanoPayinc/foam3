@@ -28,14 +28,14 @@ foam.CLASS({
     }
     ^ .bg {
       border-radius: 2px;
-      background-color: $white;
+      background-color: $backgroundDefault;
       padding-bottom: 30px;
     }
     ^ .company-name {
       margin-right: 10px;
       float: left;
       text-align: left;
-      color: $black;
+      color: $textDefault;
       padding-left: 20px;
       padding-top: 10px;
       padding-right: 0px;
@@ -49,7 +49,7 @@ foam.CLASS({
     }
     ^ .text {
       text-align: left;
-      color: $black;
+      color: $textDefault;
       margin-left:20px;
       padding: 30px 0 0 60px;
     }

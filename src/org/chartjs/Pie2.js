@@ -32,12 +32,19 @@ foam.CLASS({
       }
     },
     {
+      name: 'plugins',
+      factory: function() {
+        return [];
+      }
+    },
+    {
       name: 'config',
       factory: function() {
         return {
           type: 'pie',
           data: this.data,
-          options: {...this.chartJSOptions}
+          options: {...this.chartJSOptions},
+          plugins: this.plugins
         };
       }
     }

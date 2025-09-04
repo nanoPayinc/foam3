@@ -43,7 +43,6 @@ foam.POM({
     { name: "debug/DebugWAO",                          flags: "web" },
     { name: "debug/DebugContextIntercept",             flags: "web" },
     { name: "debug/DebugWizardletView",                flags: "web" },
-    { name: "debug/TestWizardMenu",                    flags: "java|web&debug" },
     { name: "debug/TestWizardScenarioMenu",            flags: "java|web&debug" },
     { name: "debug/TestWizardScenario",                flags: "web&debug" },
     { name: "debug/scenarios",                         flags: "web&debug" },
@@ -112,10 +111,10 @@ foam.POM({
     { name: "data/InlineTransientSaver",               flags: "web" },
     { name: "data/LoaderInjectorSaver",                flags: "web" },
     { name: "data/UserCapabilityJunctionSaver",        flags: "web" },
-    { name: "data/WizardletRelayUCJSaver",        flags: "web" },
+    { name: "data/WizardletRelayUCJSaver",             flags: "web" },
     { name: "data/UserLoader",                         flags: "web" },
     { name: "data/UserCapabilityJunctionLoader",       flags: "web" },
-    { name: "data/WizardletRelayUCJLoader",       flags: "web" },
+    { name: "data/WizardletRelayUCJLoader",            flags: "web" },
     { name: "data/EasySaver",                          flags: "web" },
     { name: "data/MapLoader",                          flags: "web" },
     { name: "data/WizardletChainLoader",               flags: "web" },
@@ -162,5 +161,8 @@ foam.POM({
     { name: "wizardflow/EditWizardlet",                flags: "web" },
     { name: "wizardflow/RemoveWizardlets",             flags: "web" },
     { name: "wizardflow/Predicated",                   flags: "web" }
+  ],
+  journalFiles: [
+    { name: "tests",                                   flags: "test"}
   ]
 });

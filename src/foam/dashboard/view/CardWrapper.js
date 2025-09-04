@@ -15,7 +15,8 @@ foam.CLASS({
 
   requires: [
     'foam.dashboard.model.VisualizationSize',
-    'foam.dashboard.view.Card'
+    'foam.dashboard.view.Card',
+    'foam.u2.borders.CardBorder'
   ],
 
   css: `
@@ -33,39 +34,44 @@ foam.CLASS({
     {
       class: 'foam.u2.ViewSpec',
       name: 'border',
+      hidden: true,
       factory: function () {
         return this.Card;
       }
     },
     'title',
-    'currentView',
-    ['viewTitle', 'Dashboard'],
+    { name: 'currentView', hidden: true },
+    { name: 'viewTitle', value: 'Dashboard', hidden: true },
     {
-      class: 'FObjectProperty',
+      class: 'Enum',
+      of: 'foam.dashboard.model.VisualizationSize',
       name: 'size',
-      factory: function() {
-        return this.VisualizationSize.MEDIUM
+      expression: function(data$size) {
+        return data$size || this.VisualizationSize.MEDIUM;
       }
     },
-    'data',
-    'obj',
-    'mode',
+    { name: 'data', hidden: true },
+    { name: 'obj', hidden: true },
+    { name: 'mode', hidden: true },
     ['aspectRatio', 'auto']
   ],
 
   methods: [
-    function render() {
+    function init() {
+      let self = this;
       this.addClass(this.myClass())
-        .enableClass(this.myClass('titled-container'), this.title)
-        .style({ 'aspect-ratio': this.aspectRatio })
-        .callIf(!!this.title, function () {
-          this.start().addClass(this.myClass('title'), 'h500').translate(this.title, this.title).end()
-        })
-        .start(this.border, { data: this })
-        .tag(this.slot(function(currentView) {
+        .enableClass(this.myClass('titled-container'), this.title$)
+        .style({ 'aspect-ratio': this.aspectRatio$ })
+        .start()
+          .addClass(this.myClass('title'), 'h500')
+          .show(this.title$)
+          .add(this.title$)
+        .end()
+        .tag(this.border, {  data: this, size$: self.size$ }, this.content$);
+        this.content.add(this.slot(function(currentView) {
           return foam.u2.ViewSpec.createView(currentView, {
-            data$: this.data$ }, this, this.__subSubContext__);
-        })).end();
+            data$: self.data$}, this, this.__subSubContext__);
+        }));
     }
   ],
 
@@ -77,4 +83,4 @@ foam.CLASS({
       }
     }
   ]
-})
+});

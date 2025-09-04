@@ -8,6 +8,39 @@ foam.CLASS({
   package: 'foam.flow',
   name: 'Document',
 
+  css: `
+    .foam-flow-Document {
+      background-color: $backgroundDefault;
+      // color: $textTertiary;
+      max-width: 1000px;
+      margin: auto;
+      padding: 20px;
+      font-weight: 500;
+      -webkit-font-smoothing: antialiased;
+    }
+    .foam-flow-Document h1,
+    .foam-flow-Document h2,
+    .foam-flow-Document h3,
+    .foam-flow-Document h4,
+    .foam-flow-Document h5 {
+      margin: 12px 0 12px 0;
+      color: $textSecondary;
+    }
+    .foam-flow-Document p {
+      margin-bottom: 10px;
+      margin-top: 10px;
+    }
+    .foam-flow-Document .code {
+      background-color: $backgroundInverse;
+      color: $textOnInverse;
+      padding: 20px;
+    }
+    .foam-flow-Document a {
+      color: rgb(0, 153, 229);
+      text-decoration-line: none;
+    }
+  `,
+
   properties: [
     {
       class: 'String',
@@ -161,9 +194,11 @@ foam.CLASS({
             return x.
               E('article').
               addClass('foam-flow-Document').
+              /*
               // This is needed because one you click on a #link href
               // the document view moves up for some unknown reason.
               style({'margin-top': '60px'}).
+              */
               call(children, [x]);
           };
         },

@@ -4,9 +4,10 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
- foam.INTERFACE({
+foam.INTERFACE({
   package: 'foam.core.auth.resetPassword',
   name: 'ResetPasswordService',
+
   client: true,
   skeleton: true,
 

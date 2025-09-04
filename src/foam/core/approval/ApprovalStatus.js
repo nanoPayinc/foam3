@@ -38,8 +38,8 @@
       label: { en: 'Cancelled', pt: 'Cancelado'},
       ordinal: 3,
       documentation: 'Request was cancelled.',
-      color: '$grey700',
-      background: '$grey50',
+      color: '$textSecondary',
+      background: '$backgroundSecondary',
     }
   ]
 });

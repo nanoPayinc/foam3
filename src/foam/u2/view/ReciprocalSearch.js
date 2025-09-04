@@ -32,7 +32,7 @@ foam.CLASS({
 
   css: `
     ^ {
-      background-color: $white;
+      background-color: $backgroundDefault;
       border-radius: 2px;
       min-width: 250px;
     }
@@ -48,7 +48,7 @@ foam.CLASS({
     ^ input:not([type="checkbox"]):focus,
     ^ select:focus {
       outline: none;
-      border: 1px solid $primary400;
+      border: 1px solid $borderBrand;
     }
 
     ^ .general-query {
@@ -192,7 +192,6 @@ foam.CLASS({
           e.onDetach(this.searchManager);
 
           var searchView = foam.u2.ViewSpec.createView(self.TextSearchView, {
-            richSearch: true,
             of: self.dao.of.id,
             onKey: true,
             viewSpec: {

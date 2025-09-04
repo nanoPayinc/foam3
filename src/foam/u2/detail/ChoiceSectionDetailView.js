@@ -22,7 +22,7 @@ foam.CLASS({
   ],
 
   css: `
-    ^ .foam-u2-view-ScrollTableView table {
+    ^ .foam-u2-table-TableView table {
       width: 100%;
     }
 
@@ -67,8 +67,7 @@ foam.CLASS({
       this.SUPER();
       this
         .addClass(this.myClass())
-        .add(this.slot(function(sections, data) {
-          if ( ! data ) return;
+        .add(this.slot(function(sections) {
 
           var arraySlot = self.ArraySlot.create({
             slots: sections.map((s) => s.createIsAvailableFor(self.data$))

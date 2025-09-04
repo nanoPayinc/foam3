@@ -17,28 +17,30 @@ foam.CLASS({
   documentation: ``,
 
   javaImports: [
+    'foam.core.COREService',
+    'foam.core.auth.EnabledAware',
+    'foam.core.cron.SimpleIntervalSchedule',
+    'foam.core.er.EventRecord',
+    'foam.core.logger.Logger',
+    'foam.core.logger.Loggers',
+    'foam.core.script.ScriptStatus',
+    'foam.dao.AbstractDAO',
+    'foam.dao.AbstractSink',
+    'foam.dao.ArraySink',
+    'foam.dao.DAO',
+    'foam.dao.MapDAO',
+    'foam.dao.Sink',
     'foam.lang.Agency',
     'foam.lang.AgencyTimerTask',
     'foam.lang.ContextAwareSupport',
     'foam.lang.Detachable',
     'foam.lang.FObject',
-    'foam.dao.AbstractDAO',
-    'foam.dao.AbstractSink',
-    'foam.dao.DAO',
-    'foam.dao.MapDAO',
-    'foam.dao.Sink',
     'foam.log.LogLevel',
     'foam.mlang.MLang',
     'foam.mlang.sink.Min',
-    'foam.core.alarming.Alarm',
-    'foam.core.alarming.AlarmReason',
-    'foam.core.auth.EnabledAware',
-    'foam.core.cron.SimpleIntervalSchedule',
-    'foam.core.logger.Logger',
-    'foam.core.logger.Loggers',
-    'foam.core.COREService',
-    'foam.core.script.ScriptStatus',
+    'foam.mlang.sink.Sequence',
     'java.util.Date',
+    'java.util.List',
     'java.util.Timer'
   ],
 
@@ -86,34 +88,16 @@ foam.CLASS({
       `
     },
     {
-      documentation: 'Get the minimum scheduled cron job',
-      name: 'getMinScheduledTime',
-      type: 'DateTime',
-      javaCode: `
-    Min min = (Min) ((DAO) getX().get(getCronJobDAO()))
-      .where(
-        MLang.AND(
-          MLang.EQ(Cron.ENABLED, true),
-          MLang.HAS(Cron.SCHEDULED_TIME)
-        ))
-      .select(MLang.MIN(Cron.SCHEDULED_TIME));
-
-    if ( min.getValue().equals(0) ) {
-      return null;
-    }
-
-    return (Date) min.getValue();
-      `
-    },
-    {
       name: 'execute',
       javaCode: `
     final Logger logger = Loggers.logger(x, this);
     try {
       logger.info("initialize", "cronjobs", "start");
+      DAO cronJobDAO = (DAO) x.get(getCronJobDAO());
       DAO schedulableDAO = (DAO) getX().get(getSchedulableDAO());
       schedulableDAO.where(MLang.EQ(Schedulable.ENABLED, true)).
-        select(new Sink() {
+        select(new AbstractSink() {
+          @Override
           public void put(Object obj, Detachable sub) {
             Schedulable schedulable = (Schedulable) ((FObject) obj).fclone();
             Date from = schedulable.getLastRun();
@@ -126,69 +110,97 @@ foam.CLASS({
                   true
                 )
             );
-            ((DAO) x.get(getCronJobDAO())).put(schedulable);
+            cronJobDAO.put_(x, schedulable);
           }
-          public void remove(Object obj, Detachable sub) {}
-          public void eof() {}
-          public void reset(Detachable sub) {}
         });
+
+      // On startup calculate next scheduledTime
+      cronJobDAO.where(
+        MLang.AND(
+          MLang.EQ(Cron.ENABLED, true),
+          MLang.IN(Cron.STATUS, new ScriptStatus[] {
+            ScriptStatus.UNSCHEDULED,
+            ScriptStatus.ERROR
+          })
+        )
+      ).select(new AbstractSink() {
+        @Override
+        public void put(Object obj, Detachable sub) {
+          cronJobDAO.put_(x, (Cron) obj);
+        }
+      });
+
       logger.info("initialize", "cronjobs", "complete");
 
       while ( true ) {
+        long delay = getCronDelay();
         if ( getEnabled() ) {
           Date now = new Date();
-          DAO cronJobDAO = (DAO) x.get(getCronJobDAO());
           cronJobDAO.where(
-                         MLang.AND(
-                                   MLang.LTE(Cron.SCHEDULED_TIME, now),
-                                   MLang.EQ(Cron.ENABLED, true),
-                                   MLang.IN(Cron.STATUS, new ScriptStatus[] {
-                                                          ScriptStatus.UNSCHEDULED,
-                                                          ScriptStatus.ERROR,
-                                     })
-                                   )
-                         )
-            .orderBy(Cron.SCHEDULED_TIME)
-            .select(new AbstractSink() {
-                             @Override
-                             public void put(Object obj, Detachable sub) {
-                               Cron cron = (Cron) ((FObject) obj).fclone();
-                               try {
-                                 if ( cron.canRun(x) ) {
-                                   cron.setStatus(ScriptStatus.SCHEDULED);
-                                   cronJobDAO.put_(x, cron);
-                                 }
-                               } catch (Throwable t) {
-                                 logger.error("Unable to schedule cron job", cron.getId(), t.getMessage(), t);
-                                 Alarm alarm = new Alarm("CronScheduler - Unabled to schedule");
-                                 alarm.setSeverity(LogLevel.ERROR);
-                                 alarm.setReason(AlarmReason.CONFIGURATION);
-                                 alarm.setNote(cron.getId()+"\\n"+t.getMessage());
-                                 ((DAO) x.get("alarmDAO")).put(alarm);
-                               }
-                             }
-                           });
+            MLang.AND(
+              MLang.EQ(Cron.STATUS, ScriptStatus.RUNNING),
+              MLang.GT(Cron.THREAD_TIMEOUT, 0)
+            )
+          ).select(new AbstractSink() {
+            @Override
+            public void put(Object obj, Detachable sub) {
+              Cron cron = (Cron) ((FObject) obj).fclone();
+              long elapsed = System.currentTimeMillis() - cron.getThreadStartTime();
+              if ( elapsed > cron.getThreadTimeout() ) {
+                cron.setStatus(ScriptStatus.INTERRUPTED);
+                cronJobDAO.put_(x, cron);
+              }
+            }
+          });
+
+          Min min = (Min) MLang.MIN(Cron.SCHEDULED_TIME);
+          ArraySink arraySink = new ArraySink();
+          cronJobDAO.where(
+            MLang.AND(
+              MLang.EQ(Cron.ENABLED, true),
+              MLang.LTE(Cron.SCHEDULED_TIME, now),
+              MLang.IN(Cron.STATUS, new ScriptStatus[] {
+                ScriptStatus.UNSCHEDULED,
+                ScriptStatus.ERROR
+              }))
+          ).select(new Sequence.Builder(x).setArgs(new Sink[] {
+            min,
+            new AbstractSink() {
+              @Override
+              public void put(Object obj, Detachable sub) {
+                Cron cron = (Cron) obj;
+                if ( cron.canRun(x) ) {
+                  cron = (Cron) cron.fclone();
+                  cron.setStatus(ScriptStatus.SCHEDULED);
+                  try {
+                    cronJobDAO.put_(x, cron);
+                  } catch ( Throwable t ) {
+                    ((DAO) x.get("eventRecordDAO")).put(new EventRecord(x, this, "schedule", cron.getId(), LogLevel.ERROR, t));
+                  }
+                }
+              }
+            }
+          }).build());
+
+          // Check for new cronjobs every 5 seconds if no current jobs
+          // or if their next scheduled execution time is > 5s away
+          // Delay at least a little bit to avoid blocking in case of a script error.
+          Date minDate = (Date) min.getValue();
+          if( minDate != null &&
+              getEnabled() ) {
+            delay = Math.abs(minDate.getTime() - System.currentTimeMillis());
+            delay = Math.min(getCronDelay(), delay);
+            delay = Math.max(500, delay);
+          }
         }
-        // Check for new cronjobs every 5 seconds if no current jobs
-        // or if their next scheduled execution time is > 5s away
-        // Delay at least a little bit to avoid blocking in case of a script error.
-        long delay = getCronDelay();
-        Date minScheduledTime = getMinScheduledTime();
-        if( minScheduledTime != null &&
-            getEnabled() ) {
-          delay = Math.abs(minScheduledTime.getTime() - System.currentTimeMillis());
-          delay = Math.min(getCronDelay(), delay);
-          delay = Math.max(500, delay);
+        try {
+          Thread.sleep(delay);
+        } catch ( InterruptedException e ) {
+          // noop, do not kill cron scheduler since we now support cron timeout via interrupt
         }
-        Thread.sleep(delay);
       }
     } catch (Throwable t) {
-      logger.error(t.getMessage(), t);
-      ((DAO) x.get("alarmDAO")).put(new foam.core.alarming.Alarm.Builder(x)
-        .setName("CronScheduler")
-        .setSeverity(foam.log.LogLevel.ERROR)
-        .setNote(t.getMessage())
-        .build());
+      ((DAO) x.get("eventRecordDAO")).put(new EventRecord(x, this, "execute", null, LogLevel.ERROR, t));
     }
     `
     }

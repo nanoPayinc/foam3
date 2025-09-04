@@ -1,5 +1,33 @@
 p({
   "class": "foam.core.boot.CSpec",
+  "name": "keyStoreManager",
+  "lazy": false,
+  "serviceScript": """
+    return new foam.core.security.StorageKeyStoreManager.Builder(x)
+      .setType("JKS")
+      .setKeyStorePath("foamdev.jks")
+      .setKeyStorePass("foamdev")
+      .build();
+  """
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
+  "name": "sslContextFactory",
+  "description": "ssl context factory for creating ssl socket",
+  "lazy":false,
+  "service": {
+    "class": "foam.box.socket.SslContextFactory",
+    "enableSSL": true,
+    "keyStorePath": "foamdev.jks",
+    "keyStorePass": "foamdev",
+    "trustStorePath": "foamdev.jks",
+    "trustStorePass": "foamdev"
+  }
+})
+
+p({
+  "class": "foam.core.boot.CSpec",
   "name": "http",
   "lazy": false,
   "service": {
@@ -71,25 +99,10 @@ p({
           object-src 'self' data: blob: filesystem:;
           report-uri /service/CSPReportWebAgent;
           worker-src 'self';
-          script-src 'self' https://cdn.plaid.com/link/v2/stable/link-initialize.js https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js 'unsafe-eval' 'sha256-HY1JzEwuxkis4xx0ggY23gbYY/MCEAE1T6+OQnWS2vA=' 'sha256-NiNrLgJ8wbIXIi5saiR3XTd1Mxm4k0nju66GJsw4b9U=' 'sha256-FLYDXBkz4oo/H5jEfYXqAGYUwERY44OO1yznaMCdMiU=' 'sha256-G3UfiJBy6rwOk3glkBQuQDFA7IoCtiOT56gTh+IfNF0=';
+          script-src 'self' https://cdn.plaid.com/link/v2/stable/link-initialize.js https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js 'unsafe-eval' 'sha256-HY1JzEwuxkis4xx0ggY23gbYY/MCEAE1T6+OQnWS2vA=' 'sha256-NiNrLgJ8wbIXIi5saiR3XTd1Mxm4k0nju66GJsw4b9U=' 'sha256-FLYDXBkz4oo/H5jEfYXqAGYUwERY44OO1yznaMCdMiU=' 'sha256-G3UfiJBy6rwOk3glkBQuQDFA7IoCtiOT56gTh+IfNF0=';
           style-src 'self' https://fonts.googleapis.com/css https://fonts.googleapis.com/css2 https://fonts.googleapis.com/icon data: chrome-extension-resource: 'unsafe-inline';
         """
       }
     }]
-  }
-})
-
-p({
-  "class": "foam.core.boot.CSpec",
-  "name": "sslContextFactory",
-  "description": "ssl context factory for creating ssl socket",
-  "lazy":false,
-  "service": {
-    "class": "foam.box.socket.SslContextFactory",
-    "enableSSL": false,
-    "keyStorePath": "foamdev.jks",
-    "keyStorePass": "foamdev",
-    "trustStorePath": "foamdev.jks",
-    "trustStorePass": "foamdev"
   }
 })

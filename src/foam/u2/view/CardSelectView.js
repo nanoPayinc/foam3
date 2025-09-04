@@ -25,13 +25,9 @@ foam.CLASS({
   ],
 
   css: `
-    ^innerFlexer {
-      min-width: -webkit-fill-available;
-    }
-
     ^base {
       box-sizing: content-box;
-      background-color: $white;
+      background-color: $backgroundDefault;
       border-radius: 5px;
       position: relative;
       padding: 16px;
@@ -47,18 +43,18 @@ foam.CLASS({
       min-height: 2.5vh;
     }
     ^ .foam-u2-borders-CardBorder^selected {
-      border-color: $primary400;
+      border-color: $borderBrand;
     }
 
     ^ .foam-u2-borders-CardBorder^disabled {
-      background-color: $grey50;
-      color: $grey500;
+      background-color: $backgroundTertiary;
+      color: $textTertiary;
     }
 
     ^ .foam-u2-borders-CardBorder^selected-disabled {
-      border-color: $primary50;
-      background-color: $grey50;
-      color: $grey500;
+      border-color: $borderBrandXLight;
+      background-color: $backgroundTertiary;
+      color: $textTertiary;
     }
     .foam-u2-view-MultiChoiceView-flexer .foam-u2-layout-Cols {
       column-gap: 17px;
@@ -72,10 +68,9 @@ foam.CLASS({
 
   properties: [
     {
-      class: 'String',
       name: 'label',
       factory: function() {
-        return String(this.value);
+        return (this.data?.toSummary && this.data?.toSummary()) ?? (this.data || '');
       }
     },
     {

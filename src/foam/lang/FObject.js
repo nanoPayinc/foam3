@@ -732,13 +732,15 @@ foam.CLASS({
     },
 
     function pubPropertyChange_(prop, oldValue, newValue) {
+      // No listeners, so return.
+      if ( ! this.hasListeners('propertyChange', prop.name) ) return;
+
       /**
        * Publish to this.propertyChange topic if oldValue and newValue are
        * different.
        */
       if ( Object.is(oldValue, newValue) ) return;
       if ( foam.Date.isInstance(newValue) && foam.Date.equals(newValue, oldValue) ) return;
-      if ( ! this.hasListeners('propertyChange', prop.name) ) return;
 
       var slot = prop.toSlot(this);
       slot.setPrev(oldValue);

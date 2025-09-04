@@ -12,11 +12,12 @@ foam.CLASS({
   TODO: not very msp friendly at the moment, there is no way for WebPushService to find the right apnsPushService for a given app`,
 
   implements: [
-    'foam.core.auth.ServiceProviderAware'
+    'foam.core.auth.ServiceProviderAware',
+    'foam.core.COREService',
   ],
 
   javaCode: `
-    public void send(iOSNativePushRegistration sub, HashMap msg) {
+    public void send(iOSNativePushRegistration sub, Map msg) {
       send(sub, msg, 0);
     }
   `,
@@ -27,7 +28,13 @@ foam.CLASS({
       name: 'MAX_RETRY_ATTEMPTS',
       documentation: 'Number of times service will try to deliver a notification if an exception is thrown',
       value: 3
-    }
+    },
+    {
+      type: 'int',
+      name: 'TTL_IN_HOURS',
+      documentation: 'Time to live for the notification in hours',
+      value: 12
+    },
   ],
 
   javaImports: [
@@ -41,9 +48,11 @@ foam.CLASS({
 
     'java.security.Security',
     'java.util.List',
-    'java.util.HashMap',
+    'java.util.Map',
     'java.io.IOException',
     'java.util.concurrent.ExecutionException',
+    'java.util.concurrent.TimeoutException',
+    'java.util.concurrent.TimeUnit',
 
     'com.eatthepath.pushy.apns.*',
     'com.eatthepath.pushy.apns.util.*',
@@ -59,7 +68,7 @@ foam.CLASS({
   properties: [
     {
       class: 'Object',
-      of: 'com.eatthepath.pushy.apns.ApnsClient',
+      javaType: 'com.eatthepath.pushy.apns.ApnsClient',
       name: 'apnsClient',
       transient: true,
       javaFactory: `
@@ -70,6 +79,18 @@ foam.CLASS({
       class: 'String',
       name: 'apnsCredentialId',
       documentation: 'credential id to find for host and key data'
+    },
+    {
+      class: 'Long',
+      name: 'connectionTimeout',
+      documentation: '8 seconds',
+      value: 8000
+    },
+    {
+      class: 'Long',
+      name: 'readTimeout',
+      documentation: '20 seconds',
+      value: 20000
     }
   ],
 
@@ -84,6 +105,7 @@ foam.CLASS({
 
         var credential = getCredentials(getX());
         return new ApnsClientBuilder()
+          .setConnectionTimeout(Duration.ofMillis(getConnectionTimeout()))
           .setApnsServer(credential.getHost())
           .setClientCredentials(
             new java.io.ByteArrayInputStream(
@@ -97,7 +119,7 @@ foam.CLASS({
     },
     {
       name: 'send',
-      args: 'iOSNativePushRegistration sub, HashMap msg, int attempt',
+      args: 'iOSNativePushRegistration sub, Map msg, int attempt',
       type: 'Void',
       javaCode: `
           // Dont send notifications to subs that are in denied state
@@ -110,6 +132,13 @@ foam.CLASS({
           final ApnsPayloadBuilder payloadBuilder = new SimpleApnsPayloadBuilder();
           payloadBuilder.setAlertBody((String) msg.get("body"));
           payloadBuilder.setAlertTitle((String) msg.get("title"));
+
+          for ( var e : msg.entrySet() ) {
+            var entry = (java.util.Map.Entry)e;
+            if ( !((String)entry.getKey()).equals("body") && !((String)entry.getKey()).equals("title") ) {
+              payloadBuilder.addCustomProperty((String)entry.getKey(), entry.getValue());
+            }
+          }
           String payload = payloadBuilder.build();
           // Add a ttl for notifications on the payload
           String token = TokenUtil.sanitizeTokenString(sub.getEndpoint());
@@ -117,50 +146,44 @@ foam.CLASS({
           // TTL for notification delivery, after this time apns will stop trying to deliver this notification
           // Currently hardcoded to 7 days
           Instant instant = Instant.now();
-          instant = instant.plus(7, ChronoUnit.DAYS);
+          instant = instant.plus(TTL_IN_HOURS, ChronoUnit.HOURS);
           SimpleApnsPushNotification pushNotification = new SimpleApnsPushNotification(token, cred.getAppBundleId(), payload, instant);
 
-         try {
+          try {
             // Asking the APNs client to send the notification
             // and creating the future that will return the status
             // of the push after it's sent.
-            final PushNotificationFuture<SimpleApnsPushNotification, PushNotificationResponse<SimpleApnsPushNotification>> sendNotificationFuture = ((com.eatthepath.pushy.apns.ApnsClient) getApnsClient()).sendNotification(pushNotification);
+            final PushNotificationFuture<SimpleApnsPushNotification, PushNotificationResponse<SimpleApnsPushNotification>> sendNotificationFuture = getApnsClient().sendNotification(pushNotification);
 
             // getting the response from APNs
-            final PushNotificationResponse<SimpleApnsPushNotification> pushNotificationResponse = sendNotificationFuture.get();
+            final PushNotificationResponse<SimpleApnsPushNotification> pushNotificationResponse = sendNotificationFuture.get(getReadTimeout(), TimeUnit.MILLISECONDS);
             if (pushNotificationResponse.isAccepted()) {
-                // TODO: Replace with log
-                System.out.println("Push notification accepted by APNs gateway." + pushNotificationResponse.getApnsId());
+              Loggers.logger(getX(), this).info("APNSPushService", "Push notification accepted by APNs gateway." + pushNotificationResponse.getApnsId());
             } else {
-                //TODO: Replace with alarms
-                System.out.println("Notification rejected by the APNs gateway: " +
-                        pushNotificationResponse.getRejectionReason());
+              //TODO: Replace with alarms
+              Loggers.logger(getX(), this).error("APNSPushService", "Notification rejected by the APNs gateway: " + pushNotificationResponse.getRejectionReason());
 
-                if (pushNotificationResponse.getTokenInvalidationTimestamp() != null) {
-                    System.out.println("\t…and the token is invalid as of " +
-                        pushNotificationResponse.getTokenInvalidationTimestamp());
+              if (pushNotificationResponse.getTokenInvalidationTimestamp() != null) {
+                Loggers.logger(getX(), this).error("APNSPushService", "and the token is invalid as of " + pushNotificationResponse.getTokenInvalidationTimestamp());
 
-                    // If notification is rejected with invalidation timestamp, change it's status
-                    sub.setLastKnownState("DENIED");
-                    ((DAO) getX().get("pushRegistrationDAO")).put(sub);
-                }
+                // If notification is rejected with invalidation timestamp, change it's status
+                sub = (iOSNativePushRegistration) sub.fclone();
+                sub.setLastKnownState("DENIED");
+                ((DAO) getX().get("pushRegistrationDAO")).put(sub);
+              }
             }
-          } catch (final ExecutionException e) {
+          } catch ( ExecutionException | InterruptedException | TimeoutException e ) {
             // Should retry if it fails without explanation i.e. we never get a response from apple's servers however a rejection from the apple server should be considered permanent and no retry should be attempted
-            System.err.println("Failed to send push notification.");
-            e.printStackTrace();
+            Loggers.logger(getX(), this).error("APNSPushService", "Notification rejected by network interrupt", "remaining attempts: " + attempt);
             if ( attempt < MAX_RETRY_ATTEMPTS ) {
               attempt++;
               send(sub, msg, attempt);
             } 
-          } catch (final Exception e) {
-            // TODO: Replace with loggers
-            System.err.println("Failed to send push notification.");
-            e.printStackTrace();
+          } catch ( Exception e ) {
+            Loggers.logger(getX(), this).error("APNSPushService", "Failed to send push notification.", e);
           }
       `
     },
-
     {
       name: 'getCredentials',
       args: 'X x',
@@ -170,6 +193,13 @@ foam.CLASS({
         DAO credentialDAO = (DAO) x.get("credentialsDAO");
         credentials = (APNSCredential) credentialDAO.find(MLang.EQ(APNSCredential.ID, getApnsCredentialId()));
         return credentials;
+      `
+    },
+    {
+      name: 'reload',
+      javaCode: `
+        setApnsClient(buildClient());
+        Loggers.logger(getX(), this).info("APNSPushService", "httpClient reloaded.");
       `
     }
   ]

@@ -40,7 +40,7 @@ foam.CLASS({
     {
       name: 'sendTestPush',
       code: function(x) {
-        x.pushService.sendPushById(this.user, "test", "push")
+        x.pushService.sendPushById(this.user, "test", "push", { "launchRoute": "nbp.transactions" })
       }
     }
   ]

@@ -14,16 +14,32 @@ foam.CLASS({
   package: 'foam.core.notification.push',
   name: 'WebPushService',
 
+  implements: [
+    'foam.core.COREService'
+  ],
+
   javaImports: [
     'java.security.Security',
     'foam.dao.*',
     'foam.dao.ArraySink',
+    'foam.core.logger.Loggers',
     'foam.core.auth.*',
     'java.util.List',
-    'java.util.HashMap',
+    'java.util.Map',
     'foam.util.SafetyUtil',
+    'java.util.concurrent.TimeUnit',
     'nl.martijndwars.webpush.Notification',
-    'org.bouncycastle.jce.provider.BouncyCastleProvider'
+    'org.bouncycastle.jce.provider.BouncyCastleProvider',
+    'java.time.Duration'
+  ],
+
+  constants: [
+    {
+      type: 'int',
+      name: 'TTL_IN_HOURS',
+      documentation: 'Time to live for the notification in hours',
+      value: 12
+    }
   ],
 
   properties: [
@@ -45,28 +61,39 @@ foam.CLASS({
     },
     {
       class: 'Object',
-      of: 'nl.martijndwars.webpush.PushService',
+      javaType: 'nl.martijndwars.webpush.PushService',
       name: 'pushService',
       transient: true,
       javaFactory: `
-      // TODO: rebuild if settings change
-      try {
-        if ( Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null ) {
-          Security.addProvider(new BouncyCastleProvider());
-        }
-        return new nl.martijndwars.webpush.PushService(getPublicKey(), getPrivateKey(), "mailto:" + getSupportEmail() );
-      } catch (Throwable t) {
-        t.printStackTrace();
-        return null;
-      }
+       return buildPushService();
       `
+    },
+    {
+      class: 'Long',
+      name: 'readTimeout',
+      documentation: '20 seconds',
+      value: 20000
     }
   ],
 
   methods: [
     {
+      name: 'buildPushService',
+      type: 'nl.martijndwars.webpush.PushService',
+      javaCode: `
+        try {
+          if ( Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null ) {
+            Security.addProvider(new BouncyCastleProvider());
+          }
+          return new nl.martijndwars.webpush.PushService(getPublicKey(), getPrivateKey(), "mailto:" + getSupportEmail() );
+        } catch (Throwable t) {
+          throw new RuntimeException(t);
+        }
+      `
+    },
+    {
       name: 'send',
-      args: 'PushRegistration sub, HashMap msgMap',
+      args: 'PushRegistration sub, Map msgMap',
       type: 'Void',
       javaCode: `
       /*
@@ -79,23 +106,35 @@ foam.CLASS({
           if ( SafetyUtil.isEmpty(sub.getEndpoint()) ) {
             return;
           }
-          var msg = javax.json.Json.createObjectBuilder()
-            .add("title", (String)msgMap.get("title"))
-            .add("body", (String)msgMap.get("body"))
+          var msg = jakarta.json.Json.createObjectBuilder(msgMap)
             .build()
             .toString();
+
+          var pushService = getPushService();
+          Duration ttl = Duration.ofHours(TTL_IN_HOURS);
+          int ttlValue = (int) ttl.getSeconds();
+          byte[] byteArray = msg.getBytes(); 
           Notification n = new Notification(
             sub.getEndpoint(),
-            sub.getKey(),  // sub.getUserPublicKey(),
-            sub.getAuth(), // sub.getAuthAsBytes(),
-            msg
+            sub.getKey(),
+            sub.getAuth(),
+            byteArray,
+            ttlValue
           );
 
-          ((nl.martijndwars.webpush.PushService) getPushService()).sendAsync(n);
+          var future = pushService.sendAsync(n);
+          future.get(getReadTimeout(), TimeUnit.MILLISECONDS);
         } catch (Throwable t) {
           //TODO: add alarm
-          t.printStackTrace();
+          Loggers.logger(getX(), this).error("WebPushService", t);
         }
+      `
+    },
+    {
+      name: 'reload',
+      javaCode: `
+        setPushService(buildPushService());
+        Loggers.logger(getX(), this).info("WebPushService", "pushService reloaded.");
       `
     }
   ]

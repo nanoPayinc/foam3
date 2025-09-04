@@ -25,7 +25,7 @@ foam.ENUM({
     Eg. faq, privacy-policy, forgot-password, etc.,.
 
     Authenticated menus are accessible only by logged-in users.
-    Eg. dashboard, update-profile, etc.,.
+    Eg. dashboard, update-profile, etc..
 
     Unauthenticated menus are usually "sign-in" and "sign-up" menus which are
     accessible only when users first landed on the app. But after successfully

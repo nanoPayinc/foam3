@@ -29,17 +29,19 @@ foam.CLASS({
     },
     {
       name: 'code',
-      value: function (slot, action) {
+      value: function(X, action) {
         // If alternateFlow was specified in a journal it needs a relevant context
         // ???: Maybe the alternateFlow property should be an FObjectSpec instead
         if ( action.alternateFlow.__context__ != action.__subContext__ ) {
           action.alternateFlow = action.alternateFlow.clone(action.__subContext__);
         }
 
-        const wizardController = slot.data$.get();
+        const wizardController = X.data$.get();
         // only set inaltflow if using altflowwao since it is the only place where this boolean is used
         if ( wizardController.currentWizardlet.useAltFlowWAO ) wizardController.currentWizardlet.isInAltFlow = true;
         action.alternateFlow.execute((wizardController.data || wizardController).__subContext__);
+        // only call handleNext when the action is being called as a result of the current wizardlet
+        if ( ! X.wizardlet || wizardController.currentWizardlet == X.wizardlet.capability.id )
         return action.alternateFlow.handleNext(wizardController);
       }
     },

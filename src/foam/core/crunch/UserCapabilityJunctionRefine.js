@@ -43,12 +43,15 @@ foam.CLASS({
 
   imports: [
     'capabilityDAO',
+    'crunchService',
+    'notify',
     'subject',
     'userDAO'
   ],
 
   requires: [
-    'foam.core.crunch.AgentCapabilityJunction'
+    'foam.core.crunch.AgentCapabilityJunction',
+    'foam.log.LogLevel'
   ],
 
   tableColumns: [
@@ -63,7 +66,8 @@ foam.CLASS({
 
   messages: [
     { name: 'VIEW_TITLE_USER', message: 'Users' },
-    { name: 'VIEW_TITLE_CAP',  message: 'Capabilities' }
+    { name: 'VIEW_TITLE_CAP',  message: 'Capabilities' },
+    { name: 'RESET_SUCCESS',   message: 'Successfully reset the UCJ data' }
   ],
 
   sections: [
@@ -71,7 +75,7 @@ foam.CLASS({
       name: '_defaultSection', title: 'General Information'
     },
     { name: 'renewableSection' },
-    { 
+    {
       name: 'opsSection',
       title: 'Operations Data',
       properties: ['sourceId', 'targetId', 'status', 'data']
@@ -197,6 +201,17 @@ foam.CLASS({
       menuKeys: ['admin.capabilities']
     },
     {
+      name: 'data',
+      view: function(_, X) {
+        let slot = foam.lang.SimpleSlot.create({}, X);
+        X.data.targetId$find.then(v => { slot.set(v.of) });
+        return {
+          class: 'foam.u2.view.OptionalFObjectView',
+          of$: slot
+        };
+      }
+    },
+    {
       name: 'payload',
       class: 'FObjectProperty',
       of: 'foam.core.crunch.UserCapabilityJunction',
@@ -245,6 +260,18 @@ foam.CLASS({
       name: 'skipEditBehaviour',
       writePermissionRequired: true,
       storageTransient: true
+    },
+    {
+      class: 'Boolean',
+      name: 'requestingReset',
+      documentation: `
+        Used for checks in UCJDAO rule stack, required since it is used to prevent UCJ from being automatically granted if the capability.of is null
+        NOTE: The permission to write this property is also used as a check on the resetUCJ action. Calling the action on the client 
+        with the correct permission will set this property on the crunchService so this property can be network transient.
+      `,
+      writePermissionRequired: true,
+      storageTransient: true,
+      networkTransient: true
     }
   ],
 
@@ -369,7 +396,7 @@ foam.CLASS({
       javaCode: `
         UserCapabilityJunction ucj = this;
         var currentSubject = (Subject) x.get("subject");
-        var userDAO = (DAO) x.get("bareUserDAO");
+        var userDAO = (DAO) x.get("localUserDAO");
 
         Subject subject = new Subject(x);
         if ( ucj instanceof AgentCapabilityJunction ) {
@@ -445,6 +472,24 @@ foam.CLASS({
       code: async function () {
         return (await this.targetId$find)?.name + ' for ' +
           (await this.sourceId$find)?.legalName;
+      }
+    }
+  ],
+
+  actions: [
+    {
+      name: 'resetUCJ',
+      label: 'Reset UCJ Data',
+      availablePermissions: [ 'usercapabilityjunction.rw.requestingReset' ],
+      isAvailable: function(status) { return status == 'GRANTED' || status == 'PENDING'; },
+      confirmationRequired: () => true,
+      code: async function(X) {
+        const ret = await this.crunchService.resetJunctionData(null, this.id);
+        if ( ret ) {
+          this.notify(this.RESET_SUCCESS, '', this.LogLevel.INFO, true);
+        }
+        X.detailView?.finished?.pub();
+        return ret;
       }
     }
   ]

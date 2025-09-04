@@ -10,7 +10,16 @@ foam.CLASS({
 
   flags: [ 'web' ],
 
+  requires: [
+    'org.chartjs.SequentialJsLib'
+  ],
+
   axioms: [
-    foam.u2.JsLib.create({src: 'https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js'})
+    org.chartjs.SequentialJsLib.create({
+      sources: [
+        'https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js',
+        'https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js'
+      ]
+    })
   ]
 });

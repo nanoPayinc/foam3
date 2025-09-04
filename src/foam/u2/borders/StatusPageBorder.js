@@ -40,12 +40,12 @@ foam.CLASS({
       z-index: 1000;
     }
     ^header {
-      background: $white;
+      background: $backgroundDefault;
       display: grid;
       grid-template-columns: 1fr auto 1fr;
       align-items: center;
       padding: 12px;
-      border-bottom: 1px solid $grey300;
+      border-bottom: 1px solid $borderLight;
     }
 
     ^header-left {
@@ -62,7 +62,7 @@ foam.CLASS({
     }
 
     ^body {
-      background: $white;
+      background: $backgroundDefault;
       flex-grow: 1;
       max-height: var(--max-height, 100vh);
       overflow: auto;

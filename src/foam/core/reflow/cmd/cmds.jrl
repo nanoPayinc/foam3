@@ -1,0 +1,152 @@
+p({"class":"foam.core.reflow.cmd.Cells", "id": "cells", permissionRequired: true })
+p({"class":"foam.core.reflow.cmd.Clear", "id": "clear"})
+p({"class":"foam.core.reflow.cmd.DAO", "id": "dao"})
+p({"class":"foam.core.reflow.cmd.DAOCreate", "id": "add", linkable: false})
+p({"class":"foam.core.reflow.cmd.DAOS", "id": "daos"})
+p({"class":"foam.core.reflow.cmd.Describe", "id": "describe", linkable: false})
+p({"class":"foam.core.reflow.cmd.Flows", "id": "flows"})
+p({"class":"foam.core.reflow.cmd.Help", "id": "help"})
+p({"class":"foam.core.reflow.cmd.HelpFunctions", "id": "helpFn"})
+p({"class":"foam.core.reflow.cmd.History", "id": "history"})
+p({"class":"foam.core.reflow.cmd.Load", "id": "load", linkable: false})
+p({"class":"foam.core.reflow.cmd.MQLHelp", "id": "helpMQL"})
+p({"class":"foam.core.reflow.cmd.Models", "id": "models"})
+// p({"class":"foam.core.reflow.cmd.Quote", "id": "quote", linkable: false})
+p({"class":"foam.core.reflow.cmd.Save", "id": "save"})
+p({"class":"foam.core.reflow.cmd.Login", "id": "login"})
+p({"class":"foam.core.reflow.cmd.Services", "id": "services", permissionRequired: true })
+p({
+  "class":"foam.core.reflow.cmd.Command",
+  "id": "clock",
+  "description": "Insert a Clock",
+  "script": """
+    var clock = foam.demos.clock.Clock.create({x:110, y:110}, this);
+    this.addValue(clock);
+//    this.out.add(clock);
+//    this.currentBlock.value = clock;
+   """,
+   permissionRequired: true
+})
+
+p({"class":"foam.core.reflow.cmd.Command", "id": "signature", "description": "Insert a Signature Block",  "script": """var s = foam.core.reflow.Signature.create({label: args[0] || ''}, this); this.out.add(s); this.currentBlock.value = s;"""})
+
+p({"class":"foam.core.reflow.cmd.Command", "id": "check", "description": "Insert a checkmark",  "script": """var s = foam.core.reflow.Check.create({label: args[0] || ''}, this); this.out.add(s); this.currentBlock.value = s;""", permissionRequired: true })
+
+p({"class":"foam.core.reflow.cmd.Command", "id": "now", "description": "Insert a timestamp",  "script": """var d = new Date(); var holder = foam.lang.DateTimeHolder.create({value: d}); this.currentBlock.value = holder; this.out.add(holder.value$);"""})
+
+p({"class":"foam.core.reflow.cmd.Command", "id": "today", "description": "Insert today's date",  "script": """var d = new Date(); var holder = foam.lang.DateHolder.create({value: d}); this.currentBlock.value = holder; this.out.add(holder.value$.map(d => d.toDateString()));"""})
+
+p({
+  "class":"foam.core.reflow.cmd.Command",
+  "id": "h",
+  "description": "Insert a Header",
+  "script": """addValue(foam.core.reflow.Header.create({text: args.join(' ')}, this));"""
+})
+p({
+  "class":"foam.core.reflow.cmd.Command",
+  "id": "h1",
+  "description": "Header 1",
+  "script": "addValue(foam.core.reflow.Header.create({type:'h1', text: args.join(' ')}, this));"
+})
+p({
+  "class":"foam.core.reflow.cmd.Command",
+  "id": "h2",
+  "description": "Header 2",
+  "script": "addValue(foam.core.reflow.Header.create({type:'h2', text: args.join(' ')}, this));"
+})
+p({
+  "class":"foam.core.reflow.cmd.Command",
+  "id": "h3",
+  "description": "Header 3",
+  "script": "addValue(foam.core.reflow.Header.create({type:'h3', text: args.join(' ')}, this));"
+})
+p({
+  "class":"foam.core.reflow.cmd.Command",
+  "id": "h4",
+  "description": "Header 4",
+  "script": "addValue(foam.core.reflow.Header.create({type:'h4', text: args.join(' ')}, this));"
+})
+p({
+  "class":"foam.core.reflow.cmd.Command",
+  "id": "doc",
+  "description": "Insert Document",
+  "script": "addValue(foam.core.reflow.Doc.create({richText: args.join(' ')}, this));"
+})
+p({
+  "class":"foam.core.reflow.cmd.Command",
+  "id": "upload",
+  "description": "Upload Data",
+  linkable: false,
+  "script": """
+    var scope = this.__context__.scope;
+    if ( foam.String.isInstance(args[0]) && scope[args[0]] ) args[0] = scope[args[0]];
+    else if ( foam.String.isInstance(args[0]) && scope[args[0] + 'DAO'] ) args[0] = scope[args[0] + 'DAO'];
+    if ( foam.dao.DAO.isInstance(args[0]) ) {
+      this.out.add(foam.core.reflow.Upload.create({dao: args[0]}, this));
+    } else {
+      this.out.add(foam.core.reflow.Upload.create({daoKey: args[0]}, this));
+    }
+  """
+})
+p({
+  "class":"foam.core.reflow.cmd.Command",
+  "id": "script",
+  "description": "Create a Script",
+  "script": """
+    addValue(foam.core.reflow.Script.create({}, this), true);
+  """
+})
+p({
+  "class":"foam.core.reflow.cmd.Command",
+  "id": "fetch",
+  "description": "Fetch a file from a URL",
+  "script": """
+    addValue(foam.core.reflow.XHR.create({url: args[0]}, this));
+  """,
+  permissionRequired: true
+})
+p({
+  "class":"foam.core.reflow.cmd.Button",
+  "id": "button",
+  "description": "Create a button with custom logic"
+})
+p({
+  "class":"foam.core.reflow.cmd.Buttons",
+  "id": "buttons",
+  "description": "Create multiple buttons with custom logic"
+})
+p({
+  "class":"foam.core.reflow.cmd.Input",
+  "id": "input",
+  "description": "Take Input from user or from URL parameter."
+})
+
+p({
+  "class":"foam.core.reflow.cmd.Command",
+  "id": "preLoad",
+  "description": "Pre-load evaluation hook",
+  "script": "this.block.del(); var now = Date.now(); globalThis.preLoadTime = now; console.log('PreLoad executed at:', new Date(now).toISOString(), 'timestamp:', now);",
+  "hidden": true
+})
+
+p({
+  "class":"foam.core.reflow.cmd.Command",
+  "id": "postLoad",
+  "description": "Post-load evaluation hook",
+  "script": """
+  this.block.del();
+  var now = Date.now();
+  globalThis.postLoadTime = now;
+  var duration = globalThis.preLoadTime ? (now - globalThis.preLoadTime) : 0;
+  console.log('PostLoad executed at:', new Date(now).toISOString(), 'timestamp:', now, 'Load duration:', duration + 'ms');
+""",
+  "hidden": true
+})
+
+
+p({
+  "class":"foam.core.reflow.cmd.Layout",
+  "id": "layout",
+  "description": "adds a layout block"
+})
+p({"class":"foam.core.reflow.cmd.DAOFilter", "id": "daofilter"})

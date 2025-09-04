@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foamdev.fit',
   name: 'Issue',
 
-  mixins: [
+  implements: [
     'foam.core.auth.CreatedAware',
     'foam.core.auth.CreatedByAware',
     'foam.core.auth.LastModifiedAware',

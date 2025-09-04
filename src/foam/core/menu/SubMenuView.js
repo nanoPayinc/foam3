@@ -29,19 +29,19 @@ foam.CLASS({
       padding: 8px 24px;
       padding-right: 48px;
       cursor: pointer;
-      background:$white;
+      background:$backgroundDefault;
       color: black;
-      border-left: solid 1px $grey50;
-      border-right: solid 1px $grey50;
+      border-left: solid 1px $borderLight;
+      border-right: solid 1px $borderLight;
     }
     ^inner div:last-child {
       border-bottom-left-radius: 5px;
       border-bottom-right-radius: 5px;
     }
     ^inner div:hover {
-      background: $primary50 !important;
-      border-left: solid 1px $primary50;
-      border-right: solid 1px $primary50;
+      background: $borderPrimaryLight !important;
+      border-left: solid 1px $borderPrimaryLight;
+      border-right: solid 1px $borderPrimaryLight;
     }
   `,
 

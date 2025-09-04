@@ -15,6 +15,10 @@ foam.CLASS({
     'foam.u2.view.RootColumnConfigPropView'
   ],
 
+  imports: [
+    'columnStorage'
+  ],
+
   css: `
     ^ {
       max-width: 200px;
@@ -36,17 +40,13 @@ foam.CLASS({
     ^resetButton {
       float: right;
       background: none;
-      color: $primary400;
+      color: $textBrand;
     }
     ^resetButton:hover:not(:disabled) {
       text-decoration: underline;
-      color: $primary400;
-    }
-    ^resetButton:focus {
-      color: $primary400;
     }
     ^resetButton:disabled {
-      color: $grey500;
+      color: $textTertiary;
     }
     ^colContainer {
       overflow-x: hidden;
@@ -394,7 +394,7 @@ foam.CLASS({
       name: 'resetColumns',
       label: 'Reset Columns',
       code: function() {
-        localStorage.removeItem(this.data.of.id);
+        this.columnStorage.removeItem(this.data.of.id);
         this.data.selectedColumnNames = undefined;
         this.data.resetColWidths();
         this.data.updateColumns();
@@ -546,7 +546,7 @@ foam.CLASS({
     justify-content: space-between;
   }
   ^some-padding:hover {
-    background-color: $primary50;
+    background-color: $backgroundBrandTertiary;
     border-radius: 4px;
   }
   ^label {

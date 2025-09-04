@@ -21,7 +21,8 @@ foam.CLASS({
       appearance: none;
       -moz-appearance: none;
       -webkit-appearance: none;
-      background: #ffffff url('/images/dropdown-icon.svg') no-repeat;
+      background: url('/images/dropdown-icon.svg') no-repeat;
+      background-color: $backgroundDefault;
       background-position: right 0.5em top 50%, 0 0;
       box-shadow: none;
       cursor: pointer;

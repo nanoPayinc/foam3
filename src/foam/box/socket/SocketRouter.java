@@ -7,10 +7,9 @@
 package foam.box.socket;
 
 import foam.box.Box;
-import foam.box.Message;
+import foam.box.Envelope;
 import foam.box.SessionServerBox;
 import foam.box.Skeleton;
-import foam.box.socket.SocketWebAgent;
 import foam.lang.ContextAware;
 import foam.lang.FObject;
 import foam.lang.Detachable;
@@ -23,6 +22,7 @@ import foam.lib.json.JSONParser;
 import foam.core.boot.CSpec;
 import foam.core.boot.CSpecAware;
 import foam.core.http.NanoRouter;
+import foam.core.http.ServiceWebAgent;
 import foam.core.http.WebAgent;
 import foam.core.logger.PrefixLogger;
 import foam.core.logger.Logger;
@@ -73,10 +73,17 @@ public class SocketRouter
     x_ = x;
   }
 
-  public void service(Message msg)
+  public void service(Envelope envelope)
     throws IOException {
     PM pm = null;
-    String serviceKey = (String) msg.getAttributes().get("serviceKey");
+    String serviceKey = null;
+    Object message = envelope.getMessage();
+
+    if ( envelope.getMessage() instanceof foam.box.SubBoxMessage subBoxMessage ) {
+      serviceKey = subBoxMessage.getName();
+      message = subBoxMessage.getMessage();
+    }
+
     if ( ! serviceKey.equals("static") ) {
       pm = PM.create(getX(), this.getClass().getSimpleName(), serviceKey);
     }
@@ -94,13 +101,13 @@ public class SocketRouter
               spec.getName()
             }, (Logger) getX().get("logger")))
         .put(CSpec.class, spec);
-      SocketWebAgent agent = (SocketWebAgent) getWebAgent(spec);
+      ServiceWebAgent agent = (ServiceWebAgent) getWebAgent(spec);
       if ( agent == null ) {
         logger_.error("Agent not found", serviceKey);
         throw new IOException("Service not found: "+serviceKey);
       }
       try {
-        SessionServerBox.send(requestContext, agent.getSkeletonBox(), agent.getAuthenticate(), msg);
+        SessionServerBox.send(requestContext, agent.getSkeletonBox(), agent.getAuthenticate(), new foam.box.Envelope(message, envelope.getReplyBox()));
       } catch (Exception e) {
         logger_.error("Error serving", serviceKey, e);
         if ( pm != null ) pm.error(getX(), e);
@@ -109,12 +116,5 @@ public class SocketRouter
     } finally {
       if ( pm != null ) pm.log(getX());
     }
-  }
-
-  protected WebAgent getAgent(Skeleton skeleton, CSpec spec) {
-    ((OMLogger) getX().get("OMLogger")).log("socket.router.agent");
-    WebAgent agent = new SocketWebAgent(skeleton, spec.getAuthenticate());
-//    informService(agent, spec);
-    return agent;
   }
 }

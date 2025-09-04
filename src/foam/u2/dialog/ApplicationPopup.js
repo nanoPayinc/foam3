@@ -72,7 +72,7 @@ foam.CLASS({
       padding: 0.6rem;
     }
     ^header.showBorder {
-      border-bottom: 1px solid $grey300;
+      border-bottom: 1px solid $borderDefault;
     }
 
     ^header-left {
@@ -159,7 +159,7 @@ foam.CLASS({
       display: flex;
       flex-direction: column;
       justify-content: center;
-      font-size: 1.6rem;
+      font-size: 1.8rem;
       line-height: 1.25;
       transition: all 150ms;
       text-align: center;
@@ -192,7 +192,8 @@ foam.CLASS({
         padding: 12px;
       }
       ^:not(^fullscreen) ^inner {
-        width: min(50rem, 100%);
+        width: 75%;
+        min-width: 50rem;
       }
       ^fullscreen ^bodyWrapper {
         width: min(100rem, 100%);
@@ -214,11 +215,6 @@ foam.CLASS({
       ^bodyWrapper{
         padding: 2.4rem 4rem;
         gap: 2rem;
-      }
-    }
-    @media only screen and (min-width: /*%DISPLAYWIDTH.XL%*/ 1280px) {
-      ^:not(^fullscreen) ^inner {
-        width: min(120rem, 100%);
       }
     }
   `,

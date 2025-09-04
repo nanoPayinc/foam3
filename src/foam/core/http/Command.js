@@ -8,7 +8,7 @@ foam.ENUM({
   package: 'foam.core.http',
   name: 'Command',
 
-  documentation: 'Nanos equivelent HTTP methods',
+  documentation: 'CORE equivelent HTTP methods',
 
   values: [
     { name: 'SELECT', label: 'SELECT' },

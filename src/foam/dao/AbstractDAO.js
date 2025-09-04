@@ -518,7 +518,7 @@ return this.find_(this.getX(), id);
     {
       name: 'cmd_',
       code: function cmd_(x, obj) {
-        console.warn('Unrecognized command');
+        console.warn('Unrecognized DAO cmd()');
         return undefined;
       },
       javaCode: `

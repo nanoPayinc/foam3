@@ -1,1 +1,1 @@
-Nanos integrated unit-testing framework.
+CORE integrated unit-testing framework.

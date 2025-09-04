@@ -15,6 +15,8 @@ import foam.lang.XLocator;
 import foam.lang.ProxyX;
 import foam.dao.DAO;
 import static foam.mlang.MLang.EQ;
+import foam.core.auth.Subject;
+import foam.core.auth.User;
 import foam.core.fs.File;
 import foam.core.logger.Logger;
 import foam.core.logger.Loggers;
@@ -71,13 +73,15 @@ public class ResourceImageServlet
               myConverter.transcode(inputSvgImage, outputPngImage);
 
               Blob blob = new InputStreamBlob(new ByteArrayInputStream(pngOutputStream.toByteArray()), pngOutputStream.size());
+              Subject subject = (Subject) x.get("subject");
+              User user = (User) subject.getUser();
               file = new File.Builder(x)
                 .setOwner(1) // system
                 .setMimeType("image/png")
                 .setFilename(fileName)
                 .setFilesize(pngOutputStream.size())
                 .setData(blob)
-                .setSpid("nanopay")
+                .setSpid(user.getSpid())
                 .build();
               fileDAO.put(file);
               // logger.info("png created");

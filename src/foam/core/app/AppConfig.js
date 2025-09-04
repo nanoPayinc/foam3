@@ -27,6 +27,12 @@ foam.CLASS({
     },
     {
       class: 'String',
+      name: 'flags',
+      documentation: 'foam flags set in loading script tag',
+      // see VirtualHostRoutingServlet
+    },
+    {
+      class: 'String',
       name: 'foamUrl',
       value: '../../../../foam3/src/foam.js',
       documentation: 'Location of FOAM for development build'

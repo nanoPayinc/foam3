@@ -17,11 +17,11 @@ foam.CLASS({
       justify-content: space-between;
       display: flex;
       flex-direction: column;
-      gap: 2rem;
+      gap: 2.4rem;
     }
     ^copy-box{
-      background: $primary50;
-      border: 1px dashed $primary400;
+      background: $backgroundBrandTertiary;
+      border: 1px dashed $borderBrand;
       padding: 1.5rem;
       text-align: center;
       width: 100%;
@@ -38,30 +38,40 @@ foam.CLASS({
     }
     ^header > .h300{
       font-weight: 900;
-      color: $primary400;
+      color: $textBrand;
     }
     ^item .h400 {
       line-height: 32px;
-      color: $primary400;
+      color: $textBrand;
     }
     ^header > .p,^item .p {
-      color: $grey500;
+      color: $textTertiary;
+    }
+    ^item-header {
+      padding-bottom: 1.6rem;
     }
     ^item {
       display: flex;
       gap: 0.4rem;
       align-self: flex-start;
     }
+    ^item:not(:last-child) {
+      padding-bottom: 1.6rem;
+    }
     ^item > *:last-child {
       display: flex;
       flex-direction: column;
-      gap: 0.4rem;
     }
     ^item img {
       height: 16;
       align-self: center;
     }
-    @container wrapper (width > 576px) {
+    ^item-text {
+      flex: 1 1 0;
+      min-width: 0;
+      padding-right: 3.8rem;
+    }
+    @container wrapper (width > 700px) {
       ^copy-box {
         width: fit-content;
       }
@@ -108,7 +118,7 @@ foam.CLASS({
 
       let iconConfig = {
         size: 32,
-        backgroundColor: this.color = foam.CSS.returnTokenValue('$primary50', this.cls_, this.__subContext__)
+        backgroundColor: this.color = foam.CSS.returnTokenValue('$backgroundBrandTertiary', this.cls_, this.__subContext__)
       }
       let fill = foam.CSS.returnTokenValue('$primary700', this.cls_, this.__subContext__)
 

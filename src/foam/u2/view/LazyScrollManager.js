@@ -16,7 +16,8 @@ foam.CLASS({
     'foam.dao.FnSink',
     'foam.lang.Latch',
     'foam.dao.ProxyDAO',
-    'foam.mlang.sink.Count'
+    'foam.mlang.sink.Count',
+    'foam.u2.LoadingSpinner'
   ],
 
   implements: [
@@ -42,7 +43,7 @@ foam.CLASS({
   ],
 
   messages: [
-    { name: 'NO_DATA', message: 'No ${modelName} found', template: true}
+    { name: 'NO_DATA', message: 'No ${modelName} found', template: true }
   ],
 
   css: `
@@ -53,6 +54,7 @@ foam.CLASS({
       align-items: center;
     }
   `,
+
   properties: [
     {
       class: 'foam.dao.DAOProperty',
@@ -140,7 +142,6 @@ foam.CLASS({
       name: 'scrollToIndex',
       postSet: function () { this.safeScroll(); }
     },
-    'currGroup_',
     'rowObserver',
     {
       name: 'rootElement',
@@ -202,7 +203,23 @@ foam.CLASS({
         return this.Latch.create();
       }
     },
-    ['isInit', true]
+    {
+      class: 'Boolean',
+      name: 'daoLoading',
+      value: true
+    },
+    ['isInit', true],
+    {
+      class: 'Map',
+      name: 'collapsedGroups',
+      factory: function() { return {}; }
+    },
+    {
+      class: 'Map',
+      name: 'groupFirstPage_',
+      documentation: 'Tracks the first page where each group appears to ensure headers show only once',
+      factory: function() { return {}; }
+    },
   ],
 
   methods: [
@@ -212,7 +229,9 @@ foam.CLASS({
           this.updateCount();
         }
       })));
+      this.id = 'id' + this.$UID;
       this.updateCount();
+      this.dataLoading = false;
     },
 
     async function render() {
@@ -234,7 +253,11 @@ foam.CLASS({
       })
       // Render empty view if dao is empty
       // Change to dynamic after U3
-      this.appendTo.add(this.slot(function(daoCount, isInit) {
+      this.appendTo.add(this.slot(function(daoCount, isInit, daoLoading) {
+        if (daoLoading) {
+          return this.E().addClass(self.myClass('no-data'))
+          .tag(this.LoadingSpinner, { size: 48 });
+        }
         if ( isInit || daoCount ) return;
         return this.E().addClass(self.myClass('no-data'))
           .add(self.NO_DATA({ modelName: self.config?.browseTitle ?? 'data' }));
@@ -268,8 +291,10 @@ foam.CLASS({
       if ( ! this.scrollToIndex ) return;
       var page = Math.floor(this.scrollToIndex/this.pageSize_);
       if ( this.renderedPages_[page] ) {
-        var el = document.querySelector(`[data-idx='${this.scrollToIndex}']`);
+        var el = document.querySelector(`#${this.id} [data-idx='${this.scrollToIndex}']`);
         if ( ! el ) return;
+        try {
+          if ( el.dataset['owner'] != this.$UID ) debugger; } catch (t) { debugger; }
         this.scrollView(el.offsetTop);
       } else {
         if ( page == 0 && this.currentTopPage_ != 0 ) {
@@ -313,29 +338,53 @@ foam.CLASS({
       let promise = this.prepDAO(proxy, this.ctx);
       var e       = this.E().attr('data-page', page);
 
-      promise.then(values => {
+      return promise.then(values => {
         function populateRows(args) {
-          if ( values.array[i] === undefined ) return;
+          if ( args.data === undefined ) return;
 
           var index = (page*self.pageSize_) + i + 1;
+          var group = null;
+          var showHeader = false;
+
           if ( self.groupBy ) {
-            var group = self.groupBy.f(values.array[i]);
-            if ( ! foam.util.equals(group, self.currGroup_) || index == 1 ) {
-              e.tag(self.groupHeaderView, { ...args, groupLabel: group });
+            group = self.groupBy.f(args.data);
+            var groupKey = foam.json.stringify(group);
+
+            // Track if this is the first time we've seen this group
+            if ( self.groupFirstPage_[groupKey] === undefined ) {
+              self.groupFirstPage_[groupKey] = page;
             }
-            self.currGroup_ = group;
+
+            // Show header only if this is the first page where this group appears
+            // and it's different from the previous group in this page
+            if ( page === self.groupFirstPage_[groupKey] ) {
+              showHeader = ! foam.util.equals(group, previousGroup);
+            }
+
+            if ( showHeader ) {
+              e.tag(self.groupHeaderView,
+                { ...args,
+                  groupLabel: group,
+                  groupBy: self.groupBy,
+                }
+              );
+            }
+
+            previousGroup = group;
           }
-          var rowEl = self.E().tag(self.rowView, args).attr('data-idx', index);
-          e.add(rowEl)
+
+          var isEven = (index + 1) % 2 !== 0 ;
+          var rowEl = e.start(self.rowView, args).attr('data-idx', index).attr('data-even', isEven);
           rowEl.el().then(a => {
             self.rowObserver.observe(a)
           });
         };
 
+        var previousGroup = null;
+
         if ( foam.mlang.sink.Projection.isInstance( values ) ) {
           for ( var i = 0 ; i < values.projection.length ; i++ ) {
-            // TODO: replace obj with data
-            let args = { obj: values.array[i], projection: values.projection[i] };
+            let args = { data: values.array[i], projection: values.projection[i] };
             populateRows(args);
           }
         } else if ( foam.dao.Sink.isInstance( values ) && values.array ) {
@@ -347,7 +396,7 @@ foam.CLASS({
 
         var isSet = false;
         if ( self.renderedPages_[page] ) {
-          console.warn('Trying to overwrite a loaded page without clearning....Clearing page');
+          console.warn('Trying to overwrite a loaded page without clearing....Clearing page');
           this.clearPage(page)
         }
 
@@ -370,6 +419,28 @@ foam.CLASS({
 
         this.dataLatch.resolve();
         if ( this.displayedRowCount_ < 0 ) this.bottomRow = this.daoCount
+      });
+    },
+
+    function processPageSequentially_(pageIndex) {
+      if ( pageIndex >= Math.min(this.numPages_, this.NUM_PAGES_TO_RENDER) ) {
+        this.daoLoading = false;
+        return;
+      }
+
+      var page = this.currentTopPage_ + pageIndex;
+      if ( this.renderedPages_[page] || this.loadingPages_[page] ) {
+        // Skip this page and move to next
+        this.processPageSequentially_(pageIndex + 1);
+        return;
+      }
+
+      var skip = page * this.pageSize_;
+      var dao  = this.data.limit(this.pageSize_).skip(skip);
+
+      this.getPage(dao, page).then(() => {
+        // Process next page after this one completes
+        this.processPageSequentially_(pageIndex + 1);
       });
     }
   ],
@@ -396,18 +467,20 @@ foam.CLASS({
       name: 'refresh',
       isFramed: true,
       code: function() {
-        this.currGroup_ = undefined;
         this.rowObserver?.disconnect();
         // Don't clear loadingPages_ here since they are being
         // loaded and will have latest data anyway
         Object.keys(this.renderedPages_).forEach(i => {
           this.clearPage(i, true);
         });
+        // Clear group first page tracking
+        this.groupFirstPage_ = {};
         if ( ! this.isInit ) {
           this.currentTopPage_ = 0;
           this.topRow = 0;
           this.bottomRow = 0;
         }
+        this.daoLoading = true;
         this.isInit = false;
         this.updateRenderedPages_();
         if ( this.topRow > 1) {
@@ -440,14 +513,23 @@ foam.CLASS({
           if ( (i >= this.currentTopPage_ ) && i < this.currentTopPage_ + this.NUM_PAGES_TO_RENDER ) return;
           this.clearPage(i);
         });
-
-        // Add any pages that are not already rendered.
-        for ( var i = 0; i < Math.min(this.numPages_, this.NUM_PAGES_TO_RENDER) ; i++ ) {
-          var page = this.currentTopPage_ + i;
-          if ( this.renderedPages_[page] || this.loadingPages_[page] ) continue;
-          var skip = page * this.pageSize_;
-          var dao  = this.data.limit(this.pageSize_).skip(skip);
-          this.getPage(dao, page);
+        // If grouping is enabled, process pages sequentially to maintain group order
+        // Otherwise, process in parallel for better performance
+        if ( this.groupBy ) {
+          this.processPageSequentially_(0);
+        } else {
+          let promiseArr = [];
+          // Add any pages that are not already rendered.
+          for ( var i = 0; i < Math.min(this.numPages_, this.NUM_PAGES_TO_RENDER) ; i++ ) {
+            var page = this.currentTopPage_ + i;
+            if ( this.renderedPages_[page] || this.loadingPages_[page] ) continue;
+            var skip = page * this.pageSize_;
+            var dao  = this.data.limit(this.pageSize_).skip(skip);
+            promiseArr.push(this.getPage(dao, page));
+          }
+          Promise.all(promiseArr).then(()=>{
+            this.daoLoading = false;
+          })
         }
       }
     },

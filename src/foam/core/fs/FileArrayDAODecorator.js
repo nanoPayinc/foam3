@@ -62,8 +62,8 @@ foam.CLASS({
         capabilityId = obj.capability.id;
       }
       var values = await Promise.all(props1.map(prop => Promise.all(prop.f(obj).map(f => {
-          f.label = label;
-          f.capabilityId = capabilityId;
+          if ( label        ) f.label = label;
+          if ( capabilityId ) f.capabilityId = capabilityId;
           return this.processFile(f);
         }))));
       values.forEach(f => f.forEach(f2 => {

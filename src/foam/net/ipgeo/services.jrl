@@ -14,25 +14,25 @@ p({
   """
 })
 
-p({
-  "class":"foam.core.boot.CSpec",
-  "name":"ipGeolocationService",
-  serve: true,
-  lazyClient: false,
-  // service:{
-  //   "class":"your.application.IPGeolocationService"
-  // },
-  "boxClass":"foam.net.ipgeo.IPGeolocationServiceSkeleton",
-  "client":"""
-    {
-      "class": "foam.net.ipgeo.ClientIPGeolocationService",
-      "delegate": {
-        "class":"foam.box.SessionClientBox",
-        "delegate": {
-          "class":"foam.box.HTTPBox",
-          "url": "service/ipGeolocationService"
-        }
-      }
-    }
-  """
-})
+// p({
+//   "class":"foam.core.boot.CSpec",
+//   "name":"ipGeolocationService",
+//   serve: true,
+//   lazyClient: false,
+//   // service:{
+//   //   "class":"your.application.IPGeolocationService"
+//   // },
+//   "boxClass":"foam.net.ipgeo.IPGeolocationServiceSkeleton",
+//   "client":"""
+//     {
+//       "class": "foam.net.ipgeo.ClientIPGeolocationService",
+//       "delegate": {
+//         "class":"foam.box.SessionClientBox",
+//         "delegate": {
+//           "class":"foam.box.HTTPBox",
+//           "url": "service/ipGeolocationService"
+//         }
+//       }
+//     }
+//   """
+// })

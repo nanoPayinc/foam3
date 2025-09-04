@@ -171,24 +171,8 @@ foam.INTERFACE({
             { name: 'x', type: 'X' },
           ],
           body: `
-            DAO capablePayloadDAO = new CapableAdapterDAO.Builder(x)
-              .setCapable(this)
-              .setOf(CapabilityJunctionPayload.getOwnClassInfo())
-              .build();
-
-            ProxyDAO proxyDAO = new ProxyDAO(x);
-            x = x.put("capablePayloadDAO", proxyDAO);
-
-            capablePayloadDAO = new EasyDAO.Builder(x)
-              .setAuthorize(false)
-              .setInnerDAO(capablePayloadDAO)
-              .setName("capablePayloadDAO")
-              .setOf(CapabilityJunctionPayload.getOwnClassInfo())
-              .build();
-            
-            proxyDAO.setDelegate(capablePayloadDAO);
-
-            return capablePayloadDAO;
+            var capablePayloadDAO = new foam.core.ruler.RulerDAO(x, new CapableAdapterDAO(x, this), "capablePayloadDAO");
+            return new ProxyDAO(x, capablePayloadDAO);
           `
         }));
       }

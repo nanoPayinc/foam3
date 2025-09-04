@@ -47,11 +47,25 @@ foam.CLASS({
     overscroll-behavior-y: contain;
     scroll-behavior: smooth;
   }
+  ^wrapper [data-page] > [data-idx] {
+    padding: 4px 2px;
+  }
+  ^wrapper groupHeader {
+    margin: 8px 0;
+    width: 100%;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-start;
+  }
+  ^wrapper groupHeader:first-of-type {
+    margin-top: 0px;
+  }
   ^nav{
     align-items: center;
-    background: $white;
+    background: $backgroundDefault;
     border-radius: 0 0 4px 4px;
-    border-top: 1px solid $grey300;
+    border-top: 1px solid $borderDefault;
     box-sizing: border-box;
     gap: 8px;
     justify-content: flex-end;
@@ -68,7 +82,7 @@ foam.CLASS({
     border-radius: 0px;
     padding: 0px;
     height: auto;
-    border-bottom: 2px solid $primary400;
+    border-bottom: 2px solid $borderBrand;
   }
   `,
 
@@ -114,14 +128,32 @@ foam.CLASS({
         ^ {
           min-height: 20px;
           padding: 8px;
-          color: $grey600;
+          border-radius: $inputBorderRadius;
+          background: $backgroundSecondary;
+        }
+        ^expand-icon.foam-u2-ActionView-expand {
+          transition: 0.1s ease;
+          transform: rotate(90deg);
+          padding: 4px;
+        }
+        ^expand-icon.foam-u2-ActionView-small svg {
+          width: 1.4rem;
+          height: 1.4rem;
+        }
+        ^expand-icon^collapsed {
+          transform: rotate(0deg);
         }
       `,
 
       properties: [
+        ['nodeName', 'groupHeader'],
         {
           class: 'String',
           name: 'groupLabel'
+        },
+        {
+          class: 'Boolean',
+          name: 'collapsed'
         }
       ],
 
@@ -129,8 +161,26 @@ foam.CLASS({
         function render() {
           this
             .addClass(this.myClass(), 'h600')
+            .startContext({data: this})
+              .start(this.EXPAND)
+                .addClass(this.myClass('expand-icon'))
+                .enableClass(this.myClass('collapsed'), this.collapsed$)
+              .end()
+            .endContext()
             .add(this.groupLabel)
           .end()
+        }
+      ],
+      actions: [
+        {
+          name: 'expand',
+          label: '',
+          size: 'SMALL',
+          themeIcon: 'next',
+          buttonStyle: 'TERTIARY',
+          code: function() {
+            this.collapsed = ! this.collapsed;
+          }
         }
       ]
     }
@@ -197,6 +247,8 @@ foam.CLASS({
         gap: 8px;
         min-height: 20px;
         border-radius: $inputBorderRadius;
+        border: 1.5px solid $borderXLight;
+        transition: all 0.2s ease;
       }
       ^ > div {
         padding: 0;
@@ -205,7 +257,8 @@ foam.CLASS({
         flex: 1;
       }
       ^clickable:hover {
-        background: $grey50;
+        background: $backgroundBrandTertiary;
+        border-color: $borderBrandXLight;
         cursor: pointer;
       }
       ^svg-wrapper{
@@ -216,6 +269,9 @@ foam.CLASS({
         width: 1.1em;
         height: 1.1em;
         fill: black;
+      }
+      ^clickable:hover ^svg-wrapper svg {
+        fill: $textBrandSecondary;
       }
     `,
 

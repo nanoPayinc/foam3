@@ -27,6 +27,11 @@ if [ -f "${PROJECT_CONFIG}" ]; then
   . ${PROJECT_CONFIG} $1
 fi
 
+###### Timezone
+if [ -z "`echo "${JAVA_OPTS}" | grep "user.timezone"`" ]; then
+  JAVA_OPTS="${JAVA_OPTS} -Duser.timezone=GMT"
+fi
+
 # memory - heap
 if [ -z "`echo "${JAVA_OPTS}" | grep "Xms"`" ]; then
   JAVA_OPTS="${JAVA_OPTS} -Xms2048m"
@@ -53,7 +58,7 @@ JAVA_OPTS="${JAVA_OPTS} -XX:ReservedCodeCacheSize=128m"
 # which prevents DNS spoofing but does not allow us to reconfigure
 # (change an ipaddress of a clustered node) without restarting all
 # other cluster nodes. Time in seconds.
-JAVA_OPTS=$JAVA_OPTS" -Dnetworkaddress.cache.ttl=3600"
+JAVA_OPTS="${JAVA_OPTS} -Dnetworkaddress.cache.ttl=3600"
 
 ##### Debugging / Diagnostic
 # Troubleshooting debug setup.
@@ -108,10 +113,10 @@ if [ "${DEBUG}" = "1" -o "${DEBUG_DEV}" = "1" ]; then
 fi
 
 # OutOfMemory
-JAVA_OPTS=$JAVA_OPTS" -XX:+HeapDumpOnOutOfMemoryError"
-JAVA_OPTS=$JAVA_OPTS" -XX:HeapDumpPath=${LOG_HOME}/java-%t.hprof"
-#JAVA_OPTS=$JAVA_OPTS" -XX:OnOutOfMemoryError="< cmd args >;< cmd args >" // shutdown -r for example.
-JAVA_OPTS=$JAVA_OPTS" -XX:+UseGCOverheadLimit"
+JAVA_OPTS="${JAVA_OPTS} -XX:+HeapDumpOnOutOfMemoryError"
+JAVA_OPTS="${JAVA_OPTS} -XX:HeapDumpPath=${LOG_HOME}/java-%t.hprof"
+#JAVA_OPTS="${JAVA_OPTS} -XX:OnOutOfMemoryError="< cmd args >;< cmd args >" // shutdown -r for example.
+JAVA_OPTS="${JAVA_OPTS} -XX:+UseGCOverheadLimit"
 
 # default on Solaris but not Linux
 #JAVA_OPTS="${JAVA_OPTS} -XX:+UseLargePages"
@@ -122,4 +127,4 @@ JAVA_OPTS="${JAVA_OPTS} -XX:+MaxFDLimit"
 #### Stack Trace
 ## re-enable stack trace for repeated JVM implicit exceptions
 ## See https://stackoverflow.com/a/58700744
-JAVA_OPTS=$JAVA_OPTS" -XX:-OmitStackTraceInFastThrow"
+JAVA_OPTS="${JAVA_OPTS} -XX:-OmitStackTraceInFastThrow"

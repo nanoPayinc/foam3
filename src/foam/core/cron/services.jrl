@@ -14,11 +14,8 @@ p({
               .build())
           )
       .setPm(true)
-      .setOrder(new foam.mlang.order.Comparator[] {
-        new foam.mlang.order.Desc.Builder(x).setArg1(foam.core.cron.Cron.ENABLED).build(),
-        new foam.mlang.order.Desc.Builder(x).setArg1(foam.core.cron.Cron.LAST_RUN).build()
-      })
       .setCluster(false)
+      .setSaf(false)
       .build()
       .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.cron.Cron.SCHEDULED_TIME })
       .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.cron.Cron.STATUS })
@@ -33,10 +30,11 @@ p({
   "serve":true,
   "serviceScript":"""
     return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
       .setOf(foam.core.cron.Cron.getOwnClassInfo())
       .setInnerDAO(x.get("localCronJobDAO"))
-      .setCluster(false)
-      .build();
+      .build()
+      .orderBy(new foam.core.cron.CronScheduledComparator());
   """,
   "client":"""
     {
@@ -52,6 +50,7 @@ p({
   "serve":true,
   "serviceScript":"""
     return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
       .setOf(foam.core.script.ScriptEvent.getOwnClassInfo())
       .setGuid(true)
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
@@ -62,6 +61,7 @@ p({
         .setSize(10000)
         .build())
       .setCluster(false)
+      .setSaf(false)
       .setOrder(new foam.mlang.order.Comparator[] {
         new foam.mlang.order.Desc.Builder(x).setArg1(foam.core.script.ScriptEvent.LAST_RUN).build()
       })
@@ -116,6 +116,7 @@ p({
   "serve":true,
   "serviceScript":"""
     return new foam.dao.EasyDAO.Builder(x)
+      .setPm(false)
       .setOf(foam.core.script.ScriptEvent.getOwnClassInfo())
       .setGuid(true)
       .setJournalType(foam.dao.JournalType.SINGLE_JOURNAL)
@@ -126,6 +127,7 @@ p({
         .setSize(10000)
         .build())
       .setCluster(false)
+      .setSaf(false)
       .setOrder(new foam.mlang.order.Comparator[] {
         new foam.mlang.order.Desc.Builder(x).setArg1(foam.core.script.ScriptEvent.LAST_RUN).build()
       })

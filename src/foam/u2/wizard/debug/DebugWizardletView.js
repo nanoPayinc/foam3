@@ -17,9 +17,9 @@ foam.CLASS({
 
   requires: [
     'foam.dao.MDAO',
-    'foam.u2.borders.CollapseBorder',
+    'foam.u2.Accordion',
     'foam.u2.borders.LoadingLevel',
-    'foam.u2.view.ScrollTableView',
+    'foam.u2.table.TableView',
     'foam.u2.wizard.debug.DebugWAO',
     'foam.u2.wizard.debug.PropertyEvent',
     'foam.u2.wizard.debug.WAOEvent',
@@ -38,7 +38,7 @@ foam.CLASS({
       color: #FFF;
       padding: 3px 11px;
     }
-    ^ .foam-u2-borders-CollapseBorder.expanded {
+    ^ .foam-u2-Accordion.expanded {
       border-bottom: 0;
       border-left: 0;
       border-right: 0;
@@ -106,16 +106,16 @@ foam.CLASS({
           .add(this.wizardlet.title$)
         .end()
         .startContext({ controllerMode: 'VIEW' })
-          .start(this.CollapseBorder, {
+          .start(this.Accordion, {
             title: 'Property Updates',
             expanded: false
           })
-            .tag(this.ScrollTableView, {
+            .tag(this.TableView, {
               data$: this.wizardEventDAO$.map(dao =>
                 dao.orderBy(this.WizardEvent.SEQ_NO))
             })
           .end()
-          .start(this.CollapseBorder, {
+          .start(this.Accordion, {
             title: 'Debug Actions',
             expanded: false
           })

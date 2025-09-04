@@ -13,12 +13,12 @@ foam.CLASS({
 
   css: `
     ^ {
-      background: $white;
+      background: $backgroundDefault;
       padding: 8px 16px;
     }
 
     ^:hover {
-      background: #f4f4f9;
+      background: $backgroundDefault$hover;
       cursor: pointer;
     }
 

@@ -44,10 +44,10 @@ foam.CLASS({
   tableColumns: [
     'id',
     'enabled',
-    'lastDuration',
-    'lastRun',
-    'status',
     'scheduledTime',
+    'status',
+    'lastRun',
+    'lastDuration',
     'run'
   ],
 
@@ -96,6 +96,12 @@ foam.CLASS({
       name: 'server',
       hidden: true,
       value: true
+    },
+    {
+      class: 'Int',
+      name: 'threadTimeout',
+      units: 'ms',
+      documentation: 'Timeout to halt thread that is running the script'
     },
     {
       name: 'schedule',
@@ -286,7 +292,7 @@ foam.CLASS({
     {
       name: 'disable',
       isAvailable: function() {
-        return this.enabled;
+        return this.enabled && this.cronJobDAO;
       },
       code: function(X) {
         var cron = this.clone();
@@ -306,7 +312,7 @@ foam.CLASS({
     {
       name: 'enable',
       isAvailable: function() {
-        return ! this.enabled;
+        return ! this.enabled && this.cronJobDAO;
       },
       code: function(X) {
         var cron = this.clone();
