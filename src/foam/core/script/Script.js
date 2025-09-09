@@ -234,6 +234,11 @@ foam.CLASS({
       clusterTransient: true
     },
     {
+      class: 'String',
+      name: 'agencyName',
+      documentation: 'Agency name eg. threadPool, to be used to run the script. Default not set to use agencyName of the ScriptRunnerDAO.'
+    },
+    {
       class: 'Code',
       name: 'code',
       includeInDigest: true,
