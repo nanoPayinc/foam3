@@ -852,7 +852,7 @@ foam.CLASS({
       });
       this.currentBlock.value = action;
       this.currentBlock.configViewSpec = {
-        useSections: ['config']
+        useSections: ['config', 'general', 'borderSettings']
       }
       this.out.tag(action);
     }
