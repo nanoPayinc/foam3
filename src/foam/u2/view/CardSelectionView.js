@@ -67,9 +67,9 @@ foam.CLASS({
     ,
     {
       class: 'Boolean',
-      name: 'noDefaultSelection',
-      value: false,
-      documentation: 'When true, do not auto-select the first choice'
+      name: 'autoSelect',
+      value: true,
+      documentation: 'When true, auto-select the first choice'
     }
   ],
 
@@ -141,7 +141,7 @@ foam.CLASS({
               });
 
               if ( selection === undefined ) {
-                if ( ! self.noDefaultSelection ) {
+                if ( self.autoSelect ) {
                   selection = choices[0];
                   self.data = foam.Array.isInstance(selection) ? selection[0] : selection;
                 }
