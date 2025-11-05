@@ -597,8 +597,8 @@ foam.CLASS({
   constants: [
     {
       name: 'ALPHA_CHAR_CHECK',
-      factory: () => /^[\d+-]*$/,
-      javaFactory: '  return "^[\\d+-]*$";'
+      factory: () => /^\+?\d+(?:-\d+)?$/,
+      javaFactory: '  return "^\\+?\\d+(?:-\\d+)?$";'
     }
   ],
 
