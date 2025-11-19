@@ -120,7 +120,8 @@ foam.CLASS({
           label$: this.label$,
           ariaLabel$: this.label$,
           onKey: this.onKey,
-          mode$: this.mode$
+          mode$: this.mode$,
+          placeholder$: this.searchMode$.map(s => s.toString() + ' search...')
         }, this.view$)
           .attrs({ name: this.name$ })
         .end();
