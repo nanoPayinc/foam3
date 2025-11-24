@@ -24,7 +24,6 @@ foam.CLASS({
   tableColumns: [
     'name',
     'id',
-    'country',
     'symbol',
     'emoji'
   ],

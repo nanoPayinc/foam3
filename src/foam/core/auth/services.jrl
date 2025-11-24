@@ -94,7 +94,8 @@ p({
       .setOrder(new foam.lang.PropertyInfo[] {foam.core.auth.Country.NAME})
       .build()
       .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.auth.Country.ISO31661CODE })
-      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.auth.Country.ALTERNATIVE_NAMES });
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.auth.Country.ALTERNATIVE_NAMES })
+      .addPropertyIndex(new foam.lang.PropertyInfo[] { foam.core.auth.Country.CURRENCY });
   """
 })
 
