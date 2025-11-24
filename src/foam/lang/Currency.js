@@ -57,14 +57,6 @@ foam.CLASS({
       required: true
     },
     {
-      class: 'Reference',
-      of: 'foam.core.auth.Country',
-      documentation: `The name of the country associated with the currency.
-        This should be set by the child class.`,
-      name: 'country',
-      required: true
-    },
-    {
       class: 'String',
       name: 'delimiter',
       shortName: 'd',
