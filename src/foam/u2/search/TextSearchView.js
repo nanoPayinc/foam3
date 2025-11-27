@@ -153,7 +153,7 @@ foam.CLASS({
         }
         // TODO: dont think we ever use anything other than richSearch, maybe remove the boolean and only perform richSearch
         if ( this.richSearch ) {
-          var mql = this.queryParser.parseString(value);
+          var mql = value.indexOf(':') != -1 && this.queryParser.parseString(value);
           if ( this.searchMode === this.SearchMode.MQL || mql ) {
             this.predicate = mql || this.FALSE;
           } else {
