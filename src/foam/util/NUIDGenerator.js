@@ -89,7 +89,7 @@ foam.CLASS({
       javaCode: `
       if ( ! initMaxSeqNo_.get() ) {
         synchronized ( initMaxSeqNo_ ) {
-          if ( ! initMaxSeqNo_.getAndSet(true) ) {
+          if ( ! initMaxSeqNo_.get() ) {
             Logger logger = Loggers.logger(getX(), this);
             logger.info(getSalt(), "max", "find");
             getDao().select(new AbstractSink() {
@@ -97,6 +97,9 @@ foam.CLASS({
               public void put(Object obj, Detachable sub) {
                 var id = (long) getPropertyInfo().get(obj);
                 maybeUpdateSeqNo(id);
+              }
+              public void eof() {
+                initMaxSeqNo_.getAndSet(true);
               }
             });
             Loggers.logger(getX(), this).info(getSalt(), "max", "found", seqNo_.get());
