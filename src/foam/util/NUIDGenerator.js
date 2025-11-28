@@ -36,7 +36,7 @@ foam.CLASS({
   }
 
   AtomicLong seqNo_ = new AtomicLong();
-  volatile AtomicBoolean initMaxSeqNo_ = new AtomicBoolean(false);
+  AtomicBoolean initMaxSeqNo_ = new AtomicBoolean(false);
   `,
 
   properties: [
