@@ -18,9 +18,6 @@ p({
     "of": "foam.core.referral.ReferralCode"
   }
   """
-<<<<<<< Updated upstream
-})
-=======
 })
 
 p({
@@ -33,4 +30,3 @@ p({
     class:"foam.core.referral.IdReferralCodeGenerationService"
   }
 })
->>>>>>> Stashed changes
