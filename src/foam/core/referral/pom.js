@@ -11,6 +11,11 @@ foam.POM({
     { name: "ReferralBorder",                                         flags: "web" },
     { name: "Relationships",                                          flags: "js|java" }
     { name: "ReferralCodeGeneratorService",                           flags: "js|java" },
+<<<<<<< Updated upstream
     { name: "IdReferralCodeGenerationService",                        flags: "js|java" }
+=======
+    { name: "IdReferralCodeGenerationService",                        flags: "js|java" },
+    { name: "DisableOldReferralCodesRuleAction",                      flags: "js|java" }
+>>>>>>> Stashed changes
   ]
 });
