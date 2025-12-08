@@ -76,7 +76,7 @@ foam.CLASS({
     {
       class: 'String',
       name: 'code',
-      documentation: 'actual referral code for the user'
+      documentation: 'Actual referral code for the user'
     },
     {
       // deprecated

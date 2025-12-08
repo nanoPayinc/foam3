@@ -7,6 +7,7 @@
 foam.CLASS({
   package: 'foam.core.referral',
   name: 'IdReferralCodeGenerationService',
+  documentation: 'Default referral code generation service that uses referral code ID as the code',
 
   implements: [
     'foam.core.referral.ReferralCodeGeneratorService'

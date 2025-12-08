@@ -47,7 +47,7 @@ p({
   "id":"disable-old-referral-codes",
   "name": "Disable old referral codes",
   "priority": 100,
-  "documentation": "When new referral code is created mark old referral codes enabled = false",
+  "documentation": "When a new referral code is created, mark old referral codes as enabled = false",
   "ruleGroup": "Referrals",
   "daoKey": "referralCodeDAO",
   "operation": 0,
