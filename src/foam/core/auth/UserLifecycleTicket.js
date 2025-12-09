@@ -24,7 +24,8 @@ Changing to 'DELETED', for example, will also mark associated UCJs as deleted.`,
 
   imports: [
     'userDAO',
-    'sessionDAO'
+    'sessionDAO?',
+    'sessionService'
   ],
 
   requires: [
@@ -208,18 +209,22 @@ Changing to 'DELETED', for example, will also mark associated UCJs as deleted.`,
       name: 'fetchUserSession',
       code: function() {
         var self = this;
-        self.userDAO.find(self.createdFor).then(function(user) {
-          self.currentLifecycleState = user.lifecycleState;
-        });
-        self.sessionDAO.find(self.EQ(self.Session.USER_ID, self.createdFor)).then(function(session) {
-          if ( ! session ) {
-            self.loggedIn = false;
-            self.clearProperty('lastActivity');
-          } else {
-            self.loggedIn = session.uses > 0 && session.remoteHost;
-            self.lastActivity = Date.now() - session.lastUsed.getTime();
-          }
-        });
+        if ( this.sessionDAO ) {
+          this.userDAO.find(self.createdFor).then(function(user) {
+            self.currentLifecycleState = user.lifecycleState;
+          });
+          this.sessionDAO.find(self.EQ(self.Session.USER_ID, self.createdFor)).then(function(session) {
+            if ( ! session ) {
+              self.loggedIn = false;
+              self.clearProperty('lastActivity');
+            } else {
+              self.loggedIn = session.uses > 0 && session.remoteHost;
+              self.lastActivity = Date.now() - session.lastUsed.getTime();
+            }
+          });
+        } else {
+          this.sessionService.expireSession();
+        }
       }
     }
   ],
