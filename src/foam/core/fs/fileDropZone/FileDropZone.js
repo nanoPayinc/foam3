@@ -86,7 +86,7 @@ foam.CLASS({
       justify-content: center;
     }
     ^caption {
-      color: #525455;
+      color: $textSecondary;
     }
     ^browse-container{
       align-items: center;
@@ -105,6 +105,12 @@ foam.CLASS({
       background: $backgroundBrandTertiary;
       border: 2px dashed $borderBrand;
     }
+    ^fileCards {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+    }
   `,
 
   messages: [
@@ -115,7 +121,7 @@ foam.CLASS({
     { name: 'LABEL_MAX_SIZE',      message: 'Max size:' },
     { name: 'ERROR_FILE_TITLE',    message: 'Error' },
     { name: 'ERROR_FILE_TYPE',     message: 'Invalid file type' },
-    { name: 'ERROR_FILE_SIZE',     message: 'File size exceeds 15MB' },
+    { name: 'ERROR_FILE_SIZE',     message: 'File size exceeds ${this.maxSize}MB', template: true },
     { name: 'NO_FILES',            message: 'No files' }
   ],
 
@@ -298,7 +304,7 @@ foam.CLASS({
         // skip files that exceed limit
         if ( files[i].size > ( this.maxSize * 1024 * 1024 ) ) {
           if ( ! errors ) errors = true;
-          this.ctrl.notify(this.ERROR_FILE_TITLE, this.ERROR_FILE_SIZE, this.LogLevel.ERROR, true);
+          this.ctrl.notify(this.ERROR_FILE_TITLE, this.ERROR_FILE_SIZE(), this.LogLevel.ERROR, true);
           continue;
         }
         var isIncluded = false;

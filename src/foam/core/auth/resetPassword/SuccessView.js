@@ -64,13 +64,13 @@ foam.CLASS({
       width: 450px;
       height: 40px;
       border-radius: 2px;
-      border: solid 1px #59a5d5;
+      border: solid 1px $blue200;
       margin-left: 20px;
       margin-right: 20px;
       text-align: center;
       line-height: 40px;
       cursor: pointer;
-      color: #59aadd;
+      color: $blue200;
       margin-top: 10px;
     }
   `,

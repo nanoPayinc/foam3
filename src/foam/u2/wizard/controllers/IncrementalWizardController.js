@@ -296,7 +296,7 @@ foam.CLASS({
 
       logger.debug(`%c${title}: %c${position && position.toSummary() || '--'} %o`,
         "font-weight: bold",
-        "color: #fc0373;",
+        "color: $red300",
         details || {}
       );
     },
@@ -406,7 +406,7 @@ foam.CLASS({
         if ( this.canLandOn(nextPosition) ) {
           console.debug(`%clanding: %c${nextPosition && nextPosition.toSummary()}`,
             "font-weight: bold",
-            "color: #fc0373;");
+            "color: $red300;");
           debugLog('landing on wizardlet', nextPosition);
           this.wizardPosition = nextPosition;
           return false;

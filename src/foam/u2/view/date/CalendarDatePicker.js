@@ -8,9 +8,50 @@ foam.CLASS({
   package: 'foam.u2.view.date',
   name: 'CalendarDatePicker',
   extends: 'foam.u2.Element',
+
   requires: [
     'foam.u2.view.date.Weekday'
   ],
+
+  css: `
+    ^selected_day_cell {
+      background-color: $backgroundTertiary;;
+    }
+    ^prev_month_cell, ^next_month_cell {
+      color: $grey400 !important;
+    }
+    ^calendar_table td {
+      text-align: center;
+    }
+    ^calendar_table th {
+      cursor: default;
+    }
+    ^calendar_table td {
+      cursor: pointer;
+    }
+
+    ^calendar_table td:hover {
+      background-color: $backgroundHover;
+    }
+
+    ^calendar_table tr > td {
+      border:1px solid $borderDefault;
+      color: $textTertiary;
+      padding: 6px 7px 6px 7px;
+      font-weight: $font-light;
+    }
+
+    ^calendar_table  {
+      border-collapse: collapse;
+      width: 224px;
+      height: 160px;
+    }
+
+    ^calendar_table tbody > tr > th {
+      color: $textTertiary;
+    }
+  `,
+
   properties: [
     {
       class: 'Date',
@@ -26,44 +67,6 @@ foam.CLASS({
       value: false
     }
   ],
-  css: `
-    ^selected_day_cell {
-      background-color: #e5f1fc;
-    }
-    ^prev_month_cell, ^next_month_cell {
-      color: lightgray !important;
-    }
-    ^calendar_table td {
-      text-align: center;
-    }
-    ^calendar_table th {
-      cursor: default;
-    }
-    ^calendar_table td {
-      cursor: pointer;
-    }
-
-    ^calendar_table td:hover {
-      background-color: #F5F7FA;
-    }
-
-    ^calendar_table tr > td {
-      border:1px solid #cbcfd4;
-      color: #5e6061;
-      padding: 6px 7px 6px 7px;
-      font-weight: 300;
-    }
-
-    ^calendar_table  {
-      border-collapse: collapse;
-      width: 224px;
-      height: 160px;
-    }
-
-    ^calendar_table tbody > tr > th {
-      color: #5e6061;
-    }
-  `,
 
   methods: [
     function daysInMonth(month, year) {

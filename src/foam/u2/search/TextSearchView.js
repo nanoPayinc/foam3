@@ -22,7 +22,7 @@ foam.CLASS({
 
   requires: [
     'foam.comics.SearchMode',
-    'foam.parse.QueryParser',
+    'foam.parse.SimpleQueryParser',
     'foam.u2.tag.Input'
   ],
 
@@ -68,23 +68,18 @@ foam.CLASS({
     {
       name: 'queryParser',
       factory: function() {
-        return this.QueryParser.create({ of: this.of });
+        return this.SimpleQueryParser.create({ of: this.of });
       }
     },
     {
       class: 'Int',
       name: 'width',
-      value: 60
+      value: 80
     },
     'property',
     {
       name: 'predicate',
       factory: function() { return this.TRUE; }
-    },
-    {
-      class: 'foam.u2.ViewSpec',
-      name: 'viewSpec',
-      value: { class: 'foam.u2.SearchField' }
     },
     {
       name: 'view'
@@ -113,22 +108,29 @@ foam.CLASS({
 
   methods: [
     function render() {
+      this.__subContext__.register(foam.u2.SearchField, 'foam.u2.TextField');
+
+      let viewSpec = {
+        class: 'foam.parse.auto.SmartView',
+        parser: this.queryParser
+      };
+//      value: { class: 'foam.u2.SearchField' }
+
       this
         .addClass(this.myClass())
-        .start(this.viewSpec, {
+        .start(viewSpec, {
           alwaysFloatLabel: true,
           label$: this.label$,
           ariaLabel$: this.label$,
           onKey: this.onKey,
-          mode$: this.mode$
+          mode$: this.mode$,
+          placeholder$: this.searchMode$.map(s => s == 'MQL' ? 'MQL Search...' : 'Search...')
         }, this.view$)
           .attrs({ name: this.name$ })
         .end();
       this.view.data$.sub(this.updateValue);
 
-      if ( this.searchData ) {
-        this.view.data = this.searchData;
-      }
+      this.view.data$.follow(this.searchData$);
 
       this.updateValue();
     },
@@ -143,7 +145,7 @@ foam.CLASS({
     {
       name: 'updateValue',
       isIdled: true,
-      delay: 300,
+      delay: 500,
       code: function() {
         var value = this.searchData = this.view.data;
         if ( ! value ) {
@@ -152,17 +154,13 @@ foam.CLASS({
         }
         // TODO: dont think we ever use anything other than richSearch, maybe remove the boolean and only perform richSearch
         if ( this.richSearch ) {
-          if ( this.searchMode === this.SearchMode.FULL ) {
-            this.predicate = this.OR(
-              this.queryParser.parseString(value) || this.FALSE,
-              this.KEYWORD(value)
-            );
-          } else if ( this.searchMode === this.SearchMode.MQL ) {
-            this.predicate = this.queryParser.parseString(value) || this.FALSE;
+          var mql = value.indexOf(':') != -1 && this.queryParser.parseString(value);
+          if ( this.searchMode === this.SearchMode.MQL || mql ) {
+            this.predicate = mql || this.FALSE;
           } else {
             this.predicate = this.KEYWORD(value);
           }
-        } else if ( this.checkStrictEquality) {
+        } else if ( this.checkStrictEquality ) {
           this.predicate = this.EQ(this.property, value);
         } else if ( this.searchMode === this.SearchMode.SIMPLE ) {
           this.predicate = this.CONTAINS_IC(this.property, value);

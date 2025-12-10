@@ -181,7 +181,7 @@ foam.CLASS({
       background: $backgroundDefault;
       border: 1px solid $borderDefault;
       color: $textSecondary;
-      font-weight: 500;
+      font-weight: $font-regular;
       margin-bottom: 10px;
       padding: 6px;
     }
@@ -300,8 +300,6 @@ foam.CLASS({
 //      if ( ! this.data && this.of ) this.data = this.of.create({}, this);
       var self = this;
       this.dynamic(function(route) {
-        self.removeAllChildren(); // TODO: not needed in U3
-
         if ( route && self.of ) {
           self.currentData = self.data;
           var axiom = self.of.getAxiomByName(route);

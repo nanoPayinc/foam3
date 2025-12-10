@@ -22,9 +22,9 @@ foam.CLASS({
 
   css: `
     ^ {
-      background: #999;
+      background: $backgroundInverseTertiary;
       box-shadow: 3px 3px 6px 0 gray;
-      color: white;
+      color: $white;
       opacity: 0.9;
       position: absolute;
       box-sizing: border-box;

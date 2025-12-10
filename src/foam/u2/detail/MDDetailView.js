@@ -32,7 +32,7 @@ foam.CLASS({
    ^ .property-item {
       padding: 3rem;
       font-size: 3em;
-      border: 1px solid #e9ebff;
+      border: 1px solid $borderXLight;
       height: fit-content;
     }
 //    TODO: move to calendar
@@ -46,7 +46,7 @@ foam.CLASS({
           outline: none;
     }
     ^ .foam-u2-Dialog-buttons button, .foam-u2-property-MDDatePicker-switcher button {
-      background-color: #868686;
+      background-color: $backgroundInverseSecondary;
     }
   `,
 

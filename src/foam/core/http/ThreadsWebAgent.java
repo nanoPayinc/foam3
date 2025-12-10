@@ -55,7 +55,7 @@ public class ThreadsWebAgent
 
     Set<Thread>  platformThreadSet = Thread.getAllStackTraces().keySet();
     Set<Thread>   virtualThreadSet = VirtualThreadAgency.getRunningThreads();
-    Thread[]           threadArray = new Thread[platformThreadSet.size() + virtualThreadSet.size() ];
+    Thread[]           threadArray = new Thread[platformThreadSet.size() + virtualThreadSet.size() + 10 /* fluctuating */ ];
     int i = 0;
     for ( Thread t : platformThreadSet ) threadArray[i++] = t;
     for ( Thread t : virtualThreadSet  ) threadArray[i++] = t;
@@ -91,7 +91,8 @@ public class ThreadsWebAgent
 
     Thread selected = null;
     for ( Thread thread : threadArray ) {
-      if ( ! thread.isAlive() ) continue;
+      if ( thread == null ||
+           ! thread.isAlive() ) continue;
 
       Boolean isSelected = String.valueOf(thread.getId()).equals(id);
       if ( isSelected ) selected = thread;

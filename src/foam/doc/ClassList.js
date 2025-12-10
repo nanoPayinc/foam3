@@ -21,7 +21,7 @@ foam.CLASS({
       width: 220px;
     }
     ^package {
-      font-weight: 700;
+      font-weight: $font-semi-bold;
     }
     ^indent {
       margin-left: 30px;

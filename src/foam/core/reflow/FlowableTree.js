@@ -9,7 +9,7 @@ foam.CLASS({
   name: 'FlowableTree',
   extends: 'foam.u2.View',
 
-  imports: [ 'moveFlowChild', 'moveFlowChildAfter' ],
+  imports: [ 'moveFlowChild', 'moveFlowChildAfter', 'copyChild' ],
 
   css: `
     ^ {
@@ -36,9 +36,14 @@ foam.CLASS({
       padding: 4px;
     }
 
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
     ^selected {
       background: $backgroundTertiary;
-      font-weight: 500;
+      font-weight: $font-regular;
     }
     ^left-header {
       display: flex;
@@ -66,16 +71,42 @@ foam.CLASS({
     ^element-row-icon {
       color: $textBrand;
     }
-    td^moveTarget {
-      background: rgba(0,0,0,0);
-      border: none!important;
+    ^ table td^moveTarget {
+      background: transparent;
+      border: none;
       width: 100%;
       height: 8px;
-      padding: 0!important;
-      margin: 0!important;
+      padding: 0;
+      margin: 0;
     }
-    ^activeTarget {
-      background: lightblue!important;
+    ^ table td^activeTarget {
+      background: $backgroundBrandTertiary;
+    }
+    ^dragTarget {
+      transform: translate(0, 0);
+      opacity: 0.95;
+      background: $backgroundDefault;
+    }
+    ^context-menu {
+      position: fixed;
+      background: $backgroundDefault;
+      border: 1px solid $borderLight;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      padding: 4px 0;
+      min-width: 120px;
+    }
+    ^context-menu-item {
+      padding: 8px 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+    ^context-menu-item:hover {
+      background: $backgroundSecondary;
     }
   `,
 
@@ -85,7 +116,9 @@ foam.CLASS({
       class: 'Boolean',
       name: 'isMenuOpen',
       value: true
-    }
+    },
+    'contextMenuData',
+    'contextMenuVisible'
   ],
 
   methods: [
@@ -122,7 +155,33 @@ foam.CLASS({
         } else {
           self.renderClosed(this);
         }
-      }))
+      }));
+
+      // Add context menu
+      this.add(this.dynamic(function(contextMenuVisible, contextMenuData) {
+        if ( contextMenuVisible && contextMenuData ) {
+          this.start('div')
+            .addClass(self.myClass('context-menu'))
+            .style({
+              left: contextMenuData.x + 'px',
+              top: contextMenuData.y + 'px'
+            })
+            .start('div')
+              .addClass(self.myClass('context-menu-item'))
+              .on('click', () => {
+                self.copyChild(contextMenuData.item.flowName);
+                self.contextMenuVisible = false;
+              })
+              .add('Duplicate')
+            .end()
+          .end();
+        }
+      }));
+
+      // Hide context menu on click outside
+      this.document.addEventListener('click', () => {
+        this.contextMenuVisible = false;
+      });
     },
 
     function branch(self, data, depth) {
@@ -131,16 +190,17 @@ foam.CLASS({
         start('tr').
           on('click',    () => self.selected = data).
           on('dblclick', () => data.expanded = ! data.expanded).
-          attrs({draggable: 'true'}).
-          call(function() {
-            this.
-            on('dragstart', self.onDragStart.bind(self, data))
-/*            on('dragenter', self.onDragOver.bind(self, data, this)).
-            on('dragleave', self.onDragLeave.bind(self, this))*/;
-              // on('dragover',  self.onDragOver.bind(self, data, this)).
-            // on('drop',      self.onDrop.bind(self, data)).
-          }).
+          on('contextmenu', (e) => self.onContextMenu(e, data)).
           start('td').
+            attrs({draggable: 'true'}).
+            call(function() {
+              this.
+              on('dragstart', self.onDragStart.bind(self, data, this)).
+              on('dragenter', self.onDragOver.bind(self, data, this)).
+              on('dragleave', self.onDragLeave.bind(self, this)).
+                on('dragover',  self.onDragOver.bind(self, data, this)).
+              on('drop',      self.onDrop.bind(self, data, this));
+            }).
             addClass(self.myClass('element-row')).
             style({'marginLeft': (depth * 12) + 'px'}).
             enableClass(self.myClass('selected'), self.selected$.map(s => s === data)).
@@ -162,6 +222,10 @@ foam.CLASS({
                 data.treeRowRenderer(this);
               }).
             end().
+            add(data?.dynamic(function(value$loading) {
+              if ( value$loading )
+                this.start(foam.u2.LoadingSpinner, { size: '1.6rem' });
+            })).
             callIf(data.flowParent, function() {
               this.start().
                 addClass('close').
@@ -191,10 +255,10 @@ foam.CLASS({
       }))
     },
 
-    function onDragStart(row, e) {
-      console.log('onDragStart', e);
+    function onDragStart(row, el, e) {
       e.dataTransfer.setData('application/x-foam-obj-id', row.flowName);
       console.log('onDragStart', e, row.flowName);
+      el.addClass(this.myClass('dragTarget'));
       e.stopPropagation();
     },
 
@@ -228,7 +292,7 @@ foam.CLASS({
 
       var src = e.dataTransfer.getData('application/x-foam-obj-id');
 
-      if ( src === row.flowName ) return;
+      if ( src === row.flowName || row.flowParent.flowName === src ) return;
 
       e.preventDefault();
       e.stopPropagation();
@@ -253,6 +317,18 @@ foam.CLASS({
       console.log('move', src, '->', row.flowName);
 
       this.moveFlowChildAfter(src, row);
+    },
+
+    function onContextMenu(e, data) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      this.contextMenuData = {
+        x: e.clientX,
+        y: e.clientY,
+        item: data
+      };
+      this.contextMenuVisible = true;
     }
   ],
 

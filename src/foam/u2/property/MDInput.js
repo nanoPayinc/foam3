@@ -187,7 +187,7 @@ foam.CLASS({
       flex-direction: column;
       height: 5rem;
       position: relative;
-      background-color: #e7eaec;
+      background-color: $backgroundTertiary;
       padding-left: 1rem;
       padding-top: 1rem;
       padding-right: 1rem;
@@ -197,21 +197,21 @@ foam.CLASS({
       transition: font-size 0.5s, top 0.5s;
       top: 20%;
       position: relative;
-      color: #5a5a5a
+      color: $textSecondary;
     }
     ^ .label-up {
       font-weight: unset;
       top: 0;
     }
     ^ .input-container {
-      background-color: #e7eaec;
+      background-color: $backgroundTertiary;
     }
     ^ input {
       width: 92%;
       height: 3rem;
       outline: none;
       background: transparent;
-      border-bottom: 2px solid #888;
+      border-bottom: 2px solid $borderStrong;
       border-left: none;
       border-top: none;
       border-right: none;
@@ -220,13 +220,13 @@ foam.CLASS({
       position: absolute;
     }
     ^ input:focus {
-      border-bottom: 2px solid #4285f4;
+      border-bottom: 2px solid $blue200;
     }
     ^ .validation-error {
       font-size: 0rem;
       position: absolute;
       top: 100%;
-      color: #db4437;
+      color: $red400;
       opacity: 0;
       position: absolute;
       bottom: 0;

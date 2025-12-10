@@ -153,7 +153,13 @@ foam.CLASS({
     {
       class: 'ValidationPredicateArray',
       name: 'validationPredicates',
-      documentation: 'Developer supplied validationPredicates.'
+      documentation: 'Developer supplied validationPredicates.',
+      postSet: function(o, n) {
+        n && n.forEach(vp => vp.prop = this);
+        if ( o != n ) {
+          this.clearProperty('internalValidateObj');
+        }
+      }
     },
     {
       class: 'ValidationPredicateArray',
@@ -360,10 +366,11 @@ foam.CLASS({
       name: 'internalValidateObj',
       expression: function(name, label, autoValidate) {
         if ( autoValidate ) {
+          var self = this;
           return [
             [`${name}$errors`],
             function(errs) {
-              return errs ? `${this.PLEASE_ENTER_VALID} ${(label || name).toLowerCase()}` : null;
+              return errs ? `${self.PLEASE_ENTER_VALID} ${(label || name).toLowerCase()}` : null;
             }
           ];
         }
@@ -476,51 +483,49 @@ foam.CLASS({
       return slot;
     },
 
-    function createErrorSlot_(obj) {
-      var validators, args;
+     function createErrorSlot_(obj) {
+      var validators, args = new Set();
 
       // Cache validators and args in the obj's cls_ because they can be reused for
       // all instances of the same class.
-      if ( ! obj.cls_.validators__ ) {
+      if ( ! obj.cls_.private_.validators__ ) {
         validators = []; // [ property, errorSlot ] pairs
         args = new Set();
 
         obj.cls_.getAxiomsByClass(foam.lang.Property).forEach(p => {
-          if ( p.validateObj         ) validators.push([p, obj.slot(p.validateObj)]);
-          if ( p.internalValidateObj ) validators.push([p, obj.slot(p.internalValidateObj)]);
+          if ( p.validateObj         ) validators.push([p, p.validateObj]);
+          if ( p.internalValidateObj ) validators.push([p, p.internalValidateObj]);
         });
 
-        validators.forEach(v => args.add(v[1]));
-
-        args = args.size ? [...args] : undefined;
-
-        obj.cls_.validators__    = validators;
-        obj.cls_.validatorArgs__ = args;
-        obj.cls_.validateObj__   = function () {
-          var ret;
-
-          validators.forEach(v => {
-            var prop = v[0];
-            var err  = v[1].get();
-            if ( err ) (ret || (ret = [])).push([prop, err]);
-          });
-
-          return ret;
-        };
-        /*
-        if ( ! validators.length ) {
-          console.log('VALIDATORS',obj.cls_.id, validators.length);
-          debugger;
-        }
-        */
+        obj.cls_.private_.validators__    = validators;
       } else {
-        validators = obj.cls_.validators__;
-        args       = obj.cls_.validatorArgs__;
+        validators = obj.cls_.private_.validators__;
+      }
+
+      // Upgrade validator functions to slots
+      validators = validators.map(v => {
+        let a = obj.slot(v[1]);
+        args.add(a);
+        return [v[0], a];
+      });
+
+      args = args.size ? [...args] : undefined;
+
+      function validateObj() {
+        var ret;
+
+        validators.forEach(v => {
+          var prop = v[0];
+          var err  = v[1].get();
+          if ( err ) (ret || (ret = [])).push([prop, err]);
+        });
+
+        return ret;
       }
 
       return foam.lang.ExpressionSlot.create({
         obj:  obj,
-        code: obj.cls_.validateObj__,
+        code: validateObj,
         args: args
       });
     }
@@ -556,7 +561,7 @@ foam.CLASS({
         a.push(
           {
             args: [ this.name ],
-            query: 'thisValue==""||thisValue~/\\S+@\\S+\\.\\S+/',
+            query: 'thisValue==""||thisValue~/^\\S+@\\S+\\.\\S+$/',
             errorString: this.VALID_EMAIL_REQUIRED
           }
         );
@@ -599,8 +604,8 @@ foam.CLASS({
   constants: [
     {
       name: 'ALPHA_CHAR_CHECK',
-      factory: () => /^[\d+-]*$/,
-      javaFactory: '  return "^[\\d+-]*$";'
+      factory: () => /^\+?\d+(?:-\d+)?$/,
+      javaFactory: '  return "^\\+?\\d+(?:-\\d+)?$";'
     }
   ],
 
@@ -619,33 +624,6 @@ foam.CLASS({
             args: [ this.name ],
             query: 'thisValue !exists||thisValue ~' + this.PHONE_NUMBER_REGEX,
             errorString: this.INVALID_PHONE_NUMBER
-          }
-        ];
-      }
-    }
-  ]
-});
-
-
-foam.CLASS({
-  package: 'foam.lang',
-  name: 'DatePropertyValidationRefinement',
-  refines: 'foam.lang.Date',
-
-  // Is only needed for Java to restrict Dates to JS's range
-  flags: 'java',
-
-  properties: [
-    {
-      class: 'ValidationPredicateArray',
-      name: 'internalValidationPredicates',
-      factory: function() {
-        debugger;
-        return [
-          {
-            args: [ this.name ],
-            query: 'thisValue !exists||thisValue<=maxDate&&thisValue>=minDate',
-            errorString: 'Invalid date value'
           }
         ];
       }

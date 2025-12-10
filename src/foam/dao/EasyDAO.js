@@ -147,6 +147,7 @@ foam.CLASS({
       /** This is set automatically when you create an EasyDAO.
         @private */
       name: 'delegate',
+      factory: function() { return this.delegateFactory(); },
       javaFactory: `
         List<PropertyInfo> indexes = new ArrayList();
 
@@ -568,9 +569,16 @@ foam.CLASS({
       value: true
     },
     {
-      documentation: 'See JDAO and F3FileJournal.  Default journal replay is asynchronous. Some models with business logic that reference self can cause deadlock when parsed out of order.  If journal processing hangs, set syncReplay to true to replay synchronously.',
+      documentation: `REMOVED.  CSpec DAO loading is now a
+compbination of 'synchronous' replay along with 'asynchronous' non-lazy
+dao loading, which improves overall startup time.`,
       class: 'Boolean',
-      name: 'syncReplay'
+      name: 'syncReplay',
+      value: true,
+      javaSetter: `
+        if ( ! val )
+          foam.core.logger.StdoutLogger.instance().warning("EasyDAO.syncReplay:false support has been removed.");
+      `
     },
     {
       documentation: `Enable NDiff in JDAO. Enable per DAO with this property or globally via JVM Parameter 'UseNDiff'`,
@@ -773,6 +781,11 @@ foam.CLASS({
       name: 'index'
     },
     {
+      class: 'String',
+      name: 'clientIndices',
+      documentation: 'A list of indices to be added to the client-side MDAO. As a ; delimited list of , delimited list of properties. Ex. firstName,lastName;region,country;postalCode'
+    },
+    {
       name: 'testData',
       generateJava: false
     },
@@ -886,16 +899,15 @@ foam.CLASS({
       name: 'init_',
       javaCode: `
        if ( of_ == null ) {
+         // TODO: replace logger instantiation once javaFactory issue above is fixed
+         Logger logger = (Logger) getX().get("logger");
+         if ( logger == null ) {
+           logger = foam.core.logger.StdoutLogger.instance();
+         }
 
-        // TODO: replace logger instantiation once javaFactory issue above is fixed
-        Logger logger = (Logger) getX().get("logger");
-        if ( logger == null ) {
-          logger = foam.core.logger.StdoutLogger.instance();
-        }
-
-        logger = new PrefixLogger(new Object[] {
-          this.getClass().getSimpleName()
-        }, logger);
+         logger = new PrefixLogger(new Object[] {
+           this.getClass().getSimpleName()
+         }, logger);
 
          if ( logger != null ) {
            logger.error("EasyDAO", getName(), "'of' not set.", new Exception("of not set"));
@@ -949,7 +961,6 @@ foam.CLASS({
             jdao.setFilename(getJournalName());
             jdao.setCluster(getCluster() && !getSaf());
             jdao.setWaitReplay(getWaitReplay());
-            jdao.setSyncReplay(getSyncReplay());
             jdao.setNdiff(getNdiff());
             // Setting of delegate must be last as it triggers replay
             jdao.setDelegate(delegate);
@@ -981,7 +992,7 @@ foam.CLASS({
         return innerDAO;
       `
     },
-    function init() {
+    function delegateFactory() {
       /**
         <p>On initialization, the EasyDAO creates an appropriate chain of
         internal EasyDAO instances based on the EasyDAO
@@ -989,7 +1000,6 @@ foam.CLASS({
         <p>This process is transparent to the developer, and you can use your
         EasyDAO like any other DAO.</p>
       */
-      this.SUPER.apply(this, arguments);
 
       var daoType = typeof this.daoType === 'string' ?
         this.ALIASES[this.daoType] || this.daoType :
@@ -1045,7 +1055,6 @@ foam.CLASS({
                 comparator: foam.compare.toCompare(this.order)
               });
             }
-
             // Full cache
             dao = this.CachingDAO.create({
               cache: cache,
@@ -1073,6 +1082,21 @@ foam.CLASS({
           }
         }
       }
+
+      if ( this.mdao ) {
+        // Add client indices
+        if ( this.clientIndices.trim() ) this.clientIndices.split(';').forEach(indexStr => {
+          if ( ! indexStr.trim() ) return;
+          var indexProps = indexStr.trim().split(',').map(i => this.of.getAxiomByName(i.trim()));
+          console.log("************* Adding index: " + indexStr);
+          try {
+            this.mdao.addPropertyIndex.apply(this.mdao, indexProps);
+          } catch (x) {
+            console.error(`Invalid index for ${this.of.id} '${this.clientIndices}' '${indexStr}'.`);
+          }
+        });
+      }
+
 
       if ( this.queryCache ) {
         //* Query cache ****
@@ -1203,7 +1227,7 @@ foam.CLASS({
         });
       }
 
-      this.delegate = dao;
+      return dao;
     },
 
     /** Only relevant if cache is true or if daoType

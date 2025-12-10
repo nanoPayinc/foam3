@@ -56,7 +56,7 @@ foam.CLASS({
       gap: 4px;
     }
     ^ .foam-u2-borders-Block {
-      border-color: #333;
+      border-color: $borderInverse;
       border-left-size: 6px;
     }
     ^current.foam-u2-borders-Block {
@@ -135,7 +135,7 @@ foam.CLASS({
           globalThis[nameToTry] = this;
           console.log(`%cstored wizardlet: %c${nameToTry} %o`,
             "font-weight: bold",
-            "color: #fc0373;",
+            "color: $red300;",
             this
           );
           break;

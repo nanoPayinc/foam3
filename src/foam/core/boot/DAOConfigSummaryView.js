@@ -137,7 +137,7 @@ foam.CLASS({
       text-overflow: ellipsis;
     }
     ^dao:hover {
-      background: lightgray;
+      background: $backgroundTertiary;
     }
     ^section {
       display: inline-grid;
@@ -146,7 +146,7 @@ foam.CLASS({
     ^header {
       background: $backgroundInverse;
       color:$textOnInverse;
-      font-weight: 800;
+      font-weight: $font-bold;
     }
     ^footer {
       color: $textTertiary;

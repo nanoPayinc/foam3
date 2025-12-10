@@ -206,7 +206,7 @@ foam.CLASS({
   name: 'Cells',
   extends: 'foam.core.reflow.cmd.Command',
 
-  requires: [ 'foam.demos.sevenguis.Cells' ],
+  requires: [ 'foam.core.reflow.cells.Cells' ],
 
   properties: [
     [ 'description', 'Embed spreadsheet' ]
@@ -225,7 +225,7 @@ foam.CLASS({
   name: 'Clear',
   extends: 'foam.core.reflow.cmd.Command',
 
-  imports: [ 'clearFlow as clear' ],
+  imports: [ 'clearFlow as clear', 'block' ],
 
   properties: [
     [ 'description', 'Clear console output' ]
@@ -233,6 +233,7 @@ foam.CLASS({
 
   methods: [
     function execute() {
+      this.block?.del();
       this.clear();
     }
   ]
@@ -254,10 +255,11 @@ foam.CLASS({
 
   methods: [
     function execute(dao, opt_label) {
-      var p = this.DAOPrompt.create({dao: dao, label: opt_label});
+      let p     = this.DAOPrompt.create({dao: dao, label: opt_label});
+      let label = p.dao.of.model_.plural;
 
       p.addToE(this.out);
-      this.currentBlock.flowName = this.createFlowChildName(p.label.replaceAll(' ', '').toLowerCase());
+      this.currentBlock.flowName = opt_label || this.createFlowChildName(label.replaceAll(' ', '').toLowerCase());
       this.currentBlock.obj    = p; // ???: Needed
       this.currentBlock.value  = p;
     }
@@ -300,7 +302,7 @@ foam.CLASS({
   ],
 
   actions: [
-    function save() { this.daoCreate.save(); }
+    function save() { return this.daoCreate.save(); }
   ]
 });
 
@@ -569,7 +571,7 @@ foam.CLASS({
   extends: 'foam.core.reflow.cmd.Command',
 
   requires: [
-    'foam.demos.sevenguis.Cells'
+    'foam.core.reflow.cells.Cells'
   ],
 
   imports: [ ],
@@ -622,10 +624,10 @@ foam.CLASS({
       if ( loaded ) {
         // Don't save the 'load' command
         this.block.del();
-
+        this.maybeCallScript(loaded.preLoadScript);
+        this.flow.loadComplete.sub(() => this.maybeCallScript(loaded.postLoadScript));
         this.selected = this.flow;
         this.flow.copyFrom(loaded);
-
         // HACK: after loading a flow the revision is set to 2 for some unknown
         // reason. This resets it back to 0.
         // TODO: find out why it is 2 and remove this code.
@@ -636,6 +638,11 @@ foam.CLASS({
           }
         });
       }
+    },
+    async function maybeCallScript(s) {
+        if ( s ) {
+          await eval('(async function() {' + s + '})').call(this)
+        }
     }
   ]
 });
@@ -646,7 +653,7 @@ foam.CLASS({
   name: 'Save',
   extends: 'foam.core.reflow.cmd.Command',
 
-  imports: [  'flow', 'flowDAO', 'save' ],
+  imports: [  'flow', 'flowDAO', 'save', 'notify' ],
 
   properties: [
     [ 'description', 'Save the current flow to a specified name' ]
@@ -661,10 +668,13 @@ foam.CLASS({
       // Don't save the 'save' command
       this.currentBlock.del();
 
-      if ( ! this.save() ) {
-        this.out.add('Please provide a name for the flow');
-        return;
-      }
+      return this.save().then(() => {
+        this.notify('Flow saved');
+      }).catch(err => {
+        this.notify('Error saving flow: ' + err.message);
+      });
+
+
     }
   ]
 });
@@ -739,8 +749,8 @@ foam.CLASS({
   requires: [ 'foam.core.reflow.Prompt' ],
 
   methods: [
-    function execute(prompt) {
-      var p = this.Prompt.create();
+    function execute(prompt, type) {
+      var p = this.Prompt.create({ type: type });
 
       if ( prompt ) p.label = prompt;
 
@@ -775,7 +785,8 @@ foam.CLASS({
             { name: 'size' },
             { name: 'icon' },
             { name: 'themeIcon' },
-            // These need more work to be integrated here, they need proper data setting, we would probably want to switch to ActionReferneces for this
+            { name: 'toolTip' },
+            // These need more work to be integrated here, they need proper data setting, we would probably want to switch to ActionReferences for this
             // { name: 'isEnabled' },
             // { name: 'isAvailable' }
           ]
@@ -809,7 +820,7 @@ foam.CLASS({
           name: 'name',
           factory: function() { return 'flowButton_' + foam.next$UID(); }
         },
-        ['label', 'Button']
+        ['label', 'Button'],
       ],
       methods: [
         function toE(args, X) {
@@ -820,13 +831,13 @@ foam.CLASS({
             buttonStyle$: this.buttonStyle$,
             size$: this.size$,
             icon$: this.icon$,
-            themeIcon$: this.themeIcon$
+            themeIcon$: this.themeIcon$,
+            toolTip$: this.toolTip$
           }, this, X);
 
           if ( X.data$ && ! ( args && ( args.data || args.data$ ) ) ) {
             view.data$ = X.data$;
           }
-
           return view;
         }
       ]
@@ -845,7 +856,7 @@ foam.CLASS({
       });
       this.currentBlock.value = action;
       this.currentBlock.configViewSpec = {
-        useSections: ['config']
+        useSections: ['config', 'general', 'borderSettings']
       }
       this.out.tag(action);
     }
@@ -902,6 +913,7 @@ foam.CLASS({
     }
   ]
 });
+
 
 foam.CLASS({
   package: 'foam.core.reflow.cmd',

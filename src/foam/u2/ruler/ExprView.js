@@ -13,36 +13,36 @@ foam.CLASS({
       height: 2.5rem;
       line-height: 2.5rem;
       padding: 0 0.5rem;
-      background-color: #CCC;
+      background-color: $backgroundInverseTertiary;
     }
 
     ^operator {
       display: flex;
       align-items: center;
       padding: 0 0.5rem;
-      font-weight: 600;
+      font-weight: $font-medium;
     }
     ^border {
       border: solid 0.2rem;
-      border-color: #777;
+      border-color: $backgroundDefault;
     }
     ^operator-And {
-      background-color: #9999DD;
+      background-color: $purple200;
     }
     ^border-And {
-      border-color: #9999DD;
+      border-color: $purple200;
     }
     ^operator-Lt, ^operator-Eq {
-      background-color: #99DD99;
+      background-color: $green200;
     }
     ^border-Lt, ^border-Eq {
-      border-color: #99DD99;
+      border-color: $green200;
     }
     ^operator-Not {
-      background-color: #DD9999;
+      background-color: $red200;
     }
     ^border-Not {
-      border-color: #DD9999;
+      border-color: $red200;
     }
   `
 })
@@ -77,14 +77,14 @@ foam.CLASS({
       display: flex;
     }
     ^operand^ctx {
-      background-color: #111;
-      color: #EEE;
-      font-weight: 600;
+      background-color: $backgroundInverse;
+      color: $grey100;
+      font-weight: $font-medium;
     }
     ^operand^key {
-      background-color: #777;
-      color: #EEE;
-      font-weight: 600;
+      background-color: $backgroundInverseSecondary;
+      color: $grey100;
+      font-weight: $fond-medium;
     }
   `,
 

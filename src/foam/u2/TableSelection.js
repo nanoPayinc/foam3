@@ -42,7 +42,7 @@ foam.CLASS({
 
   css: `
     ^link {
-      color: #00c;
+      color: $blue400;
       margin: 0 8px;
       text-decoration: none;
     }

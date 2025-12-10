@@ -11,6 +11,7 @@ p({
   "class": "foam.core.boot.CSpec",
   "name": "modelDAO",
   "authenticate": false,
+  "authNotes": "Client only, used for documentation",
   "lazyClient": true,
   "serve": true,
   "client":"""{"class":"foam.core.reflow.ModelDAO"}"""

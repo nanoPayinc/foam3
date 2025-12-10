@@ -23,7 +23,7 @@ foam.CLASS({
       top: 0;
       right: 0;
       padding: 10px;
-      border-left: 4px solid rgba(0,0,0,0.4);
+      border-left: 4px solid $borderDefault;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -32,7 +32,7 @@ foam.CLASS({
 
     ^side^open {
       width: 50%;
-      background-color: rgba(255,255,255,0.7);
+      background-color: $backgroundDefault;
       visibility: visible;
     }
 

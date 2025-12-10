@@ -129,7 +129,7 @@ foam.CLASS({
       z-index: 1000;
       width: 50rem;
       position: absolute;
-      box-shadow: 0px 0px 50px 0px #000;
+      box-shadow: 0px 0px 50px 0px $black;
       height: 100%;
     }
     ^ input[type="search"] {
@@ -140,7 +140,7 @@ foam.CLASS({
       height: 109em;
       overflow-x: hidden;
       position: relative;
-      background-color: #f5f7fa;
+      background-color: $backgrounTertiary;
     }
 
     ^ .foam-u2-layout-MDToolbarView {
@@ -166,7 +166,7 @@ foam.CLASS({
 
     ^ .foam-u2-view-TreeViewRow-label {
       font-size: 2.5rem;
-      font-weight: 500;
+      font-weight: $font-regular;
       display: inline-flex;
       justify-content: space-between;
       align-items: center;
@@ -180,7 +180,7 @@ foam.CLASS({
     ^ .foam-u2-view-TreeViewRow-heading {
         height: 10rem;
         padding-left: 3rem !important;
-        border-bottom: 1px solid #efefef;
+        border-bottom: 1px solid $borderLight;
     }
 
     ^ .foam-u2-view-TreeViewRow-label-icon {
@@ -207,7 +207,7 @@ foam.CLASS({
       }
 
     ^ .child-menu .foam-u2-view-TreeViewRow-label {
-      font-weight: 300;
+      font-weight: $font-light;
     }
 
     ^ .child-menu .foam-u2-view-TreeViewRow-heading {

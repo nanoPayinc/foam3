@@ -791,28 +791,67 @@ foam.LIB({
               });
             }
 
-            for ( var key in json ) {
-              var prop = pMap[key];
-              if ( prop ) {
-                var js = prop.fromJSON(json[key], opt_ctx, prop, this);
-                if ( js == null && json[key] != 'null' ) {
-                  console.warn('Unable to parse property "' + key + '"', 'in', json);
+            try {
+              /**
+                 This code is very tricky and specific!
+
+                 We initialize the object in two passes:
+                 1. We extra all of the simple non-object/non-array parameters and store them
+                 in the simpleArgs map.
+                 2. We create() the object passing simpleArgs and the opt_ctx.
+                 3. We then call the setters on the created object for all of the non-simple parameters.
+
+                 We do this because some simple parameters need to be passed to create() if the class
+                 is a Multiton which uses those parameters to determine the actual class to create or
+                 for psedo-Classes like __PROPETY__ which use the arguments to determine which Property
+                 constant to use.
+
+                 However, nested FObject properties need to be created in the sub-context of their parent,
+                 so we need to wait until after the object is created to create those objects.
+
+                 However, we make an exception for properties named 'delegate' because they shouldn't be
+                 in the sub-context of the parent, since this is merely a reference, not a composition.
+
+                 TODO: Maybe Add a property to FObjectProperty to control if nested objects are parsed
+                 in their parent's context or not, or find out where this is an issue and fix those instances.
+               **/
+              var simpleArgs = {};
+
+              function isSimple(key, o) {
+                return ! foam.Object.isInstance(o) && ! foam.Array.isInstance(o) || key === 'delegate';
+              }
+
+              // Pass1: handle simple non-Object values
+              for ( var key in json ) {
+                if ( ! isSimple(key, json[key]) ) continue;
+                var prop = pMap[key];
+                if ( prop ) {
+                  var js = prop.fromJSON(json[key], opt_ctx, prop, this);
+                  if ( js == null && json[key] != 'null' ) {
+                    console.warn('Unable to parse property "' + key + '"', 'in', json);
+                  } else {
+                    simpleArgs[prop.name] = js;
+                  }
                 } else {
-                  json[prop.name] = js;
+                  simpleArgs[key] = json[key];
                 }
               }
-            }
 
-            try {
-              var o = c.create(json, opt_ctx);
+              var o = c.create(simpleArgs, opt_ctx);
 
-              /* For debugging:
-              if ( opt_class && ! opt_class.isInstance(o) ) {
-                console.error(
-                  '********************************************** JSON: Incompatible specified class. ',
-                  o.cls_.id, 'is not a sub-class of', opt_class.id, json);
+              // Pass1: handle non-simple values
+              for ( var key in json ) {
+                if ( isSimple(key, json[key]) ) continue;
+                var prop = pMap[key];
+                if ( prop ) {
+                  var js = prop.fromJSON(json[key], o.__subContext__, prop, this);
+                  if ( js == null && json[key] != 'null' ) {
+                    console.warn('Unable to parse property "' + key + '"', 'in', json);
+                  } else {
+                    o[prop.name] = js;
+                  }
+                }
               }
-              */
 
               return o;
             } catch (x) {

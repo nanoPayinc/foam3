@@ -13,7 +13,7 @@ foam.CLASS({
 
   css: `
   ^list { font-size: smaller; width: 440px; overflow-y: auto; height: calc(100vh - 170px)!important; border: 1px solid gray; padding: 0 2; }
-  ^selected { background: lightgrey; }
+  ^selected { background: $backgroundInverseTertiary; }
   // ^row:hover { border: 1px solid red; }
   `,
 
@@ -56,18 +56,18 @@ foam.CLASS({
   imports: [ 'query' ],
 
   css: `
-    ^list { font-size: smaller; width: 480px; overflow-y: auto; height: calc(100vh - 170px)!important; border: 1px solid gray; padding: 0 2; }
+    ^list { font-size: smaller; width: 480px; overflow-y: auto; height: calc(100vh - 170px)!important; border: 1px solid $borderDefault; padding: 0 2; }
 
-    ^selected { background: lightgrey; }
+    ^selected { background: $backgroundInverseTertiary }
 
     ^package {
-      font-weight: 700;
+      font-weight: $font-semi-bold;
     }
 
     ^row {
       margin-left: 30px;
     }
-  //  ^row:hover { border: 1px solid red;  }
+  //  ^row:hover { border: 1px solid $red300;  }
   `,
 
   properties: [

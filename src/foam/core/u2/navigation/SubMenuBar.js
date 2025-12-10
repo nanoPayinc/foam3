@@ -36,7 +36,7 @@ foam.CLASS({
       margin-top: 25px;
     }
     .highlight{
-      background: blue;
+      background: $blue400;
     }
   `,
 

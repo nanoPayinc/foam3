@@ -145,7 +145,7 @@ foam.CLASS({
     ^ .foam-u2-ActionView-delete {
       width: -webkit-fill-available;
       height: 6rem;
-      color: #2e2379;
+      color: $purple700;
       margin: 2rem 4rem;
       bottom: 0;
       background-color: unset;

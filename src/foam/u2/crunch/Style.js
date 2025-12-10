@@ -14,7 +14,7 @@ foam.CLASS({
       padding: 8px 12px 8px 12px;
       width: 216px;
       height: auto;
-      border: 1px solid rgba(255,255,255,0);
+      border: 1px solid $backgroundDefault;
 
       /* width is calculated width from ^cardpart plus 4 pixels */
       width: calc(254px - (2*24px)/3);
@@ -49,7 +49,7 @@ foam.CLASS({
       margin: 0;
       min-height: 20px;
       font-size: 1.6rem;
-      font-weight: 600;
+      font-weight: $font-medium;
       font-style: normal;
       font-stretch: normal;
       line-height: 1.25;
@@ -64,7 +64,7 @@ foam.CLASS({
       font-stretch: normal;
       line-height: 1.27;
       letter-spacing: normal;
-      color: #9ba1a6;
+      color: $textTertiary;
     }
 
     ^.state-hover {
@@ -72,8 +72,8 @@ foam.CLASS({
     }
 
     ^mode-card.state-hover {
-      background-color: rgba(255,255,255,0.5);
-      border: solid 1px #e7eaec;
+      background-color: $backgroundHover;
+      border: solid 1px $borderLight;
     }
 
     ^icon-circle {
@@ -99,7 +99,7 @@ foam.CLASS({
 
       background-color: $backgroundDefault;
 
-      border: 2px solid #f3f3f3;
+      border: 2px solid $borderXLight;
       border-radius: 5px;
       box-sizing: border-box;
 
@@ -109,10 +109,10 @@ foam.CLASS({
       margin-left: 14px;
     }
     ^mode-circle:hover {
-      -webkit-box-shadow: 0 10px 6px -6px #e0e0e0;
-      -moz-box-shadow: 0 10px 6px -6px #e0e0e0;
-      box-shadow: 0 10px 6px -6px #e0e0e0;
-      border-color: white;
+      -webkit-box-shadow: 0 10px 6px -6px $grey200;
+      -moz-box-shadow: 0 10px 6px -6px $grey200;
+      box-shadow: 0 10px 6px -6px $grey200;
+      border-color: $white;
     }
 
     ^badge {
@@ -121,29 +121,29 @@ foam.CLASS({
       width: 79px;
 
       padding: 0 8px;
-      background-color: #b5b5b5;
+      background-color: $backgroundInverseTertiary;
 
       font-size: 1rem;
-      font-weight: 500;
+      font-weight: $font-regular;
       font-style: normal;
       font-stretch: normal;
       line-height: 24px;
       letter-spacing: normal;
       text-align: center;
-      color: #ffffff;
+      color: $black;
     }
 
     ^badge-neutral {
-      background-color: #b5b5b5;
+      background-color: $grey400;
     }
     ^badge-good {
-      background-color: #32bf5e;
+      background-color: $green400;
     }
     ^badge-info {
-      background-color: #604aff;
+      background-color: $purple400;
     }
     ^badge-bad {
-      background-color: #bf3232;
+      background-color: $red400;
     }
 
     ^renewable-description {
@@ -151,7 +151,7 @@ foam.CLASS({
       padding: 2px 8px;
       background-color: $backgroundDefault;
       font-size: 1rem;
-      font-weight: 500;
+      font-weight: $font-regular;
       font-style: normal;
       font-stretch: normal;
       color: $textDefault;
@@ -180,8 +180,8 @@ foam.CLASS({
       visibility: hidden;
       width: max-content;
       max-width: 300%;
-      background-color: #555;
-      color: #f3f3f3;
+      background-color: $grey600;
+      color: $grey100;
       text-align: left;
       border-radius: 5px;
 
@@ -196,9 +196,9 @@ foam.CLASS({
       opacity: 0;
       transition: opacity 0.3s;
 
-      -webkit-box-shadow: 0 10px 6px -6px #e0e0e0;
-      -moz-box-shadow: 0 10px 6px -6px #e0e0e0;
-      box-shadow: 0 10px 6px -6px #e0e0e0;
+      -webkit-box-shadow: 0 10px 6px -6px $grey200;
+      -moz-box-shadow: 0 10px 6px -6px $grey200;
+      box-shadow: 0 10px 6px -6px $grey200;
     }
     ^tooltip ^tooltiptext::after {
       content: "";
@@ -208,7 +208,7 @@ foam.CLASS({
       margin-top: -8px;
       border-width: 8px;
       border-style: solid;
-      border-color: transparent transparent transparent #555;
+      border-color: transparent transparent transparent $grey600;
     }
 
     ^tooltiptext^tooltip-bottom {
@@ -222,7 +222,7 @@ foam.CLASS({
       right: 17%;
       left: auto;
       margin-top: -16px;
-      border-color: transparent transparent #555 transparent;
+      border-color: transparent transparent $grey600 transparent;
     }
 
     ^tooltip:hover ^tooltiptext {

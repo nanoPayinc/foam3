@@ -87,7 +87,7 @@ foam.CLASS({
   css: `
     ^ {
       background: inherit;
-      box-shadow: 0px 0px 30px 0px #b7b7b7;
+      box-shadow: 0px 0px 30px 0px $grey400;
       margin: 0;
       overflow-y: auto;
       position: relative;
@@ -106,8 +106,8 @@ foam.CLASS({
     }
     ^ .choice.selected {
       font-weight: bold;
-      border-left: 0.7rem solid #868686;
-      background-color: #cacaca;
+      border-left: 0.7rem solid $borderDefault;
+      background-color: $textTertiary;
     }
   `
 });

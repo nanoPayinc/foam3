@@ -31,7 +31,7 @@ foam.CLASS({
 
     ^container:hover {
       cursor: pointer;
-      background-color: #f5f7fa;
+      background-color: $backgroundTertiary;
     }
 
     ^container:first-child {
@@ -48,12 +48,12 @@ foam.CLASS({
     }
 
     ^container .foam-u2-md-CheckBox {
-      border-color: #9ba1a6;
+      border-color: $borderDefault;
     }
 
     ^container .foam-u2-md-CheckBox:checked {
-      background-color: #406dea;
-      border-color: #406dea;
+      background-color: $blue300;
+      border-color: $blue300;
     }
   `,
 

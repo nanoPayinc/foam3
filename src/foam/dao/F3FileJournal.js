@@ -22,18 +22,14 @@ foam.CLASS({
     'foam.util.SafetyUtil',
     'java.io.BufferedReader',
     'java.time.Duration',
-    'java.util.concurrent.atomic.AtomicInteger'
+    'java.util.concurrent.atomic.AtomicInteger',
+    'org.json.JSONObject'
   ],
 
   properties: [
     {
       class: 'foam.dao.DAOProperty',
       name: 'dao'
-    },
-    {
-      documentation: 'Default journal replay is asynchronous. Some models with business logic that reference self can cause deadlock when parsed out of order.  If journal processing hangs, set syncReplay to true to replay synchronously.',
-      class: 'Boolean',
-      name: 'syncReplay'
     },
     {
       documentation: 'Report of successfully processed lines during last replay',
@@ -44,6 +40,11 @@ foam.CLASS({
       documentation: 'Report of unsuccessfully processed lines during last replay',
       class: 'Int',
       name: 'failCount'
+    },
+    {
+      class: 'String',
+      name: 'lastReplayVersion',
+      documentation: 'Last recorded version in journal file used by jdao after replay to check against current version'
     }
   ],
 
@@ -57,16 +58,14 @@ foam.CLASS({
         AtomicInteger passCount = new AtomicInteger();
         AtomicInteger failCount = new AtomicInteger();
 
-        getLogger().info("Replay starting", getFilename());
+        String lastVersion = "";
+
+        getLogger().info("Replay starting");
 
         // NOTE: explicitly calling PM constructor as create only creates
         // a percentage of PMs, but we want all replay statistics
         PM pm = new PM(dao.getOf(), "replay." + getFilename());
-        AssemblyLine assemblyLine =
-          ( getSyncReplay() ||
-            x.get("threadPool") == null ) ?
-          new foam.util.concurrent.SyncAssemblyLine() :
-          new foam.util.concurrent.AsyncAssemblyLine(x, "replay");
+        AssemblyLine assemblyLine = new foam.util.concurrent.SyncAssemblyLine();
 
         try ( BufferedReader reader = getReader() ) {
           if ( reader == null ) {
@@ -79,13 +78,20 @@ foam.CLASS({
             if ( length < 3 ) {
               // Don't bother reporting lines with just spaces
               if ( entry.toString().trim().length() != 0 ) {
-                System.err.println("Malformed jrl entry " + getFilename() + " : " + entry);
+                getLogger().warning("Malformed journal entry", entry);
               }
               continue;
             }
             try {
               final char operation = entry.charAt(0);
               final String strEntry = entry.subSequence(2, length - 1).toString();
+
+              if ( operation == OP_VERSION ) {
+                JSONObject obj = new JSONObject(strEntry);
+                lastVersion = (String) obj.get("version");
+                continue;
+              }
+
               assemblyLine.enqueue(new foam.util.concurrent.AbstractAssembly() {
                 FObject obj;
 
@@ -95,24 +101,32 @@ foam.CLASS({
 
                 public void endJob(boolean isLast) {
                   if ( obj == null ) {
-                    getLogger().error("Parse error in the jrl file " + getFilename(), getParsingErrorMessage(strEntry), "entry Object is: ", strEntry);
+                    getLogger().error("Parse error in the journal", getParsingErrorMessage(strEntry), "entry Object is: ", strEntry);
                     failCount.incrementAndGet();
                     return;
                   }
                   switch ( operation ) {
-                    case 'p':
+                    case OP_CREATE:
+                      dao.put(obj);
+                      break;
+
+                    case OP_PUT:
                       foam.lang.FObject old = dao.find(obj.getProperty("id"));
                       dao.put(old != null ? mergeFObject(old.fclone(), obj) : obj);
                       break;
 
-                    case 'r':
+                    case OP_REMOVE:
                       dao.remove(obj);
                       break;
                   }
                   long pass = passCount.incrementAndGet();
                   // Provide some feedback on long running replays
                   if ( pass % 10000 == 0 ) {
-                    getLogger().info("Replay progress", getFilename(), "processed", pass, "in", Duration.ofMillis(pm.getTime()));
+                    getLogger().info("Replay progress", "processed", pass, "in", Duration.ofMillis(pm.getTime()));
+                    if ( Thread.currentThread().isInterrupted() ) {
+                      getLogger().info("Replay interrupted");
+                      return;
+                    }
                   }
                 }
               });
@@ -121,16 +135,17 @@ foam.CLASS({
             }
           }
         } catch ( Throwable t) {
-          getLogger().error("Failed to read journal", dao.getOf().getId(), getFilename(), t);
+          getLogger().error("Failed to read journal", dao.getOf().getId(), t);
         } finally {
+          setLastReplayVersion(lastVersion);
           setPassCount(passCount.get());
           setFailCount(failCount.get());
           assemblyLine.shutdown();
           pm.log(x);
           if ( getFailCount() == 0 ) {
-            getLogger().info("Replay complete", getFilename(), "processed", passCount.get(), "of", failCount.get()+passCount.get(), "in", Duration.ofMillis(pm.getTime()));
+            getLogger().info("Replay complete", "processed", passCount.get(), "of", failCount.get()+passCount.get(), "in", Duration.ofMillis(pm.getTime()));
           } else {
-            getLogger().warning("Replay complete", getFilename(), "processed", passCount.get(), "of", failCount.get()+passCount.get(), "in", Duration.ofMillis(pm.getTime()));
+            getLogger().warning("Replay complete", "processed", passCount.get(), "of", failCount.get()+passCount.get(), "in", Duration.ofMillis(pm.getTime()));
           }
         }
       `

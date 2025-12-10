@@ -71,6 +71,7 @@ public abstract class AbstractPropertyInfo
   }
 
   public int compareTo(Object obj) {
+    if ( ! ( obj instanceof PropertyInfo ) ) return -1;
     int result = getName().compareTo(((PropertyInfo) obj).getName());
     return result != 0 ? result : getClassInfo().compareTo(((PropertyInfo) obj).getClassInfo());
   }

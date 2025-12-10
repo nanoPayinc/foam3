@@ -19,7 +19,7 @@ foam.CLASS({
     ^ {
       height: 30px;
       border-radius: 100px;
-      background-color: #a4b3b8;
+      background-color: $backgroundInverseTertiary;
       margin: auto;
       position: relative;
       float: left;
@@ -28,7 +28,7 @@ foam.CLASS({
 
     ^ .label {
       text-align: left;
-      color: #ffffff;
+      color: $white;
       padding: 8px 15px 6px 10px;
       display: table-cell;
     }

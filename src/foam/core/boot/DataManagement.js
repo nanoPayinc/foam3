@@ -84,7 +84,7 @@ foam.CLASS({
         ^header {
           background: $backgroundInverse;
           color:$textOnInverse;
-          font-weight: 800;
+          font-weight: $font-bold;
         }
         ^footer {
           color: $textTertiary;
@@ -284,6 +284,7 @@ foam.CLASS({
       this.SUPER();
       this.addCrumb();
     },
+
     function render() {
       this.SUPER();
       var self = this;
@@ -295,7 +296,8 @@ foam.CLASS({
       x.register(foam.u2.DetailView,           'foam.u2.DetailView');
 
       this.dynamic(function(route) {
-        self.removeAllChildren(); // TODO: not needed in U3
+        self.removeAllChildren(); // I don't know why this is necessary
+
         if ( route ) {
           this.tag(foam.comics.v3.DAOController, {data: this.__context__[route]});
         } else {

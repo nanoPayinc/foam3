@@ -41,7 +41,7 @@ foam.CLASS({
       width: 100%;
       min-width: 992px;
       height: 60px;
-      color: white;
+      color: $white;
       padding-top: 5px;
     }
     ^ .logged-in-container {
@@ -56,8 +56,8 @@ foam.CLASS({
     ^ .menuBar > div > ul {
       margin-top: 0;
       padding-left: 0;
-      font-weight: 100;
-      color: #ffffff;
+      font-weight: $font-extra-light;
+      color: $white;
     }
     ^ .foam-core-menu-MenuBar li {
       display: inline-block;

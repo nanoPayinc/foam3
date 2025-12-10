@@ -73,7 +73,7 @@ foam.CLASS({
     ^ table {
        box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
        width: auto;
-       border: 0;
+       border: none;
       }
 
     ^header {
@@ -88,14 +88,14 @@ foam.CLASS({
     }
     ^header span {
       font-size: 16x;
-      font-weight: bold;
+      font-weight: $font-bold;
     }
     ^ .permissionHeader {
       background-color: $backgroundTertiary;
       border: 1px solid $borderLight;
       padding: 8px;
       color: $textDefault;
-      font-weight: 500;
+      font-weight: $font-regular;
       text-align: left;
     }
     ^table-wrapper table {
@@ -131,7 +131,7 @@ foam.CLASS({
       writing-mode: vertical-lr;
       white-space: nowrap;
       color: $textDefault;
-      font-weight: 500;
+      font-weight: $font-regular;
     }
     ^x {
       color: $textDestructive;

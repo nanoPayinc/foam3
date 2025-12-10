@@ -30,7 +30,7 @@ foam.CLASS({
       padding-right: 48px;
       cursor: pointer;
       background:$backgroundDefault;
-      color: black;
+      color: $black;
       border-left: solid 1px $borderLight;
       border-right: solid 1px $borderLight;
     }

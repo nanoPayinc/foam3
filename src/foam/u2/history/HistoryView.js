@@ -41,7 +41,7 @@ foam.CLASS({
     ^ .timeline {
       width: 2px;
       height: 100%;
-      background: rgba(164, 179, 184, 0.3);
+      background: $backgroundInverseTertiary;
       position: absolute;
       left: 23px;
       top: 5px;

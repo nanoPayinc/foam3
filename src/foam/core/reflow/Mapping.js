@@ -28,12 +28,52 @@ foam.ENUM({
 });
 
 
+foam.ENUM({
+  package: 'foam.core.reflow',
+  name: 'DateFormat',
+
+  values: [
+    {
+      name: 'STANDARD',
+      label: 'Standard',
+      documentation: 'Standard formats: yyyy-mm-dd, yyyy/mm/dd, yyyymmdd, mm/dd/yyyy, mm-dd-yyyy, mmddyyyy, mm/dd/yy, mm-dd-yy, mmddyy, plus ALL month name formats (unambiguous!): 31-JAN-2025, 31JAN2025, 2025-31-JAN, 202531JAN, Jan 02 2025'
+    },
+    {
+      name: 'DDMMYYYY',
+      label: 'dd/mm/yyyy',
+      documentation: 'Day-Month-Year format for NUMERIC dates: dd/mm/yyyy, dd-mm-yyyy, ddmmyyyy, dd/mm/yy, dd-mm-yy, ddmmyy (month names work automatically in STANDARD)'
+    },
+    {
+      name: 'YYYYDDMM',
+      label: 'yyyy/dd/mm',
+      documentation: 'Numeric only: yyyy-dd-mm, yyyyddmm, yy-dd-mm, yyddmm'
+    }
+  ],
+
+  properties: [
+    {
+      // Add an 'id' property that returns the ordinal for DAO compatibility
+      name: 'id',
+      getter: function() { return this.ordinal; }
+    }
+  ],
+
+  methods: [
+    function toSummary() {
+      return this.label;
+    }
+  ]
+});
+
+
+
 foam.CLASS({
   package: 'foam.core.reflow',
   name: 'Mapping',
 
   requires: [
-    'foam.core.reflow.MappingType'
+    'foam.core.reflow.MappingType',
+    'foam.core.reflow.DateFormat'
   ],
 
   imports: [ 'scope?' ],
@@ -108,10 +148,50 @@ foam.CLASS({
       hidden: true,
       transient: true,
       factory: function() { return []; }
+    },
+    {
+      class: 'Enum',
+      of: 'foam.core.reflow.DateFormat',
+      name: 'dateFormat',
+      label: '',
+      value: 'STANDARD',
+      help: 'Standard format supports most common date formats (yyyy-mm-dd, mm/dd/yyyy, etc.). If your dates don\'t parse correctly, select a different format option.',
+      documentation: 'Date format for this field (only applies to Date/DateTime properties)',
+      view: {
+        class: 'foam.core.reflow.DateFormatRichChoiceView'
+      },
+      visibility: function(type, prop) {
+        // Only show for Date/DateTime properties that use FIELD or CONSTANT mapping
+        if ( type === foam.core.reflow.MappingType.DYNAMIC ) return foam.u2.DisplayMode.HIDDEN;
+        if ( ! prop ) return foam.u2.DisplayMode.HIDDEN;
+        var isDateProp = foam.lang.Date.isInstance(prop) || foam.lang.DateTime.isInstance(prop);
+        return isDateProp ? foam.u2.DisplayMode.RW : foam.u2.DisplayMode.HIDDEN;
+      }
     }
   ],
 
   methods: [
+    function formatToParserName() {
+      /**
+       * Maps DateFormat enum to DateParser grammar symbol name.
+       * This is used when calling DateUtil parsing methods with format hints.
+       *
+       * @returns {string} Parser grammar symbol name ('START', 'ddmmyyyy', 'yyyyddmm')
+       */
+      if ( ! this.dateFormat ) return 'START';
+
+      // Map enum values to parser symbol names
+      switch ( this.dateFormat.name ) {
+        case 'DDMMYYYY':
+          return 'ddmmyyyy';
+        case 'YYYYDDMM':
+          return 'yyyyddmm';
+        case 'STANDARD':
+        default:
+          return 'START';
+      }
+    },
+
     function process(obj, value, rowData) {
       if ( ! this.property ) return;
 
@@ -144,11 +224,18 @@ foam.CLASS({
         value = value.trim();
       }
 
+      // Set property value using fromCSV, passing format hint for date fields
       if ( value !== '' && value != null && value !== undefined ) {
-        this.prop.set(obj, this.prop.fromCSV(value));
+        // Check DateTimeUTC BEFORE DateTime since DateTimeUTC extends DateTime
+        if ( this.prop && foam.lang.Date.isInstance(this.prop) ) {
+          // For date/datetime properties, pass format to fromCSV
+          var formatName = this.formatToParserName();
+          this.prop.set(obj, this.prop.fromCSV(value, formatName));
+        } else {
+          this.prop.set(obj, this.prop.fromCSV(value));
+        }
       }
     },
-
     function evaluateExpression(expression, rowData) {
       /**
        * Safely evaluate a JavaScript expression within the context of rowData.

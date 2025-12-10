@@ -26,7 +26,7 @@ foam.CLASS({
     }
 
     blockquote{
-      border-left-color: #ccc;
+      border-left-color: $borderDefault;
       border-left-style: solid;
       margin: 0;
       margin-left: 2ch;
@@ -62,7 +62,7 @@ foam.CLASS({
       width: 35px;
       height: 20px;
       border-radius: 100px;
-      background-color: #eedb5f;
+      background-color: $yellow400;
     }
     .Updated {
       width: 60px;
@@ -74,19 +74,19 @@ foam.CLASS({
       width: 49px;
       height: 20px;
       border-radius: 100px;
-      background-color: #ee5f71;
+      background-color: $red200;
     }
     .Pending {
       width: 55px;
       height: 20px;
       border-radius: 100px;
-      background-color: #59a5d5;
+      background-color: $blue100;
     }
     .Solved {
       width: 50px;
       height: 20px;
       border-radius: 100px;
-      background-color: #a4b3b8;
+      background-color: $grey400;
     }
     textarea:focus{
       outline: none;

@@ -168,7 +168,7 @@ foam.CLASS({
     }
     .p-legal-light {
       font-style: normal;
-      font-weight: 400;
+      font-weight: $font-normal;
       font-size: 1.2rem;
       line-height: 1.17;
       margin: 0;
@@ -235,7 +235,7 @@ foam.CLASS({
       line-height: 1.67;
       letter-spacing: 0.017em;
       text-align: center;
-      color: #ffffff;
+      color: $white;
     }
 
     /* Inherit fonts for inputs and buttons */

@@ -71,11 +71,6 @@ foam.CLASS({
       name: 'dao',
       hidden: true,
       transient: true,
-      preSet: function(o, n) {
-        // TODO: needed because Console does a copyFrom() which will lose data
-        // Remove when no longer needed
-        return o || n;
-      },
       factory: function() {
         return this.EasyDAO.create({
           seqNo: true,
@@ -179,14 +174,15 @@ foam.CLASS({
   name: 'TestResultsView',
   extends: 'foam.u2.View',
 
+  imports: ['block?'],
+
   methods: [
     function render() {
       this.SUPER();
-
+      if ( ! this.block?.border.title ) {
+        this.block.setTitle('Test Results');
+      }
       this.
-        start('h2').
-          add('Test Results').
-        end().
         start().
           style({marginLeft: '20px', marginBottom: '20px', fontSize: 'larger'}).
 

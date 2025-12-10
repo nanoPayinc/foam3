@@ -17,9 +17,9 @@ foam.CLASS({
       flex-direction: column;
       justify-content: space-between;
       padding: 0.8rem 0.2rem;
-      border-bottom: 0.05rem solid #80808020;
+      border-bottom: 0.05rem solid $borderDefault;
       gap: 0.64rem;
-      color: #6F6F6F;
+      color: $grey500;
     }
     ^row-1{
       display: flex;

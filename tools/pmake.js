@@ -90,6 +90,7 @@ var pmake = function(...args) {
           if ( f.name.endsWith('build') || f.name.endsWith('build2') ) return;
           if ( f.name.indexOf('android') != -1 ) return;
           if ( f.name.indexOf('examples') != -1 ) return;
+          if ( f.name.indexOf('node_modules') != -1 ) return;
           if ( f.name.endsWith('test') && ! flags.test ) return;
           if ( f.name.endsWith('tests') && ! flags.test ) return;
           if ( ! this.isExcluded(pom, fn) ) processDir.bind(this, pom, fn, true)();
@@ -117,13 +118,13 @@ var pmake = function(...args) {
       self.verbose('[pmake] visitPOM', v.name, pom);
       v.visitPOM && v.visitPOM.bind(self, pom)();
     });
+    SUPER(pom);
     if ( ! seen[foam.cwd] ) {
       self.verbose('[pmake] procesDir', pom.path );
       processDir.bind(self, pom, foam.cwd, false, makers)();
       seen[foam.cwd] = true;
     }
 
-    SUPER(pom);
     makers.forEach(v => v.endVisitPOM && v.endVisitPOM(pom));
   }.bind(self);
 

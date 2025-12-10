@@ -16,7 +16,7 @@ foam.CLASS({
 
   documentation: `
     In scripts, 'this' is bound to the containing block, so you can do things like:
-      this.tag(foam.demos.clock.Clock.create({x:400,y:400}));
+      this.tag(foam.core.reflow.Clock.create({x:400,y:400}));
 
     As a result, log() will log to the Script output,
     but this.log() will log to the block, ie. in the FLOW document itself.
@@ -28,7 +28,13 @@ foam.CLASS({
       class: 'String',
       name: 'code',
       reactive: false,
-      view: { class: 'foam.u2.tag.TextArea', rows: 16 },
+      view: {
+        class: 'foam.u2.view.ObjAltView',
+        views: [
+          [ {class: 'foam.u2.view.CodeView', config: { width: '100%', mode: 'JAVASCRIPT', showGutter: false }}, 'Code'],
+          [ {class: 'foam.u2.tag.TextArea', rows: 16 }, 'Plain Text']
+        ]
+      },
       displayWidth: 60
     },
     {
@@ -54,10 +60,11 @@ foam.CLASS({
 
   actions: [
     function run() {
+      let self = this;
       with ( this.scope ) {
         with ( { log: this.log.bind(this) } ) {
-          var ret = eval('(async function() {' + this.code + '})').call(this.block);
-          this.log(ret);
+          var ret = eval('(async function() {' + self.code + '})').call(self.block);
+          ret.then(v => this.log(v), v => this.log(v)).catch(e => this.log(e.stack));
           return ret;
         }
       }

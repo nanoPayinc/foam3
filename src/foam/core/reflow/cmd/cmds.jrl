@@ -20,7 +20,7 @@ p({
   "id": "clock",
   "description": "Insert a Clock",
   "script": """
-    var clock = foam.demos.clock.Clock.create({x:110, y:110}, this);
+    var clock = foam.core.reflow.Clock.create({x:110, y:110}, this);
     this.addValue(clock);
 //    this.out.add(clock);
 //    this.currentBlock.value = clock;
@@ -74,18 +74,30 @@ p({
 })
 p({
   "class":"foam.core.reflow.cmd.Command",
+  "id": "markdown",
+  "description": "Insert Markdown Document",
+  "script": "addValue(foam.core.reflow.Markdown.create({markdown: args.join(' ')}, this));"
+})
+p({
+  "class":"foam.core.reflow.cmd.Command",
   "id": "upload",
   "description": "Upload Data",
   linkable: false,
   "script": """
     var scope = this.__context__.scope;
-    if ( foam.String.isInstance(args[0]) && scope[args[0]] ) args[0] = scope[args[0]];
-    else if ( foam.String.isInstance(args[0]) && scope[args[0] + 'DAO'] ) args[0] = scope[args[0] + 'DAO'];
-    if ( foam.dao.DAO.isInstance(args[0]) ) {
-      this.out.add(foam.core.reflow.Upload.create({dao: args[0]}, this));
-    } else {
-      this.out.add(foam.core.reflow.Upload.create({daoKey: args[0]}, this));
+
+    if ( foam.String.isInstance(args[0]) && scope[args[0]] ) {
+      args[0] = scope[args[0]];
+    } else if ( foam.String.isInstance(args[0]) && scope[args[0] + 'DAO'] ) {
+      args[0] = scope[args[0] + 'DAO'];
     }
+
+    var m = foam.dao.DAO.isInstance(args[0]) ?
+      { dao: args[0] } :
+      { daoKey: args[0] } ;
+    var upload = foam.core.reflow.Upload.create(m, this);
+
+    this.out.tag(foam.core.reflow.UploadView, {data: upload});
   """
 })
 p({
@@ -98,7 +110,7 @@ p({
 })
 p({
   "class":"foam.core.reflow.cmd.Command",
-  "id": "fetch",
+  "id": "fetchFile",
   "description": "Fetch a file from a URL",
   "script": """
     addValue(foam.core.reflow.XHR.create({url: args[0]}, this));
@@ -150,3 +162,7 @@ p({
   "description": "adds a layout block"
 })
 p({"class":"foam.core.reflow.cmd.DAOFilter", "id": "daofilter"})
+p({
+  "class":"foam.core.reflow.cmd.Info",
+  "id": "info"
+})

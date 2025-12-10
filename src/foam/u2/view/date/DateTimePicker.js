@@ -25,7 +25,7 @@ foam.CLASS({
       width: 31px;
       height: 31px;
       line-height: 31px;
-      background-color: lightgray;
+      background-color: $backgroundInverseTertiary;
       margin: 1px;
       text-align: center;
       cursor: pointer;
@@ -64,7 +64,7 @@ foam.CLASS({
     ^ .year {
       border-radius: 5px 5px 0px 0px;
       background-color: $backgroundBrand;
-      color: #ffffff;
+      color: $textOnBrand;
       display: inline-block;
       align-items: center;
       height: 47px;
@@ -82,9 +82,9 @@ foam.CLASS({
     }
 
     ^ .year-number {
-      background: rgba(0,0,0,0);
+      background: $backgroundBrand;
       border: none;
-      color: white;
+      color: $textOnBrand;
       display: inline-block;
     }
 
@@ -115,7 +115,7 @@ foam.CLASS({
       padding-top: 3px;
       padding-bottom: 3px;
       display: inline-block;
-      font-weight: 500;
+      font-weight: $font-regular;
     }
 
     ^ .arrow-container {
@@ -167,18 +167,18 @@ foam.CLASS({
       height: 36px;
       width: 100%;
       background-color: $backgroundDefault;
-      border: 1px solid #cbcfd4;
+      border: 1px solid $borderDefault;
       border-radius: 3px;
     }
 
     ^ .date-display-box:hover {
-      border-color: #9ba1a6;
+      border-color: $borderStrong;
     }
 
     ^ .focus-border {
       border-radius: 1px;
-      border: solid 1px #406dea;
-      box-shadow: inset 0 2px 1px 0 rgba(32, 46, 120, 0.42);
+      border: solid 1px $blue200;
+      box-shadow: inset 0 2px 1px 0 $blue400;
     }
 
     ^ .date-display-text {

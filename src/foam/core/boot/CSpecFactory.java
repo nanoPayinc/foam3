@@ -111,8 +111,26 @@ public class CSpecFactory
           }
         }
         if ( ns instanceof COREService )  {
-          logger.info("Starting Service", spec_.getName(), ns.getClass().getName());
-          ((COREService) ns).start();
+          Agency agency = (Agency) nx.get("threadPool");
+          if ( agency == null ||
+               ! spec_.getLazy() /* already in agency */ ||
+               spec_.getName().toLowerCase().contains("pool") ||
+               spec_.getClass().getName().toLowerCase().contains("agency") ) {
+            logger.info("Starting Service", spec_.getName(), ns.getClass().getName());
+            ((COREService) ns).start();
+          } else {
+            final COREService cs = (COREService) ns;
+            agency.submit(nx, new ContextAgent() {
+              public void execute(X x) {
+                StdoutLogger.instance().info("Starting Service", spec_.getName(), cs.getClass().getName());
+                try {
+                  cs.start();
+                } catch (Throwable t) {
+                  StdoutLogger.instance().error("Error Starting Service", spec_.getName(), t);
+                }
+              }
+            }, spec_.getName());
+          }
         }
         if ( ns instanceof ProxyDAO ) {
           ns = ((ProxyDAO) ns).getDelegate();
@@ -184,6 +202,7 @@ public class CSpecFactory
         ns_ = null;
         spec_ = spec;
         if ( ! spec_.getLazy() ) {
+          logger.info("Invalidate create non-Lazy Service", spec_.getName());
           create(x_);
         }
       }
@@ -227,7 +246,12 @@ public class CSpecFactory
           logger.info("Stopped Service", spec_.getName(), ns.getClass().getName());
         }
         if ( ns instanceof ProxyDAO ) {
-          ns = ((ProxyDAO) ns).getDelegate();
+          if ( ProxyDAO.DELEGATE.isSet(ns) ) {
+            ns = ((ProxyDAO) ns).getDelegate();
+          } else {
+            logger.debug("Shutdown ignore never started service", spec_.getName(), ns.getClass().getName());
+            ns = null;
+          }
         } else if ( ns instanceof ProxyAuthService ) {
           ns = ((ProxyAuthService) ns).getDelegate();
         } else {

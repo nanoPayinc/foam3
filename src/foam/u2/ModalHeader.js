@@ -28,10 +28,10 @@ foam.CLASS({
       width: 100%; /* This is to fit the width of its parent container */
       padding: 24px 24px 20px;
       box-sizing: border-box;
-      border-bottom: solid 1px #CBCFD4;
+      border-bottom: solid 1px $borderDefault;
     }
     ^title{
-      color: #000000;
+      color: $textDefault;
       margin: 0;
       flex: none;
     }

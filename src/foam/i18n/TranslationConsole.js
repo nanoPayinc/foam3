@@ -42,16 +42,16 @@ foam.CLASS({
   css: `
     * {
       font-family: Roboto, sans-serif;
-      color: #555;
+      color: $textSecondary;
     }
     body {
       font-family: Roboto;
-      background: rgb(238, 238, 238);
+      background: $backgroundTertiary;
       overflow: none;
     }
     button { padding: 6px; background: $backgroundDefault!important; }
     button span { background:$backgroundDefault; }
-    .foam-u2-ActionView-medium { height: 34px !important; background: pink; }
+    .foam-u2-ActionView-medium { height: 34px !important; background: $red100; }
     .foam-u2-table-TableView { height: auto !important; }
   `,
 

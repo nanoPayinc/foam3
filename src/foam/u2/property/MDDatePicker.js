@@ -488,7 +488,7 @@ foam.CLASS({
       padding: 16px;
     }
     ^years-year^selected {
-      color: #3e50b4;
+      color: $blue400;
     }
   `
 });

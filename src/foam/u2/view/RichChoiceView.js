@@ -381,7 +381,7 @@ foam.CLASS({
       name: 'of',
       documentation: 'The model stored in the DAO. Used internally.',
       expression: function(sections) {
-        return sections[0].dao.of;
+        return sections[0]?.dao?.of;
       }
     },
     {
@@ -434,6 +434,7 @@ foam.CLASS({
       name: 'choosePlaceholder',
       documentation: 'Replaces choose from placeholder with passed in string.',
       expression: function(of) {
+        if ( ! of ) return '';
         var plural = of.model_.plural.toLowerCase();
         return this.CHOOSE_FROM + ' ' + plural + '...';
       }
@@ -512,7 +513,7 @@ foam.CLASS({
       this.onDetach(() => this.dropdown_.remove());
       this.attrs({
         name: self.prop$.map(v => v?.name),
-        'data-value': self.data$,
+        'data-value': self.data$.map(v => { return v ? (foam.util.isPrimitive(v) ? v : v.toString?.() ?? v) : undefined;}),
         'role': 'combobox',
         'aria-controls': 'listbox',
         'aria-haspopup': 'listbox',
@@ -549,7 +550,10 @@ foam.CLASS({
             return Promise.all(promiseArray).then(resp => {
               var index = 0;
               return this.E().forEach(sections, function(section) {
-                if ( section.hideIfEmpty && resp[index].value <= 0 ) return;
+                if ( section.hideIfEmpty && resp[index].value <= 0 ) {
+                  index++;
+                  return;
+                }
                 section.refineInput_ = resp[index].value > section.choicesLimit;
                 this.addClass(self.myClass('setAbove'))
                   .start().addClass(self.myClass('section'))
@@ -572,11 +576,7 @@ foam.CLASS({
                           })
                         .end();
                       }
-                      if ( this.U3 ) {
-                        this.call(addRow);
-                      } else {
-                        return this.E().call(addRow);
-                      }
+                      this.call(addRow);
                     }, false, self.comparator)
                   .end()
                   .callIf(section.choicesLimit, function() {
@@ -690,8 +690,8 @@ foam.CLASS({
     function fromProperty(property) {
       this.SUPER(property);
       this.prop = property;
-      if ( ! this.choosePlaceholder && prop.placeholder ) {
-        this.choosePlaceholder = prop.placeholder;
+      if ( ! this.choosePlaceholder && property.placeholder ) {
+        this.choosePlaceholder = property.placeholder;
       }
     }
   ],
@@ -804,6 +804,11 @@ foam.CLASS({
           class: 'Boolean',
           name: 'addPadding',
           value: true
+        },
+        {
+          class: 'foam.u2.ViewSpec',
+          name: 'citationView',
+          factory: function() { return this.rowView || this.CitationView; }
         }
       ],
 
@@ -816,7 +821,7 @@ foam.CLASS({
               this.startContext({ controllerMode: 'VIEW' }).start()
                 .addClass(self.myClass('customSelectView'))
                 .enableClass(self.myClass('ro'), self.addPadding$.not())
-                .tag((self.rowView || self.CitationView), { data: fullObject })
+                .tag(self.citationView, { data: fullObject })
               .end().endContext();
             } else {
               this.start().addClass(self.myClass('paddingWrapper')).add(self.defaultSelectionPrompt).end();
@@ -850,7 +855,7 @@ foam.CLASS({
 
       css: `
         ^ {
-          border: 0;
+          border: none;
           border-top: 1px solid $borderDefault;
           justify-content: flex-start;
           width: 100%;

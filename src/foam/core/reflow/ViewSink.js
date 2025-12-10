@@ -9,10 +9,23 @@ foam.CLASS({
   name: 'ViewSink',
   extends: 'foam.dao.ArraySink',
 
+  imports: [ 'block' ],
+
   methods: [
     function addToE(e) {
-      e = e.startContext({controllerMode: foam.u2.ControllerMode.VIEW});
-      this.array.forEach(o => e.add(o));
+      var self = this;
+
+      e.add(this.block.value.dynamic(function(columns) {
+        e = this.startContext({controllerMode: foam.u2.ControllerMode.VIEW});
+
+        self.array.forEach(o => {
+          var args = {showActions: true, data: o};
+          if ( columns ) {
+            args.properties = columns.split(',').map(p => o.cls_.getAxiomByName(p));
+          }
+          e.tag(foam.u2.DetailView, args);
+        });
+      }));
     }
   ]
 });

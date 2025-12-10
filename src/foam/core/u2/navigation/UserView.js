@@ -41,7 +41,7 @@ foam.CLASS({
       position: relative;
     }
     ^ h1 {
-      font-weight: 100;
+      font-weight: $font-extra-light;
     }
     ^carrot {
       width: 0;
@@ -81,8 +81,8 @@ foam.CLASS({
     }
     ^ .foam-core-menu-SubMenuView-inner > div:last-child {
       background-color: $backgroundDefault;
-      box-shadow: 0 -1px 0 0 #e9e9e9;
-      color: #c82e2e;
+      box-shadow: 0 -1px 0 0 $grey200;
+      color: $red400;
     }
     ^ .foam-core-menu-SubMenuView-inner > div:hover {
       background-color: $backgroundBrand;
@@ -93,7 +93,7 @@ foam.CLASS({
       position: absolute;
       height: 0;
       width: 0;
-      border-bottom-color: white;
+      border-bottom-color: $white;
       -ms-transform: translate(110px, -16px);
       transform: translate(110px, -16px);
     }

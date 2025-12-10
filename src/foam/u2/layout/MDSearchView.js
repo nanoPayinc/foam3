@@ -114,14 +114,14 @@ foam.CLASS({
 
     ^ .clear-btn i {
       background-color: unset;
-      color: white;
+      color: $white;
     }
 
     ^ input {
       background-color: unset;
       border: none;
-      border-bottom: solid 1px white;
-      color: white;
+      border-bottom: solid 1px $white;
+      color: $white;
       right: 0;
       width: 0%;
 //      transition: 1s;

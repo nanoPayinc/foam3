@@ -40,7 +40,7 @@ foam.CLASS({
     margin: 8px 8px 8px 8px;
     transition: all .15s ease-in-out;
     border-top: 1px;
-    color: #fff;
+    color: $white;
     cursor: pointer;
   }
   ^side-nav div a:hover {

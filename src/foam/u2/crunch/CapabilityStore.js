@@ -73,7 +73,7 @@ foam.CLASS({
     ^label-subtitle {
       margin: 16px;
       margin-top: 0;
-      color: #9ba1a6;
+      color: $textTertiary;
     }
 
     ^category {

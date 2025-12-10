@@ -230,11 +230,11 @@ foam.CLASS({
       right: 3rem;
       border-radius: 100%;
       padding: 3rem;
-      color: white;
-      font-weight: 900;
+      color: $white;
+      font-weight: $font-extra-bold;
       font-size: 4rem;
       background-color: $backgroundBrand;
-      box-shadow: inset 0px 0px 15px 0px white;
+      box-shadow: inset 0px 0px 15px 0px $white;
     }
   `
 });

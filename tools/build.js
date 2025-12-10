@@ -61,6 +61,7 @@ const { join }                                    = require('path');
 const pmake                                       = require('./pmake');
 
 const TASK_SEPERATOR                              = ' ';
+const ALL                                         = 'all';
 
 process.on('unhandledRejection', e => {
   error("ERROR: Unhandled promise rejection ", e);
@@ -119,7 +120,14 @@ function task() {
   };
 
   let toolingTasks = TOOLING_TASKS[name] || [];
-  toolingTasks.push(toolingTask);
+  // Special treatment of ALL
+  // - only allow one
+  // - last encountered is used.
+  if ( name == ALL ) {
+    toolingTasks = [toolingTask];
+  } else {
+    toolingTasks.push(toolingTask);
+  }
   TOOLING_TASKS[name] = toolingTasks;
 
   var rec   = [];
@@ -184,11 +192,11 @@ function task() {
       });
 
       // execute tasks
-      if ( ! DRY_RUN || name === 'pomEvns' || name === 'all' ) {
+      if ( ! DRY_RUN || name === 'pomEvns' || name == ALL ) {
         task.f && task.f.apply(Object.assign({ SUPER }, EXPORTS), args);
       }
-      // only run first 'all'
-      return name !== 'all';
+      // only run first ALL
+      return name != ALL;
     });
 
     running[name] -= 1;
@@ -376,7 +384,7 @@ function moreUsage(arg) {
     log('  RemoteInstall - configure remote host and install Java application. use: -TStandard,RemoteInstall,Java ...');
     log('  setup/Project - create a new FOAM project. use: -T+setup/Project ...');
     log('');
-    info('See --usage for examples, and documentation #flowdoc/Build');
+    info('See --usage for examples, and documentation https://github.com/kgrgreer/foam3/blob/development/doc/guides/Build.md');
   }
 }
 
@@ -397,7 +405,6 @@ globalThis['ENVS'] = ENVS;
 // Configure build variables
 buildEnv(ENVS);
 
-// Export functions for Tooling and Build POM tasks
 EXPORTS = Object.assign(EXPORTS, {
   adaptOrCreateArgs,
   addJournal,
@@ -443,7 +450,7 @@ TOOLING_OPTIONS = addOptions({
   homeDir: ['', 'home-dir', 'HOME_DIR', 'Home directory of user executing build', () => homedir(), arg => HOME_DIR = arg ],
   platform: ['', 'platform', 'PLATFORM', 'Operation System Type. One of: darwin (MacOS), freebsd, linux, win32', () => platform(), arg => PLATFORM = arg ],
   silent: ['', 'silent', 'SILENT', "Suppress all 'info' and 'warning' log messages.", false, function(arg) { SILENT = arg ? bool(arg) : true; }],
-  toolingPoms: [ 'T', 'tooling-poms', 'TOOLING_POMS', 'Comma separated list of tooling poms. When not specified, build will look for tools/defaultTooling file, and it not found, default to \'Standard,Npm,Maven,Git,JS,Java\'.  To \'add\' tooling to default list, prefix name with +.',
+  toolingPoms: [ 'T', 'tooling-poms', 'TOOLING_POMS', 'Comma separated list of tooling poms. When not specified, build will look for tools/defaultTooling file, and it not found, default to \'Standard,Npm,Maven,Git,JS,Java\'.  To \'add\' tooling to default list, prefix name with +.  NOTE: order is significant for tasks such as \'all\' where only the last encountered is executed.',
                  function() {
                    var poms;
                    var fn = join(process.cwd(),`tools/defaultTooling`);
@@ -484,6 +491,8 @@ OPTIONS = addOptions({
           }
         ],
   flags: ['f', 'flags', 'FLAGS', 'Flags passed to pmake. Explicitly set with --flags:test, for example.', '', arg => FLAGS = arg ],
+  foamDir: ['', 'foam-dir', 'FOAM_DIR', 'For a FOAM application, the FOAM repository is installed under foam3/, relative to application. To simplify build logic, FOAM itself relies on a soft link foam3 pointing to itself ../foam3.', () => join(__dirname, '..'), arg => FOAM_DIR = arg ],
+  foamToolsDir: ['', 'foam3-tools-dir', 'FOAM_TOOLS_DIR', 'FOAM tools directory. Defaults to where build.js is found.', () => __dirname, arg => FOAM_TOOLS_DIR = arg ],
   help: [ 'h', 'help', 'HELP', 'Print usage information for environment variables (envs), options, and tasks.  Narrow output with --help:tasks, for example. Or show help for a particular topic with --help:foo where foo is the name of an option or task.', '', arg => {
     HELP = true;
     TOPIC_HELP = arg;
@@ -493,14 +502,14 @@ OPTIONS = addOptions({
   poms: [ 'P', 'poms', 'POMS', "comma seperated list of pom files. Defaults to 'pom' at the root of the project.", '', arg => POMS = arg ],
   projectHome: ['', 'project-home', 'PROJECT_HOME', 'Project directory', process.cwd(), arg => PROJECT_HOME = arg ],
   showEnvs: [ '', 'show-envs', 'SHOW_ENVS', 'Output environment variable values.', false, function(arg) { SHOW_ENVS = arg ? bool(arg) : true; }],
-  tasks: [ 'X', 'tasks', 'TASKS', 'Register task for execution during the build phase. Comma seperated list of task names. Parameters to each demarcated with : symbol. Ex: -XcheckDeps:9. NOTE: only the first \'all\' task is processed.', 'all',
+  tasks: [ 'X', 'tasks', 'TASKS', 'Register task for execution during the build phase. Comma seperated list of task names. Parameters to each demarcated with : symbol. Ex: -XcheckDeps:9. NOTE: only the first \'all\' task is processed.', ALL,
            arg => {
              var t = arg;
              // cli will pass tasks as --task1,task2 or -Xtask1,task2 or --task1:arg1,arg2
              if ( ! arg.includes(':') ) {
                t = arg.replaceAll(',', TASK_SEPERATOR);
              }
-             if ( TASKS === 'all' )
+             if ( TASKS == ALL )
                TASKS = '';
              TASKS = TASKS ? TASKS + TASK_SEPERATOR + t : t;
            } ],
@@ -511,17 +520,28 @@ OPTIONS = addOptions({
 
 // explicitly add journal to POM list, intented to be called
 // after pom() has setup the initial list
-function addJournal(name) {
-  let fn = name && `${PROJECT_HOME}/deployment/${name}/pom`;
-  if ( ! existsSync(fn + '.js') ) {
-    let fn2 = `${PROJECT_HOME}/foam3/deployment/${name}/pom`;
-    if ( ! existsSync(fn2 + '.js') ) {
-      error('POM not found ' + fn + '.js');
-      fn = null;
-    } else {
-      fn = fn2;
+function addJournal(name, where) {
+  let fn = null;
+
+  // Explicit source selection when provided
+  if ( where === 'foam3' ) {
+    fn = `${FOAM_DIR}/deployment/${name}/pom`;
+  } else if ( where === 'project' ) {
+    fn = `${PROJECT_HOME}/deployment/${name}/pom`;
+  } else {
+    // Default behaviour: prefer project, then fall back to foam3
+    fn = name && `${PROJECT_HOME}/deployment/${name}/pom`;
+    if ( ! existsSync(fn + '.js') ) {
+      let fn2 = `${FOAM_DIR}/deployment/${name}/pom`;
+      if ( ! existsSync(fn2 + '.js') ) {
+        error('POM not found ' + fn + '.js');
+        fn = null;
+      } else {
+        fn = fn2;
+      }
     }
   }
+
   if ( fn )
     POMS = comma(POMS, fn);
 }
@@ -613,22 +633,22 @@ function outputHelp(arg, msg) {
         }
         let desc = option.desc;
         log('(OPTION)', ''.padStart(0), opts+':', '\x1b[0;35m', def,'\x1b[0;0m', desc);
+
+        // if arg was 'opt' convert to name to output task and env help,
+        // as 'opt' only exists on option.
+        arg = option.name;
       }
-      if ( ! found ) {
-        let t = findTask(TOOLING_TASKS, arg); // first will do
-        if ( t ) {
-          found = true;
-          var m = arg;
-          if ( arg !== t.name ) m += ' '+t.name;
-          log('(TASK)', m, t.desc);
-        }
+      let t = findTask(TOOLING_TASKS, arg); // first will do
+      if ( t ) {
+        found = true;
+        var m = arg;
+        if ( arg !== t.name ) m += ' '+t.name;
+        log('(TASK)', m, t.desc);
       }
-      if ( ! found ) {
-        let e = ENVS[arg];
-        if ( e ) {
-          found = true;
-          log('(ENV)', arg,': ',e[0]);
-        }
+      let e = ENVS[arg];
+      if ( e ) {
+        found = true;
+        log('(ENV)', arg,': ',e[0]);
       }
     }
   }
@@ -697,6 +717,15 @@ task('tooling', 'Prepare build environment', [], function tooling() {
     } else {
       // TODO: look in other directories
       // **/tools/
+    }
+    // Last option: look under PROJECT_HOME/tools for shared project-level tooling
+    if ( ! found ) {
+      let fn3 = join(PROJECT_HOME, `tools/${name}Tooling`);
+      fn = fn3;
+      if ( existsSync(fn + '.js') ) {
+        tps = comma(tps, fn);
+        found = true;
+      }
     }
     if ( ! found ) {
       error(`[build] tooling ${name} not found in ${fn1} or ${fn2}`);

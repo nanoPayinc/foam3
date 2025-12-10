@@ -6,18 +6,185 @@
 
 /**
  * Dashboard Sink Classes for FLOW Integration
- * 
+ *
  * These sinks follow the same pattern as foam.u2.mlang.Pie - they extend
  * GroupBy/GridBy and render charts using expression properties and toE/addToE methods.
  */
 
 foam.CLASS({
   package: 'foam.core.reflow.dashboard',
+  name: 'TimeSeriesGapFillingSinkMixin',
+
+  documentation: 'Mixin for sinks that provides time series period range display functionality',
+
+  properties: [
+    {
+      class: 'Int',
+      name: 'periodCount',
+      value: 0,
+      help: 'Number of periods to display from today backwards (e.g., 12 for last 12 months). Set to 0 to show only existing data.'
+    }
+  ],
+
+  methods: [
+    function fillTimeGapKeys(existingKeys, groups, periods, prop) {
+      // Detect time granularity from the property expression
+      var granularity = null;
+
+      // Check if prop is a date transformation expression
+      if ( prop && prop.delegate && foam.lang.Date.isInstance(prop.delegate) ) {
+        if ( foam.mlang.expr.DateToWeekExpr.isInstance(prop) ) {
+          granularity = 'week';
+        } else if ( foam.mlang.expr.DateToQuarterExpr.isInstance(prop) ) {
+          granularity = 'quarter';
+        } else if ( foam.mlang.expr.DateToDayOfYearExpr.isInstance(prop) ) {
+          granularity = 'day';
+        } else if ( foam.mlang.expr.DateToYYYYMMExpr.isInstance(prop) ) {
+          granularity = 'month';
+        } else if ( foam.mlang.expr.DateToYYYYExpr.isInstance(prop) ) {
+          granularity = 'year';
+        } else if ( foam.mlang.expr.DateToYYYYMMDDExpr.isInstance(prop) ) {
+          granularity = 'date';
+        }
+      }
+
+      if ( ! granularity ) return existingKeys; // Not a supported time expression
+
+      // Calculate range based on periods (e.g., last 12 months from today)
+      var now = new Date();
+      var minDate = new Date(now);
+      var maxDate = new Date(now);
+
+      // Calculate start date based on granularity and periods
+      // Subtract (periods - 1) to get the correct range including current period
+      // Example: periods=12 for months means current month + 11 previous = 12 total
+      if ( granularity === 'week' ) {
+        minDate.setDate(minDate.getDate() - ((periods - 1) * 7));
+      } else if ( granularity === 'quarter' ) {
+        minDate.setMonth(minDate.getMonth() - ((periods - 1) * 3));
+      } else if ( granularity === 'month' ) {
+        minDate.setMonth(minDate.getMonth() - (periods - 1));
+      } else if ( granularity === 'year' ) {
+        minDate.setFullYear(minDate.getFullYear() - (periods - 1));
+      } else if ( granularity === 'date' || granularity === 'day' ) {
+        minDate.setDate(minDate.getDate() - (periods - 1));
+      }
+
+      // Generate keys using the property expression
+      var minKey = prop.f({ [prop.delegate.name]: minDate });
+      var maxKey = prop.f({ [prop.delegate.name]: maxDate });
+
+      // Generate all keys between min and max based on granularity
+      var allKeys = [];
+
+      if ( granularity === 'week' ) {
+        // Format: YYYY-W##
+        var match = minKey.match(/^(\d{4})-W(\d{2})$/);
+        var minYear = parseInt(match[1]);
+        var minWeek = parseInt(match[2]);
+        match = maxKey.match(/^(\d{4})-W(\d{2})$/);
+        var maxYear = parseInt(match[1]);
+        var maxWeek = parseInt(match[2]);
+
+        for ( var y = minYear; y <= maxYear; y++ ) {
+          var startWeek = (y === minYear) ? minWeek : 1;
+          var endWeek = (y === maxYear) ? maxWeek : 52;
+          for ( var w = startWeek; w <= endWeek; w++ ) {
+            allKeys.push(y + '-W' + String(w).padStart(2, '0'));
+          }
+        }
+      } else if ( granularity === 'quarter' ) {
+        // Format: YYYY-Q#
+        var match = minKey.match(/^(\d{4})-Q(\d)$/);
+        var minYear = parseInt(match[1]);
+        var minQ = parseInt(match[2]);
+        match = maxKey.match(/^(\d{4})-Q(\d)$/);
+        var maxYear = parseInt(match[1]);
+        var maxQ = parseInt(match[2]);
+
+        for ( var y = minYear; y <= maxYear; y++ ) {
+          var startQ = (y === minYear) ? minQ : 1;
+          var endQ = (y === maxYear) ? maxQ : 4;
+          for ( var q = startQ; q <= endQ; q++ ) {
+            allKeys.push(y + '-Q' + q);
+          }
+        }
+      } else if ( granularity === 'month' ) {
+        // Format: YYYY/MM
+        var parts = minKey.split('/');
+        var minYear = parseInt(parts[0]);
+        var minMonth = parseInt(parts[1]);
+        parts = maxKey.split('/');
+        var maxYear = parseInt(parts[0]);
+        var maxMonth = parseInt(parts[1]);
+
+        for ( var y = minYear; y <= maxYear; y++ ) {
+          var startM = (y === minYear) ? minMonth : 1;
+          var endM = (y === maxYear) ? maxMonth : 12;
+          for ( var m = startM; m <= endM; m++ ) {
+            allKeys.push(y + '/' + String(m).padStart(2, '0'));
+          }
+        }
+      } else if ( granularity === 'year' ) {
+        // Format: YYYY
+        var minYear = parseInt(minKey);
+        var maxYear = parseInt(maxKey);
+        for ( var y = minYear; y <= maxYear; y++ ) {
+          allKeys.push(String(y));
+        }
+      } else if ( granularity === 'date' || granularity === 'day' ) {
+        // Format: YYYY/MM/DD or YYYY-###
+        if ( granularity === 'day' ) {
+          // Day of year: YYYY-###
+          var match = minKey.match(/^(\d{4})-(\d{3})$/);
+          var minYear = parseInt(match[1]);
+          var minDay = parseInt(match[2]);
+          match = maxKey.match(/^(\d{4})-(\d{3})$/);
+          var maxYear = parseInt(match[1]);
+          var maxDay = parseInt(match[2]);
+
+          for ( var y = minYear; y <= maxYear; y++ ) {
+            var daysInYear = (y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0)) ? 366 : 365;
+            var startD = (y === minYear) ? minDay : 1;
+            var endD = (y === maxYear) ? maxDay : daysInYear;
+            for ( var d = startD; d <= endD; d++ ) {
+              allKeys.push(y + '-' + String(d).padStart(3, '0'));
+            }
+          }
+        } else {
+          // Full date: YYYY/MM/DD
+          var parts = minKey.split('/');
+          var minDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+          parts = maxKey.split('/');
+          var maxDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+
+          var currentDate = new Date(minDate);
+          while ( currentDate <= maxDate ) {
+            var y = currentDate.getFullYear();
+            var m = String(currentDate.getMonth() + 1).padStart(2, '0');
+            var d = String(currentDate.getDate()).padStart(2, '0');
+            allKeys.push(y + '/' + m + '/' + d);
+            currentDate.setDate(currentDate.getDate() + 1);
+          }
+        }
+      }
+
+      return allKeys;
+    }
+  ]
+});
+
+foam.CLASS({
+  package: 'foam.core.reflow.dashboard',
   name: 'DashboardBarSink',
   extends: 'foam.mlang.sink.TopNGroupBy',
+  mixins: [
+    'foam.core.reflow.dashboard.TimeSeriesGapFillingSinkMixin'
+  ],
   
   requires: [
-    'org.chartjs.Bar2'
+    'org.chartjs.Bar2',
+    'foam.u2.layout.ContainerWidth'
   ],
   
   properties: [
@@ -30,12 +197,12 @@ foam.CLASS({
     // Chart-specific properties
     {
       class: 'StringArray',
-      name: 'colors',   
+      name: 'colors',
     },
-    { 
+    {
       class: 'Enum',
-      of: 'foam.core.reflow.dashboard.TimeUnit', 
-      name: 'timeUnit' 
+      of: 'foam.core.reflow.dashboard.TimeUnit',
+      name: 'timeUnit'
     },
     { class: 'Boolean', name: 'horizontal', value: false },
     { class: 'Int', name: 'barThickness' },
@@ -43,49 +210,70 @@ foam.CLASS({
     { class: 'String', name: 'xAxisLabel' },
     { class: 'String', name: 'yAxisLabel' },
     { class: 'Boolean', name: 'showGridLines', value: true },
+    // periodCount inherited from TimeSeriesGapFillingSinkMixin
     // Display properties
     { class: 'Boolean', name: 'responsive', value: true },
     { class: 'Boolean', name: 'maintainAspectRatio', value: false },
     { class: 'Int', name: 'height', value: 300 },
-    { 
-      class: 'Int',
-      name: 'width', 
-      value: 400
-    },
+    { class: 'Int', name: 'width', value: 400 },
     { class: 'Boolean', name: 'showLegend', value: false },  // Bar charts typically don't need legend for single dataset
     { class: 'String', name: 'legendPosition', value: 'TOP' },
     { class: 'Boolean', name: 'showTooltips', value: true },
     { class: 'Boolean', name: 'showTooltipSum', value: false, help: 'Show sum total in tooltip footer' },
     { class: 'Boolean', name: 'animate', value: true },
     { class: 'Int', name: 'animationDuration', value: 1000 },
+    { class: 'Enum', of: 'foam.core.reflow.dashboard.MetricAlignment', name: 'alignment', value: 'CENTER' },
     {
       name: 'chart_',
       transient: true,
-      expression: function(groups, colors, timeUnit, horizontal, barThickness, datasetLabel, xAxisLabel, yAxisLabel, 
-                          showGridLines, responsive, maintainAspectRatio, showLegend, 
-                          legendPosition, showTooltips, showTooltipSum, animate, animationDuration) {
-        
+      expression: function(groups, colors, timeUnit, horizontal, barThickness, datasetLabel, xAxisLabel, yAxisLabel,
+                          showGridLines, responsive, maintainAspectRatio, showLegend,
+                          legendPosition, showTooltips, showTooltipSum, animate, animationDuration, periodCount, width) {
+        // Don't create chart until we have a valid width
+        if ( ! width || width <= 0 ) {
+          return null;
+        }
+
         var labels = [];
         var data = [];
         var backgroundColors = [];
-        
-        // Check if we're dealing with dates using the groupBy property
-        var isDateAxis = this.arg1 && (foam.lang.Date.isInstance(this.arg1) || foam.lang.DateTime.isInstance(this.arg1));
-        
+
+        // Check if we're dealing with dates - either the arg1 itself is a date property,
+        // or it's a date transformation expression with a date delegate
+        var isDateAxis = false;
+        if ( this.arg1 ) {
+          // Check if arg1 is directly a Date/DateTime property
+          if ( foam.lang.Date.isInstance(this.arg1) || foam.lang.DateTime.isInstance(this.arg1) ) {
+            isDateAxis = true;
+          }
+          // Check if arg1 is a date transformation expression (has a date delegate)
+          else if ( this.arg1.delegate && (foam.lang.Date.isInstance(this.arg1.delegate) || foam.lang.DateTime.isInstance(this.arg1.delegate)) ) {
+            isDateAxis = true;
+          }
+        }
+
         // If topN > 0, use groupKeys to preserve backend order (JavaScript reorders numeric keys)
         // Otherwise, use sortedKeys() for proper sorting
-        var sortedKeys = this.topN > 0 ? (this.groupKeys || Object.keys(groups)) : 
+        var sortedKeys = this.topN > 0 ? (this.groupKeys || Object.keys(groups)) :
                         (this.sortedKeys ? this.sortedKeys() : Object.keys(groups));
-        
+
+        // Apply period range if enabled (periodCount > 0) and this is a date/time axis
+        if ( periodCount > 0 && isDateAxis ) {
+          sortedKeys = this.fillTimeGapKeys(sortedKeys, groups, periodCount, this.arg1);
+        }
+
         var index = 0;
         for ( var i = 0; i < sortedKeys.length; i++ ) {
           var key = sortedKeys[i];
           // Use chartJsFormatter if available, otherwise use the key as-is
-          var label = this.arg1 && this.arg1.chartJsFormatter ? 
+          var label = this.arg1 && this.arg1.chartJsFormatter ?
                       this.arg1.chartJsFormatter(key) : key;
           labels.push(label);
-          data.push(groups[key].value);
-          
+
+          // Use value from groups if exists, otherwise use 0 for filled gaps
+          var value = groups[key] ? groups[key].value : 0;
+          data.push(value);
+
           // Only handle colors if they are defined
           if ( colors && colors.length > 0 ) {
             var color = colors[index % colors.length];
@@ -169,20 +357,23 @@ foam.CLASS({
           }
         };
         
-        // Configure time scale if dealing with date/time properties
-        // Use the isDateAxis flag we set earlier when detecting date keys
-        if ( isDateAxis ) {
+        // Configure time scale if dealing with RAW date/time properties (not transformed)
+        // Only use Chart.js time scale for raw Date/DateTime properties, not for date transformation expressions
+        // Date transformation expressions already format the dates as strings (e.g., "2024/10")
+        var isRawDateProperty = this.arg1 && (foam.lang.Date.isInstance(this.arg1) || foam.lang.DateTime.isInstance(this.arg1));
+
+        if ( isRawDateProperty ) {
           chartJSOptions.scales.x.type = 'time';
           chartJSOptions.scales.x.time = {
             unit: timeUnit.chartJsUnit || 'day',
             displayFormats: {}
           };
-          
+
           // Set display format for the selected time unit
           if ( timeUnit.displayFormat ) {
             chartJSOptions.scales.x.time.displayFormats[timeUnit.chartJsUnit || 'day'] = timeUnit.displayFormat;
           }
-          
+
           // Configure tooltip format
           if ( timeUnit.tooltipFormat ) {
             chartJSOptions.scales.x.time.tooltipFormat = timeUnit.tooltipFormat;
@@ -192,8 +383,8 @@ foam.CLASS({
         var barChart = this.Bar2.create({
           data: chartData,
           chartJSOptions: chartJSOptions,
-          width: this.width,
-          height: this.height
+          width$: this.width$,
+          height$: this.height$
         });
         
         
@@ -201,13 +392,51 @@ foam.CLASS({
       }
     }
   ],
-  
+
   methods: [
-    function toE(_, x) { 
+    function toE(_, x) {
       return x.E().add(this.chart_$);
     },
-    function addToE(e) { 
-      e.style({ 'min-height': this.height$, height: this.height$ }).add(this.chart_$);
+    function addToE(e) {
+      var self = this;
+
+      e
+        .style({
+          width: '100%',
+          display: 'flex',
+          justifyContent: this.alignment$.map(function(a) { return a.alignmentStyle; }),
+          textAlign: this.alignment$.map(function(a) { return a.textAlign; })
+        })
+        .start('div')
+          .style({ 'min-height': this.height$, height: this.height$ })
+          .add(this.chart_$)
+        .end();
+
+      // ContainerWidth uses ResizeObserver for efficient size tracking
+      var cw = this.ContainerWidth.create();
+      cw.initContainer(e);
+
+      // Use mapFrom to filter width updates - only update when inlineSize > 0
+      // This prevents chart_ expression recalculation with zero/invalid widths
+      self.onDetach(self.width$.mapFrom(cw.inlineSize$, function(inlineSize) {
+        return inlineSize > 0 ? inlineSize : self.width;
+      }));
+    }
+  ],
+
+  listeners: [
+    {
+      name: 'onWidthChange',
+      isMerged: 150,
+      on: ['this.propertyChange.width'],
+      code: function() {
+        // Handles width changes by recreating the chart entirely
+        // isMerged debounces rapid changes (e.g., window resize, panel resize)
+        if ( this.width > 0 ) {
+          // Clear the chart_ expression to force recalculation with new width
+          this.clearProperty('chart_');
+        }
+      }
     }
   ]
 });
@@ -218,7 +447,8 @@ foam.CLASS({
   extends: 'foam.mlang.sink.TopNGroupBy',
   
   requires: [
-    'org.chartjs.Pie2'
+    'org.chartjs.Pie2',
+    'foam.u2.layout.ContainerWidth'
   ],
   
   properties: [
@@ -242,34 +472,32 @@ foam.CLASS({
     { class: 'Boolean', name: 'responsive', value: true },
     { class: 'Boolean', name: 'maintainAspectRatio', value: false },
     { class: 'Int', name: 'height', value: 300 },
-    { 
-      class: 'Int',
-      name: 'width', 
-      factory: function() { 
-        // Default to 0 which means auto-width (100% of container)
-        // But when rendered in a canvas, we need a real width
-        return 400; 
-      }
-    },    
+    { class: 'Int', name: 'width', value: 400 },
     { class: 'Boolean', name: 'showLegend', value: true },
     { class: 'String', name: 'legendPosition', value: 'TOP' },
     { class: 'Boolean', name: 'showTooltips', value: true },
     { class: 'Boolean', name: 'showTooltipSum', value: false, help: 'Show sum total in tooltip footer' },
     { class: 'Boolean', name: 'animate', value: true },
     { class: 'Int', name: 'animationDuration', value: 1000 },
+    { class: 'Enum', of: 'foam.core.reflow.dashboard.MetricAlignment', name: 'alignment', value: 'CENTER' },
     {
       name: 'chart_',
       transient: true,
       expression: function(groups,groupKeys, colors, showPercentages, cutoutPercentage, clockwise, rotation,
-                          responsive, maintainAspectRatio, showLegend, 
-                          legendPosition, showTooltips, showTooltipSum, animate, animationDuration) {
+                          responsive, maintainAspectRatio, showLegend,
+                          legendPosition, showTooltips, showTooltipSum, animate, animationDuration, width) {
+        // Don't create chart until we have a valid width
+        if ( ! width || width <= 0 ) {
+          return null;
+        }
+
         var labels = [];
         var data = [];
         var backgroundColors = [];
-        
+
         // If topN > 0, use groupKeys to preserve backend order (JavaScript reorders numeric keys)
         // Otherwise, use sortedKeys() for proper sorting
-        var sortedKeys = this.topN > 0 ? (this.groupKeys || Object.keys(groups)) : 
+        var sortedKeys = this.topN > 0 ? (this.groupKeys || Object.keys(groups)) :
                         (this.sortedKeys ? this.sortedKeys() : Object.keys(groups));
         
         var index = 0;
@@ -389,19 +617,56 @@ foam.CLASS({
         return this.Pie2.create({
           data: chartData,
           chartJSOptions: options,
-          width: this.width,
-          height: this.height
+          width$: this.width$,
+          height$: this.height$
         });
       }
     }
   ],
   
   methods: [
-    function toE(_, x) { 
+    function toE(_, x) {
       return x.E().add(this.chart_$);
     },
-    function addToE(e) { 
-      e.style({ 'min-height': this.height$, height: this.height$ }).add(this.chart_$);
+    function addToE(e) {
+      var self = this;
+
+      e
+        .style({
+          width: '100%',
+          display: 'flex',
+          justifyContent: this.alignment$.map(function(a) { return a.alignmentStyle; }),
+          textAlign: this.alignment$.map(function(a) { return a.textAlign; })
+        })
+        .start('div')
+          .style({ 'min-height': this.height$, height: this.height$ })
+          .add(this.chart_$)
+        .end();
+
+      // ContainerWidth uses ResizeObserver for efficient size tracking
+      var cw = this.ContainerWidth.create();
+      cw.initContainer(e);
+
+      // Use mapFrom to filter width updates - only update when inlineSize > 0
+      self.onDetach(self.width$.mapFrom(cw.inlineSize$, function(inlineSize) {
+        return inlineSize > 0 ? inlineSize : self.width;
+      }));
+    }
+  ],
+
+  listeners: [
+    {
+      name: 'onWidthChange',
+      isMerged: 150,
+      on: ['this.propertyChange.width'],
+      code: function() {
+        // Handles width changes by recreating the chart entirely
+        // isMerged debounces rapid changes (e.g., window resize, panel resize)
+        if ( this.width > 0 ) {
+          // Clear the chart_ expression to force recalculation with new width
+          this.clearProperty('chart_');
+        }
+      }
     }
   ]
 });
@@ -411,9 +676,14 @@ foam.CLASS({
   package: 'foam.core.reflow.dashboard',
   name: 'DashboardStackedBarSink',
   extends: 'foam.core.reflow.GridBy',
-  
+
+  mixins: [
+    'foam.core.reflow.dashboard.TimeSeriesGapFillingSinkMixin'
+  ],
+
   requires: [
-    'org.chartjs.StackedBar2'
+    'org.chartjs.StackedBar2',
+    'foam.u2.layout.ContainerWidth'
   ],
   
   properties: [
@@ -422,10 +692,16 @@ foam.CLASS({
       class: 'StringArray',
       name: 'colors',
     },
-    { 
+    {
+      class: 'Code',
+      name: 'onClickScript',
+      label: 'On Click Script',
+      help: 'Function expression invoked when a stack segment is clicked. Signature: (yValue, xValue, stackValue, x, y, absX, absY) => void'
+    },
+    {
       class: 'Enum',
-      of: 'foam.core.reflow.dashboard.TimeUnit', 
-      name: 'timeUnit' 
+      of: 'foam.core.reflow.dashboard.TimeUnit',
+      name: 'timeUnit'
     },
     { class: 'Boolean', name: 'horizontal', value: false },
     { class: 'String', name: 'xAxisLabel' },
@@ -442,15 +718,22 @@ foam.CLASS({
     { class: 'Boolean', name: 'showTooltipSum', value: false, help: 'Show sum total in tooltip footer' },
     { class: 'Boolean', name: 'animate', value: true },
     { class: 'Int', name: 'animationDuration', value: 1000 },
+    { class: 'Enum', of: 'foam.core.reflow.dashboard.MetricAlignment', name: 'alignment', value: 'CENTER' },
     {
       name: 'chart_',
       transient: true,
       expression: function(cols, rows, colors, timeUnit, horizontal, xAxisLabel, yAxisLabel,
                           showGridLines, responsive, maintainAspectRatio,
-                          showLegend, legendPosition, showTooltips, showTooltipSum, animate, animationDuration) {
+                          showLegend, legendPosition, showTooltips, showTooltipSum, animate, animationDuration,
+                          periodCount, width) {
+        // Don't create chart until we have a valid width
+        if ( ! width || width <= 0 ) {
+          return null;
+        }
+
         var colGroups = cols && cols.groups ? cols.groups : {};
         var rowGroups = rows && rows.groups ? rows.groups : {};
-        
+
         var labels = [];
         var datasets = [];
         
@@ -463,8 +746,16 @@ foam.CLASS({
         var colGroups = cols && cols.groups ? cols.groups : {};
         var rowGroups = rows && rows.groups ? rows.groups : {};
         
-        // Check if we're dealing with dates on x-axis using the xFunc property
-        var isDateAxis = this.xFunc && (foam.lang.Date.isInstance(this.xFunc) || foam.lang.DateTime.isInstance(this.xFunc));
+        // Check if we're dealing with dates on x-axis - either xFunc is a date property,
+        // or it's a date transformation expression with a date delegate
+        var isDateAxis = false;
+        if ( this.xFunc ) {
+          if ( foam.lang.Date.isInstance(this.xFunc) || foam.lang.DateTime.isInstance(this.xFunc) ) {
+            isDateAxis = true;
+          } else if ( this.xFunc.delegate && (foam.lang.Date.isInstance(this.xFunc.delegate) || foam.lang.DateTime.isInstance(this.xFunc.delegate)) ) {
+            isDateAxis = true;
+          }
+        }
         
         // Get sorted column keys using FOAM's sorting
         var sortedColKeys = [];
@@ -473,7 +764,12 @@ foam.CLASS({
         } else {
           sortedColKeys = Object.keys(colGroups);
         }
-        
+
+        // Apply period range if enabled (periodCount > 0) and x-axis is a date
+        if ( periodCount > 0 && isDateAxis ) {
+          sortedColKeys = this.fillTimeGapKeys(sortedColKeys, colGroups, periodCount, this.xFunc);
+        }
+
         // Extract labels from sorted columns (x-axis categories)
         for ( var i = 0; i < sortedColKeys.length; i++ ) {
           var col = sortedColKeys[i];
@@ -592,6 +888,57 @@ foam.CLASS({
             }
           }
         };
+
+        // Attach click handler if provided
+        if ( this.onClickScript ) {
+          try {
+            // Evaluate to a function if the user provided a function expression
+            var __rf_clickHandler = (function(script) {
+              try {
+                return eval(script);
+              } catch (e) {
+                console.warn('Invalid onClickScript for DashboardStackedBarSink:', e);
+                return null;
+              }
+            })(this.onClickScript);
+
+            if ( typeof __rf_clickHandler === 'function' ) {
+              chartJSOptions.onClick = function(evt, activeEls, chart) {
+                try {
+                  // Prefer provided active elements, fallback to nearest
+                  var elements = activeEls && activeEls.length ? activeEls : chart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
+                  if ( ! elements || ! elements.length ) return;
+                  var el = elements[0];
+                  var di = el.datasetIndex;
+                  var i  = el.index;
+                  var datasets = chart.data && chart.data.datasets ? chart.data.datasets : [];
+                  var labels   = chart.data && chart.data.labels ? chart.data.labels : [];
+                  var yVal     = datasets[di] && datasets[di].data ? datasets[di].data[i] : undefined;
+                  if ( yVal && typeof yVal === 'object' && yVal !== null && 'y' in yVal ) yVal = yVal.y;
+                  var xVal     = labels[i];
+                  var stackVal = datasets[di] ? datasets[di].label : undefined;
+
+                  // Compute canvas-relative (x,y) and absolute page (absX, absY)
+                  var nativeEvt = evt && (evt.native || evt);
+                  var clientX = nativeEvt && nativeEvt.clientX;
+                  var clientY = nativeEvt && nativeEvt.clientY;
+                  var pageX   = nativeEvt && (nativeEvt.pageX !== undefined ? nativeEvt.pageX : (clientX != null ? clientX + window.scrollX : undefined));
+                  var pageY   = nativeEvt && (nativeEvt.pageY !== undefined ? nativeEvt.pageY : (clientY != null ? clientY + window.scrollY : undefined));
+                  var canvas  = chart && chart.canvas;
+                  var rect    = canvas && canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : null;
+                  var scaleX  = rect && rect.width  ? (canvas.width  / rect.width)  : 1;
+                  var scaleY  = rect && rect.height ? (canvas.height / rect.height) : 1;
+                  var x       = (clientX != null && rect) ? (clientX - rect.left) * scaleX : undefined;
+                  var y       = (clientY != null && rect) ? (clientY - rect.top)  * scaleY : undefined;
+
+                  __rf_clickHandler(yVal, xVal, stackVal, x, y, pageX, pageY);
+                } catch (e) {
+                  console.warn('Error executing onClickScript:', e);
+                }
+              };
+            }
+          } catch (_) { /* ignore */ }
+        }
         
         // Configure time scale if dealing with date/time properties
         // Check if xFunc is a date/time property
@@ -621,19 +968,56 @@ foam.CLASS({
             datasets: datasets
           },
           chartJSOptions: chartJSOptions,
-          width: this.width,
-          height: this.height
+          width$: this.width$,
+          height$: this.height$
         });
       }
     }
   ],
   
   methods: [
-    function toE(_, x) { 
+    function toE(_, x) {
       return x.E().add(this.chart_$);
     },
-    function addToE(e) { 
-      e.style({ 'min-height': this.height$, height: this.height$ }).add(this.chart_$);
+    function addToE(e) {
+      var self = this;
+
+      e
+        .style({
+          width: '100%',
+          display: 'flex',
+          justifyContent: this.alignment$.map(function(a) { return a.alignmentStyle; }),
+          textAlign: this.alignment$.map(function(a) { return a.textAlign; })
+        })
+        .start('div')
+          .style({ 'min-height': this.height$, height: this.height$ })
+          .add(this.chart_$)
+        .end();
+
+      // ContainerWidth uses ResizeObserver for efficient size tracking
+      var cw = this.ContainerWidth.create();
+      cw.initContainer(e);
+
+      // Use mapFrom to filter width updates - only update when inlineSize > 0
+      self.onDetach(self.width$.mapFrom(cw.inlineSize$, function(inlineSize) {
+        return inlineSize > 0 ? inlineSize : self.width;
+      }));
+    }
+  ],
+
+  listeners: [
+    {
+      name: 'onWidthChange',
+      isMerged: 150,
+      on: ['this.propertyChange.width'],
+      code: function() {
+        // Handles width changes by recreating the chart entirely
+        // isMerged debounces rapid changes (e.g., window resize, panel resize)
+        if ( this.width > 0 ) {
+          // Clear the chart_ expression to force recalculation with new width
+          this.clearProperty('chart_');
+        }
+      }
     }
   ]
 });
@@ -643,15 +1027,16 @@ foam.CLASS({
   name: 'LineChartMixin',
   
   requires: [
-    'org.chartjs.Line2'
+    'org.chartjs.Line2',
+    'foam.u2.layout.ContainerWidth'
   ],
   
   properties: [
     // Chart rendering properties
-    { 
+    {
       class: 'Enum',
-      of: 'foam.core.reflow.dashboard.TimeUnit', 
-      name: 'timeUnit' 
+      of: 'foam.core.reflow.dashboard.TimeUnit',
+      name: 'timeUnit'
     },
     { class: 'StringArray', name: 'colors' },
     { class: 'StringArray', name: 'borderColors', help: 'Border colors for line elements. If not specified, colors will be used.' },
@@ -673,9 +1058,10 @@ foam.CLASS({
     { class: 'Boolean', name: 'showTooltips', value: true },
     { class: 'Boolean', name: 'showTooltipSum', value: false, help: 'Show sum total in tooltip footer (for multiple lines)' },
     { class: 'Boolean', name: 'animate', value: true },
-    { class: 'Int', name: 'animationDuration', value: 1000 }
+    { class: 'Int', name: 'animationDuration', value: 1000 },
+    { class: 'Enum', of: 'foam.core.reflow.dashboard.MetricAlignment', name: 'alignment', value: 'CENTER' }
   ],
-  
+
   methods: [
     function createChartOptions(datasets, isTimeScale, xAxisLabel, yAxisLabel, showGridLines, 
                                responsive, maintainAspectRatio, showLegend, legendPosition,
@@ -745,13 +1131,50 @@ foam.CLASS({
       return this.Line2.create({
         data: { datasets: datasets },
         options: chartJSOptions,
-        width: this.width,
-        height: this.height
+        width$: this.width$,
+        height$: this.height$
       });
     },
     
-    function addToE(e) { 
-      e.style({ 'min-height': this.height$, height: this.height$ }).add(this.chart_$);
+    function addToE(e) {
+      var self = this;
+
+      e
+        .style({
+          width: '100%',
+          display: 'flex',
+          justifyContent: this.alignment$.map(function(a) { return a.alignmentStyle; }),
+          textAlign: this.alignment$.map(function(a) { return a.textAlign; })
+        })
+        .start('div')
+          .style({ 'min-height': this.height$, height: this.height$ })
+          .add(this.chart_$)
+        .end();
+
+      // ContainerWidth uses ResizeObserver for efficient size tracking
+      var cw = this.ContainerWidth.create();
+      cw.initContainer(e);
+
+      // Use mapFrom to filter width updates - only update when inlineSize > 0
+      self.onDetach(self.width$.mapFrom(cw.inlineSize$, function(inlineSize) {
+        return inlineSize > 0 ? inlineSize : self.width;
+      }));
+    }
+  ],
+
+  listeners: [
+    {
+      name: 'onWidthChange',
+      isMerged: 150,
+      on: ['this.propertyChange.width'],
+      code: function() {
+        // Handles width changes by recreating the chart entirely
+        // isMerged debounces rapid changes (e.g., window resize, panel resize)
+        if ( this.width > 0 ) {
+          // Clear the chart_ expression to force recalculation with new width
+          this.clearProperty('chart_');
+        }
+      }
     }
   ]
 });
@@ -760,7 +1183,10 @@ foam.CLASS({
   package: 'foam.core.reflow.dashboard',
   name: 'DashboardLineSink',
   extends: 'foam.mlang.sink.GroupBy',
-  mixins: ['foam.core.reflow.dashboard.LineChartMixin'],
+  mixins: [
+    'foam.core.reflow.dashboard.LineChartMixin',
+    'foam.core.reflow.dashboard.TimeSeriesGapFillingSinkMixin'
+  ],
   
   properties: [
     // Map GroupBy properties directly
@@ -780,12 +1206,33 @@ foam.CLASS({
     expression: function(groups, arg1, arg2, timeUnit, colors, borderColors, xAxisLabel, yAxisLabel,
                         fill, tension, stepped, showPoints, pointRadius, showGridLines,
                         responsive, maintainAspectRatio, showLegend, legendPosition,
-                        showTooltips, showTooltipSum, animate, animationDuration) {
+                        showTooltips, showTooltipSum, animate, animationDuration,
+                        periodCount, width) {
 
       if ( !arg1 || !arg2 ) return null;
 
+      // Don't create chart until we have a valid width
+      if ( ! width || width <= 0 ) {
+        return null;
+      }
+
       var data = [];
       var sortedKeys = this.sortedKeys ? this.sortedKeys() : Object.keys(groups);
+
+      // Check if arg1 is a date property for period range display
+      var isDateAxis = false;
+      if ( arg1 ) {
+        if ( foam.lang.Date.isInstance(arg1) || foam.lang.DateTime.isInstance(arg1) ) {
+          isDateAxis = true;
+        } else if ( arg1.delegate && (foam.lang.Date.isInstance(arg1.delegate) || foam.lang.DateTime.isInstance(arg1.delegate)) ) {
+          isDateAxis = true;
+        }
+      }
+
+      // Apply period range if enabled (periodCount > 0) and x-axis is a date
+      if ( periodCount > 0 && isDateAxis ) {
+        sortedKeys = this.fillTimeGapKeys(sortedKeys, groups, periodCount, arg1);
+      }
 
       // Process GroupBy results to Chart.js format
       for ( var i = 0; i < sortedKeys.length; i++ ) {
@@ -846,11 +1293,48 @@ foam.CLASS({
   ],
   
   methods: [
-    function toE(_, x) { 
+    function toE(_, x) {
       return x.E().add(this.chart_$);
     },
-    function addToE(e) { 
-      e.style({ 'min-height': this.height$, height: this.height$ }).add(this.chart_$);
+    function addToE(e) {
+      var self = this;
+
+      e
+        .style({
+          width: '100%',
+          display: 'flex',
+          justifyContent: this.alignment$.map(function(a) { return a.alignmentStyle; }),
+          textAlign: this.alignment$.map(function(a) { return a.textAlign; })
+        })
+        .start('div')
+          .style({ 'min-height': this.height$, height: this.height$ })
+          .add(this.chart_$)
+        .end();
+
+      // ContainerWidth uses ResizeObserver for efficient size tracking
+      var cw = this.ContainerWidth.create();
+      cw.initContainer(e);
+
+      // Use mapFrom to filter width updates - only update when inlineSize > 0
+      self.onDetach(self.width$.mapFrom(cw.inlineSize$, function(inlineSize) {
+        return inlineSize > 0 ? inlineSize : self.width;
+      }));
+    }
+  ],
+
+  listeners: [
+    {
+      name: 'onWidthChange',
+      isMerged: 150,
+      on: ['this.propertyChange.width'],
+      code: function() {
+        // Handles width changes by recreating the chart entirely
+        // isMerged debounces rapid changes (e.g., window resize, panel resize)
+        if ( this.width > 0 ) {
+          // Clear the chart_ expression to force recalculation with new width
+          this.clearProperty('chart_');
+        }
+      }
     }
   ]
 });
@@ -859,7 +1343,10 @@ foam.CLASS({
   package: 'foam.core.reflow.dashboard',
   name: 'DashboardMultiLineSink',
   extends: 'foam.core.reflow.GridBy',
-  mixins: ['foam.core.reflow.dashboard.LineChartMixin'],
+  mixins: [
+    'foam.core.reflow.dashboard.LineChartMixin',
+    'foam.core.reflow.dashboard.TimeSeriesGapFillingSinkMixin'
+  ],
   
   properties: [
     // Map GridBy properties directly  
@@ -884,9 +1371,15 @@ foam.CLASS({
     expression: function(cols, rows, xFunc, yFunc, acc, timeUnit, colors, borderColors, xAxisLabel, yAxisLabel,
                         fill, tension, stepped, showPoints, pointRadius, showGridLines,
                         responsive, maintainAspectRatio, showLegend, legendPosition,
-                        showTooltips, showTooltipSum, animate, animationDuration) {
+                        showTooltips, showTooltipSum, animate, animationDuration,
+                        periodCount, width) {
 
       if ( !xFunc || !yFunc || !acc ) return null;
+
+      // Don't create chart until we have a valid width
+      if ( ! width || width <= 0 ) {
+        return null;
+      }
 
       var datasets = [];
       var colorIndex = 0;
@@ -896,6 +1389,21 @@ foam.CLASS({
 
       var sortedColKeys = cols && cols.sortedKeys ? cols.sortedKeys() : Object.keys(colGroups);
       var sortedRowKeys = rows && rows.sortedKeys ? rows.sortedKeys() : Object.keys(rowGroups);
+
+      // Check if xFunc is a date property for period range display
+      var isDateAxis = false;
+      if ( xFunc ) {
+        if ( foam.lang.Date.isInstance(xFunc) || foam.lang.DateTime.isInstance(xFunc) ) {
+          isDateAxis = true;
+        } else if ( xFunc.delegate && (foam.lang.Date.isInstance(xFunc.delegate) || foam.lang.DateTime.isInstance(xFunc.delegate)) ) {
+          isDateAxis = true;
+        }
+      }
+
+      // Apply period range if enabled (periodCount > 0) and x-axis is a date
+      if ( periodCount > 0 && isDateAxis ) {
+        sortedColKeys = this.fillTimeGapKeys(sortedColKeys, colGroups, periodCount, xFunc);
+      }
 
       // Create a dataset for each line (row group)
       for ( var j = 0; j < sortedRowKeys.length; j++ ) {
@@ -966,11 +1474,48 @@ foam.CLASS({
   ],
   
   methods: [
-    function toE(_, x) { 
+    function toE(_, x) {
       return x.E().add(this.chart_$);
     },
-    function addToE(e) { 
-      e.style({ 'min-height': this.height$, height: this.height$ }).add(this.chart_$);
+    function addToE(e) {
+      var self = this;
+
+      e
+        .style({
+          width: '100%',
+          display: 'flex',
+          justifyContent: this.alignment$.map(function(a) { return a.alignmentStyle; }),
+          textAlign: this.alignment$.map(function(a) { return a.textAlign; })
+        })
+        .start('div')
+          .style({ 'min-height': this.height$, height: this.height$ })
+          .add(this.chart_$)
+        .end();
+
+      // ContainerWidth uses ResizeObserver for efficient size tracking
+      var cw = this.ContainerWidth.create();
+      cw.initContainer(e);
+
+      // Use mapFrom to filter width updates - only update when inlineSize > 0
+      self.onDetach(self.width$.mapFrom(cw.inlineSize$, function(inlineSize) {
+        return inlineSize > 0 ? inlineSize : self.width;
+      }));
+    }
+  ],
+
+  listeners: [
+    {
+      name: 'onWidthChange',
+      isMerged: 150,
+      on: ['this.propertyChange.width'],
+      code: function() {
+        // Handles width changes by recreating the chart entirely
+        // isMerged debounces rapid changes (e.g., window resize, panel resize)
+        if ( this.width > 0 ) {
+          // Clear the chart_ expression to force recalculation with new width
+          this.clearProperty('chart_');
+        }
+      }
     }
   ]
 });
@@ -979,120 +1524,231 @@ foam.CLASS({
   package: 'foam.core.reflow.dashboard',
   name: 'DashboardMetricSink',
   extends: 'foam.dao.AbstractSink',
-  implements: [
-    'foam.lang.Serializable'
-  ],
+  implements: ['foam.lang.Serializable'],
   
-  requires: [
-    'foam.u2.tag.Image'
-  ],
-
+  requires: ['foam.u2.tag.Image'],
 
   imports: [
-    'theme'
+    'theme',
+    'scope?'
   ],
-  
+
+  exports: ['lastEncounteredObj_ as objData'],
+
+  sections: [
+    {
+      name: 'metricConfig',
+      title: 'Metric Configuration',
+      order: 0,
+      collapsable: true,
+      properties: ['operation', 'prop', 'label', 'prefix', 'postfix', 'decimalPlaces', 'convertToLocalString']
+    },
+    {
+      name: 'countConfig',
+      title: 'Count Configuration',
+      order: 1,
+      collapsable: true,
+      properties: ['showCount', 'countOnClick', 'countSuffix', 'countColor', 'countFontSize', 'countFontWeight']
+    },
+    {
+      name: 'display',
+      title: 'Display Options',
+      order: 2,
+      collapsable: true,
+      properties: ['icon', 'iconColor', 'iconSize', 'alignment', 'valueColor', 'valueFontSize']
+    },
+    {
+      name: 'labelFont',
+      title: 'Label Font Options',
+      order: 3,
+      collapsable: true,
+      properties: ['labelFontSize', 'labelFontWeight', 'labelColor']
+    }
+  ],
+
   properties: [
-    { name: 'operation' },
-    { name: 'prop' },
+    { 
+      class: 'Enum',
+      of: 'foam.core.reflow.dashboard.MetricOperation',
+      name: 'operation',
+      value: 'COUNT'
+    },
+    { 
+      class: 'FObjectProperty',
+      of: 'foam.lang.Property',
+      generateJava: false,
+      name: 'prop',
+      label: 'Property',
+      view: function(_, X) {
+        return { 
+          class: 'foam.core.reflow.PropertyChoiceView', 
+          forCls: X.dao ? X.dao.of : X.of
+        };
+      },
+      visibility: function(operation) {
+        // FOAM makes this reactive automatically when operation changes
+        return operation && operation.name !== 'COUNT' ? 
+          foam.u2.DisplayMode.RW : 
+          foam.u2.DisplayMode.HIDDEN;
+      }
+    },
     {
       class: 'foam.mlang.SinkProperty',
       name: 'sink',
-      javaFactory: 'return foam.mlang.MLang.COUNT();',
-      factory: function() { return foam.mlang.sink.Count.create(); }
+      externalTransient: true,
+      hidden: true,
+      factory: function() { return this.operation.createSink(this.prop); },
+      javaFactory: 'return foam.mlang.MLang.COUNT();'
     },
     {
       class: 'foam.mlang.SinkProperty',
       name: 'countSink',
+      externalTransient: true,
+      hidden: true,
       javaFactory: 'return foam.mlang.MLang.COUNT();',
       factory: function() { return foam.mlang.sink.Count.create(); }
     },
-    { name: 'label', value: 'Metric' },
-    { name: 'icon' },
     {
-      class: 'Color',
-      name: 'iconColor',
-      label: 'Icon Color',
-      help: 'Color for the icon (CSS color or token)',
-      value: '$primary500',
-      // TODO: Hidden for now as CSS override for SVG fill is not working properly
-      // Need to fix the implementation to properly apply color to icons
-      hidden: true
+      class: 'String',
+      name: 'label',
+      label: 'Display Label',
+      expression: function(sink) {
+        return this.sink?.label ?? 'Metric';
+      }
     },
-    { name: 'alignment' },
-    { name: 'showCount', value: true },
-    { name: 'countSuffix', value: 'records' },
     {
-      class: 'Color',
-      name: 'valueColor',
-      label: 'Value Color',
-      help: 'Color for the metric value',
+      class: 'String',
+      name: 'icon',
+      help: 'Theme icon name to display above the metric value (e.g., "chart", "users", "dollar")'
+    },
+    {
+      class: 'String',
+      name: 'iconColor',
+      help: 'Color for the icon (CSS color or token)',
+      view: 'foam.u2.view.ColorEditView',
       value: '$primary500'
     },
-    { name: 'prefix' },
-    { name: 'postfix' },
-    { name: 'iconSize', value: '2rem' },
-    { name: 'decimalPlaces', value: 0 },
+    {
+      class: 'Enum',
+      name: 'alignment',
+      of: 'foam.core.reflow.dashboard.MetricAlignment',
+      value: 'CENTER'
+    },
+    { class: 'Boolean', name: 'showCount', value: true },
+    {
+      class: 'String',
+      name: 'countSuffix',
+      value: 'records',
+      help: 'Text to display after the count number',
+      visibility: function(showCount) {
+        return showCount ? foam.u2.DisplayMode.RW : foam.u2.DisplayMode.HIDDEN;
+      }
+    },
+    {
+      class: 'String',
+      name: 'valueColor',
+      help: 'Color for the metric value',
+      view: 'foam.u2.view.ColorEditView',
+      value: '$primary500'
+    },
+    {
+      class: 'String',
+      name: 'valueFontSize',
+      help: 'Font size for the metric value (e.g., "3rem", "24px")',
+      value: '3rem'
+    },
+    {
+      class: 'String',
+      name: 'prefix',
+      help: 'Text to display before value (e.g., $, €, #)'
+    },
+    {
+      class: 'String',
+      name: 'postfix',
+      help: 'Text to display after value (e.g., %, ms, USD)'
+    },
+    {
+      class: 'String',
+      name: 'iconSize',
+      help: 'Size of the icon (CSS size value like "2rem", "24px")',
+      value: '2rem'
+    },
+    { class:'Int', name: 'decimalPlaces', min: 0 },
+    { class: 'Boolean',
+      name: 'convertToLocalString',
+      value: true,
+      visibility: function(decimalPlaces) {
+        return decimalPlaces === 0 ? 'RW' : 'HIDDEN'; 
+      } 
+    },
     // Label font controls
     {
       class: 'String',
       name: 'labelFontSize',
-      label: 'Label Font Size',
       help: 'Font size for the display label (e.g., "1rem", "14px")',
       value: '0.875rem'
     },
     {
       class: 'String',
       name: 'labelFontWeight',
-      label: 'Label Font Weight',
       help: 'Font weight for the display label (e.g., "normal", "bold", "500")',
       value: 'medium'
     },
     {
-      class: 'Color',
+      class: 'String',
       name: 'labelColor',
-      label: 'Label Color',
       help: 'Color for the display label (CSS color or token)',
+      view: 'foam.u2.view.ColorEditView',
       value: '$textSecondary'
     },
     // Count font controls
     {
       class: 'String',
       name: 'countFontSize',
-      label: 'Count Font Size',
       help: 'Font size for the count text (e.g., "0.75rem", "12px")',
       value: '0.75rem'
     },
     {
       class: 'String',
       name: 'countFontWeight',
-      label: 'Count Font Weight',
       help: 'Font weight for the count text (e.g., "normal", "bold")',
       value: 'normal'
     },
     {
-      class: 'Color',
+      class: 'String',
+      name: 'countOnClick',
+      label: 'OnClick Script',
+      reactive: true,
+      visibility: function(showCount) {
+        return showCount ? foam.u2.DisplayMode.RW : foam.u2.DisplayMode.HIDDEN;
+      },
+      help: 'Script to execute when the count is clicked'
+    },
+    {
+      class: 'String',
       name: 'countColor',
-      label: 'Count Color',
       help: 'Color for the count text (CSS color or token)',
+      view: 'foam.u2.view.ColorEditView',
       value: '$textSecondary'
     },
     {
       name: 'metric_',
-      expression: function(sink, countSink, label, icon, iconColor, alignment, showCount, countSuffix, valueColor, prefix, postfix, iconSize, decimalPlaces, labelFontSize, labelFontWeight, labelColor, countFontSize, countFontWeight, countColor) {
+      hidden: true,
+      transient: true,
+      expression: function(sink, countSink, showCount, countOnClick, decimalPlaces, convertToLocalString, postfix, prefix) {
         var value = this.getComputedValue();
         var count = countSink ? countSink.value : null;
         
         // Format value with decimal places
         if ( typeof value === 'number' ) {
           value = value.toFixed(decimalPlaces);
-          if ( decimalPlaces === 0 ) {
-            value = parseInt(value).toLocaleString();
-          } else {
+          if ( decimalPlaces !== 0 ) {
             value = parseFloat(value).toLocaleString(undefined, {
               minimumFractionDigits: decimalPlaces,
               maximumFractionDigits: decimalPlaces
             });
+          } else if ( convertToLocalString ) {
+            value = parseInt(value).toLocaleString();
           }
         }
         
@@ -1106,51 +1762,35 @@ foam.CLASS({
                   value + postfix : value + ' ' + postfix;
         }
         
-        var displayLabel = label || 
-                          (this.sink && this.sink.label ? this.sink.label : 'Metric');
-        
         return {
-          label: displayLabel,
           value: value,
-          count: count,
-          icon: icon,
-          iconColor: iconColor,
-          alignment: alignment,
-          showCount: showCount,
-          countSuffix: countSuffix,
-          valueColor: valueColor,
-          iconSize: iconSize,
-          labelFontSize: labelFontSize,
-          labelFontWeight: labelFontWeight,
-          labelColor: labelColor,
-          countFontSize: countFontSize,
-          countFontWeight: countFontWeight,
-          countColor: countColor
+          count: count
         };
       }
+    },
+    {
+      name: 'lastEncounteredObj_',
+      transient: true,
+      hidden: true
     }
   ],
   
   methods: [
-    function init() {
-      this.SUPER();
-      
-      // Set sink based on operation
-      if ( this.operation ) {
-        this.sink = this.operation.createSink(this.prop);
-      }
-    },
-    
     {
       name: 'put',
       code: function put(obj, sub) { 
         this.sink.put(obj, sub);
         this.countSink.put(obj, sub);
+        this.lastEncounteredObj_ = obj;
       },
       javaCode: `
-getSink().put(obj, sub);
-getCountSink().put(obj, sub);
+        getSink().put(obj, sub);
+        getCountSink().put(obj, sub);
       `
+    },
+    
+    function getColorFromToken(token) {
+      return foam.CSS.returnTokenValue(token, this.cls_, this.__context__);
     },
     
     function getComputedValue() {
@@ -1159,166 +1799,98 @@ getCountSink().put(obj, sub);
     
     function toE(_, x) {
       var self = this;
-      return x.E().add(this.dynamic(function(metric_) {
-        var metric = metric_;
-        var container = foam.u2.Element.create();
-        
-        
-        // Label
-        container.start('div')
-          .style({
-            fontSize: metric.labelFontSize || '0.875rem',
-            color: metric.labelColor,
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            fontWeight: metric.labelFontWeight || 'medium',
-            marginBottom: '8px'
-          })
-          .add(metric.label)
-        .end();
-        
-        // Value
-        container.start('div')
-          .style({
-            fontSize: '3rem',
-            fontWeight: 'bold',
-            color: metric.valueColor,
-            lineHeight: '1'
-          })
-          .add(metric.value)
-        .end();
-        
-        // Count - show how many records were processed
-        if ( metric.showCount && metric.count !== null ) {
-          container.start('div')
-            .style({
-              fontSize: metric.countFontSize || '0.75rem',
-              marginTop: '8px',
-              color: metric.countColor,
-              fontWeight: metric.countFontWeight || 'normal'
-            })
-            .add(metric.count.toLocaleString() + (metric.countSuffix ? ' ' + metric.countSuffix : ''))
-          .end();
-        }
-        
-        this.add(container);
-      }));
+      let e = x.E();
+      this.addToE(e);
+      return e;
     },
     
     function addToE(e) {
       var self = this;
-      e.add(this.dynamic(function(metric_) {
-        var metric = metric_;
-        // Determine alignment style
-        var alignmentStyle = 'center';
-        var textAlign = 'center';
-        if ( self.alignment && self.alignment.name === 'LEFT' ) {
-          alignmentStyle = 'flex-start';
-          textAlign = 'left';
-        } else if ( self.alignment && self.alignment.name === 'RIGHT' ) {
-          alignmentStyle = 'flex-end';
-          textAlign = 'right';
-        }
-        
-        var container = foam.u2.Element.create();
-        
-        // Container with alignment
-        container = container.start('div')
-          .style({
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: alignmentStyle,
-            textAlign: textAlign,
-            width: '100%'
-          });
-        
-        // Icon display (if provided)
+      /// force re-evaluation of metric_ on render
+      this.propertyChange.pub('sink', this.sink$)
 
-        if ( self.icon ) {
-          var iconContainer = container.start('div')
+      e.style({
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: self.alignment$.map(function(alignment) { return alignment.alignmentStyle }),
+        textAlign: self.alignment$.map(function(alignment) { return alignment.textAlign }),
+        width: '100%'
+      });
+
+      e.add(this.dynamic(function(icon) {
+        if ( icon ) {
+          this.start('div')
             .style({
               marginBottom: '12px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
-            });
-          
-          // Check if icon is a theme glyph
-          if ( self.theme && self.theme.glyphs && self.theme.glyphs[self.icon] ) {
-            iconContainer
-              .start(self.Image, {
-                glyph: self.theme.glyphs[self.icon], 
-                role: 'presentation' 
-              })
-              .style({
-                width: metric.iconSize || '2rem',
-                height: metric.iconSize || '2rem'
-              })
-              .end();
-          } else {
-            iconContainer
-              .start(self.Image, {
-                data: self.icon, 
-                embedSVG: true,
-                role: 'presentation' 
-              })
-              .style({
-                width: metric.iconSize || '2rem',
-                height: metric.iconSize || '2rem'
-              })
-              .end();
-          }
-          
-          iconContainer.end();
-        }
-        
-        // Label
-        container.start('div')
-          .style({
-            fontSize: metric.labelFontSize || '0.875rem',
-            color: metric.labelColor,
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            fontWeight: metric.labelFontWeight || 'medium',
-            marginBottom: '8px'
-          })
-          .add(metric.label)
-        .end();
-        
-        // Value
-        container.start('div')
-          .style({
-            fontSize: '3rem',
-            fontWeight: 'bold',
-            color: metric.valueColor,
-            lineHeight: '1'
-          })
-          .add(metric.value)
-        .end();
-        
-        // Count - show how many records were processed
-        if ( metric.showCount && metric.count !== null ) {
-          container.start('div')
-            .style({
-              fontSize: metric.countFontSize || '0.75rem',
-              marginTop: '8px',
-              color: metric.countColor,
-              fontWeight: metric.countFontWeight || 'normal'
             })
-            .add(metric.count.toLocaleString() + (metric.countSuffix ? ' ' + metric.countSuffix : ''))
+            .start(self.Image, {
+              role: 'presentation',
+              ...(
+                self.theme && self.theme.glyphs && self.theme.glyphs[icon] ?
+                { glyph: self.theme.glyphs[icon] } :
+                { data: icon, embedSVG: true }
+              )
+            })
+            .style({
+              width: self.iconSize$,
+              height: self.iconSize$,
+              color: self.iconColor$.map(v => self.getColorFromToken(v))
+            })
+            .end()
           .end();
         }
-        
-        container.end();
-        this.add(container);
-        return container;
+      }));
+      e.start('div')
+          .style({
+            fontSize: this.labelFontSize$,
+            color: this.labelColor$.map(v => self.getColorFromToken(v)),
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            fontWeight: this.labelFontWeight$,
+            marginBottom: '8px'
+          })
+          .add(this.label$)
+      .end();
+      e.add(this.dynamic(function(metric_) {
+        var metric = metric_;
+        // Value
+        this.start('div')
+          .style({
+            fontSize: self.valueFontSize$,
+            fontWeight: 'bold',
+            color: self.valueColor$.map(v => self.getColorFromToken(v)),
+            lineHeight: '1'
+          })
+          .callIfElse(foam.lang.Property.isInstance(self.sink.arg1) && self.lastEncounteredObj_, function() {
+            this.startContext({ controllerMode: 'VIEW', objData: self.lastEncounteredObj_}).tag(self.sink.arg1, {data: metric.value }).endContext();
+          }, function() {
+            this.add(metric.value)
+          })
+        .end();
+
+        // Count - show how many records were processed
+        if ( self.showCount && metric.count !== null ) {
+            this.start('a')
+              .style({
+                fontSize: self.countFontSize$,
+                marginTop: '8px',
+                color: self.countColor$.map(v => self.getColorFromToken(v)),
+                fontWeight: self.countFontWeight$
+              })
+              .callIf(self.countOnClick, function() {
+                this
+                  .on('click', self.onCountClick)
+                  .style({ textDecoration: 'underline', cursor: 'pointer' })
+               })
+              .add(self.countSuffix$.map(v => metric.count.toLocaleString() + (v ? ' ' + v : '')))
+            .end();
+        }
       }));
     },
-    
-    function eof() {
-      // No action needed for simple sink
-    },
-    
+
     function reset(sub) {
       if ( this.sink && this.sink.reset ) {
         this.sink.reset(sub);
@@ -1326,6 +1898,122 @@ getCountSink().put(obj, sub);
       if ( this.countSink && this.countSink.reset ) {
         this.countSink.reset(sub);
       }
+    },
+    function toString() {
+      return 'DashboardMetricSink(' + this.sink.toString() + ')';
+    },
+    async function onLoad() {
+      this.updateSink();
+    }
+  ],
+  listeners: [
+    {
+      name: 'updateSink',
+      isFramed: true,
+      on: ['this.propertyChange.operation', 'this.propertyChange.prop'],
+      code: function() {
+        let sink =  this.operation ? this.operation.createSink(this.prop) : foam.mlang.MLang.COUNT();
+        if ( this.sink.cls_ !== sink.cls_ ) {
+          this.sink = sink;
+        } else {
+          this.sink.copyFrom(sink);
+        }
+      }
+    },
+    {
+      name: 'onCountClick',
+      isFramed: true,
+      code: function() {
+        with ( this.scope ) {
+          var result = eval('(async function() { ' + this.countOnClick + ' })').call(this);
+          return result;
+        }
+      }
+    },
+  ]
+});
+
+foam.CLASS({
+  package: 'foam.core.reflow.dashboard',
+  name: 'DashboardCalendarSink',
+  extends: 'foam.dao.AbstractSink',
+  documentation: 'Calendar sink with fully live dashboard properties (match Pie/Bar).',
+  requires: [
+    'foam.u2.layout.ContainerWidth',
+    'org.chartjs.CalendarDAOChartView'
+  ],
+  properties: [
+    { name: 'dateProp', label: 'Date Property' },
+    { name: 'categoryProp', label: 'Category Property' },
+    { name: 'valueSink', documentation: 'Aggregator sink.' },
+    { class: 'Int', name: 'periodCount', label: 'Periods', value: 12 },
+    { name: 'map_', hidden: true, factory: function() { return {}; } },
+    // Dashboard-style display properties
+    { class: 'StringArray', name: 'colors', documentation: 'Dashboard chart colors' },
+    { class: 'Boolean', name: 'showLegend', value: true },
+    { class: 'Enum', name: 'legendPosition', of: 'foam.core.reflow.dashboard.LegendPosition', value: 'TOP' },
+    { class: 'Boolean', name: 'maintainAspectRatio', value: false },
+    { class: 'Int', name: 'height', value: 300 },
+    { class: 'Enum', name: 'alignment', of: 'foam.core.reflow.dashboard.MetricAlignment', value: 'CENTER' },
+    { class: 'Boolean', name: 'animate', value: true },
+    { class: 'Int', name: 'animationDuration', value: 1000 },
+    {
+      name: 'chart_',
+      transient: true,
+      factory: function() {
+        // Only create once, then drive via property slots
+        return this.CalendarDAOChartView.create({});
+      }
+    }
+  ],
+  methods: [
+    function put(obj) {
+      let d = this.dateProp.f(obj);
+      let c = this.categoryProp ? this.categoryProp.f(obj) : 'default';
+      if (!d || !c) return;
+      let key = new Date(d).toISOString().slice(0, 10);
+      if (!this.map_[key]) this.map_[key] = {};
+      let v = 1;
+      if (this.valueSink && this.valueSink.put) {
+        this.valueSink.reset && this.valueSink.reset();
+        this.valueSink.put(obj);
+        v = this.valueSink.value !== undefined ? this.valueSink.value : 1;
+      }
+      this.map_[key][c] = (this.map_[key][c] || 0) + v;
+    },
+    function toE(_, x) { return x.E().add(this.chart_$); },
+    function addToE(e) {
+      var self = this;
+      // Prepare labels/categories/values live from map_
+      function updateChartData() {
+        const allCatsSet = new Set();
+        Object.values(self.map_).forEach(row => Object.keys(row).forEach(k => allCatsSet.add(k)));
+        const categories = Array.from(allCatsSet).sort();
+        const allDates = Object.keys(self.map_).sort();
+        self.chart_.categories = categories;
+        self.chart_.labels = allDates;
+        self.chart_.values = allDates.map(date => categories.map(cat => (self.map_[date] && self.map_[date][cat]) ? self.map_[date][cat] : 0));
+      }
+      // Initial chart creation
+      updateChartData();
+      e.add(this.chart_$);
+      // Live slot binding like Pie/Bar
+      console.log('colors', this.colors$);
+      this.onDetach(this.dynamic(function(colors, showLegend, legendPosition, maintainAspectRatio, height, alignment, animate, animationDuration) {
+        var c = self.chart_;
+        if (!c) return;
+        c.colors = colors;
+        c.showLegend = showLegend;
+        c.legendPosition = legendPosition;
+        c.maintainAspectRatio = maintainAspectRatio;
+        c.height = height;
+        c.alignment = alignment;
+        c.animate = animate;
+        c.animationDuration = animationDuration;
+        // Also update chart data in-case of data changes
+        updateChartData();
+        c.invalidate && c.invalidate();
+      }, this.colors$, this.showLegend$, this.legendPosition$, this.maintainAspectRatio$, this.height$, this.alignment$, this.animate$, this.animationDuration$));
     }
   ]
 });

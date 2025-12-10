@@ -231,6 +231,8 @@ foam.CLASS({
       if ( this.parentNode )
         this.parentNode.childNodes = this.parentNode.childNodes.filter(v => v !== this);
       this.parentNode = e;
+      // This is extremely important as otherwise the wrapper might detach with old parents
+      this.clearPrivate_('listeners');
       for ( let el = this.element_.nextSibling;
         el != this.endElement_; el = el.nextSibling ) {
         this.nodesToMove_.push(el);
@@ -591,6 +593,7 @@ foam.CLASS({
     {
       class: 'Boolean',
       name: 'shown',
+      hidden: true,
       value: true,
       postSet: function(o, n) {
         if ( o === n ) return;
@@ -727,7 +730,7 @@ foam.CLASS({
     // from state
 
     function replaceElement_(el) {
-      el.parentNode.replaceChild(this, el);
+      el.parentNode.replaceChild(this.element_, el);
     },
 
     // TODO: for backward compatibility with U2, remove when all code ported
@@ -871,8 +874,8 @@ foam.CLASS({
         // and keypress events.
         target.tabIndex = target.tabIndex || 1;
 
-        target.on('keydown',  this.onKeyboardShortcut, true);
-        target.on('keypress', this.onKeyboardShortcut, true);
+        target.on('keydown',  this.onKeyboardShortcut);
+        target.on('keypress', this.onKeyboardShortcut);
       }
     },
 
@@ -1516,7 +1519,9 @@ foam.CLASS({
           throw "Invalid CSS classname";
         }
         this.classes[newClass] = true;
-        this.element_.classList.add(newClass);
+        // Could be a FunctionNode which only has a comment
+        if ( this.element_ && this.element_.classList )
+          this.element_.classList.add(newClass);
       }
     },
 
@@ -1657,7 +1662,9 @@ foam.CLASS({
       // Without wrapping in a PropertyBorder
       name: '__',
       transient: true,
-      factory: function() { return { __proto__: this, toE: this.toPropertyView }; }
+      getter: function() {
+        return { __proto__: this, toE: this.toPropertyView };
+      }
     },
     {
       class: 'Boolean',
@@ -2069,6 +2076,24 @@ foam.CLASS({
 
 foam.CLASS({
   package: 'foam.u2',
+  name: 'CurrencyCodeViewRefinement',
+  refines: 'foam.lang.CurrencyCode',
+
+  properties: [
+    {
+      name: 'view',
+      value: {
+        class: 'foam.u2.view.ModeAltView',
+        writeView: { class: 'foam.u2.view.StringView', onKey: false },
+        readView:  { class: 'foam.u2.view.ReadReferenceView' }
+      }
+    }
+  ]
+});
+
+
+foam.CLASS({
+  package: 'foam.u2',
   name: 'EnumViewRefinement',
   refines: 'foam.lang.Enum',
 
@@ -2238,6 +2263,7 @@ foam.CLASS({
       class: 'Enum',
       of: 'foam.u2.DisplayMode',
       name: 'mode',
+      hidden: true,
       attribute: true,
       postSet: function(_, mode) { this.updateMode_(mode); },
       expression: function(controllerMode) {

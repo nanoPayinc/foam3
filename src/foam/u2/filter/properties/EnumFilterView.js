@@ -22,7 +22,7 @@ foam.CLASS({
   css: `
     ^container-search {
       padding: 24px 16px;
-      border-bottom: solid 1px #cbcfd4;
+      border-bottom: solid 1px $purple50;
     }
 
     ^ .foam-u2-TextField {
@@ -30,7 +30,7 @@ foam.CLASS({
       height: 36px;
 
       border-radius: 3px;
-      border: solid 1px #cbcfd4;
+      border: solid 1px $purple50;
       background-color: $backgroundDefault;
 
       background-image: url(images/ic-search.svg);
@@ -47,7 +47,7 @@ foam.CLASS({
 
     ^label-section {
       padding: 0 16px;
-      color: #1e1f21;
+      color: $textDefault;
     }
 
     ^container-option {
@@ -58,7 +58,7 @@ foam.CLASS({
 
     ^container-option:hover {
       cursor: pointer;
-      background-color: #f5f7fa;
+      background-color: $backgroundTertiary;
     }
 
     ^container-option .foam-u2-md-CheckBox-label {
@@ -67,12 +67,12 @@ foam.CLASS({
     }
 
     ^container-option .foam-u2-md-CheckBox {
-      border-color: #9ba1a6;
+      border-color: $borderDefault;
     }
 
     ^container-option .foam-u2-md-CheckBox:checked {
-      background-color: #406dea;
-      border-color: #406dea;
+      background-color: $blue300;
+      border-color: $blue300;
     }
   `,
 

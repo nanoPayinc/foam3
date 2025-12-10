@@ -16,6 +16,28 @@ foam.CLASS({
 });
 
 
+foam.CLASS({
+  package: 'foam.core.reflow',
+  name: 'UploadView',
+  extends: 'foam.u2.View',
+
+  documentation: 'UploadView which switches to a simplified progress view when uploading.',
+
+  methods: [
+    function render() {
+      var self = this;
+
+      this.SUPER();
+      this.add(function(uploading, hideControls) {
+        if ( uploading || hideControls ) {
+          this.start().style({maxWidth: 700, width: 700, height: 100}).add(self.data.processing$, ' ', self.data.PROGRESS);
+        } else {
+          this.add(self.data);
+        }
+      });
+    }
+  ]
+});
 
 
 foam.CLASS({
@@ -44,6 +66,7 @@ foam.CLASS({
         start('th').add('Property').end().
         start('th').add('Type').end().
         start('th').add('Value').end().
+        start('th').add('Date Format').end().
         start('th').add('Required').end().
       end().
       add(this.dynamic(function(data) {
@@ -53,6 +76,7 @@ foam.CLASS({
           // Get the property info from the target model
           var targetModel = mapping.of;
           var prop = targetModel && targetModel.getAxiomByName(mapping.property);
+          var isDateProp = prop && (foam.lang.Date.isInstance(prop) || foam.lang.DateTime.isInstance(prop));
 
           this.
             startContext({ data: mapping }).
@@ -65,6 +89,11 @@ foam.CLASS({
                 add(mapping.CONSTANT_VALUE.__).
                 add(mapping.FIELD_NAME.__).
                 add(mapping.DYNAMIC_EXPRESSION.__).
+              end().
+              start('td').
+                callIf(isDateProp, function() {
+                  this.add(mapping.DATE_FORMAT.__);
+                }).
               end().
               start('td').add(prop ? (prop.required || false) : false).end().
             end()
@@ -93,12 +122,11 @@ foam.CLASS({
 
   requires: [
     'foam.dao.MDAO',
-    'foam.lang.CountingSemaphore',
     'foam.lib.csv.CSVParser',
     'foam.core.reflow.ColumnParser',
     'foam.core.reflow.DAOHolder',
     'foam.core.reflow.Mapping',
-    'foam.core.reflow.UploadAgent',
+    'foam.core.reflow.UploadSink',
     'foam.parse.QueryParser',
     'foam.core.fs.fileDropZone.FileDropZone',
     'foam.core.fs.File'
@@ -121,6 +149,12 @@ foam.CLASS({
 
   properties: [
     {
+      class: 'Boolean',
+      name: 'hideControls',
+      documentation: 'Set to true to hide controls',
+      hidden: true
+    },
+    {
       class: 'FObjectArray',
       of: 'foam.lang.FObject',
       name: 'uploadedFiles',
@@ -139,6 +173,7 @@ foam.CLASS({
           files$: X.data.uploadedFiles$,
           supportedFormats: X.data.SUPPORTED_FORMATS,
           isMultipleFiles: false,
+          maxSize: 50,
           title: 'Drag and drop a file here or click to browse',
           onFilesChanged: X.data.onFilesChanged.bind(X.data)
         };
@@ -152,7 +187,7 @@ foam.CLASS({
     {
       class: 'String',
       name: 'input',
-      view: { class: 'foam.u2.tag.TextArea', rows: 10, cols: 100 },
+      view: { class: 'foam.u2.tag.TextArea', rows: 8, cols: 80 },
       postSet: function(_, n) {
         if ( n && n.trim() !== '' ) {
           // Clear uploaded files when user manually enters/edits text
@@ -171,8 +206,8 @@ foam.CLASS({
       name: 'daoKey',
       label: 'DAO',
       adapt: function(o, n) {
-        if ( this.__context__[n] ) return n;
         if ( this.__context__[n + 'DAO'] ) return n + 'DAO';
+        if ( this.__context__[n] ) return n;
         if ( n.endsWith('s') ) return n.substring(0, n.length-1) + 'DAO';
         return n;
       }
@@ -243,10 +278,7 @@ foam.CLASS({
       // of: 'foam.core.reflow.Mapping',
       name: 'mappings',
       view: function(_, X) {
-        // More complex version has the advantage of not showing the MappingsView when uploading or previewing, which makes
-        // it faster since it spends a lot of time updating the mappings. Also, it lets you more easily see the progress.
-        return X.data.progress$.map(p => ( p == 0 || p == 100 ) ? foam.core.reflow.MappingsView.create({data: X.data.mappings$}) : foam.u2.Element.create() );
-//        return { class: 'foam.core.reflow.MappingsView' };
+        return { class: 'foam.core.reflow.MappingsView' };
       },
       expression: function(of, fileHeaders) {
         // Auto-calculate mappings from fileHeaders when available
@@ -297,7 +329,7 @@ foam.CLASS({
       },
       hidden: true
     },
-    { name: 'block', hidden: true, postSet: function(o, n) { if ( ! n ) debugger; } },
+    { name: 'block', hidden: true },
     {
       name: 'of',
       transient: true,
@@ -366,12 +398,19 @@ foam.CLASS({
     {
       class: 'Int',
       name: 'processing',
-      visibility: 'RO'
+      visibility: 'RO',
+      hidden: true
     },
     {
       class: 'Int',
       name: 'progress',
-      view: { class: 'foam.u2.ProgressView' }
+      view: { class: 'foam.u2.ProgressView' },
+      hidden: true
+    },
+    {
+      class: 'Boolean',
+      name: 'uploading',
+      hidden: true
     },
     {
       class: 'Int',
@@ -381,6 +420,16 @@ foam.CLASS({
   ],
 
   methods: [
+    function init() {
+      this.SUPER();
+
+      if ( this.currentBlock ) {
+        this.block        = this.currentBlock;
+        this.block.upload = this;
+        this.block.value  = this.DAOHolder.create({preview: this.data});
+      }
+    },
+
     function onFilesChanged(files) {
       var foamFiles = [];
       for ( var i = 0 ; i < files.length ; i++ ) {
@@ -398,17 +447,6 @@ foam.CLASS({
         }
       }
       this.uploadedFiles = foamFiles;
-    },
-
-    function init() {
-      this.SUPER();
-
-      if ( this.currentBlock ) {
-        this.block        = this.currentBlock;
-        this.block.upload = this;
-        this.block.value  = this.DAOHolder.create({preview: this.data});
-      }
-
     },
 
     function parseFilter() {
@@ -464,97 +502,6 @@ foam.CLASS({
       return mapping;
     },
 
-    function processAllMappings(obj, rowData) {
-      if ( ! this.mappings || this.mappings.length === 0 ) return;
-
-      var hasValidationErrors = false;
-
-      this.mappings.forEach(mapping => {
-        try {
-          mapping.process(obj, undefined, rowData);
-
-          // Check for NaN/invalid values after processing
-          this.validateProcessedValue(obj, mapping.property);
-        } catch (x) {
-          hasValidationErrors = true;
-          this.trackValidationError(x, { mapping: mapping, rowData: rowData });
-        }
-      });
-
-    },
-
-    function validateProcessedValue(obj, propertyName) {
-      var value = obj[propertyName];
-
-      // Check for NaN in numeric fields
-      if ( typeof value === 'number' && (isNaN(value) || !isFinite(value)) ) {
-        throw new Error(`Invalid number (NaN/Infinity/null) in field '${propertyName}'`);
-      }
-
-      // Check for invalid dates
-      if ( value instanceof Date && isNaN(value.getTime()) ) {
-        throw new Error(`Invalid date in field '${propertyName}'`);
-      }
-    },
-
-    function trackValidationError(errorSource, contextInfo) {
-      var errorMsg = '';
-      var errorKey = '';
-      var field = '';
-      var errorText = '';
-
-      // Handle different error types
-      if ( Array.isArray(errorSource) ) {
-        // Handle o.errors_ array format: [fieldAxiom, errorMessage]
-        errorMsg = errorSource.map(e => e[0].name + ' ' + e[1]).join(', ');
-        errorKey = `multiple:${errorMsg.substring(0, 80)}`;
-        field = 'multiple';
-        errorText = errorMsg;
-
-        console.error('Validation errors:', {
-          errors: errorSource,
-          context: contextInfo
-        });
-      } else if ( errorSource && errorSource.message ) {
-        // Handle mapping validation errors
-        var mapping = contextInfo.mapping || {};
-        field = mapping.property || 'unknown';
-        errorText = errorSource.message.substring(0, 80);
-        errorMsg = `error: ${field}': ${errorSource.message}`;
-        errorKey = `${field}:${errorText}`;
-
-        console.error(errorMsg, {
-          mapping: mapping,
-          expression: mapping.dynamicExpression,
-          rowData: contextInfo.rowData,
-          error: errorSource
-        });
-      } else {
-        // Handle generic error format
-        field = contextInfo.field || 'unknown';
-        errorText = String(errorSource).substring(0, 80);
-        errorMsg = `error: ${field}: ${errorText}`;
-        errorKey = `${field}:${errorText}`;
-
-        console.error(errorMsg, {
-          error: errorSource,
-          context: contextInfo
-        });
-      }
-
-      // Track validation error in map for efficient counting
-      if ( ! this.validationErrorMap[errorKey] ) {
-        this.validationErrorMap[errorKey] = {
-          field: field,
-          error: errorText,
-          count: 0
-        };
-      }
-      this.validationErrorMap[errorKey].count++;
-
-      // Add error to output for user visibility
-      this.output += `<span style="color:red">${errorMsg}</span><br>`;
-    },
 
 
     async function processUploadedFiles() {
@@ -603,150 +550,73 @@ foam.CLASS({
     },
 
     async function process(real) {
+      this.data = undefined;
+      this.block.value  = this.DAOHolder.create({preview: this.data});
+
       var self  = this;
       var latch = foam.lang.Latch.create();
       await this.data.removeAll();
-      this.progress = 1;
+      this.uploading = true;
       this.processing = 0;
       this.matchedRows = 0;
       this.validationErrorMap = {};
       this.clear();
       console.time('upload');
-      var totalRows = 0;
-      var matchedRows = 0;
-      var agent;
-      var filter = self.parseFilter();
-      var semaphore = this.CountingSemaphore.create({limit: 4});
 
-      function updateStatus() {
-        self.processing = totalRows;
-        self.progress   = self.rows ? Math.max(self.progress, Math.floor(100 * totalRows / self.rows)) : 0;
-        self.matchedRows = matchedRows;
+      var filter = self.parseFilter();
+
+      function updateStatus(sink) {
+        self.processing  = sink.totalRows;
+        self.progress    = self.rows ? Math.max(self.progress, Math.floor(100 * sink.totalRows / self.rows)) : sink.progress;
+        self.matchedRows = sink.matchedRows;
+        // Copy validation errors and output from sink
+        self.validationErrorMap = sink.validationErrorMap;
+        if ( sink.output ) {
+          self.output += sink.output;
+        }
       }
 
-      var sink = this.bulkUpload ? {
-        put: async function(o) {
-          // Apply object adaptation callback
-          try {
-            self.adaptObject(o);
-          } catch (e) {
-            console.warn('Object adaptation callback failed:', e);
-          }
+      // Create UploadSink with proper configuration
+      var sink = this.UploadSink.create({
+        dao: this.dao,
+        previewDAO: this.data,
+        isRealUpload: real,
+        bulkUpload: this.bulkUpload,
+        filter: filter,
+        mappings: this.mappings,
+        adaptObject: this.adaptObject,
+        progressCallback: function(processing, progress) {
+          self.processing = processing;
+          self.progress = progress;
+        }
+      });
 
-          totalRows++;
-          // TODO: handle errors more efficiently because errors_ is a dynamic slot
-          // and we only need one-time validation here
-          var errors = o.errors_;
-          if ( errors ) {
-            self.trackValidationError(errors, { row: totalRows });
-          }
-          /*
-          var errors = o.validateObject();
-          if ( errors ) {
-            self.trackValidationError(errors, { row: totalRows });
-          }*/
-
-          // Apply filter for both preview and real uploads
-          if ( filter ) {
-            try {
-              var matches = await filter.f(o);
-              if ( ! matches ) {
-                return; // Skip this object
-              }
-            } catch (e) {
-              console.warn('Filter error:', e);
-              // If filter fails, include the object
-            }
-          }
-
-          // Object passed filter or no filter exists
-          matchedRows++;
+      // Override sink's eof to handle Upload-specific logic
+      var originalEof = sink.eof.bind(sink);
+      sink.eof = async function() {
+        try {
+          await originalEof();
+          updateStatus(sink);
+          self.progress = 100;
+          self.uploading = false;
+          console.timeEnd('upload');
 
           if ( ! real ) {
-            // Preview mode: just store in data
-            if ( foam.lang.Long.isInstance(o.ID) && ! o.id ) o.id = self.matchedRows;
-            await self.data.put(o);
-          } else {
-            // Real upload mode
-            if ( Object.keys(self.validationErrorMap).length > 0 ) {
-              // Validation errors exist - store in preview data for review, don't upload
-              if ( foam.lang.Long.isInstance(o.ID) && ! o.id ) o.id = self.matchedRows;
-              await self.data.put(o);
-            } else {
-              // No validation errors - proceed with actual upload
-              if ( ! agent ) agent = self.UploadAgent.create();
-              agent.data.push(o);
-              if ( matchedRows && matchedRows % 2000 === 0 ) {
-                var oldAgent = agent;
-                agent = undefined;
-                await new Promise(r => self.setTimeout(r, 0));
-                // Only allow a fixed number of outstanding cmd() calls
-                await semaphore;
-                self.dao.cmd(oldAgent).then(() => semaphore.decr());
-              }
-            }
+            var block = self.block;
+            // Data is already filtered during put operations
+            self.eval_(`dao(${block.flowName}.preview, '${block.flowName}.preview')`);
+            var block2 = self.currentBlock;
+            block2.flowName = block.flowName + 'data';
+            block2.obj.dao = self.data;
+            block2.obj.limit = 10;
           }
-          // pause periodially to avoid blocking the UI
-          if ( totalRows && totalRows % 2000 === 0 ) {
-            updateStatus();
-            await new Promise(r => self.setTimeout(r, 0));
-          }
-        },
-        eof: async function() {
-          try {
-            // Only send agent command if no validation errors
-            if ( agent && Object.keys(self.validationErrorMap).length === 0 ) {
-              await self.dao.cmd(agent);
-            }
-            updateStatus();
-            self.progress = 100;
-            console.timeEnd('upload');
 
-            // Show validation error summary if there were any errors
-            if ( Object.keys(self.validationErrorMap).length > 0 ) {
-              self.output += '<br><div style="border: 1px solid #ff9800; padding: 10px; background: #fff3e0; border-radius: 4px;">';
-              self.output += '<h3 style="color: #e65100; margin-top: 0;">Validation Error Summary</h3>';
-              self.output += '<p style="color: #333;">Total rows processed: ' + totalRows + '</p>';
-              self.output += '<p style="color: #333;">Rows with errors: ' + (totalRows - self.matchedRows) + '</p>';
-
-              // Group and display errors
-              self.output += '<h4 style="color: #e65100;">Error Details:</h4>';
-              self.output += '<ul style="color: #333;">';
-
-              var sortedErrors = Object.values(self.validationErrorMap).sort((a, b) => b.count - a.count);
-              for ( var i = 0; i < sortedErrors.length; i++ ) {
-                var errorInfo = sortedErrors[i];
-                self.output += '<li><strong>' + errorInfo.field + '</strong>: ' + errorInfo.error + ' (' + errorInfo.count + ' occurrences)</li>';
-              }
-
-              self.output += '</ul>';
-              self.output += '</div><br>';
-            }
-
-            if ( ! real ) {
-              var block = self.block;
-              // Data is already filtered during put operations
-              self.eval_(`dao(${block.flowName}.preview, '${block.flowName}.preview')`);
-              var block2 = self.currentBlock;
-              block2.flowName = block.flowName + 'data';
-              block2.obj.dao = self.data;
-              block2.obj.limit = 10;
-            }
-
-            latch.resolve('eof');
-          } catch (e) {
-            console.error('Upload eof error:', e);
-            var errorMessage = e.message || 'Unknown error during upload completion';
-            self.output += '<span style="color:red">ERROR: ' + errorMessage + '</span><br>';
-            latch.reject(e);
-          }
-        }
-      } : {
-        put: self.dao.put.bind(self.dao),
-        eof: function() {
-          updateStatus();
-          console.timeEnd('upload');
           latch.resolve('eof');
+        } catch (e) {
+          console.error('Upload eof error:', e);
+          var errorMessage = e.message || 'Unknown error during upload completion';
+          self.output += '<span style="color:red">ERROR: ' + errorMessage + '</span><br>';
+          latch.reject(e);
         }
       };
 
@@ -809,7 +679,7 @@ foam.CLASS({
       }
     },
 
-    function objectifyXML(doc) {
+    function objectifyXML(doc, sink) {
       var obj      = this.of.create();
       var children = doc.children;
       var rowData  = {}; // Create rowData object for XML attributes/elements
@@ -828,8 +698,10 @@ foam.CLASS({
         }
       }
 
-      // Process ALL mappings using universal method
-      this.processAllMappings(obj, rowData);
+      // Process ALL mappings using UploadSink method
+
+      sink.processAllMappings(obj, rowData);
+
 
       return obj;
     },
@@ -855,6 +727,7 @@ foam.CLASS({
       for ( var i = 0 ; i < a.length ; i++ ) {
         var sourceObj = a[i];
         var targetObj = this.of.create();
+
         // Create rowData from source object properties
         var rowData = {};
         for ( var prop in sourceObj.instance_ ) {
@@ -863,8 +736,10 @@ foam.CLASS({
           }
         }
 
-        // Process ALL mappings using universal method
-        this.processAllMappings(targetObj, rowData);
+        // Apply mappings directly using rowData
+
+        sink.processAllMappings(targetObj, rowData);
+
 
         await sink.put(targetObj);
       }
@@ -897,36 +772,57 @@ foam.CLASS({
       for ( var i = 0 ; i < children.length ; i++ ) {
         var node = children[i];
         if ( this.tagName && node.tagName !== this.tagName ) continue;
-        await sink.put(this.objectifyXML(node));
+
+        var obj = this.objectifyXML(node);
+
+        // Extract rowData from XML node for mapping
+        var rowData = {};
+        var nodeAttrs = node.getAttributeNames();
+        for ( var j = 0 ; j < node.children.length ; j++ ) {
+          var childNode = node.children[j];
+          if ( childNode.firstChild ) {
+            rowData[childNode.tagName] = childNode.firstChild.nodeValue;
+          }
+          for ( var k = 0 ; k < nodeAttrs.length ; k++ ) {
+            var attrName = nodeAttrs[k];
+            rowData[childNode.tagName + '.' + attrName] = node.getAttribute(attrName);
+          }
+        }
+
+        // Apply mappings directly using rowData
+        sink.processAllMappings(obj, rowData);
+
+
+        await sink.put(obj);
       }
 
       sink.eof();
     },
 
     async function processCSV(sink) {
-      var a = this.input.split('\n');
-      if ( ! a ) { this.rows = 0; return; }
-
-      this.rows = a.length-1;
+      let input = this.input;
+      if ( ! input ) { this.rows = 0; return; }
 
       try {
+        var j = input.indexOf('\n');
+        var header = input.substring(0, j);
+        input = input.substring(j+1);
+
         // Parse CSV headers using existing CSVParser
         var parser        = this.CSVParser.create({delimiter: this.delimiter});
-        var parsedHeaders = parser.parseString(a[0], this.delimiter); // delimiter not used
+        var parsedHeaders = parser.parseString(header, this.delimiter); // delimiter not used
         var fileHeaders   = parsedHeaders.map(h => h.value);
-        var agent;
 
         // Set file headers - this will trigger mapping generation if headers changed
         this.fileHeaders = fileHeaders;
 
-        this.rows = a.length-1;
+        var a = parser.parseFile(input, this.delimiter);
 
-        for ( var i = 1 ; i < a.length ; i++ ) {
-          if ( ! agent ) agent = this.UploadAgent.create();
-          var row = a[i];
-          if ( ! row ) continue;
+        this.rows = a.length;
+
+        for ( var i = 0 ; i < a.length ; i++ ) {
+          var csv = a[i];
           var obj = this.of.create(null, this);
-          var csv = parser.parseString(row, this.delimiter);
 
           // Convert CSV array to a rowData object using file headers
           var rowData = {};
@@ -936,8 +832,10 @@ foam.CLASS({
             }
           });
 
-          // Process ALL mappings using universal method
-          this.processAllMappings(obj, rowData);
+          // Apply mappings directly using rowData (handles spaces in column names)
+          sink.processAllMappings(obj, rowData);
+
+
           await sink.put(obj);
           /*
           if ( ids[obj.id] ) {
@@ -949,6 +847,7 @@ foam.CLASS({
 
         sink.eof();
       } catch (x) {
+        console.error('Error processing uploaded files:', x);
         this.output += '<span style="color:red">ERROR: ' + x + '</span>';
       }
     }

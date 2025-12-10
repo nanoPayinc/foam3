@@ -64,6 +64,13 @@ foam.CLASS({
       name: 'selectionPredicate',
       documentation: 'Predicate for selecting the default choice when not able to infer from data'
     }
+    ,
+    {
+      class: 'Boolean',
+      name: 'autoSelect',
+      value: true,
+      documentation: 'When true, auto-select the first choice'
+    }
   ],
 
   methods: [
@@ -73,15 +80,16 @@ foam.CLASS({
         .start(this.isVertical ? foam.u2.layout.Rows : foam.u2.layout.Cols)
           .addClass(this.myClass('flexer'))
           .add(
-            self.slot(function(choices) {
+            self.dynamic(function(choices) {
+              let e = this;
               // Since the code below requires at least one choice, special case
               if ( choices.length < 1 ) {
-                return self.E();
+                return;
               }
 
               // Set default choice selection based on data
               var selection = choices.find(c => self.choiceIsSelected(self.data, c));
-              var toRender = choices.map((choice, index) => {
+              choices.forEach((choice, index) => {
                 var isSelectedSlot = self.slot(function(choices, data) {
                   return self.choiceIsSelected(data, choices[index]);
                 });
@@ -107,35 +115,39 @@ foam.CLASS({
                     selection = choice;
                 }
 
-                return self.E().style({ display: 'content' })
+                e.start(self.choiceView, cardSelectViewConfig)
                   .addClass(self.myClass('innerFlexer'))
                   .style({
                     'width': self.isVertical ? '100%' : `${100 / self.numCols}%`
                   })
-                  .start(this.choiceView, cardSelectViewConfig)
-                    .call(function () {
-                      self.E().onDetach(
-                        this.clicked.sub(() => {
-                          self.data =  ! self.choiceIsSelected(self.data, valueSimpSlot.get()) ?
-                            valueSimpSlot.get() :
-                            null;
-                        }),
-                        this.selectionDisabled.sub(() => {
-                          if ( self.isDisabled && self.choiceIsSelected(self.data, valueSimpSlot.get()) ) {
-                            self.clearProperty('data');
-                          }
-                        })
-                      )
-                    })
-                  .end()
-
+                  .call(function () {
+                    let e = self.E();
+                    e.onDetach(
+                      this.clicked.sub(() => {
+                        self.data =  ! self.choiceIsSelected(self.data, valueSimpSlot.get()) ?
+                          valueSimpSlot.get() :
+                          null;
+                      })
+                    );
+                    e.onDetach(
+                      this.selectionDisabled.sub(() => {
+                        if ( self.isDisabled && self.choiceIsSelected(self.data, valueSimpSlot.get()) ) {
+                          self.clearProperty('data');
+                        }
+                      })
+                    );
+                  })
+                .end();
               });
 
-              // No default selection, select the first choice
-              if ( selection === undefined ) selection = choices[0];
-              self.data = foam.Array.isInstance(selection) ? selection[0] : selection;
-
-              return toRender;
+              if ( selection === undefined ) {
+                if ( self.autoSelect ) {
+                  selection = choices[0];
+                  self.data = foam.Array.isInstance(selection) ? selection[0] : selection;
+                }
+              } else {
+                self.data = foam.Array.isInstance(selection) ? selection[0] : selection;
+              }
             })
           )
         .end();

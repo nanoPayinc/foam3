@@ -11,7 +11,17 @@ foam.CLASS({
   extends: 'foam.u2.View',
 
   css: `
-    ^ {
+    ^ h1 {
+      margin: 12px 0;
+    }
+    ^ h2 {
+      margin: 8px 0;
+    }
+    ^ h3 {
+      margin: 6px 0;
+    }
+    ^ h4 {
+      margin: 4px 0;
     }
   `,
 
@@ -19,8 +29,8 @@ foam.CLASS({
     function render() {
       this.
         addClass().
-        add(this.data.dynamic(function(color, type, visible, text) {
-          if ( visible ) this.start(type).style({color: color}).add(text).end();
+        add(this.data.dynamic(function(color, type, text) {
+          this.start(type).style({color: color}).add(text).end();
         }));
     }
   ]
@@ -53,13 +63,6 @@ foam.CLASS({
       section: 'general',
       onKey: true,
       displayWidth: 60
-    },
-    {
-      class: 'Boolean',
-      name: 'visible',
-      section: 'general',
-      value: true,
-      view: { class: 'foam.u2.Switch' }
     },
     {
       class: 'Color',

@@ -23,7 +23,7 @@ foam.CLASS({
     }
 
     ^key {
-      color: #999;
+      color: $textTertiary;
     }
   `,
 

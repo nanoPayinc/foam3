@@ -34,16 +34,16 @@ foam.CLASS({
     }
     .mn-row .row-value {
       flex-grow: 1;
-      background-color: #ddd;
+      background-color: $backgroundInverseTertiary;
       justify-content: center;
       align-items: center;
       display: flex;
     }
     .mn-row .row-value.yes {
-      background-color: #0f0;
+      background-color: $green300;
     }
     .mn-row .row-value.no {
-      background-color: #f00;
+      background-color: $red300;
     }
     .mn-row .row-value * {
       background-color: inherit;

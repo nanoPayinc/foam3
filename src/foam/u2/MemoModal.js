@@ -22,7 +22,7 @@ foam.CLASS({
   css: `
     ^ {
       border-radius: 3px;
-      background-color: #fff;
+      background-color: $backgroundDefault;
       /* Don't let the modal exceed the screen size, minus some margin. */
       max-width: calc(100vw - 48px);
       max-height: calc(100vh - 116px);

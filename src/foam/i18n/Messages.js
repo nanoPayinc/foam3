@@ -143,9 +143,11 @@ foam.CLASS({
         });
         Object.defineProperty(proto, name, {
           get: function() {
-            return function(replacementMap) {
+            return function(replacementMap = {}) {
               let parsedValue = parser.valueParserResults;
-              return parsedValue.reduce(function(ret, v) {return ret + v(replacementMap)}, '');
+              if ( ! replacementMap['this'] )
+                replacementMap['this'] = this;
+              return parsedValue.reduce(function(ret, v) {return ret + v(replacementMap);}, '');
             };
           },
           configurable: true

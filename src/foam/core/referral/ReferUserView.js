@@ -37,7 +37,7 @@ foam.CLASS({
       text-align: center;
     }
     ^header > .h300{
-      font-weight: 900;
+      font-weight: $font-extra-bold;
       color: $textBrand;
     }
     ^item .h400 {

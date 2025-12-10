@@ -91,7 +91,7 @@ foam.CLASS({
       margin: 0;
       margin-top: 8px;
 
-      color: #5e6061;
+      color: $grey500;
     }
     ^label-subtitle:last-child {
       margin-top: 0;
@@ -105,7 +105,7 @@ foam.CLASS({
     }
 
     ^detail-container .foam-u2-crunch-Style-mode-circle:hover {
-      border-color: #f3f3f3;
+      border-color: $borderLight;
     }
   `,
 

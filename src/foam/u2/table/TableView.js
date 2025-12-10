@@ -129,7 +129,7 @@
     }
 
     ^ .disabled {
-      color: #aaa;
+      color: $grey400;
     }
 
     ^td .foam-u2-ActionView {

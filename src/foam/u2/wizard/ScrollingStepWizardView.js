@@ -63,9 +63,9 @@ foam.CLASS({
 
     ^rightside ^bottomnav {
       align-items: center;
-      background-color: rgba(255,255,255,0.7);
+      background-color: $backgroundDefault;
       backdrop-filter: blur(5px);
-      box-shadow: 0px -1px 3px rgba(0, 0, 0, 0.1);
+      box-shadow: 0px -1px 3px $borderDefault;
       display: flex;
       flex-grow: 0;
       justify-content: flex-end;

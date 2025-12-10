@@ -167,7 +167,7 @@ foam.CLASS({
       font-size: 4rem;
     }
     ^table th {
-      color: #999;
+      color: $textTertiary;
       font-weight: normal;
       text-align: center;
     }
@@ -187,7 +187,7 @@ foam.CLASS({
     }
 
     ^today {
-      color: #4285f4;
+      color: $blue300;
       font-weight: bolder;
     }
   `

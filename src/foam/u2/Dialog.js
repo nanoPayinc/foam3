@@ -84,7 +84,7 @@ foam.CLASS({
 
   css: `
     ^ {
-      background-color: #fff;
+      background-color: $backgroundDefault;
       display: block;
       margin: 10px;
       overflow: hidden;

@@ -42,13 +42,13 @@ foam.CLASS({
         animation-duration: 5s;
         border-radius: 3px;
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
-        background: #e2f2dd;
+        background: $green50;
         display: flex;
         justify-content: space-between;
         align-items: center;
       }
       ^banner {
-        background-color: #32bf5e;
+        background-color: $green400;
         height: 4px;
         width: inherit;
         max-width: 1072px;
@@ -74,31 +74,31 @@ foam.CLASS({
         display: inline-block;
         vertical-align: middle;
         font-size: 2.5em;
-        font-weight: 800;
-        color: #19402e;
+        font-weight: $font-bold;
+        color: $green700;
         letter-spacing: normal;
       }
       ^description {
-        color: #19402e;
+        color: $green700;
         margin-left: 36px;
       }
       ^error-background {
-        background: #fff6f6;
+        background: $red50;
       }
       ^warning-background {
-        background: #fdf8de;
+        background: $yellow100;
       }
       ^error-banner {
-        background: #d9170e;
+        background: $red300;
       }
       ^warning-banner {
-        background: #eedc00;
+        background: $yellow400;
       }
       ^error-content {
-        color: #631414;
+        color: $red700;
       }
       ^warning-content {
-        color: #816819;
+        color: $yellow700;
       }
       ^link-icon {
         display: inline-block;

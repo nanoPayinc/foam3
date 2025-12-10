@@ -14,11 +14,12 @@ public class ClassInfoImpl
 {
   protected List      axioms;
   protected String    id;
-  protected HashMap   axiomsByName_            = new HashMap();
-  protected HashMap   axiomsByNameOrShortName_ = null;
-  protected ClassInfo parent_                  = null;
-  protected List      allAxioms_               = null;
-  protected HashMap   axiomMap_                = new HashMap();
+  protected HashMap   axiomsByName_                   = new HashMap();
+  protected HashMap   axiomsByNameOrShortName_        = null;
+  protected HashMap   axiomsByNameOrShortNameOrAlias_ = null;
+  protected ClassInfo parent_                         = null;
+  protected List      allAxioms_                      = null;
+  protected HashMap   axiomMap_                       = new HashMap();
   protected Class     class_;
 
   public ClassInfoImpl() {
@@ -169,7 +170,37 @@ public class ClassInfoImpl
 
     return ret;
   }
+  public Object getAxiomByNameOrShortNameOrAlias(String name) {
+    if ( axiomsByNameOrShortNameOrAlias_ == null ) {
+      axiomsByNameOrShortNameOrAlias_ = new HashMap();
 
+      for ( Object o : axioms ) {
+        Axiom a = (Axiom) o;
+
+        axiomsByNameOrShortNameOrAlias_.put(a.getName(), a);
+
+        if ( a instanceof PropertyInfo ) {
+          PropertyInfo p = (PropertyInfo) a;
+          if ( ! SafetyUtil.isEmpty(p.getShortName()) ) {
+            axiomsByNameOrShortNameOrAlias_.put(p.getShortName(), a);
+          }
+          String[] aliases = p.getAliases();
+          if ( aliases != null && aliases.length > 0 ) {
+            for ( String alias : aliases ) {
+              axiomsByNameOrShortNameOrAlias_.put(alias, a);
+            }
+          }
+        }
+      }
+    }
+
+    Object ret = axiomsByNameOrShortNameOrAlias_.get(name);
+    if ( ret == null ) {
+      ret = getParent().getAxiomByNameOrShortNameOrAlias(name);
+    }
+
+    return ret;
+  }
   public List getAxiomsByClass(final Class cls) {
     if ( axiomMap_.containsKey(cls) ) {
       return (List) axiomMap_.get(cls);

@@ -67,7 +67,7 @@ foam.CLASS({
         return y;
       `,
       factory: function() {
-        if ( this.yFinc == null ) return null;
+        if ( this.yFunc == null ) return null;
         var x = this.acc;
         if ( this.xFunc ) {
           for ( var i = this.xFunc.length - 1; i >= 0; i-- ) {
@@ -141,12 +141,12 @@ foam.CLASS({
       code: function toString() {
         var x = `[${this.xFunc.map(a => a.name)}]`;
         var y = `[${this.yFunc.map(a => a.name)}]`;
-        return 'pivot(' + x + ',' + y + ',' + ')';
+        return `pivot(${x}, ${y}, ${this.acc})`;
       },
       javaCode: `
         List<String> xNames = Arrays.asList(getXFunc()).stream().map(a -> ((foam.mlang.Expr)a).toString()).collect(Collectors.toList());
         List<String> yNames = Arrays.asList(getXFunc()).stream().map(a -> ((foam.mlang.Expr)a).toString()).collect(Collectors.toList());
-        return "pivot(" + xNames.toString() + ", " + yNames.toString() + ")";
+        return "pivot(" + xNames + ", " + yNames + ", " + getAcc() + ")";
       `
     }
   ]

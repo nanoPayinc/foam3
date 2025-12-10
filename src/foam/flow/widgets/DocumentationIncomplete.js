@@ -14,7 +14,7 @@ foam.CLASS({
       padding: 10pt;
     }
     ^ > .cautionTape {
-      background-color: #e6e600;
+      background-color: $yellow300;
       padding: 8pt;
       /*
         transform: rotateZ(-4deg);

@@ -10,12 +10,7 @@ import java.util.Date;
 
 import foam.lib.json.IntParser;
 import foam.lib.json.Whitespace;
-import foam.lib.parse.Alt;
-import foam.lib.parse.Literal;
-import foam.lib.parse.PStream;
-import foam.lib.parse.ParserContext;
-import foam.lib.parse.ProxyParser;
-import foam.lib.parse.Seq;
+import foam.lib.parse.*;
 
 //YYYY-MM-DDTHH:MM
 //YYYY-MM-DDTHH
@@ -27,6 +22,27 @@ public class YYYYMMDDLiteralDateParser extends ProxyParser {
   public YYYYMMDDLiteralDateParser() {
     super(
         new Alt(
+          // YYYY-MM-DD HH:MM:SS || YYYY-MM-DD HH:MM:SS.III
+          new Seq(
+            IntParser.instance(), // 0 - year
+            new Alt(
+              Literal.create("-"),
+              Literal.create("/")),
+            IntParser.instance(), // 2 - month
+            new Alt(
+              Literal.create("-"),
+              Literal.create("/")),
+            IntParser.instance(), // 4 - day
+            Literal.create(" "),
+            IntParser.instance(), // 6 - hh
+            Literal.create(":"),
+            IntParser.instance(), // 8 - mm
+            Literal.create(":"),
+            IntParser.instance(), // 10 - ss
+            new Optional( // 11 - mill
+              new Seq1(1, Literal.create("."),
+              new Repeat(new Chars("0123456789"), null, 3, 3))
+            )),
 
           //YYYY-MM-DDTHH:MM
           new Seq(

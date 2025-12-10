@@ -25,15 +25,15 @@ foam.CLASS({
   css: `
     ^ {
       background-color: $backgroundDefault;
-      border-bottom: 1px solid #e9e9e9;
+      border-bottom: 1px solid $borderXLight;
       color: $textDefault;
       padding: 0;
     }
 
 
     ^ .form-element-container {
-      background-color: #f6f9f9;
-      border-top: 1px solid #e9e9e9;
+      background-color: $backgroundSecondary;
+      border-top: 1px solid $borderLight;
     }
 
     ^ .section {
@@ -55,13 +55,13 @@ foam.CLASS({
     }
 
     ^ .foam-u2-search-GroupBySearchView .foam-u2-tag-Select {
-      background-color: rgba(0, 0, 0, 0);
-      border: 0;
+      background-color: $backgroundInverse;
+      border: none;
       width: 100%;
     }
 
     ^ .foam-u2-search-GroupBySearchView .foam-u2-tag-Select > option:hover {
-      background-color: rgba(164, 179, 184, 0.3);
+      background-color: $backgroundInverseTertiary;
     }
 
     ^ .foam-u2-search-GroupBySearchView .foam-u2-tag-Select > option {

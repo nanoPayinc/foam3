@@ -12,7 +12,10 @@ foam.CLASS({
     'foam.mlang.Expressions'
   ],
 
-  requires: [ 'foam.dao.ArraySink' ],
+  requires: [
+    'foam.dao.ArraySink',
+    'foam.core.reflow.ErrorView'
+  ],
 
   imports: [ 'block', 'dao as referenceDAO', 'sinkDAO as dao', 'sinkUnlimitedDAO as unlimitedDAO' ],
 
@@ -39,6 +42,11 @@ foam.CLASS({
         } else {
           this.block.value = this.value(s);
         }
+
+        // This is needed in case the Sink traveled across the network but needs values
+        // (like 'block') from the current context.
+        s = s.clone(this.__subContext__);
+
         e.startContext({dao: this.dao})
           .start()
             .call(function() {
@@ -46,12 +54,16 @@ foam.CLASS({
             })
           .end()
         .endContext();
+      }).catch(error => {
+        console.error('AbstractDAOAgent execution error:', error);
+        e.tag(self.ErrorView, { error: error });
+        // Don't re-throw the error to allow other blocks to continue loading
       });
     },
     function addSinkToE(e, s) {
       e.add(s);
     },
-    function addToE() {},
+    function addToE() {}
   ]
 });
 
@@ -59,7 +71,22 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.core.reflow',
   name: 'AbstractSinkDAOAgent',
-  extends: 'foam.core.reflow.AbstractDAOAgent'
+  extends: 'foam.core.reflow.AbstractDAOAgent',
+
+  properties: [
+    {
+      name: 'sink',
+      preSet: function(o, n) {
+        // Temporary fix to recontextualize the object after load.
+        // TODO: remove once JSON parsing/loading is fixed
+        if ( n && n.__context__ != this.__subContext__ ) {
+          return n.clone(this.__subContext__);
+        }
+        return n;
+      }
+    }
+  ],
+
 });
 
 
@@ -150,7 +177,7 @@ foam.CLASS({
       value: '// var o is the current object\nlog(o.id);\n',
       view: { class: 'foam.u2.tag.TextArea', rows: 6 },
       displayWidth: 60
-    },
+    }
   ],
 
   methods: [
@@ -163,7 +190,6 @@ foam.CLASS({
           with ( { o: o, log: this.__context__.log } ) {
             eval(this.code);
           }
-//          console.log(i);
         }
       });
     },
@@ -212,7 +238,9 @@ foam.CLASS({
     function value(s) { return s; },
     function createSink() { return this.MIN(this.prop); },
     function addToE(e) {
-      e.startContext({data: this}).start().style({display: 'flex'}).add(this.PROP);
+      e.startContext({data: this}).start().
+        style({display: 'flex'}).
+        add(this.PROP);
     }
   ]
 });
@@ -241,7 +269,8 @@ foam.CLASS({
           class: 'foam.core.reflow.PropertyChoiceView',
           forCls: X.data.of,
           predicate: function(p) {
-            return foam.lang.Int.isInstance(p) || foam.lang.Float.isInstance(p);
+            // Other number types are all descendents of Int
+            return foam.lang.Int.isInstance(p);
           }
         };
       }
@@ -274,7 +303,7 @@ foam.CLASS({
     'foam.u2.table.TableView'
   ],
 
-  imports: ['columnStorage'],
+  imports: [ 'columnStorage' ],
 
   properties: [
     {
@@ -283,6 +312,23 @@ foam.CLASS({
     },
     {
       name: 'selection', hidden: true
+    },
+    {
+      class: 'Map',
+      name: 'selectedObjects'
+    },
+    {
+      class: 'FObjectProperty',
+      of: 'foam.lang.Property',
+      generateJava: false,
+      name: 'groupBy',
+      view: function(_, X) {
+        return {
+          class: 'foam.core.reflow.PropertyChoiceView',
+          forCls: X.dao ? X.dao.of : X.of,
+          allowClearingSelection: true
+        };
+      }
     }
   ],
 
@@ -300,19 +346,49 @@ foam.CLASS({
         config: self.DAOControllerConfig.create({
           dao: self.unlimitedDAO,
           disableSelection: false
-        })
+        }),
+        groupBy$: self.groupBy$.map(v => v || null)
       };
 
       if ( this.columns.length ) {
-        var cs = JSON.parse(this.columnStorage.getItem(this.of.id));
-        if ( cs )
-          config.selectedColumnNames = cs;
+//        var cs = JSON.parse(this.columnStorage.getItem(this.of.id));
+//        if ( cs )
+        //          config.selectedColumnNames = cs;
+        config.selectedColumnNames$ = this.columns$;
       }
 
-      e.startContext({click: self.click}).
-        start(self.TableView.create({}, this.__subContext__), config).
+      var multiSelectActions = this.of.getAxiomsByClass(foam.lang.Action)?.filter(a => a.multiSelect)
+
+      if ( multiSelectActions?.length ) {
+        config.multiSelectEnabled = true;
+        config.selectedObjects$ = this.selectedObjects$;
+      }
+
+      e.startContext({click: self.click, columnStorage: this.columnStorage}).
+        callIf(config.multiSelectEnabled, function() {
+          this.startContext({data: self})
+            .start()
+              .show(self.selectedObjects$.map(o => Object.keys(o).length > 0 ))
+              .style({
+                'display':'flex',
+                'justify-content':'flex-end',
+                'padding':'12px 0'
+              })
+              .add(multiSelectActions)
+            .end()
+          .endContext();
+          }).
+        start(self.TableView, config).
           style({height: '600px'});
 
+    },
+    function addToE(e) {
+      var self = this;
+      e.startContext({data: this})
+        .start()
+          .style({paddingLeft: '12px'})
+        .tag(this.GROUP_BY.__, { data: this })
+        .end();
     }
   ],
 
@@ -416,15 +492,7 @@ foam.CLASS({
     },
     {
       name: 'sink',
-      view: { class: 'foam.core.reflow.SinkView', choice: 'foam.core.reflow.CountDAOAgent' },
-      preSet: function(o, n) {
-        // Temporary fix to recontextualize the object after load.
-        // TODO: remove once JSON parsing/loading is fixed
-        if ( n && n.__context__ != this.__subContext__ ) {
-          return n.clone(this.__subContext__);
-        }
-        return n;
-      }
+      view: { class: 'foam.core.reflow.SinkView', choice: 'foam.core.reflow.CountDAOAgent' }
     },
     {
       class: 'Int',
@@ -433,7 +501,12 @@ foam.CLASS({
       value: 0,
       help: 'Keep top N groups by value (0 = disabled). Remaining groups can be merged into "Others".',
       visibility: function(sink) {
-        return sink && this.TopNGroupBy.isSupported(sink.createSink()) ? foam.u2.DisplayMode.RW : foam.u2.DisplayMode.HIDDEN;
+        if ( ! sink ) return foam.u2.DisplayMode.HIDDEN;
+        try {
+          return this.TopNGroupBy.isSupported(sink.createSink()) ? foam.u2.DisplayMode.RW : foam.u2.DisplayMode.HIDDEN;
+        } catch (e) {
+          return foam.u2.DisplayMode.HIDDEN;
+        }
       }
     },
     {
@@ -443,7 +516,12 @@ foam.CLASS({
       value: true,
       help: 'Include "Others" group for remaining items when using Top N',
       visibility: function(topN, sink) {
-        return topN > 0 && sink && this.TopNGroupBy.isSupported(sink.createSink()) ? foam.u2.DisplayMode.RW : foam.u2.DisplayMode.HIDDEN;
+        if ( topN <= 0 || ! sink ) return foam.u2.DisplayMode.HIDDEN;
+        try {
+          return this.TopNGroupBy.isSupported(sink.createSink()) ? foam.u2.DisplayMode.RW : foam.u2.DisplayMode.HIDDEN;
+        } catch (e) {
+          return foam.u2.DisplayMode.HIDDEN;
+        }
       }
     },
     {
@@ -454,7 +532,12 @@ foam.CLASS({
       value: 'DESC',
       help: 'Sort order for value-based limiting',
       visibility: function(topN, sink) {
-        return topN > 0 && sink && this.TopNGroupBy.isSupported(sink.createSink()) ? foam.u2.DisplayMode.RW : foam.u2.DisplayMode.HIDDEN;
+        if ( topN <= 0 || ! sink ) return foam.u2.DisplayMode.HIDDEN;
+        try {
+          return this.TopNGroupBy.isSupported(sink.createSink()) ? foam.u2.DisplayMode.RW : foam.u2.DisplayMode.HIDDEN;
+        } catch (e) {
+          return foam.u2.DisplayMode.HIDDEN;
+        }
       }
     },
     {
@@ -464,7 +547,12 @@ foam.CLASS({
       value: 'Others',
       help: 'Label for the aggregated "Others" category',
       visibility: function(topN, sink) {
-        return topN > 0 && sink && this.TopNGroupBy.isSupported(sink.createSink()) ? foam.u2.DisplayMode.RW : foam.u2.DisplayMode.HIDDEN;
+        if ( topN <= 0 || ! sink ) return foam.u2.DisplayMode.HIDDEN;
+        try {
+          return this.TopNGroupBy.isSupported(sink.createSink()) ? foam.u2.DisplayMode.RW : foam.u2.DisplayMode.HIDDEN;
+        } catch (e) {
+          return foam.u2.DisplayMode.HIDDEN;
+        }
       }
     },
     {
@@ -504,12 +592,12 @@ foam.CLASS({
           topN: this.topN,
           sortOrder: this.sortOrder,
           othersLabel: this.othersLabel,
-          includeOthers: this.includeOthers
+          includeOthers: this.includeOthers,
         });
       }
 
       // Fall back to regular GroupBy
-      var groupBySink = this.GROUP_BY(expr, innerSink);
+      var groupBySink = this.GROUP_BY(expr, innerSink, undefined);
 
       // Apply legacy group limit if specified
       if ( this.groupLimit > 0 ) {
@@ -524,7 +612,7 @@ foam.CLASS({
       e.startContext({data: this}).
         start().
           style({paddingLeft: '12px'}).
-        add(this.PROP).
+          add(this.PROP).
           add(this.SINK).
           add(this.TOP_N.__).
           add(this.SORT_ORDER.__).
@@ -543,7 +631,7 @@ foam.CLASS({
         var cls   = block?.value?.value?.cls_;
 
         await block.value.waitForRun();
-        this.eval_(`dao(${block.flowName}.value.asDAO(), '${block.flowName}GroupBy')`);
+        this.eval_(`dao('${block.flowName}.valueDAO', '${block.flowName}GroupBy')`);
       }
     }
   ]
@@ -617,7 +705,7 @@ foam.CLASS({
 foam.CLASS({
   package: 'foam.core.reflow',
   name: 'PivotDAOAgent',
-  extends: 'foam.core.reflow.AbstractDAOAgent',
+  extends: 'foam.core.reflow.AbstractSinkDAOAgent',
 
   requires: [ 'foam.core.reflow.Pivot' ],
 
@@ -679,6 +767,12 @@ foam.CLASS({
     {
       name: 'sinks',
       factory: function() { return []; },
+      preSet: function(o, n) {
+        if ( foam.Array.isInstance(n) ) {
+          n = n.map(o => o && o.__context__ != this.__subContext__ ? o.clone(this.__subContext__) : o);
+        }
+        return n;
+      },
       view: {
         class: 'foam.u2.view.ArrayView',
         valueView: {
@@ -750,7 +844,7 @@ foam.CLASS({
   requires: [ 'foam.core.reflow.ViewSink' ],
 
   methods: [
-    function createSink() { return this.ViewSink.create(); },
+    function createSink() { return this.ViewSink.create(); }
   ]
 });
 
@@ -787,6 +881,46 @@ foam.CLASS({
 
 foam.CLASS({
   package: 'foam.core.reflow',
+  name: 'ObjectSelectDAOAgent',
+  extends: 'foam.core.reflow.AbstractDAOAgent',
+  documentation: 'Allows selecting an object from a dao that can then be accessed using selectedObj',
+
+  imports: [ 'sinkDAO as limitedDAO', 'block'],
+
+  exports: ['as data'],
+  properties: [
+    {
+      name: 'selectedObj',
+      transient: true
+    }
+  ],
+  methods: [
+    function value(s) {
+      return this.selectedObj;
+    },
+    function execute(e) {
+      if ( this.block.value && this.block.value.VALUE ) {
+        this.onDetach(this.block.value.value$.follow(this.selectedObj$));
+      } else {
+        this.onDetach(this.block.value$.follow(this.selectedObj$));
+      }
+      e.tag(foam.u2.view.RichChoiceReferenceView, {
+        placeholder: '--',
+        fullObject_$: this.selectedObj$,
+        sections: [
+          {
+            name: 'Objects',
+            dao$: this.limitedDAO$
+          }
+        ]
+      });
+    }
+  ]
+});
+
+
+foam.CLASS({
+  package: 'foam.core.reflow',
   name: 'CitationDAOAgent',
   extends: 'foam.core.reflow.AbstractSinkDAOAgent',
 
@@ -794,20 +928,6 @@ foam.CLASS({
 
   methods: [
     function createSink() { return this.CitationSink.create({of: this.of}); }
-  ]
-});
-
-
-
-foam.CLASS({
-  package: 'foam.core.reflow',
-  name: 'CellsDAOAgent',
-  extends: 'foam.core.reflow.AbstractColumnAwareDAOAgent',
-
-  requires: [ 'foam.core.reflow.CellsSink' ],
-
-  methods: [
-    function getSink() { return this.CellsSink.create({of: this.of}); }
   ]
 });
 
@@ -832,6 +952,196 @@ foam.CLASS({
         var agent = cls.create({}, this);
         e.start('h2').add(a.label).end().start().call(function () { agent.execute(this); });
       });
+    }
+  ]
+});
+
+
+foam.CLASS({
+  package: 'foam.core.reflow',
+  name: 'DownloadView',
+  extends: 'foam.u2.Controller',
+
+  imports: [ 'block', 'sessionID', 'window' ],
+
+  requires: [
+    'foam.core.export.CSVTableExportDriver',
+    'foam.core.export.JSONDriver',
+    'foam.core.export.JSONJDriver',
+    'foam.core.export.XMLDriver'
+  ],
+
+  properties: [
+    {
+      name: 'formats',
+      factory: function() {
+        return [
+          { label: 'CSV',    extension: '.csv',  format: 'csv',   driver: this.CSVTableExportDriver },
+          { label: 'JSON',   extension: '.json', format: 'json',  driver: this.JSONDriver },
+          { label: 'JSON/J', extension: '.jrl',  format: 'jsonj', driver: this.JSONJDriver },
+          { label: 'XML',    extension: '.xml',  format: 'xml',   driver: this.XMLDriver }
+        ];
+      }
+    }
+  ],
+
+  methods: [
+    async function render() {
+      var dao         = this.block.value.filteredDAO;
+      var serviceName = dao.cmd('serviceName?');
+      var isLocal     = ! serviceName;
+
+      if ( isLocal ) {
+        this.renderLocalDownloads(dao);
+      } else {
+        await this.renderServiceDownloads(dao, serviceName);
+      }
+
+      return this;
+    },
+
+    function renderLocalDownloads(dao) {
+      var self      = this;
+      var modelName = dao.of?.name || 'data';
+
+      this.add('Download As: ');
+      this.formats.forEach((fmt, idx) => {
+        if ( idx > 0 ) this.add(', ');
+        this.start('a').
+          style({ cursor: 'pointer', color: '#0066cc', 'text-decoration': 'underline' }).
+          on('click', async function() {
+            await self.downloadLocal(dao, modelName, fmt);
+          }).
+          add(fmt.label).
+        end();
+      });
+    },
+
+    async function renderServiceDownloads(dao, serviceName) {
+      var location = this.window.location.origin;
+      var daoKey   = serviceName.substring(8);
+      var url      = `${location}/service/dig?dao=${daoKey}&cmd=select&sessionId=${this.sessionID}&limit=${this.block.value.limit}`;
+
+      // Probe DAO to find the actual full query being used
+      try {
+        var sink = foam.dao.ArraySink.create();
+        sink.setPredicate = function(p) {
+          url = url + '&q=' + encodeURIComponent(p.toMQL());
+          throw "just probing";
+        };
+        await dao.select(sink);
+      } catch (x) {
+      }
+
+      if ( this.block.value.columns ) {
+        url = url + '&columns=' + encodeURIComponent(this.block.value.columns);
+      }
+
+      this.add('Download As: ');
+      this.formats.forEach((fmt, idx) => {
+        if ( idx > 0 ) this.add(', ');
+        this.
+          start('a').
+            attrs({
+              href: url + '&format=' + fmt.format,
+              rel: 'noopener noreferrer',
+              download: daoKey + fmt.extension,
+              target: '_blank'
+            }).
+            add(fmt.label).
+          end();
+      });
+    },
+
+    async function downloadLocal(dao, modelName, format) {
+      try {
+        var driver    = format.driver.create({}, this);
+        var result    = await driver.exportDAO(this.__context__, dao);
+        var blob      = new Blob([result], { type: 'text/plain' });
+        var url       = URL.createObjectURL(blob);
+        var link      = document.createElement('a');
+        var timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+
+        link.setAttribute('href', url);
+        link.setAttribute('download', `${modelName}_Export_${timestamp}${format.extension}`);
+        document.body.appendChild(link);
+        link.click();
+
+        URL.revokeObjectURL(url);
+        document.body.removeChild(link);
+      } catch (error) {
+        console.error('Export failed:', error);
+        alert('Export failed: ' + error.message);
+      }
+    }
+  ]
+});
+
+
+foam.CLASS({
+  package: 'foam.core.reflow',
+  name: 'DownloadDAOAgent',
+  extends: 'foam.core.reflow.AbstractDAOAgent',
+
+  requires: [ 'foam.core.reflow.DownloadView' ],
+
+  methods: [
+    function execute(e) {
+      e.tag(this.DownloadView);
+    }
+  ]
+});
+
+
+foam.CLASS({
+  package: 'foam.core.reflow',
+  name: 'LabeledDAOAgent',
+  extends: 'foam.core.reflow.AbstractSinkDAOAgent',
+
+  requires: [ 'foam.mlang.sink.LabeledSink' ],
+
+  properties: [
+    {
+      class: 'String',
+      name: 'label',
+      documentation: 'Label to identify this sink result for retrieval in genModel',
+      validateObj: function(label) {
+        // has to be valid JavaScript variable name
+        // start with letter, underscore, or dollar sign
+        if ( ! label.match(/^[a-zA-Z_$]/) ) return 'Label must start with a letter, underscore';
+        // then only letters, numbers, underscores, or dollar signs (no dashes)
+        if ( ! label.match(/^[a-zA-Z_$][a-zA-Z0-9_$]*$/) ) return 'Label can only contain letters, numbers, underscores';
+
+        // check for JavaScript reserved words
+        var reservedWords = ['break', 'case', 'catch', 'class', 'const', 'continue', 'debugger', 'default', 'delete', 'do', 'else', 'export', 'extends', 'finally', 'for', 'function', 'if', 'import', 'in', 'instanceof', 'new', 'return', 'super', 'switch', 'this', 'throw', 'try', 'typeof', 'var', 'void', 'while', 'with', 'yield', 'let', 'static', 'enum', 'implements', 'package', 'protected', 'interface', 'private', 'public'];
+        if ( reservedWords.indexOf(label.toLowerCase()) !== -1 ) return 'Label cannot be a JavaScript reserved word';
+      }
+    },
+    {
+      name: 'sink',
+      view: 'foam.core.reflow.SinkView',
+      documentation: 'The sink to delegate to'
+    }
+  ],
+
+  methods: [
+    function value(s) {
+      return s;
+    },
+    function createSink() {
+      return this.LabeledSink.create({
+        label: this.label,
+        delegate: this.sink ? this.sink.createSink() : null
+      });
+    },
+        function addToE(e) {
+      var self = this;
+      // TODO: figure out why BROWSE doesn't work after reloading
+      e.startContext({data: this}).
+        start().
+        add(this.LABEL.__)
+          .add(this.SINK).
+          end();
     }
   ]
 });

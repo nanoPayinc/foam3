@@ -71,7 +71,7 @@ foam.CLASS({
     }
 
     ^id {
-      color: gray;
+      color: $textTertiary;
     }
   `
 });

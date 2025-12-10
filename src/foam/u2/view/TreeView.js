@@ -97,7 +97,7 @@ foam.CLASS({
           line-height: 1.78;
           font-size: 1.4rem;
           font-style: normal;
-          font-weight: 600;
+          font-weight: $font-medium;
           line-height: 1.71;
           margin: 0;
         }
@@ -238,7 +238,7 @@ foam.CLASS({
           self.subMenus    = val.array;
         });
       }
-      
+
       this.onDetach(this.data[self.relationship.forwardName].listen({ put: cb }));
       cb();
 
@@ -314,6 +314,7 @@ foam.CLASS({
               themeIcon: self.data.themeIcon || '',
               icon: self.data.icon || ''
             }).
+              attrs({ title: labelString }).
               enableClass('selected', this.selected_$).
               addClass(this.myClass('button')).
             end().
@@ -517,20 +518,16 @@ foam.CLASS({
             onClickAddOn: self.onClickAddOn,
             level:        1
           };
-          if ( this.U3 ) {
-            this.tag({
-              class:        foam.u2.view.TreeViewRow,
-              data:         obj,
-              relationship: self.relationship,
-              expanded:     self.startExpanded,
-              formatter:    self.formatter,
-              query:        self.query,
-              onClickAddOn: self.onClickAddOn,
-              level:        1
-            });
-          } else {
-            return this.E().tag(t);
-          }
+          this.tag({
+            class:        foam.u2.view.TreeViewRow,
+            data:         obj,
+            relationship: self.relationship,
+            expanded:     self.startExpanded,
+            formatter:    self.formatter,
+            query:        self.query,
+            onClickAddOn: self.onClickAddOn,
+            level:        1
+          });
         });
     },
 

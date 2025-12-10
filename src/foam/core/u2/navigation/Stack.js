@@ -47,7 +47,7 @@ foam.CLASS({
     }
     ^browse-title {
       transition: all 0.2s ease;
-      font-weight: 700;
+      font-weight: $font-semi-bold;
     }
     ^header-container {
       display: flex;

@@ -26,7 +26,7 @@ foam.CLASS({
     }
 
     ^white {
-      color: #fff;
+      color: $white;
     }
   `,
 

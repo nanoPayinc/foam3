@@ -525,7 +525,7 @@ foam.CLASS({
     {
       name: 'updateColumnStorage',
       isMerged: true,
-      mergeDelay: 5000,
+      mergeDelay: 500,
       code: function() {
         this.columnStorage.removeItem(this.of.id);
         this.columnStorage.setItem(this.of.id, JSON.stringify(this.selectedColumnNames.map(c => {
@@ -552,6 +552,7 @@ foam.CLASS({
     }
   ]
 });
+
 
 foam.CLASS({
   package: 'foam.u2.table',

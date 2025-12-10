@@ -25,7 +25,7 @@ foam.CLASS({
       min-height: 36px;
     }
     ^label {
-      color: #737373;
+      color: $textTertiary;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;

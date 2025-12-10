@@ -31,18 +31,18 @@ foam.CLASS({
       font-family: monospace;
       white-space: pre;
       margin: 1em 0px;
-      background: black;
-      color: white;
+      background: $backgroundInverse;
+      color: $white;
       overflow-x: auto;
       overflow-y:auto;
     }
     .foam-doc-CodeTabs-content pre a {
-      color: rgb(0, 153, 229);
+      color: $blue200;
       text-decoration-line: none;
     }
     .foam-doc-CodeTabs-content .code {
-      background-color: black;
-      color: white;
+      background-color: $black;
+      color: $white;
       padding: 20px;
     }
    `,

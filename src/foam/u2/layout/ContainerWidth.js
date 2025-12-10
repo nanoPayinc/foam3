@@ -8,7 +8,7 @@ foam.CLASS({
   package: 'foam.u2.layout',
   name: 'ContainerWidth',
   documentation: 'Intended to be used with ResizeObserver',
-  
+
   requires: ['foam.u2.layout.DisplayWidth'],
 
   properties: [
@@ -45,9 +45,9 @@ foam.CLASS({
         for ( const entry of entries ) {
           this.inlineSize = entry.target.getBoundingClientRect().width;
           this.containerWidth = foam.u2.layout.DisplayWidth.VALUES
-          .concat()
-          .sort((a, b) => b.minWidth - a.minWidth)
-          .find(o => o.minWidth <= Math.min(this.inlineSize) );
+            .concat()
+            .sort((a, b) => b.minWidth - a.minWidth)
+            .find(o => o.minWidth <= Math.min(this.inlineSize));
         }
       }
     }

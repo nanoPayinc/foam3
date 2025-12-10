@@ -38,7 +38,7 @@ foam.CLASS({
     }
 
     ^ .table-content {
-      color: #7f8385;
+      color: $textTertiary;
       padding-left: 1.5vw;
       margin-top: -19px;
       padding-bottom: 2vh;

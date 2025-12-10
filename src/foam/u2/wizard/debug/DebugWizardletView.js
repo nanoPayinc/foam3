@@ -35,7 +35,7 @@ foam.CLASS({
     }
     ^title {
       background-color: $destructive400;
-      color: #FFF;
+      color: $white;
       padding: 3px 11px;
     }
     ^ .foam-u2-Accordion.expanded {

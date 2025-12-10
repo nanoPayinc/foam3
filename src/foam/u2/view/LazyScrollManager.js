@@ -229,12 +229,13 @@ foam.CLASS({
           this.updateCount();
         }
       })));
-      this.id = 'id' + this.$UID;
       this.updateCount();
       this.dataLoading = false;
     },
 
     async function render() {
+      this.appendTo.id = 'id' + this.$UID;
+
       var self = this;
       var resize = new ResizeObserver (this.checkPageSize_);
       let root = await this.rootElement.el()
@@ -287,14 +288,12 @@ foam.CLASS({
       this.scrollToIndex = undefined;
     },
 
-    function safeScroll(){
+    function safeScroll() {
       if ( ! this.scrollToIndex ) return;
       var page = Math.floor(this.scrollToIndex/this.pageSize_);
       if ( this.renderedPages_[page] ) {
-        var el = document.querySelector(`#${this.id} [data-idx='${this.scrollToIndex}']`);
+        var el = document.querySelector(`#${this.appendTo.id} [data-idx='${this.scrollToIndex}']`);
         if ( ! el ) return;
-        try {
-          if ( el.dataset['owner'] != this.$UID ) debugger; } catch (t) { debugger; }
         this.scrollView(el.offsetTop);
       } else {
         if ( page == 0 && this.currentTopPage_ != 0 ) {
@@ -480,7 +479,6 @@ foam.CLASS({
           this.topRow = 0;
           this.bottomRow = 0;
         }
-        this.daoLoading = true;
         this.isInit = false;
         this.updateRenderedPages_();
         if ( this.topRow > 1) {
@@ -493,8 +491,10 @@ foam.CLASS({
       isFramed: true,
       code: function() {
         var limit = ( this.data && this.data.limit_ ) || undefined;
+        this.daoLoading = true;
         return this.data$proxy.select(this.Count.create()).then(s => {
           this.daoCount = limit && limit < s.value ? limit : s.value;
+          this.daoLoading = false;
           this.refresh();
         });
       }
@@ -527,9 +527,12 @@ foam.CLASS({
             var dao  = this.data.limit(this.pageSize_).skip(skip);
             promiseArr.push(this.getPage(dao, page));
           }
-          Promise.all(promiseArr).then(()=>{
-            this.daoLoading = false;
-          })
+          // If there is nothing to load, we should not set daoLoading to false
+          if ( promiseArr.length !== 0 ){
+            Promise.all(promiseArr).then(()=>{
+              this.daoLoading = false;
+            });
+          }
         }
       }
     },

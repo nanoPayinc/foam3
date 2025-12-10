@@ -615,6 +615,8 @@ foam.CLASS({
     },
 
     function pub(a1, a2, a3, a4, a5, a6, a7, a8) {
+      if ( ! this.hasOwnPrivate_('listeners') ) return 0;
+
       /**
        * Publish a message to all matching sub()'ed listeners.
        *
@@ -658,10 +660,6 @@ foam.CLASS({
 
     function pub_(args) {
       /** Internal publish method, called by pub(). */
-
-      // No listeners, so return.
-      if ( ! this.hasOwnPrivate_('listeners') ) return 0;
-
       var listeners = this.listeners_();
 
       // Notify all global listeners.
@@ -777,6 +775,7 @@ foam.CLASS({
       }
 
       if ( foam.Array.isInstance(obj) ) {
+        if ( obj.length == 0 ) console.log('******************** zero arg slot, TODO: return a ConstantSlot');
         return this.onDetach(foam.lang.ExpressionSlot.create({
           obj: this,
           args: obj[0].map(this.slot.bind(this)),
@@ -804,12 +803,14 @@ foam.CLASS({
       return slot;
     },
 
-    function normalizeObj() {
+    async function normalizeObj() {
       /** Normalize all properties that provide a normalize function. **/
-      this.cls_.getAxiomsByClass(foam.lang.Property).forEach(p => {
+      let a = this.cls_.getAxiomsByClass(foam.lang.Property);
+      for ( let i = 0 ; i < a.length ; i++ ) {
+        let p = a[i];
         if ( p.normalize && ! p.hasDefaultValue(this) )
-          p.set(this, p.normalize(p.get(this), p));
-      });
+          p.set(this, await p.normalize(p.get(this), p));
+      }
     },
 
     /************************************************
@@ -924,9 +925,9 @@ foam.CLASS({
 
       var ps = this.cls_.getAxiomsByClass(foam.lang.Property);
       for ( var i = 0 ; i < ps.length ; i++ ) {
-        var prop = this[ps[i].name];
+        var prop = ps[i];
         if ( prop.includeInHash ) {
-          hash = ((hash << 5) - hash) + foam.util.hashCode(prop);
+          hash = ((hash << 5) - hash) + foam.util.hashCode(this[prop.name]);
           hash &= hash; // forces 'hash' back to a 32-bit int
         }
       }
@@ -1071,6 +1072,74 @@ foam.CLASS({
       // Behaves just like Slot.dot().  Makes it easy for creating sub-slots
       // without worrying if you're holding an FObject or a slot.
       return this[name + '$'];
+    },
+
+    function deepSub(listener, opt_props) {
+      var cleanup = foam.lang.FObject.create();
+      var visited = new Map();
+
+      function updateSub_(o, n, path) {
+        // console.log('*** Update', path);
+
+        // TODO: cleanup old listeners
+        if ( foam.lang.FObject.isInstance(o) ) {
+          var sub = visited.get(o);
+          if ( sub ) sub.detach();
+          visited.delete(o);
+        } else if ( foam.Array.isInstance(o) ) {
+          for ( let i = 0 ; i < o.length ; i++ ) {
+            updateSub_(o[i], null, path);
+          }
+        }
+
+        if ( foam.lang.FObject.isInstance(n) ) {
+          visit_(n, path);
+        } else if ( foam.Array.isInstance(n) ) {
+          for ( let i = 0 ; i < n.length ; i++ ) {
+            let e = n[i];
+            visit_(e, [...path, i]);
+          }
+        }
+      }
+
+      function listener_() {
+        // console.log('*** Change', arguments);
+        var oldValue = arguments[arguments.length-1].oldValue;
+        var newValue = arguments[arguments.length-1].get();
+
+        updateSub_(oldValue, newValue, [arguments[2]]);
+        listener.apply(null, arguments);
+      }
+
+      function visit_(o, path, opt_props) {
+        if ( ! o || ! o.cls_ || foam.lang.Property.isInstance(o) || visited.has(o) ) return;
+
+        var props = opt_props || o.cls_.getAxiomsByClass(foam.lang.Property);
+
+        if ( opt_props ) {
+          for ( let prop of props ) {
+            var value = prop.get(o);
+            visited.set(o, o.propertyChange.sub(prop.name, listener_));
+            updateSub_(null, value, [...path, prop.name]);
+          }
+        } else {
+          var sub = foam.lang.FObject.create();
+
+          for ( let prop of props ) {
+            if ( ! prop.transient ) {
+              // if ( o.hasOwnProperty(prop.name) ) {
+                var value = prop.get(o);
+                updateSub_(null, value, [...path, prop.name]);
+              // }
+              sub.onDetach(o.propertyChange.sub(prop.name, listener_));
+            }
+          }
+          visited.set(o, sub);
+        }
+      }
+
+      visit_(this, [], opt_props);
+      return cleanup; // Return detachable subscription
     }
   ]
 });

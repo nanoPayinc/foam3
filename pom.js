@@ -29,6 +29,7 @@ foam.POM({
     'com.google.oauth-client:google-oauth-client-jetty:1.22.0 -org.mortbay.jetty',
     'com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10',
     'com.twilio.sdk:twilio:7.50.1',
+    'com.vladsch.flexmark:flexmark-all:0.64.8',
     'commons-codec:commons-codec:1.18.0',
     'commons-io:commons-io:2.13.0',
     'commons-lang:commons-lang:2.6',
@@ -55,14 +56,14 @@ foam.POM({
     'org.eclipse.angus:angus-activation:2.0.2',
     'org.eclipse.angus:angus-mail:2.0.3',
     'org.eclipse.angus:imap:2.0.3',
-    'org.eclipse.jetty:jetty-proxy:11.0.23',
-    'org.eclipse.jetty:jetty-alpn-java-server:11.0.23',
-    'org.eclipse.jetty:jetty-http:11.0.23',
-    'org.eclipse.jetty:jetty-jmx:11.0.23', // for source build
-    'org.eclipse.jetty:jetty-util:11.0.23',
-    'org.eclipse.jetty:jetty-util-ajax:11.0.23', // for source build
-    'org.eclipse.jetty.http2:http2-server:11.0.23',
-    'org.eclipse.jetty.websocket:websocket-jetty-server:11.0.23',
+    'org.eclipse.jetty:jetty-proxy:11.0.26',
+    'org.eclipse.jetty:jetty-alpn-java-server:11.0.26',
+    'org.eclipse.jetty:jetty-http:11.0.26',
+    'org.eclipse.jetty:jetty-jmx:11.0.26', // for source build
+    'org.eclipse.jetty:jetty-util:11.0.26',
+    'org.eclipse.jetty:jetty-util-ajax:11.0.26', // for source build
+    'org.eclipse.jetty.http2:http2-server:11.0.26',
+    'org.eclipse.jetty.websocket:websocket-jetty-server:11.0.26',
     'org.eclipse.parsson:parsson:1.1.7',
     'org.glassfish:javax.json:1.1.4',
     'org.jsoup:jsoup:1.15.1', // HTML Parser

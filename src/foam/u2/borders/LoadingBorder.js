@@ -53,7 +53,7 @@ foam.CLASS({
       /* extra width covers right-side padding of wizard */
       width: calc(100% + 2*48px);
       height: 100%;
-      background-color: hsla(216,33%,97%,0.7);
+      background-color: $backgroundSecondary;
 
       /* negative margin covers left-side padding of wizard */
       margin: 0 -48px;
@@ -85,7 +85,7 @@ foam.CLASS({
     }
     ^overlay^pending {
       opacity: 1;
-      background-color: hsla(216,33%,97%,0);
+      background-color: $backgroundSecondary;
       pointer-events: none;
     }
     ^message {

@@ -26,20 +26,20 @@ foam.CLASS({
       position: relative;
       width: 150px;
       height: 150px;
-      border: 2px dashed #ccc;
+      border: 2px dashed $borderDefault;
       border-radius: 50%;
       overflow: hidden;
       display: flex;
       justify-content: center;
       align-items: center;
       cursor: pointer;
-      background-color: #f0f0f0;
+      background-color: $backgroundDefault
       box-sizing: border-box; /* Include padding and border in the element's total width and height */
       transition: border-color 0.3s ease, background-color 0.3s ease;
     }
 
     ^RW:hover {
-      border-color: #999;
+      border-color: $borderStrong;
     }
 
     /* Style for the actual image displayed inside the circular container */
@@ -66,8 +66,8 @@ foam.CLASS({
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(0,0,0,0.4);
-      color: white;
+      background-color: $backgroundInverseTertiary;
+      color: $white;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -87,15 +87,15 @@ foam.CLASS({
     }
 
     ^drag-over {
-      border-color: #666;
-      background-color: #e0e0e0;
+      border-color: $borderStrong;
+      background-color: $backgroundSecondary;
     }
 
     ^clear-btn {
       position: absolute;
       top: 5px;
       right: 5px;
-      background: rgba(255, 255, 255, 0.7);
+      background: $backgroundDefault;
       border: none;
       border-radius: 50%;
       width: 24px;
@@ -105,7 +105,7 @@ foam.CLASS({
       align-items: center;
       font-size: 1.2em;
       font-weight: bold;
-      color: #333;
+      color: $grey700;
       cursor: pointer;
       z-index: 10;
       opacity: 0;
@@ -116,8 +116,8 @@ foam.CLASS({
       opacity: 1;
     }
     ^RW ^clear-btn:hover {
-      background: white;
-      color: #000;
+      background: $backgroundDefault;
+      color: $black
     }
   `,
 

@@ -27,11 +27,11 @@ foam.CLASS({
   css: `
     ^ {
       border-radius: 3px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.38);
+      box-shadow: 0 1px 3px $grey400;
       display: inline-block;
       width:100%;
     }
-    ^title { padding: 6px; align-content: center; background: #c8e2f9; }
+    ^title { padding: 6px; align-content: center; background: $blue50; }
     ^info { float: right; font-size: smaller; }
     ^content { padding: 6px; min-width: 220px; height: 100%; background:$backgroundDefault; }
   `,
@@ -360,8 +360,8 @@ foam.CLASS({
   ],
 
   css: `
-    ^ { color: #555; }
-    ^ th { color: #555; }
+    ^ { color: $grey500; }
+    ^ th { color: $grey500; }
     ^ td { padding-right: 12px; }
   `,
 

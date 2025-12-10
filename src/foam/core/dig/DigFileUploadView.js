@@ -76,7 +76,7 @@ foam.CLASS({
     }
     ^ .uploadDescription {
       margin-top: 9px;
-      font-weight: 300;
+      font-weight: $font-light;
       color: $textBrand;
     }
     ^ .boxless-for-drag-drop {

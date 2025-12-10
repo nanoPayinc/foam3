@@ -52,7 +52,7 @@ foam.CLASS({
           }
         }
       }
-    
+
     },
     {
       class: 'List',
@@ -60,7 +60,7 @@ foam.CLASS({
       name: 'groupKeys',
       javaCloneProperty: '// noop',
       // IMPORTANT: Not transient - must be serialized to preserve backend order
-      // JavaScript automatically sorts numeric string keys (e.g., "554", "036") 
+      // JavaScript automatically sorts numeric string keys (e.g., "554", "036")
       // which breaks the intended display order from the backend.
       // TopNGroupBy sets this explicitly to maintain value-sorted order (DESC/ASC by sum, count, etc.)
       // Without this, JavaScript would reorder keys numerically instead of by their aggregate values.
@@ -129,6 +129,7 @@ return getGroupKeys();`
 `foam.dao.Sink group = (foam.dao.Sink) getGroups().get(key);
  if ( group == null ) {
    group = (foam.dao.Sink) (((foam.lang.FObject)getArg2()).fclone());
+   ((foam.lang.FObject)group).setX(getX());
    getGroups().put(key, group);
    clearGroupKeys();
  }
@@ -157,7 +158,7 @@ return getGroupKeys();`
         } else {
           this.putInGroup_(sub, key, obj);
         }
-        if ( this.groupLimit == this.groups.size ) sub.detach();
+        if ( this.groupLimit !== -1 && this.groups.size >= this.groupLimit ) sub.detach();
       },
       javaCode:
 `Object arg1 = getArg1().f(obj);
@@ -174,13 +175,13 @@ if ( getGroupLimit() != -1 ) {
   System.err.println("************************************* " + getGroupLimit() + " " + getGroups().size() + " " + sub);
   Thread.dumpStack();
 }*/
-if ( getGroupLimit() == getGroups().size() && sub != null ) sub.detach();
+if ( getGroupLimit() != -1 && getGroups().size() >= getGroupLimit() && sub != null ) sub.detach();
 `
     },
 
     {
       name: 'eof',
-      code: function() { 
+      code: function() {
         // Call eof on all nested sinks to ensure they finalize their state
         for ( var key in this.groups ) {
           var nestedSink = this.groups[key];
@@ -245,18 +246,34 @@ for (Object key : getGroups().keySet()) {
 
     function genModel() {
       // Get name and label from the expression, with fallbacks
-      var exprName = this.arg1.name || this.arg1.delegate.name || 'group';
-      var exprLabel = this.arg1.label || foam.String.labelize(this.arg1.delegate.name) || 'Group';
-      
+      var exprName  = this.arg1.name || this.arg1.delegate?.name || 'group';
+      var exprLabel = this.arg1.label || foam.String.labelize(this.arg1.delegate?.name) || 'Group';
+
+      // Determine property class by traversing expressions to find underlying property
+      var exprClass = 'String';
+      var expr = this.arg1;
+      while ( expr ) {
+        if ( foam.lang.Property.isInstance(expr) ) {
+          exprClass = expr.cls_?.id || 'String';
+          break;
+        }
+        // Try delegate, then arg1, then stop
+        expr = expr.delegate || expr.arg1;
+      }
+
+
       const model = {
         package: 'foam.tmp',
         name: 'GroupBy' + foam.next$UID(),
         ids: [ 'row' ],
         properties: [
           { class: 'Long', name: 'row' },
-          { class: 'String', name: exprName, label: exprLabel }
+          { class: exprClass, name: exprName, label: exprLabel }
         ]
       };
+
+      // Required in the Property is an Enum or similar type which requires the value of the 'of' field to be complete
+      if ( this.arg1.of ) model.properties[1].of = this.arg1.of;
 
       model.plural = model.name;
       var props = this.arg2.toProperties ? this.arg2.toProperties() : this.arg2.VALUE ? [ this.arg2.VALUE ] : [];
@@ -264,6 +281,7 @@ for (Object key : getGroups().keySet()) {
 
       return model;
     },
+
 
     function asDAO() {
       const model = this.genModel();
@@ -288,16 +306,57 @@ for (Object key : getGroups().keySet()) {
       return this.genModel().properties.slice(1);
     },
 
+    function setPropertyValues(o, sink, ps) {
+      // When a GroupBy is used as a nested sink in a Sequence,
+      // this method is called to populate its properties.
+      // The first property is the grouping key - set it to comma-separated keys
+      // Remaining properties are aggregated across all groups using reduce
+
+      if ( ps.length === 0 ) return;
+
+      var keyProp = ps[0];
+      var remainingProps = ps.slice(1);
+
+      // Get the group keys (the values that were grouped by)
+      var groupKeys = this.groupKeys || Object.keys(this.groups);
+
+      // Set the key property as comma-separated string (for compatibility with existing scripts)
+      keyProp.set(o, groupKeys.join(','));
+
+      // For remaining properties, aggregate across all groups using reduce
+      if ( remainingProps.length > 0 && this.arg2 ) {
+        // Create a clone of the first group to accumulate into
+        var firstKey = groupKeys[0];
+        var reduced = this.groups[firstKey];
+
+        // If there are multiple groups, reduce them together
+        if ( groupKeys.length > 1 ) {
+          // Clone the first group as the starting point
+          reduced = foam.util.clone(this.groups[firstKey]);
+
+          // Reduce all other groups into the clone
+          for ( var i = 1; i < groupKeys.length; i++ ) {
+            var group = this.groups[groupKeys[i]];
+            if ( reduced.reduce && group ) {
+              reduced.reduce(group);
+            }
+          }
+        }
+
+        // Now use setPropertyValues on the reduced sink
+        if ( this.arg2.setPropertyValues ) {
+          this.arg2.setPropertyValues(o, reduced, remainingProps);
+        }
+      }
+    },
+
     function processGroupValue(dao, proto, props) {
       var groups = this.groups;
-
       var ID = props[0];
-
       props = props.slice(1);
 
       this.groupKeys.forEach(k => {
         var group = groups[k];
-
         var o = proto.clone();
         ID.set(o, k);
 

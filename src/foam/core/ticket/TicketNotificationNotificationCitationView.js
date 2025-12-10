@@ -29,7 +29,7 @@ foam.CLASS({
     }
 
     ^link {
-      border: 0;
+      border: none;
       padding: 0;
     }
 

@@ -20,7 +20,7 @@ foam.CLASS({
   css: `
     ^ {
       border: solid 0.1rem;
-      border-color: #CCC;
+      border-color: $borderDefault;
     }
     ^name {
       line-height: 2.5rem;

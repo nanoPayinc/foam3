@@ -22,6 +22,7 @@ foam.POM({
     JOURNAL_OUT:       ['Build journals directory',() => `${PROJECT_HOME}/${BUILD_DIR}/journals`],
     LOG_HOME:          ['Application logs directory',() => APP_NAME ? `${APP_HOME}/logs`: 'APP_HOME/logs'],
     SAF_HOME:          ['Application sf (store and forward) directory',() => `${APP_HOME}/saf`],
+    WEBROOT:           ['Webroot for non-jar builds, defaults to PROJECT_HOME', () => PROJECT_HOME],
   },
 
   options: {
@@ -30,8 +31,10 @@ foam.POM({
     bootScriptAux: ['', 'boot-script-aux', 'BOOT_SCRIPT_AUX', 'Additional boot script to execute after the main bootScript. This bootscript is how Test cases are run. TODO: elaborate.  bootScriptAux:testRunnerScript','', arg => BOOT_SCRIPT_AUX = arg ],
     buildOnly: [ 'o', 'build-only', 'BUILD_ONLY', "Only execute java generation and java compilation build steps, don't start CORE server.", false, function(arg) { BUILD_ONLY = arg ? this.bool(arg) : true; } ],
     debug: [ 'd', 'debug', 'DEBUG', 'Launch JVM with JDPA debugging enabled. Default port 8000.', false, function(arg) { DEBUG = arg ? this.bool(arg) : true; } ],
-    debugPort: [ 'D', 'debug-port', 'DEBUG_PORT', 'Port JVM will listen on for debuggers (JDPA) connections.',8000, args => DEBUG_PORT = args],
-    deleteRuntimeJournals: [ 'j', 'delete-runtime-journals', 'DELETE_RUNTIME_JOURNALS', 'Delete runtime journals.', false, function(arg) { DELETE_RUNTIME_JOURNALS = arg ? this.bool(arg) : true; } ],
+    debugPort: [ 'D', 'debug-port', 'DEBUG_PORT', 'Port JVM will listen on for debuggers (JDPA) connections.',8000, function(arg) { DEBUG_PORT = arg; DEBUG = true; }],
+    backupRuntimeJournalsDirSuffix: [ 'S', 'backup-runtime-journals-dir-suffix', 'BACKUP_RUNTIME_JOURNALS_DIR_SUFFIX', 'Backup runtime journals directory suffix. Defaults to a timestamp.', TIMESTAMP, function(arg) { BACKUP_RUNTIME_JOURNALS_DIR_SUFFIX = arg ? arg : TIMESTAMP; BACKUP_RUNTIME_JOURNALS = true; }],
+    backupRuntimeJournals: [ 'b', 'backup-runtime-journals', 'BACKUP_RUNTIME_JOURNALS', 'Backup runtime journals. By default journals are copied to journals_\'timestamp\'. The timestamp suffix can be overridden by provide an argument to this options. Also see \'backupRuntimeJournalsDirSuffix\'.  See option \'-N\' for naming and retaining journal sets.', false, function(arg) { BACKUP_RUNTIME_JOURNALS = true; BACKUP_RUNTIME_JOURNALS_DIR_SUFFIX = arg ? arg : TIMESTAMP; }],
+    deleteRuntimeJournals: [ 'j', 'delete-runtime-journals', 'DELETE_RUNTIME_JOURNALS', 'Delete runtime journals. See option \'-N\' for naming and retaining journal sets.', false, function(arg) { DELETE_RUNTIME_JOURNALS = true; AUTO_CONFIRM = arg ? this.bool(arg) : AUTO_CONFIRM; }],
     javacParameters: ['', 'javac-parameters', 'JAVAC_PARAMETERS', 'Parameters passed to Java Compiler','-proc:none', arg => JAVAC_PARAMETERS = arg ],
     javaRelease: ['', 'java-release', 'JAVA_RELEASE', 'Java target version. Can also be set in root pom. ex: java: \'11\'', '21', args => JAVA_RELEASE = args],
     journals: [ 'J', 'journals', 'JOURNALS', 'Comma seperated list of additional journal directories, relative to deployment/ from the root project.', '', function(args) { JOURNALS = this.comma(JOURNALS, args); } ],
@@ -68,6 +71,9 @@ foam.POM({
           this.execute('cleanAll');
         } else if ( CLEAN ) {
           this.execute('clean');
+        }
+        if ( BACKUP_RUNTIME_JOURNALS ) {
+          this.execute('backupRuntimeJournals');
         }
         if ( DELETE_RUNTIME_JOURNALS ) {
           this.execute('deleteRuntimeJournals');
@@ -138,6 +144,7 @@ foam.POM({
       JAVA_OPTS += ' -enableassertions';
       JAVA_OPTS += ' -Dresource.journals.dir=journals';
       JAVA_OPTS += ' -DRES_JAR_HOME=' + JAR_OUT;
+      JAVA_OPTS += ` -Dproject.home=${PROJECT_HOME}`;
 
       if ( DEBUG )
         JAVA_OPTS += ` -agentlib:jdwp=transport=dt_socket,server=y,suspend=${SUSPEND ? 'y' : 'n'},address=127.0.0.1:${DEBUG_PORT}`;
@@ -149,7 +156,8 @@ foam.POM({
       this.ensureDir(this.join(BUILD_DIR, 'package'));
       // Notice that the argument to the second -C is relative to the directory from the first -C, since -C
       this.log(`buildTar TARBALL_PATH:${TARBALL_PATH}`);
-      this.execSync(`tar -a -cf ${TARBALL_PATH} -C ./foam3/tools/deploy bin etc -C${require('path').resolve(BUILD_DIR)} lib`, { stdio: VERBOSE ? 'inherit' : 'ignore' });
+      const toolsDeploy = this.join(FOAM_TOOLS_DIR, 'deploy');
+      this.execSync(`tar -a -cf ${TARBALL_PATH} -C ${toolsDeploy} bin etc -C${require('path').resolve(BUILD_DIR)} lib`, { stdio: VERBOSE ? 'inherit' : 'ignore' });
     }],
 
     clean: ['clean', 'Remove generated files', ['cleanJava'], function() {
@@ -168,10 +176,71 @@ foam.POM({
       this.emptyDir(APP_HOME);
     }],
 
-    deleteRuntimeJournals: ['delete-runtime-journals', 'Delete runtime journals.', [], function() {
-      this.info('Runtime journals deleted.');
-      this.emptyDir(JOURNAL_HOME);
-      this.emptyDir(SAF_HOME);
+    backupRuntimeJournals: ['backup-runtime-journals', 'Backup runtime journals.', [], function() {
+      const JOURNAL_BACKUP_DIR = `${JOURNAL_HOME}_${BACKUP_RUNTIME_JOURNALS_DIR_SUFFIX}`;
+      this.ensureDir(JOURNAL_BACKUP_DIR);
+      this.copyDir(JOURNAL_HOME, JOURNAL_BACKUP_DIR);
+
+      const SAF_BACKUP_DIR = `${SAF_HOME}_${BACKUP_RUNTIME_JOURNALS_DIR_SUFFIX}`;
+      this.ensureDir(SAF_BACKUP_DIR);
+      this.copyDir(SAF_HOME, SAF_BACKUP_DIR);
+
+      const DOCUMENT_BACKUP_DIR = `${DOCUMENT_HOME}_${BACKUP_RUNTIME_JOURNALS_DIR_SUFFIX}`;
+      this.ensureDir(DOCUMENT_BACKUP_DIR);
+      this.copyDir(DOCUMENT_HOME, DOCUMENT_BACKUP_DIR);
+
+      this.info(`Runtime journals backed up to ${JOURNAL_BACKUP_DIR}`);
+    }],
+
+    deleteRuntimeJournals: ['delete-runtime-journals', 'Delete runtime journals. When propted press \'y\' to proceed, \'b\' to backup before deleting, \'b:scenario1\' to backup to named directory before deleting.  Any other key will cancel.' , [], function() {
+      var confirmed = false;
+      if ( ! AUTO_CONFIRM && ! BACKUP_RUNTIME_JOURNALS ) {
+        // Confirmation check to protect against accidental journal deletion
+        const { spawnSync } = require('child_process');
+
+        console.log('\x1b[0;33m⚠️  WARNING: You are about to delete runtime journals!\x1b[0;0m');
+        console.log(`   JOURNAL_HOME: ${JOURNAL_HOME}`);
+        console.log(`   SAF_HOME: ${SAF_HOME}`);
+        console.log(`   DOCUMENT_HOME: ${DOCUMENT_HOME}`);
+
+        // Use bash read command for synchronous input with proper signal handling
+        const result = spawnSync('bash', ['-c', 'read -p "Are you sure you want to proceed? (y/n/b): " answer && echo "$answer"'], {
+          stdio: ['inherit', 'pipe', 'inherit'],
+          encoding: 'utf8'
+        });
+
+        // Check if interrupted (Ctrl+C)
+        if ( result.signal === 'SIGINT' || result.status === 130 ) {
+          console.log('\n\x1b[0;31mOperation cancelled.\x1b[0;0m');
+          process.exit(130);
+        }
+
+        const answer = (result.stdout || '').trim().toLowerCase();
+        confirmed = answer === 'y' || answer === 'yes' || answer === 'b';
+        var noDelete = answer === 'n' || answer === 'no';
+        var backup = answer === 'b';
+        if ( answer.startsWith('b:') ) {
+          confirmed = true;
+          backup = true;
+          BACKUP_RUNTIME_JOURNALS_DIR_SUFFIX = answer.split(':')[1];
+        }
+        if ( ! confirmed && ! noDelete && ! backup ) {
+          console.log('\x1b[0;31mOperation cancelled. Runtime journals were NOT deleted.\x1b[0;0m');
+          process.exit(1);
+        }
+        if ( ! confirmed && noDelete ) {
+          this.warning('Runtime journals NOT deleted.');
+        }
+        if ( backup ) {
+          this.execute("backupRuntimeJournals");
+        }
+      }
+      if ( AUTO_CONFIRM || confirmed ) {
+        this.info('Runtime journals deleted.');
+        this.emptyDir(JOURNAL_HOME);
+        this.emptyDir(SAF_HOME);
+        this.emptyDir(DOCUMENT_HOME);
+      }
     }],
 
     genImages: ['gen-images', 'Prepare images from inclusion in jar.', [], function() {
@@ -194,9 +263,9 @@ foam.POM({
 
     deployBin: ['deploy-bin', 'Copy bash files to deployment', [], function() {
       this.ensureDir(this.join(APP_HOME, 'bin'));
-      this.copyDir('./foam3/tools/deploy/bin', this.join(APP_HOME, 'bin'));
+      this.copyDir(this.join(FOAM_TOOLS_DIR, 'deploy', 'bin'), this.join(APP_HOME, 'bin'));
       this.ensureDir(this.join(APP_HOME, 'etc'));
-      this.copyDir('./foam3/tools/deploy/etc', this.join(APP_HOME, 'etc'));
+      this.copyDir(this.join(FOAM_TOOLS_DIR, 'deploy', 'etc'), this.join(APP_HOME, 'etc'));
     }],
 
     deployDocuments: ['deploy-documents', 'Deploy documents from DOCUMENT_OUT to DOCUMENT_HOME.', ['setupDirs'], function() {
@@ -261,6 +330,10 @@ foam.POM({
       if ( ! JAVAC_PARAMETERS.includes('--release') ) {
         JAVAC_PARAMETERS += ' --release '+JAVA_RELEASE;
       }
+      if ( Number(JAVA_RELEASE) >= 25 ) {
+        // javax.security.auth.AuthPermission
+        JAVAC_PARAMETERS += ' -Xlint:-deprecation -Xlint:-removal';
+      }
     }],
 
     clientTests: ['client-tests', 'Run all or specified client side test cases. ex: clientTests[:Test1,Test2]', [], function(args) {
@@ -317,7 +390,7 @@ foam.POM({
         JAVA_OPTS += ` -Dhostname=${HOST_NAME}`;
       }
       JAVA_OPTS += ` -Dapp.name=${APP_NAME}`;
-      JAVA_OPTS += ` -Dcore.webroot=${PROJECT_HOME}`;
+      JAVA_OPTS += ` -Dcore.webroot=${WEBROOT}`;
       JAVA_OPTS += ` -Duser.timezone=${TIMEZONE}`;
 
       if ( DEBUG )
@@ -337,7 +410,7 @@ foam.POM({
         JAVA_OPTS += ` -Dhostname=${HOST_NAME}`;
       }
       JAVA_OPTS += ` -Dapp.name=${APP_NAME}`;
-      JAVA_OPTS += ` -Dcore.webroot=${PROJECT_HOME}`;
+      JAVA_OPTS += ` -Dcore.webroot=${WEBROOT}`;
       JAVA_OPTS += ` -Duser.timezone=${TIMEZONE}`;
 
       if ( DEBUG )
@@ -441,13 +514,14 @@ foam.POM({
       }
     }],
 
-    testSetup: ['test-setup', 'Common Prepare to run test cases.  Include test journals from foam3/deployment/test and project deployment/test. Set test flag, appName, appRoot.', [], function() {
+    testSetup: ['test-setup', 'Common Prepare to run test cases.  Include test journals from foam3/deployment/test, foam3/deployment/demo and project deployment/test. Set test flag, appName, appRoot.', [], function() {
       APP_NAME = 'test';
       APP_ROOT = ! APP_ROOT || APP_ROOT == '/opt' ? '/tmp' : APP_ROOT;
       FLAGS = this.comma(FLAGS, 'test');
-      this.addJournal('../foam3/deployment/test');
-      this.addJournal('../foam3/deployment/demo');
-      this.addJournal('test');
+      // Load foam3 defaults first, then project-specific overrides
+      this.addJournal('test', 'foam3');
+      this.addJournal('demo', 'foam3');
+      this.addJournal('test', 'project');
     }],
 
     usage: ['usage', 'Build usage examples', [], function() {
@@ -463,19 +537,31 @@ foam.POM({
       this.log('    Build into a unique path \'demo\', launch from JAR, start HTTPS web server on port \'8300\'.');
       this.log('  ./build.sh -EAPP_NAME:demo,WEB_PORT:8300,JAR:true,JOURNALS:https');
       this.log('    Build into a unique path \'demo\', launch from JAR, start HTTPS web server on port \'8300\'.');
+      this.log('  ./build.sh -j');
+      this.log('    Build and delete runtime journals, with confirmation.');
+      this.log('  ./build.sh -jy');
+      this.log('    Build and delete runtime journals, without confirmation.');
+      this.log('  ./build.sh -jb');
+      this.log('    Build, backup runtime journals before deleting, without confirmation.');
+      this.log('  ./build.sh -j --backupRuntimeJournals:scenario1');
+      this.log('    Build, backup runtime journals to journals_scenario1 before deleting, without confirmation.');
+      this.log('  ./build.sh -jSscenario1');
+      this.log('    Build, backup runtime journals to journals_scenario1 before deleting, without confirmation.');
       this.log('\nRunning Java Test Cases:');
       this.log('  ./build.sh --run-tests');
       this.log('    Run all test cases.');
-      this.log('  ./build.sh --server-tests:SequenceNumberDAO,MapDAOTest');
+      this.log('  ./build.sh --server-tests:SequenceNumberDAOTest,MapDAOTest');
       this.log('    Run specified server side (Java) test cases.');
+      this.log('  ./build.sh --server-tests:-SequenceNumberDAOTest,-MapDAOTest');
+      this.log('    Exclude specified server side (Java) test cases.');
       this.log('  ./build.sh --client-tests');
       this.log('    Run all client side (Javascript) test cases.');
       this.log('  ./build.sh --client-tests --test-headed');
       this.log('    Run all client side (Javascript) test cases and leave foam test app running after tests have completed executing. Also show the browser GUI to monitor test activity.');
       this.log('  ./build.sh --run-tests:CIDRTest,ClientAddressUtilAddressParsingTest');
       this.log('    This example is a mix of one server side test and one client side test');
-      this.log('  ./build.sh --flags:test');
-      this.log('    A build which includes Test DAOs and client test casses suitable for development');
+      this.log('  ./build.sh -Jtest,demo --flags:test');
+      this.log('    A build for developing/creating client side test cases.  Final tests should be copied back from runtime journals to repository journals.');
     }],
 
     versions: ['versions', 'Show version information.', ['getProjectRevision', 'getFOAMRevision'], function() {

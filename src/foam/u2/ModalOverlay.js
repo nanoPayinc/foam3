@@ -66,11 +66,7 @@ foam.CLASS({
     },
 
     function open() {
-      if ( this.U3 ) {
-        this.document.body.append(this.element_);
-      } else {
-        this.document.body.insertAdjacentHTML('beforeend', this.outerHTML);
-      }
+      this.document.body.append(this.element_);
       this.load();
     },
 
@@ -101,7 +97,7 @@ foam.CLASS({
       width: 100%;
     }
     ^background {
-      background-color: #000;
+      background-color: $backgroundInverse;
       bottom: 0;
       left: 0;
       opacity: 0.4;

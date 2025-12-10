@@ -196,32 +196,31 @@ foam.CLASS({
     {
       name: 'adapt',
       value: function (_, d) {
-        if ( typeof d === 'number' ) d = new Date(d);
+        if ( d === undefined || d === null ) return d;
+        var originalDate = d;
+        if ( typeof d === 'number' )
+          d = new Date(d);
+
         if ( typeof d === 'string' ) {
-          var ret = new Date(d);
-
-          if ( isNaN(ret.getTime()) ) {
-            if ( d.length >= 8 ) {
-              ret = new Date(d.substring(0,4) + '-' + d.substring(4,6) + '-' + d.substring(6,8));
-            }
-
-            if ( isNaN(ret.getTime()) ) {
-              ret = foam.Date.MAX_DATE;
-              console.warn("Invalid date: " + d + "; assuming " + ret.toISOString() + ".");
-              return ret;
-            }
-          }
-
-          d = ret;
+          d = foam.util.DateUtil.parseDateString(d);
         }
-        if ( d == foam.Date.MAX_DATE || d == foam.Date.MIN_DATE ) return d;
+
+        if ( d == foam.Date.MAX_DATE || d == foam.Date.MIN_DATE )
+          return d;
+
         if ( foam.Date.isInstance(d) ) {
-          // Convert the Date to Noon time in GMT
-          const DAY = 1000*60*60*24;
-          // Add many days to time so not to break for negative times before EPOCH of 1970
-          var timeOfDay = (d.getTime() + 100000 * DAY) % DAY;
-          return new Date(d.getTime() - timeOfDay + 12 * 60 * 60000);
+          // Convert to Noon UTC
+          d = new Date(Date.UTC(
+            d.getFullYear(),
+            d.getMonth(),
+            d.getDate(),
+            12));
         }
+        if ( isNaN(d.getTime()) ) {
+          console.warn("Invalid date: " + originalDate + "; assuming " + foam.Date.MAX_DATE.toISOString() + ".");
+          d = foam.Date.MAX_DATE;
+        }
+
         return d;
       }
     },
@@ -260,14 +259,7 @@ foam.CLASS({
       value: function (_, d) {
         if ( typeof d === 'number' ) return new Date(d);
         if ( typeof d === 'string' ) {
-          var ret = new Date(d);
-
-          if ( isNaN(ret.getTime()) ) {
-            ret = foam.Date.MAX_DATE;
-            console.warn("Invalid date: " + d + "; assuming " + ret.toISOString() + ".");
-          }
-
-          return ret;
+          return foam.util.DateUtil.parseDateTime(d);
         }
         return d;
       }
@@ -276,6 +268,69 @@ foam.CLASS({
       name: 'format',
       value: function(val, timeFirst = false) {
         return foam.Date.formatDate(val, timeFirst);
+      }
+    },
+    {
+      name: 'formatLocale',
+      value: function(val) {
+        return foam.util.DateUtil.format(val);
+      }
+    }
+  ]
+});
+
+
+foam.CLASS({
+  package: 'foam.lang',
+  name: 'DateTimeUTC',
+  extends: 'foam.lang.DateTime',
+
+  documentation: `
+    A DateTime property type that formats dates in UTC timezone instead of the user's local timezone.
+    The adapt method uses foam.util.DateUtil for parsing, and the format method displays the date in UTC.
+  `,
+
+  requires: [
+    'foam.util.DateUtil'
+  ],
+
+  properties: [
+    {
+      name: 'adapt',
+      value: function (_, d) {
+        // Handle null/undefined
+        if ( d === null || d === undefined || d === '' ) {
+          return null;
+        }
+
+        // Numbers (timestamps) - always preserve exact time
+        if ( typeof d === 'number' ) {
+          return new Date(d);
+        }
+
+        // Date objects - always preserve as-is
+        if ( d instanceof Date ) {
+          return d;
+        }
+
+        // Use DateUtil.parseDateTimeUTC to ensure all string inputs
+        // are parsed as UTC. Numbers and Date objects are always preserved exactly.
+        var result = foam.util.DateUtil.parseDateTimeUTC(d);
+        return result;
+      }
+    },
+    {
+      name: 'format',
+      value: function(val, timeFirst = false) {
+        // Use DateUtil.formatWithTimeControl with timeFirst parameter and UTC timezone
+        var result = foam.util.DateUtil.formatWithTimeControl(val, timeFirst, 'UTC');
+        return result;
+      }
+    },
+    {
+      name: 'formatLocale',
+      value: function(val) {
+        return foam.util.DateUtil.format(val, 'UTC');
       }
     }
   ]
@@ -533,6 +588,10 @@ foam.CLASS({
       value: 'String',
       documentation: 'The FOAM sub-type of this property.'
     },
+    [
+      'isDefaultValue',
+      function(v) { return ! v || ! v.length; }
+    ],
     [ 'type', 'String[]' ],
     [
       'factory',
@@ -1104,9 +1163,18 @@ foam.CLASS({
     {
       name: 'adapt',
       value: function(oldValue, newValue, prop) {
-        return (prop || this).of.isInstance(newValue) ?
-          newValue.id :
-          newValue ;
+        let of = (prop || this).of;
+        if ( of ) {
+          if ( of.isInstance(newValue) ) return newValue.id;
+          if ( foam.lang.MultiPartID.isInstance(of.ID) ) return newValue;
+          if ( ! of.ID ) {
+            return newValue;
+          }
+          if ( of.ID.adapt ) {
+            return of.ID.adapt.call(this, oldValue, newValue, of.ID);
+          }
+        }
+        return newValue;
       }
     },
     {
@@ -1302,3 +1370,52 @@ foam.CLASS({
     [ 'value', '' ]
   ]
 });
+
+
+foam.CLASS({
+  package: 'foam.lang',
+  name: 'CurrencyCode',
+  extends: 'Reference',
+  implements: [ 'foam.mlang.Expressions' ],
+
+  properties: [
+    {
+      class: 'Class',
+      name: 'of',
+      value: 'foam.lang.Currency'
+    },
+    [ 'type', 'String' ],
+    {
+      class: 'String',
+      name: 'targetDAOKey',
+      value: 'currencyDAO'
+    },
+    {
+      name: 'adapt',
+      value: function(_, n) {
+        if ( foam.lang.Currency.isInstance(n) ) return n.id;
+        return n;
+      }
+    },
+    {
+      name: 'normalize',
+      value: async function(value, prop) {
+        /**
+         * If the currencyCode is entered as a numeric code rather than string code, then adapt to the string code
+         * so that all currency codes are in the same format.
+         * This is done in 'normalize' rather than 'adapt' because it needs to be async because it performs a DAO
+         * operation, which is itself async.
+         **/
+        if ( foam.String.isInstance(value) && Number.isNaN(Number(value)) ) return value;
+
+        var currency = await this.__context__[prop.targetDAOKey].find(prop.EQ(foam.lang.Currency.NUMERIC_CODE, Number(value)));
+
+        if ( currency ) {
+          return currency.id;
+        }
+
+        return value;
+      }
+    }
+  ]
+})

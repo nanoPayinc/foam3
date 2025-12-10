@@ -51,25 +51,34 @@ foam.CLASS({
     {
       name: 'queue_',
       factory: function() { return []; }
-    }
+    },
+    'drainLatch_'
   ],
 
   methods: [
-    function decr() {
-      this.count_--;
-      var latch = this.queue_.shift();
-      if ( latch ) return latch.resolve();
-    },
-
-    function then(resolve) {
+    function then(block) {
       if ( this.count_++ < this.limit ) {
-        resolve().then(this.decr.bind(this));
-        return Promise.resolve();
+        return block().then(this.decr).catch(this.decr);
       }
 
       var latch = this.Latch.create();
       this.queue_.push(latch);
-      return latch.then(resolve).then(this.decr.bind(this))
+      return latch.then(block).then(this.decr).catch(this.decr);
+    },
+
+    function drain() {
+      if ( this.count_ == 0 ) return Promise.resolve();
+      return this.drainLatch_ = this.Latch.create();
+    }
+  ],
+
+  listeners: [
+    function decr() {
+      this.count_--;
+      var latch = this.queue_.shift();
+      if ( latch ) latch.resolve();
+      if ( this.drainLatch_ && this.count_ == 0 ) this.drainLatch_.resolve();
+      return Promise.resolve();
     }
   ]
 });

@@ -24,6 +24,21 @@ foam.CLASS({
 
   methods: [
     {
+      name: 'setX',
+      args: 'foam.lang.X x',
+      javaCode: `
+        super.setX(x);
+        // Propagate context to child sinks
+        if ( getArgs() != null ) {
+          for ( int i = 0; i < getArgs().length; i++ ) {
+            if ( getArgs()[i] instanceof foam.lang.FObject ) {
+              ((foam.lang.FObject)getArgs()[i]).setX(x);
+            }
+          }
+        }
+      `
+    },
+    {
       name: 'put',
       code: function(obj, s) {
         this.args.forEach(function(a) {
@@ -67,11 +82,68 @@ foam.CLASS({
     },
 
     function toProperties() {
-      return this.args.map(a => a.toProperties ? a.toProperties() : a.VALUE ).flat();
+      var allProps     = this.args.map(a => a.toProperties ? a.toProperties() : a.VALUE).flat();
+      var nameCount    = {};
+      var renamedProps = [];
+
+      // Track name usage and rename duplicates
+      allProps.forEach(prop => {
+        if ( ! prop || ! prop.name ) {
+          renamedProps.push(prop);
+          return;
+        }
+
+        var originalName = prop.name;
+        if ( nameCount[originalName] ) {
+          // This name already exists, create a unique version
+          nameCount[originalName]++;
+          var newProp = prop.clone ? prop.clone() : foam.util.clone(prop);
+          newProp.name = originalName + '_' + nameCount[originalName];
+          newProp.label = foam.String.labelize(newProp.name);
+          renamedProps.push(newProp);
+        } else {
+          // First occurrence of this name
+          nameCount[originalName] = 1;
+          renamedProps.push(prop);
+        }
+      });
+
+      return renamedProps;
     },
+
     function setPropertyValues(o, sink, ps) {
-      for ( var i = 0 ; i < this.args.length ; i++ )
-        ps[i].set(o, sink.args[i].value);
+      // Map through properties and set values from corresponding sink args
+      var propIndex = 0;
+      for ( var i = 0 ; i < this.args.length ; i++ ) {
+        var arg      = sink.args[i];
+        var argProps = arg.toProperties ? arg.toProperties() : [{ name: 'value' }];
+        var propsForArg = [];
+
+        // Collect the properties that belong to this arg
+        if ( argProps && Array.isArray(argProps) ) {
+          for ( var j = 0 ; j < argProps.length ; j++ ) {
+            if ( propIndex < ps.length ) {
+              propsForArg.push(ps[propIndex]);
+              propIndex++;
+            }
+          }
+        } else {
+          if ( propIndex < ps.length ) {
+            propsForArg.push(ps[propIndex]);
+            propIndex++;
+          }
+        }
+
+        // Delegate to child's setPropertyValues if it has one
+        if ( arg.setPropertyValues ) {
+          arg.setPropertyValues(o, sink.args[i], propsForArg);
+        } else {
+          // Otherwise, set values the normal way
+          for ( var k = 0 ; k < propsForArg.length ; k++ ) {
+            propsForArg[k].set(o, arg.value);
+          }
+        }
+      }
     }
   ]
 });

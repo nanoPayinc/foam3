@@ -57,7 +57,7 @@ foam.CLASS({
 
     ^count {
       font-size: 12pt;
-      color: #555;
+      color: $textSecondary;
       margin: 20px 20px 0 20px;
     }
 

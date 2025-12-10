@@ -31,16 +31,19 @@ foam.CLASS({
     'id',
     'enabled',
     'source',
+    'language',
     'passed',
     'failed',
-    'run'
+    'run',
+    'status'
   ],
 
   searchColumns: [
     'id',
     'description',
     'source',
-    'language'
+    'language',
+    'status'
   ],
 
   documentation: `
@@ -57,6 +60,7 @@ foam.CLASS({
       name: 'source',
       tableWidth: 300,
       transient: true,
+      visibility: 'RO',
       factory: function() { return this.cls_.id === 'foam.core.test.Test' ? this.language : this.cls_.id; },
       javaFactory: 'return getClass().toString();'
     },
@@ -82,7 +86,7 @@ foam.CLASS({
       view: { class: 'foam.u2.tag.TextArea', rows: 20 },
       factory: function() {
         var s = '';
-        if ( this.runTest != foam.core.test.Test.prototype.runTest ) {
+        if ( this.runTest && this.runTest != foam.core.test.Test.prototype.runTest ) {
           s += 'Javascript: ' + this.runTest.toString();
         }
         if ( this.cls_.getAxiomByName('runTest').javaCode ) {
@@ -303,8 +307,11 @@ foam.CLASS({
               } else {
                 this.failed += 1;
               }
-              this.output += ( condition ? 'SUCCESS: ' : 'FAILURE: ' ) +
-                message + '\n';
+              if ( ! this.onlyReportFailed || ! condition ) {
+                this.output += ( condition ? 'SUCCESS: ' : 'FAILURE: ' ) +
+                  message + '\n';
+              }
+
             };
             var expect = (value, expectedValue, message) => {
               if ( foam.util.equals(value, expectedValue) ) {
@@ -316,11 +323,14 @@ foam.CLASS({
               }
             };
 
-            var updateStats = () => {
+            var updateStats = (err) => {
               var endTime  = Date.now();
               var duration = endTime - startTime; // Unit: milliseconds
               this.lastRun = new Date();
               this.lastDuration = duration;
+              if ( err ) {
+                this.output += err + '\n';
+              }
             };
 
             with ( { log: log, print: log, x: this.__context__, expect: expect, test: test } ) {
@@ -334,13 +344,13 @@ foam.CLASS({
                 updateStats();
                 resolve();
               }, (err) => {
-                updateStats();
+                updateStats(err);
                 this.failed += 1;
                 reject(err);
               });
             }
           } catch (err) {
-            updateStats();
+            updateStats(err);
             this.failed += 1;
             reject(err);
           }
@@ -362,16 +372,21 @@ foam.CLASS({
         setFailed(0);
         try {
           if ( l == foam.core.script.Language.BEANSHELL ) {
-            Interpreter shell = (Interpreter) createInterpreter(x, null);
-            setOutput("");
-            shell.setOut(ps);
+            if ( ! foam.util.SafetyUtil.isEmpty(getCode()) ) {
+              Interpreter shell = (Interpreter) createInterpreter(x, null);
+              setOutput("");
+              shell.setOut(ps);
 
-            shell.eval("test(boolean exp, String message) { if ( exp ) { currentScript.setPassed(currentScript.getPassed()+1); } else { currentScript.setFailed(currentScript.getFailed()+1); } print((exp ? \\"SUCCESS: \\" : \\"FAILURE: \\")+message);}");
-            shell.eval("pass(String message) { test(true, message);}");
-            shell.eval("fail(String message) { test(false, message);}");
-            shell.eval("expect(Object value, Object expectedValue, String message) { currentScript.expect(value, expectedValue, message); }");
+              shell.eval("test(boolean exp, String message) { if ( exp ) { currentScript.setPassed(currentScript.getPassed()+1); } else { currentScript.setFailed(currentScript.getFailed()+1); } print((exp ? \\"SUCCESS: \\" : \\"FAILURE: \\")+message);}");
+              shell.eval("pass(String message) { test(true, message);}");
+              shell.eval("fail(String message) { test(false, message);}");
+              shell.eval("expect(Object value, Object expectedValue, String message) { currentScript.expect(value, expectedValue, message); }");
 
-            shell.eval(getCode());
+              shell.eval(getCode());
+            } else {
+              // .js or .java tests which extend foam.core.test.Test
+              runTest(x);
+            }
           } else if ( l == foam.core.script.Language.JSHELL ) {
             String print = null;
             JShell jShell = (JShell) createInterpreter(x, ps);
@@ -380,7 +395,6 @@ foam.CLASS({
           } else {
             throw new RuntimeException("Script language not supported");
           }
-          runTest(x);
           setStatus(ScriptStatus.UNSCHEDULED);
         } catch (Throwable t) {
           setStatus(ScriptStatus.ERROR);

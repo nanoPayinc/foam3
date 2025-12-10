@@ -19,12 +19,12 @@ foam.CLASS({
 
     ^id {
       font-size: 1.5rem;
-      font-weight: 400;
+      font-weight: $font-normal;
     }
 
     ^value {
       font-size: 1.5rem;
-      font-weight: 400;
+      font-weight: $font-normal;
     }
   `
 });

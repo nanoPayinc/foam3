@@ -24,12 +24,12 @@ foam.CLASS({
     ^sub > .foam-u2-ActionView-link {
       color: currentColor;
       padding: 0;
-      font-weight: 600;
+      font-weight: $font-medium;
       text-decoration: underline;
       transition: all 0.2s ease;
     }
     ^sub > .foam-u2-ActionView-link .p {
-      font-weight: 600;
+      font-weight: $font-medium;
     }
   `,
   methods: [

@@ -158,7 +158,7 @@ foam.CLASS({
 
   methods: [
     function render() {
-      this.tooltip = this.action.toolTip;
+      this.tooltip$.follow(this.action.toolTip$);
 
       this.SUPER();
 
@@ -168,7 +168,11 @@ foam.CLASS({
           this.onDetach(cRSlot$.sub(() => this.setConfirm(cRSlot$.get())));
           this.setConfirm(cRSlot$.get());
         }
-        this.enableClass(this.myClass('unavailable'), this.action.createIsAvailable$(this.__context__, this.data), true);
+
+        this.dynamic(function(data) {
+          this.enableClass(this.myClass('unavailable'), this.action.createIsAvailable$(this.__context__, this.data), true);
+        });
+
         this.attrs({ disabled: this.action.createIsEnabled$(this.__context__, this.data).map((e) => e ? false : 'disabled') });
       }
     },
@@ -187,8 +191,10 @@ foam.CLASS({
           if ( ! modal ) {
             this.action && this.action.maybeCall(this.__subContext__, this.data);
           } else if ( foam.u2.Element.isInstance(modal) ) {
+            this.data?.pub('action', this.action.name, this);
             this.ctrl.add(modal);
           } else {
+            this.data?.pub('action', this.action.name, this);
             (async () => {
               this.ctrl.add(this.ConfirmationModal.create({
                 primaryAction: this.action,

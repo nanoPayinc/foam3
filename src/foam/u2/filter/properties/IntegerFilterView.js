@@ -26,8 +26,8 @@ foam.CLASS({
       width: 100%;
 
       border-radius: 3px;
-      border: solid 1px #cbcfd4;
-      background-color: #ffffff;
+      border: solid 1px $borderDefault;
+      background-color: $backgroundDefault;
     }
 
     ^ .foam-u2-FloatView {
@@ -37,8 +37,8 @@ foam.CLASS({
       margin-top: 16px;
 
       border-radius: 3px;
-      border: solid 1px #cbcfd4;
-      background-color: #ffffff;
+      border: solid 1px $borderDefault;
+      background-color: $backgroundDefault;
     }
   `,
 

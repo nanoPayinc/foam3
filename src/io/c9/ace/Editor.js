@@ -20,13 +20,22 @@ foam.CLASS({
   ],
 
   axioms: [
-    foam.u2.JsLib.create({src: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.39.0/ace.js' })
+    // NOTE: when updating this library also update CSP script-src in http CSpec
+    // see https://cdnjs.com/libraries/ace/1.9.6 for urls and SRI Hashes
+    // ace is internally hard-coded to only load non-min support libs from cdn
+    // Also, the non-min ace.js works for both http and https loading.
+    foam.u2.JsLib.create({src: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.9.6/ace.js'})
   ],
 
   reactions: [
     ['config', 'propertyChange', 'updateEditor'],
     ['', 'propertyChange.data', 'dataToEditor']
   ],
+
+  css:`
+    ^ .ace_scroller {
+      overscroll-behavior: contain;
+    }  `, 
 
   properties: [
     {
@@ -74,8 +83,8 @@ foam.CLASS({
           })
           .start('div', null, this.container$)
             .style({
-              height: this.config$.dot('height').map(h => h + 'px'),
-              width:  this.config$.dot('width').map(h => h + 'px')
+              height: this.config$.dot('height').map(h => foam.Number.isInstance(h) ? h + 'px' : h),
+              width:  this.config$.dot('width').map(h =>foam.Number.isInstance(h) ? h + 'px' : h)
             })
           .end()
           .start('span')
@@ -114,6 +123,7 @@ foam.CLASS({
       self.editor.session.on('change', self.editorToData);
       self.updateEditor();
       self.dataToEditor();
+      self.editor.resize();
     },
     {
       name: 'editorToData',
@@ -137,6 +147,7 @@ foam.CLASS({
       if ( ! this.editor ) return;
       this.editor.setTheme(this.config.theme.path);
       this.editor.setReadOnly(this.config.isReadOnly);
+      this.editor.renderer.setShowGutter(this.config.showGutter);
       this.editor.resize();
       this.editor.session.setMode(this.config.mode.path);
       this.editor.setKeyboardHandler(this.config.keyBinding.path);

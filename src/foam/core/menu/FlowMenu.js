@@ -7,7 +7,7 @@
 foam.CLASS({
   package: 'foam.core.menu',
   name: 'FlowMenu',
-  extends: 'foam.core.menu.LinkMenu',
+  extends: 'foam.core.menu.ViewMenu',
 
   documentation: 'A menu item which routes to a flow page.',
 
@@ -16,13 +16,16 @@ foam.CLASS({
       class: 'Reference',
       of: 'foam.core.reflow.Flow',
       name: 'flow',
-    },
-    {
-      name: 'link',
-      hidden: true,
-      expression: function(flow) {
-        return '#flow/' + flow + '?flowMode=PRESENTATION';
-      }
+    }
+  ],
+
+  methods: [
+    function createView(X) {
+      return {
+        class: "foam.core.reflow.Console",
+        route: this.flow,
+        flowMode: "PRESENTATION_ONLY"
+      };
     }
   ]
 });

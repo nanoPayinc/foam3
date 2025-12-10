@@ -17,7 +17,7 @@ foam.CLASS({
     ^heading {
       background-color: var(--color);
       padding: 0 0.8rem;
-      color: #FFF;
+      color: $backgroundDefault;
     }
 
     ^border {

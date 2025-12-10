@@ -33,7 +33,7 @@ foam.CLASS({
       text-overflow: ellipsis;
       white-space: nowrap;
 
-      background: #ffffff url(/images/copy-icon.svg) no-repeat;
+      background: $backgroundDefault url(/images/copy-icon.svg) no-repeat;
       background-position: right 0.5em top 50%;
       font-size: 1.6rem;
       height: 4rem;

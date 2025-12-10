@@ -45,8 +45,8 @@ foam.CLASS({
   extends: 'foam.u2.UnstyledTabs',
   css: `
     ^tabRow {
-      border-bottom: 1px solid #e7eaec;
-      background-color: white;
+      border-bottom: 1px solid $borderLight;
+      background-color: $white;
       overflow-x: auto;
       white-space: nowrap;
     }
@@ -116,7 +116,7 @@ foam.CLASS({
     ^tab.selected {
       background: $tabActiveBackground;
       color: $tabActiveColor;
-      font-weight: 600;
+      font-weight: $font-medium;
     }
   `
 });

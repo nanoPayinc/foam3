@@ -33,6 +33,8 @@ public class DuringExpressionParser
           //YYYY-MM-DD..YYYY-MM-DD
           new YYYYMMDDRangeDateParser(),
 
+          //YYYY-MM-DD HH:MM:SS.III
+          //YYYY-MM-DD HH:MM:SS
           //YYYY-MM-DDTHH:MM
           //YYYY-MM-DDTHH
           //YYYY-MM-DD

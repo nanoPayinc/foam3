@@ -36,8 +36,8 @@ foam.CLASS({
       margin: 8px 14px 8px 0;
     }
     ^ .wrong-code {
-      border-color: #f91c1c;
-      background-color: #fff6f6;
+      border-color: $red300;
+      background-color: $red50;
     }
   `,
   properties: [

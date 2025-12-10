@@ -97,8 +97,15 @@ foam.CLASS({
         if ( colObj[property] )
           return colObj[property];
       }
-      var prop = props.find(p => p.fullPropertyName ===this.returnPropertyNamesForColumn(colObj) );
-      return  prop ? prop.property[property] : of.getAxiomByName(this.returnPropertyNamesForColumn(colObj))[property];
+      var name = this.returnPropertyNamesForColumn(colObj);
+      var prop = props.find(p => p.fullPropertyName === name );
+      if ( prop ) return prop.property[property]; 
+      
+      var ax = of.getAxiomByName(name);
+      if ( ! ax ) {
+        console.error('returnPropertyForColumn: missing property "' + name + '" on ' + of.id);
+      }
+      return  ax[property];
     },
     function groupRelatedObjects(of, arrayOfNestedPropertiesName, arrayOfValues) {
       // this function creates obj for nested properties and adds it to the map

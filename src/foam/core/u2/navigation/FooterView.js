@@ -56,7 +56,7 @@ foam.CLASS({
     ^ .mode {
       background: transparent;
       opacity: 0.6;
-      color: #272727;
+      color: $grey700;
       width: auto !important;
       padding: 0 10px !important;
     }

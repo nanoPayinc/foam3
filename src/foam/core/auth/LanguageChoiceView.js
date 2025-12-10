@@ -33,7 +33,7 @@ foam.CLASS({
 
   css: `
     ^dropdown span, ^dropdown svg {
-      font-weight: 500;
+      font-weight: $font-regular;
     }
   `,
 
