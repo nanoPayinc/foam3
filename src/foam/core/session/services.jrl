@@ -37,7 +37,6 @@ p({
   "class": "foam.core.boot.CSpec",
   "name": "sessionService",
   "serve": true,
-  "enabled": false,
   "boxClass": "foam.core.session.SessionServiceSkeleton",
   "serviceClass": "foam.core.session.SimpleSessionService",
   "client":
